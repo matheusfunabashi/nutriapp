@@ -173,13 +173,9 @@ struct ContentView: View {
     }
 
     private func finishScan() {
+        // Lookup not connected yet — the camera view only closes itself.
         showCamera = false
-        if let a = pendingCompareA, let b = store.products["cokeZero"] {
-            pendingCompareA = nil
-            push(.compare(aId: a.id, bId: b.id))
-        } else {
-            push(.result(productId: "cereal", fromScan: true))
-        }
+        pendingCompareA = nil
     }
 
     private func beginCompare(productId: String) {

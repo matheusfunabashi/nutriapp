@@ -147,22 +147,42 @@ struct ScannerHomeView: View {
                     .font(.system(size: 18, weight: .bold)).tracking(-0.4)
                     .foregroundColor(Theme.textPrimary(dark))
                 Spacer()
-                Button("See all", action: onTapHistory)
-                    .font(.system(size: 13, weight: .semibold))
-                    .foregroundColor(store.accent)
+                if !recent.isEmpty {
+                    Button("See all", action: onTapHistory)
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundColor(store.accent)
+                }
             }
             .padding(.horizontal, 24).padding(.top, 20).padding(.bottom, 10)
 
-            VStack(spacing: 8) {
-                ForEach(recent) { h in
-                    if let p = store.products[h.productId] {
-                        RecentRow(product: p, when: h.when, dark: dark) {
-                            onOpenProduct(p.id)
+            if recent.isEmpty {
+                VStack(spacing: 4) {
+                    Text("No scans yet")
+                        .font(.system(size: 14, weight: .heavy)).tracking(-0.2)
+                        .foregroundColor(Theme.textPrimary(dark))
+                    Text("Your scanned products will appear here.")
+                        .font(.system(size: 12))
+                        .foregroundColor(Theme.textSecondary(dark))
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 28).padding(.horizontal, 16)
+                .background(
+                    RoundedRectangle(cornerRadius: 18, style: .continuous).fill(Theme.surface(dark))
+                )
+                .cardShadow(dark)
+                .padding(.horizontal, 16)
+            } else {
+                VStack(spacing: 8) {
+                    ForEach(recent) { h in
+                        if let p = store.products[h.productId] {
+                            RecentRow(product: p, when: h.when, dark: dark) {
+                                onOpenProduct(p.id)
+                            }
                         }
                     }
                 }
+                .padding(.horizontal, 16)
             }
-            .padding(.horizontal, 16)
         }
     }
 
