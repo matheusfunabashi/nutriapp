@@ -39,19 +39,24 @@ struct Product: Identifiable, Hashable, Codable {
     let brand: String
     let size: String
     let glyph: String
-    let overallScore: Int
-    let yourScore: Int
-    let deltaReason: DeltaReason?
+    // Scores and their explanations are filled in by the ScoringEngine, so they're mutable.
+    var overallScore: Int
+    var yourScore: Int
+    var deltaReason: DeltaReason?
     let nutriGrade: String
     let novaGroup: Int
     let nutrients: Nutrients
-    let bonuses: [String]
+    var bonuses: [String]
     let transFats: Bool
     let caffeine_mg: Double?
     let sweeteners: [String]
     let seedOils: Bool
     let additives: [Additive]
-    let restrictions: [Restriction]
+    var restrictions: [Restriction]
+    /// Normalized dietary signals from Open Food Facts (e.g. "non-vegan", "gluten",
+    /// "milk"), used by the ScoringEngine to flag profile restrictions. Optional for
+    /// backward-compatible decoding of older snapshots.
+    var dietFlags: [String]? = nil
 }
 
 struct HistoryEntry: Identifiable, Hashable {

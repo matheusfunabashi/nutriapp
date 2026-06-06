@@ -198,7 +198,8 @@ struct ContentView: View {
 
         Task { @MainActor in
             do {
-                let product = try await foodFacts.fetchProduct(barcode: barcode)
+                let raw = try await foodFacts.fetchProduct(barcode: barcode)
+                let product = ScoringEngine.score(raw, for: store.user)
                 isLookingUp = false
                 if let a = compareWith {
                     store.saveProduct(product)

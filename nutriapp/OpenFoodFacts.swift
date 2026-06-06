@@ -59,7 +59,7 @@ struct OpenFoodFactsService {
     private static let fields = [
         "code", "product_name", "brands", "quantity",
         "nutriscore_grade", "nova_group", "nutriments",
-        "additives_tags", "ingredients_analysis_tags",
+        "additives_tags", "ingredients_analysis_tags", "allergens_tags",
         "ingredients_text", "categories_tags"
     ].joined(separator: ",")
 
@@ -126,6 +126,8 @@ struct OpenFoodFactsService {
         let sweeteners = detectSweeteners(off.additivesTags ?? [])
         let seedOils = detectSeedOils(off.ingredientsText)
         let transFats = (n?.transFat ?? 0) > 0
+        let dietFlags = detectDietFlags(analysis: off.ingredientsAnalysisTags ?? [],
+                                        allergens: off.allergensTags ?? [])
 
         let grade = off.nutriscoreGrade?.uppercased()
         let overall = placeholderScore(grade: grade, nova: off.novaGroup)
@@ -148,8 +150,34 @@ struct OpenFoodFactsService {
             sweeteners: sweeteners,
             seedOils: seedOils,
             additives: additives,
-            restrictions: []             // profile flagging later (Phase 3)
+            restrictions: [],            // populated by the ScoringEngine per profile
+            dietFlags: dietFlags
         )
+    }
+
+    /// Normalize OFF ingredient-analysis + allergen tags into simple diet flags
+    /// the ScoringEngine can match against profile restrictions.
+    static func detectDietFlags(analysis: [String], allergens: [String]) -> [String] {
+        var flags: Set<String> = []
+        for tag in analysis {
+            switch AdditiveCatalog.normalize(tag) {
+            case "non-vegan":       flags.insert("non-vegan")
+            case "vegan":           flags.insert("vegan")
+            case "non-vegetarian":  flags.insert("non-vegetarian")
+            case "vegetarian":      flags.insert("vegetarian")
+            case "palm-oil":        flags.insert("palm-oil")
+            default: break
+            }
+        }
+        for tag in allergens {
+            switch AdditiveCatalog.normalize(tag) {
+            case "gluten": flags.insert("gluten")
+            case "milk":   flags.insert("milk")
+            case "fish":   flags.insert("fish")
+            default: break
+            }
+        }
+        return Array(flags)
     }
 
     // MARK: Detection helpers
@@ -244,6 +272,8 @@ struct OFFProduct: Decodable {
     let novaGroup: Int?
     let nutriments: OFFNutriments?
     let additivesTags: [String]?
+    let ingredientsAnalysisTags: [String]?
+    let allergensTags: [String]?
     let ingredientsText: String?
     let categoriesTags: [String]?
 
@@ -254,6 +284,8 @@ struct OFFProduct: Decodable {
         case novaGroup = "nova_group"
         case nutriments
         case additivesTags = "additives_tags"
+        case ingredientsAnalysisTags = "ingredients_analysis_tags"
+        case allergensTags = "allergens_tags"
         case ingredientsText = "ingredients_text"
         case categoriesTags = "categories_tags"
     }
@@ -266,6 +298,8 @@ struct OFFProduct: Decodable {
         nutriscoreGrade = try? c.decodeIfPresent(String.self, forKey: .nutriscoreGrade)
         nutriments = try? c.decodeIfPresent(OFFNutriments.self, forKey: .nutriments)
         additivesTags = try? c.decodeIfPresent([String].self, forKey: .additivesTags)
+        ingredientsAnalysisTags = try? c.decodeIfPresent([String].self, forKey: .ingredientsAnalysisTags)
+        allergensTags = try? c.decodeIfPresent([String].self, forKey: .allergensTags)
         ingredientsText = try? c.decodeIfPresent(String.self, forKey: .ingredientsText)
         categoriesTags = try? c.decodeIfPresent([String].self, forKey: .categoriesTags)
         // nova_group may arrive as Int, Double, or String — decode flexibly.
