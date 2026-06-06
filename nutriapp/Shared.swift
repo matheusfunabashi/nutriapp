@@ -276,6 +276,7 @@ enum RiskStyle {
         case .low:      return Color(hex: "1F8A5B")
         case .moderate: return Color(hex: "D4A02D")
         case .high:     return Color(hex: "C9442B")
+        case .unrated:  return Color(hex: "8A8A8A")
         }
     }
     static func bg(_ r: RiskLevel) -> Color {
@@ -283,11 +284,13 @@ enum RiskStyle {
         case .low:      return Color(hex: "1F8A5B").opacity(0.10)
         case .moderate: return Color(hex: "D4A02D").opacity(0.12)
         case .high:     return Color(hex: "C9442B").opacity(0.10)
+        case .unrated:  return Color(hex: "8A8A8A").opacity(0.12)
         }
     }
     static func label(_ r: RiskLevel) -> String {
         switch r {
-        case .low: return "Low"; case .moderate: return "Moderate"; case .high: return "High"
+        case .low: return "Low"; case .moderate: return "Moderate"
+        case .high: return "High"; case .unrated: return "Unrated"
         }
     }
 }

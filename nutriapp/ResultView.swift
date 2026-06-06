@@ -459,9 +459,18 @@ struct AdditiveRow: View {
     var body: some View {
         HStack(spacing: 12) {
             RiskDot(risk: additive.risk)
-            Text(additive.name)
-                .font(.system(size: 14, weight: .semibold)).tracking(-0.2)
-                .foregroundColor(Theme.textPrimary(dark))
+            VStack(alignment: .leading, spacing: 2) {
+                Text(additive.name)
+                    .font(.system(size: 14, weight: .semibold)).tracking(-0.2)
+                    .foregroundColor(Theme.textPrimary(dark))
+                if let note = additive.note, !note.isEmpty {
+                    Text(note)
+                        .font(.system(size: 11))
+                        .foregroundColor(Theme.textSecondary(dark))
+                        .lineSpacing(1)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+            }
             Spacer()
             Text(RiskStyle.label(additive.risk).uppercased())
                 .font(.system(size: 10, weight: .heavy)).tracking(0.4)
