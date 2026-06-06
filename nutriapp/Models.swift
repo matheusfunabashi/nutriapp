@@ -2,21 +2,21 @@ import Foundation
 
 // MARK: - Domain models
 
-enum RiskLevel: String { case low, moderate, high }
+enum RiskLevel: String, Codable { case low, moderate, high }
 
-struct Additive: Identifiable, Hashable {
-    let id = UUID()
+struct Additive: Identifiable, Hashable, Codable {
+    var id = UUID()
     let name: String
     let risk: RiskLevel
 }
 
-struct Restriction: Identifiable, Hashable {
-    let id = UUID()
+struct Restriction: Identifiable, Hashable, Codable {
+    var id = UUID()
     let type: String
     let trigger: String
 }
 
-struct Nutrients: Hashable {
+struct Nutrients: Hashable, Codable {
     var sugar_g: Double?
     var sodium_mg: Double?
     var satFat_g: Double?
@@ -25,13 +25,13 @@ struct Nutrients: Hashable {
     var calcium_mg: Double?
 }
 
-struct DeltaReason: Hashable {
-    enum Tone { case positive, negative }
+struct DeltaReason: Hashable, Codable {
+    enum Tone: String, Codable { case positive, negative }
     let tone: Tone
     let text: String
 }
 
-struct Product: Identifiable, Hashable {
+struct Product: Identifiable, Hashable, Codable {
     let id: String
     let name: String
     let brand: String
@@ -62,7 +62,7 @@ struct HistoryEntry: Identifiable, Hashable {
     var time: String { dateLabel.components(separatedBy: " · ").last ?? "" }
 }
 
-struct UserProfile {
+struct UserProfile: Codable {
     var name: String
     var handle: String
     var age: Int

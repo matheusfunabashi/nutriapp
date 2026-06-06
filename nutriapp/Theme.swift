@@ -1,4 +1,5 @@
 import SwiftUI
+import SwiftData
 
 // MARK: - Theme tokens
 
@@ -104,10 +105,143 @@ extension View {
 
 // MARK: - App-wide store
 
+/// Facade the UI talks to. Backed by SwiftData for durable on-device storage:
+/// the profile, scanned products, and scan history all survive relaunches.
+@MainActor
 final class AppStore: ObservableObject {
     @Published var accent: Color = Theme.accent
     @Published var darkMode: Bool = false
-    @Published var user: UserProfile = MockData.user
-    @Published var history: [HistoryEntry] = MockData.history
-    let products: [String: Product] = MockData.products
+
+    /// Every mutation persists automatically.
+    @Published var user: UserProfile { didSet { persistProfile() } }
+
+    /// Read-only to the UI; mutated through recordScan/saveProduct.
+    @Published private(set) var history: [HistoryEntry] = []
+    @Published private(set) var products: [String: Product] = [:]
+
+    private let container: ModelContainer
+    private var context: ModelContext { container.mainContext }
+    private let encoder = JSONEncoder()
+    private let decoder = JSONDecoder()
+
+    init() {
+        // Build the persistent store, falling back to in-memory if it fails
+        // (e.g. a migration error) so the app still launches.
+        let models: [any PersistentModel.Type] = [
+            ProfileRecord.self, ProductRecord.self, HistoryRecord.self
+        ]
+        if let c = try? ModelContainer(for: Schema(models)) {
+            container = c
+        } else {
+            let config = ModelConfiguration(isStoredInMemoryOnly: true)
+            container = try! ModelContainer(for: Schema(models), configurations: config)
+        }
+
+        // Placeholder so `self` is fully initialized before we query the store.
+        user = MockData.user
+
+        loadProfile()
+        loadProducts()
+        loadHistory()
+    }
+
+    // MARK: Loading
+
+    private func loadProfile() {
+        if let rec = try? context.fetch(FetchDescriptor<ProfileRecord>()).first,
+           let p = try? decoder.decode(UserProfile.self, from: rec.data) {
+            user = p
+        } else {
+            // First launch: seed from the default profile.
+            persistProfile()
+        }
+        darkMode = (user.appearance == "dark")
+    }
+
+    private func loadProducts() {
+        let recs = (try? context.fetch(FetchDescriptor<ProductRecord>())) ?? []
+        products = recs.reduce(into: [:]) { dict, r in
+            if let p = try? decoder.decode(Product.self, from: r.data) { dict[p.id] = p }
+        }
+    }
+
+    private func loadHistory() {
+        let desc = FetchDescriptor<HistoryRecord>(
+            sortBy: [SortDescriptor(\.scannedAt, order: .reverse)]
+        )
+        let recs = (try? context.fetch(desc)) ?? []
+        history = recs.map {
+            HistoryEntry(productId: $0.productId, when: $0.when, dateLabel: $0.dateLabel)
+        }
+    }
+
+    // MARK: Persistence
+
+    private func persistProfile() {
+        guard let data = try? encoder.encode(user) else { return }
+        if let rec = try? context.fetch(FetchDescriptor<ProfileRecord>()).first {
+            rec.data = data
+        } else {
+            context.insert(ProfileRecord(data: data))
+        }
+        try? context.save()
+    }
+
+    /// Upsert a product snapshot (used by scan + search lookups).
+    func saveProduct(_ product: Product) {
+        products[product.id] = product
+        guard let data = try? encoder.encode(product) else { return }
+        let id = product.id
+        if let rec = try? context.fetch(
+            FetchDescriptor<ProductRecord>(predicate: #Predicate { $0.id == id })
+        ).first {
+            rec.data = data
+            rec.updatedAt = .now
+        } else {
+            context.insert(ProductRecord(id: id, data: data))
+        }
+        try? context.save()
+    }
+
+    /// Record a scan: snapshots the product and (if enabled) prepends a history entry.
+    func recordScan(_ product: Product, when: String = "Just now") {
+        saveProduct(product)
+        guard user.saveScansToHistory else { return }
+        let label = Self.dateLabel(for: .now)
+        context.insert(HistoryRecord(productId: product.id, when: when, dateLabel: label))
+        try? context.save()
+        history.insert(
+            HistoryEntry(productId: product.id, when: when, dateLabel: label),
+            at: 0
+        )
+    }
+
+    /// Remove a single history entry.
+    func deleteHistory(_ entry: HistoryEntry) {
+        let label = entry.dateLabel
+        let pid = entry.productId
+        if let rec = try? context.fetch(
+            FetchDescriptor<HistoryRecord>(
+                predicate: #Predicate { $0.productId == pid && $0.dateLabel == label }
+            )
+        ).first {
+            context.delete(rec)
+            try? context.save()
+        }
+        history.removeAll { $0.id == entry.id }
+    }
+
+    /// Clear all scan history (products are kept).
+    func clearHistory() {
+        let recs = (try? context.fetch(FetchDescriptor<HistoryRecord>())) ?? []
+        recs.forEach { context.delete($0) }
+        try? context.save()
+        history.removeAll()
+    }
+
+    private static func dateLabel(for date: Date) -> String {
+        let day = DateFormatter(); day.dateFormat = "MMM d"
+        let time = DateFormatter(); time.dateFormat = "h:mm a"
+        return "\(day.string(from: date)) · \(time.string(from: date))"
+    }
 }
