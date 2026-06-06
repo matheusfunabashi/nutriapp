@@ -10,16 +10,17 @@ struct ScanCameraView: View {
     @EnvironmentObject var store: AppStore
     let onClose: () -> Void
     let onHistory: () -> Void
-    let onScanComplete: () -> Void
+    let onScanComplete: (String) -> Void
 
     enum Mode { case barcode, label }
     @State private var mode: Mode = .barcode
     @State private var showToast = false
     @State private var toastTimer: Timer? = nil
+    @State private var didEmit = false
 
     var body: some View {
         ZStack {
-            CameraPreview()
+            CameraPreview(onBarcode: handleBarcode)
                 .ignoresSafeArea()
                 .background(Color.black.ignoresSafeArea())
 
@@ -78,7 +79,7 @@ struct ScanCameraView: View {
             Text("Align the barcode")
                 .font(.system(size: 20, weight: .heavy)).tracking(-0.4)
                 .foregroundColor(.white)
-            Text("Lookup not connected yet")
+            Text("Hold steady — we'll detect it automatically")
                 .font(.system(size: 13, weight: .medium))
                 .foregroundColor(.white.opacity(0.7))
         }
@@ -131,6 +132,13 @@ struct ScanCameraView: View {
         toastTimer = Timer.scheduledTimer(withTimeInterval: 1.6, repeats: false) { _ in
             showToast = false
         }
+    }
+
+    private func handleBarcode(_ code: String) {
+        // Only act in barcode mode, and only fire once per camera session.
+        guard mode == .barcode, !didEmit else { return }
+        didEmit = true
+        onScanComplete(code)
     }
 }
 
@@ -213,27 +221,36 @@ private struct CornerBrackets: View {
 #if canImport(UIKit) && canImport(AVFoundation)
 
 private struct CameraPreview: UIViewRepresentable {
+    var onBarcode: (String) -> Void = { _ in }
+
     func makeUIView(context: Context) -> CameraPreviewView {
         let view = CameraPreviewView()
         view.backgroundColor = .black
+        view.onBarcode = onBarcode
         view.requestAccessAndStart()
         return view
     }
 
-    func updateUIView(_ uiView: CameraPreviewView, context: Context) {}
+    func updateUIView(_ uiView: CameraPreviewView, context: Context) {
+        uiView.onBarcode = onBarcode
+    }
 
     static func dismantleUIView(_ uiView: CameraPreviewView, coordinator: ()) {
         uiView.stop()
     }
 }
 
-final class CameraPreviewView: UIView {
+final class CameraPreviewView: UIView, AVCaptureMetadataOutputObjectsDelegate {
     override class var layerClass: AnyClass { AVCaptureVideoPreviewLayer.self }
     private var previewLayer: AVCaptureVideoPreviewLayer {
         layer as! AVCaptureVideoPreviewLayer
     }
     private let session = AVCaptureSession()
     private let sessionQueue = DispatchQueue(label: "nutriapp.camera.session")
+    private let metadataOutput = AVCaptureMetadataOutput()
+    private var didEmit = false
+
+    var onBarcode: ((String) -> Void)?
 
     func requestAccessAndStart() {
         previewLayer.videoGravity = .resizeAspectFill
@@ -265,12 +282,37 @@ final class CameraPreviewView: UIView {
                 self.session.addInput(input)
             }
 
+            if self.session.outputs.isEmpty, self.session.canAddOutput(self.metadataOutput) {
+                self.session.addOutput(self.metadataOutput)
+                self.metadataOutput.setMetadataObjectsDelegate(self, queue: .main)
+            }
+
             self.session.commitConfiguration()
+
+            // availableMetadataObjectTypes is only valid after the output is
+            // attached and configuration committed — set the types here.
+            let desired: [AVMetadataObject.ObjectType] =
+                [.ean13, .ean8, .upce, .code128, .code39, .code93, .itf14]
+            self.metadataOutput.metadataObjectTypes =
+                desired.filter { self.metadataOutput.availableMetadataObjectTypes.contains($0) }
 
             if !self.session.isRunning {
                 self.session.startRunning()
             }
         }
+    }
+
+    // AVCaptureMetadataOutputObjectsDelegate — called on the main queue.
+    func metadataOutput(_ output: AVCaptureMetadataOutput,
+                        didOutput metadataObjects: [AVMetadataObject],
+                        from connection: AVCaptureConnection) {
+        guard !didEmit,
+              let obj = metadataObjects.first as? AVMetadataMachineReadableCodeObject,
+              let code = obj.stringValue,
+              !code.isEmpty else { return }
+        didEmit = true
+        UINotificationFeedbackGenerator().notificationOccurred(.success)
+        onBarcode?(code)
     }
 
     func stop() {
@@ -287,6 +329,7 @@ final class CameraPreviewView: UIView {
 
 // Fallback on platforms without UIKit/AVFoundation (e.g. previews on macOS without camera)
 private struct CameraPreview: View {
+    var onBarcode: (String) -> Void = { _ in }
     var body: some View {
         ZStack {
             Color.black

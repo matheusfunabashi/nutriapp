@@ -302,6 +302,9 @@ struct AdditivesCol: View {
         .cardShadow(dark)
     }
     private func rank(_ r: RiskLevel) -> Int {
-        switch r { case .low: return 0; case .moderate: return 1; case .high: return 2 }
+        switch r {
+        case .low: return 0; case .moderate: return 1
+        case .high: return 2; case .unrated: return -1
+        }
     }
 }

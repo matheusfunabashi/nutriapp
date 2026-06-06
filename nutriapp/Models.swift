@@ -2,12 +2,14 @@ import Foundation
 
 // MARK: - Domain models
 
-enum RiskLevel: String, Codable { case low, moderate, high }
+enum RiskLevel: String, Codable { case low, moderate, high, unrated }
 
 struct Additive: Identifiable, Hashable, Codable {
     var id = UUID()
     let name: String
     let risk: RiskLevel
+    /// Short justification, shown for higher-risk additives. nil when not applicable.
+    var note: String? = nil
 }
 
 struct Restriction: Identifiable, Hashable, Codable {

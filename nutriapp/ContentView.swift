@@ -39,6 +39,10 @@ struct ContentView: View {
     @State private var disclaimerFromScan = false
     @State private var pendingCompareA: Product? = nil
     @State private var showMethodModal = false
+    @State private var isLookingUp = false
+    @State private var lookupError: String? = nil
+
+    private let foodFacts = OpenFoodFactsService()
 
     var body: some View {
         ZStack {
@@ -63,10 +67,22 @@ struct ContentView: View {
                 ScanCameraView(
                     onClose: { closeCamera() },
                     onHistory: { closeCamera(); tab = .history },
-                    onScanComplete: { finishScan() }
+                    onScanComplete: { code in finishScan(barcode: code) }
                 )
                 .zIndex(60)
                 .transition(.move(edge: .bottom))
+            }
+
+            if isLookingUp {
+                LookupOverlay()
+                    .zIndex(95)
+                    .transition(.opacity)
+            }
+
+            if let err = lookupError {
+                ErrorToast(message: err) { lookupError = nil }
+                    .zIndex(96)
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
             }
 
             if showMethodModal {
@@ -87,6 +103,8 @@ struct ContentView: View {
         .animation(.easeOut(duration: 0.3), value: showCamera)
         .animation(.easeOut(duration: 0.2), value: showFirstLaunch)
         .animation(.easeOut(duration: 0.2), value: showMethodModal)
+        .animation(.easeOut(duration: 0.2), value: isLookingUp)
+        .animation(.easeOut(duration: 0.2), value: lookupError)
     }
 
     @ViewBuilder private var tabContent: some View {
@@ -172,15 +190,112 @@ struct ContentView: View {
         pendingCompareA = nil
     }
 
-    private func finishScan() {
-        // Lookup not connected yet — the camera view only closes itself.
+    private func finishScan(barcode: String) {
         showCamera = false
+        let compareWith = pendingCompareA
         pendingCompareA = nil
+        isLookingUp = true
+
+        Task { @MainActor in
+            do {
+                let product = try await foodFacts.fetchProduct(barcode: barcode)
+                isLookingUp = false
+                if let a = compareWith {
+                    store.saveProduct(product)
+                    push(.compare(aId: a.id, bId: product.id))
+                } else {
+                    store.recordScan(product)
+                    push(.result(productId: product.id, fromScan: true))
+                }
+            } catch {
+                isLookingUp = false
+                lookupError = Self.lookupMessage(for: error, barcode: barcode)
+            }
+        }
+    }
+
+    private static func lookupMessage(for error: Error, barcode: String) -> String {
+        guard let e = error as? OpenFoodFactsService.LookupError else {
+            return "Something went wrong. Please try again."
+        }
+        switch e {
+        case .notFound: return "No match for barcode \(barcode). It may not be in the database yet — try manual entry."
+        case .network:  return "Network error. Check your connection and try again."
+        case .decoding: return "We found the product but couldn't read its data."
+        }
     }
 
     private func beginCompare(productId: String) {
         pendingCompareA = store.products[productId]
         showCamera = true
+    }
+}
+
+// MARK: - Scan lookup feedback
+
+struct LookupOverlay: View {
+    @EnvironmentObject var store: AppStore
+    var body: some View {
+        let dark = store.darkMode
+        ZStack {
+            Color.black.opacity(0.35).ignoresSafeArea()
+            VStack(spacing: 14) {
+                ProgressView()
+                    .progressViewStyle(.circular)
+                    .tint(store.accent)
+                    .scaleEffect(1.3)
+                Text("Looking up product…")
+                    .font(.system(size: 14, weight: .heavy)).tracking(-0.2)
+                    .foregroundColor(Theme.textPrimary(dark))
+            }
+            .padding(28)
+            .background(
+                RoundedRectangle(cornerRadius: 22, style: .continuous).fill(Theme.surface(dark))
+            )
+            .cardShadow(dark)
+        }
+    }
+}
+
+struct ErrorToast: View {
+    let message: String
+    let onDismiss: () -> Void
+    @EnvironmentObject var store: AppStore
+
+    var body: some View {
+        let dark = store.darkMode
+        VStack {
+            Spacer()
+            HStack(alignment: .top, spacing: 12) {
+                Image(systemName: "exclamationmark.triangle.fill")
+                    .foregroundColor(Color(hex: "D4A02D"))
+                    .font(.system(size: 16))
+                Text(message)
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundColor(Theme.textPrimary(dark))
+                    .fixedSize(horizontal: false, vertical: true)
+                Spacer(minLength: 8)
+                Button(action: onDismiss) {
+                    Image(systemName: "xmark")
+                        .font(.system(size: 11, weight: .bold))
+                        .foregroundColor(Theme.textSecondary(dark))
+                        .padding(6)
+                        .background(Circle().fill(dark ? Color.white.opacity(0.12) : Color.black.opacity(0.06)))
+                }
+                .buttonStyle(.plain)
+            }
+            .padding(16)
+            .background(
+                RoundedRectangle(cornerRadius: 18, style: .continuous).fill(Theme.surface(dark))
+            )
+            .cardShadow(dark)
+            .padding(.horizontal, 16)
+            .padding(.bottom, 120)
+        }
+        .task {
+            try? await Task.sleep(nanoseconds: 4_000_000_000)
+            onDismiss()
+        }
     }
 }
 
