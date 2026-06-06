@@ -252,7 +252,8 @@ struct ResultView: View {
 
     private func restrictionBanners(dark: Bool) -> some View {
         let valid = product.restrictions.filter {
-            ["vegan","vegetarian","pescatarian","low-sugar diet","low-sodium diet"]
+            ["vegan","vegetarian","pescatarian","low-sugar diet","low-sodium diet",
+             "gluten-free","dairy-free"]
                 .contains($0.type)
         }
         return Group {

@@ -185,6 +185,25 @@ final class AppStore: ObservableObject {
             context.insert(ProfileRecord(data: data))
         }
         try? context.save()
+        rescoreAll()
+    }
+
+    /// Recompute every stored product's scores against the current profile.
+    /// Scoring is idempotent — re-running it overwrites the score fields cleanly.
+    func rescoreAll() {
+        guard !products.isEmpty else { return }
+        for (id, p) in products {
+            let scored = ScoringEngine.score(p, for: user)
+            products[id] = scored
+            guard let data = try? encoder.encode(scored) else { continue }
+            if let rec = try? context.fetch(
+                FetchDescriptor<ProductRecord>(predicate: #Predicate { $0.id == id })
+            ).first {
+                rec.data = data
+                rec.updatedAt = .now
+            }
+        }
+        try? context.save()
     }
 
     /// Upsert a product snapshot (used by scan + search lookups).
