@@ -128,6 +128,7 @@ struct OpenFoodFactsService {
         let transFats = (n?.transFat ?? 0) > 0
         let dietFlags = detectDietFlags(analysis: off.ingredientsAnalysisTags ?? [],
                                         allergens: off.allergensTags ?? [])
+        let allergenTags = (off.allergensTags ?? []).map { AdditiveCatalog.normalize($0) }
 
         let grade = off.nutriscoreGrade?.uppercased()
         let overall = placeholderScore(grade: grade, nova: off.novaGroup)
@@ -151,7 +152,9 @@ struct OpenFoodFactsService {
             seedOils: seedOils,
             additives: additives,
             restrictions: [],            // populated by the ScoringEngine per profile
-            dietFlags: dietFlags
+            dietFlags: dietFlags,
+            allergenTags: allergenTags,
+            ingredientsText: off.ingredientsText
         )
     }
 
