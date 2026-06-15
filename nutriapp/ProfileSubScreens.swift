@@ -383,6 +383,9 @@ struct DietaryView: View {
     @EnvironmentObject var store: AppStore
     let onBack: () -> Void
 
+    @State private var customAllergy = ""
+    @FocusState private var allergyFocused: Bool
+
     let restrictions = [
         "Vegan", "Vegetarian", "Pescatarian", "Low-sugar diet",
         "Low-sodium diet", "Gluten-free", "Dairy-free",
@@ -413,6 +416,7 @@ struct DietaryView: View {
                              active: store.user.preferences,
                              dark: dark) { v in toggle(\.preferences, v) }
                 }
+                allergensCard(dark: dark)
                 Spacer().frame(height: 60)
             }
             .padding(.horizontal, 16)
@@ -457,6 +461,100 @@ struct DietaryView: View {
         var arr = store.user[keyPath: keyPath]
         if let i = arr.firstIndex(of: value) { arr.remove(at: i) } else { arr.append(value) }
         store.user[keyPath: keyPath] = arr
+    }
+
+    // MARK: Allergens
+
+    private var allergies: [String] { store.user.allergies ?? [] }
+
+    private var customAllergies: [String] {
+        let presets = Set(AllergenCatalog.labels.map { $0.lowercased() })
+        return allergies.filter { !presets.contains($0.lowercased()) }
+    }
+
+    private func allergensCard(dark: Bool) -> some View {
+        card(title: "Allergens",
+             desc: "We'll flag scans that may contain these. Data can be incomplete — always check the packaging.",
+             dark: dark) {
+            VStack(alignment: .leading, spacing: 14) {
+                chipFlow(items: AllergenCatalog.labels, active: allergies, dark: dark) { v in
+                    toggleAllergen(v)
+                }
+
+                HStack(spacing: 8) {
+                    Image(systemName: "plus.circle")
+                        .font(.system(size: 15))
+                        .foregroundColor(Theme.textSecondary(dark))
+                    TextField("Add another allergy", text: $customAllergy)
+                        .focused($allergyFocused)
+                        .font(.system(size: 14, weight: .medium))
+                        .foregroundColor(Theme.textPrimary(dark))
+                        .submitLabel(.done)
+                        .onSubmit { addCustomAllergy() }
+                    if !customAllergy.trimmingCharacters(in: .whitespaces).isEmpty {
+                        Button("Add", action: addCustomAllergy)
+                            .font(.system(size: 13, weight: .heavy))
+                            .foregroundColor(store.accent)
+                    }
+                }
+                .padding(.horizontal, 12).padding(.vertical, 10)
+                .background(
+                    RoundedRectangle(cornerRadius: 12, style: .continuous)
+                        .fill(dark ? Color.white.opacity(0.05) : Theme.bgLight)
+                )
+
+                if !customAllergies.isEmpty {
+                    FlowLayout(spacing: 6) {
+                        ForEach(customAllergies, id: \.self) { a in
+                            removableChip(a, dark: dark)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private func removableChip(_ label: String, dark: Bool) -> some View {
+        Button { removeAllergy(label) } label: {
+            HStack(spacing: 5) {
+                Text(label.capitalized)
+                    .font(.system(size: 12, weight: .heavy)).tracking(-0.1)
+                    .foregroundColor(store.accent)
+                Image(systemName: "xmark")
+                    .font(.system(size: 9, weight: .bold))
+                    .foregroundColor(store.accent)
+            }
+            .padding(.horizontal, 12).padding(.vertical, 8)
+            .background(Capsule().fill(store.accent.opacity(0.10)))
+            .overlay(Capsule().stroke(store.accent, lineWidth: 1))
+        }
+        .buttonStyle(.plain)
+    }
+
+    private func setAllergies(_ arr: [String]) { store.user.allergies = arr }
+
+    private func toggleAllergen(_ value: String) {
+        var arr = allergies
+        if let i = arr.firstIndex(where: { $0.caseInsensitiveCompare(value) == .orderedSame }) {
+            arr.remove(at: i)
+        } else {
+            arr.append(value)
+        }
+        setAllergies(arr)
+    }
+
+    private func addCustomAllergy() {
+        let t = customAllergy.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !t.isEmpty else { return }
+        var arr = allergies
+        if !arr.contains(where: { $0.caseInsensitiveCompare(t) == .orderedSame }) { arr.append(t) }
+        setAllergies(arr)
+        customAllergy = ""
+        allergyFocused = false
+    }
+
+    private func removeAllergy(_ value: String) {
+        setAllergies(allergies.filter { $0 != value })
     }
 }
 

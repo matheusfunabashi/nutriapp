@@ -57,6 +57,12 @@ struct Product: Identifiable, Hashable, Codable {
     /// "milk"), used by the ScoringEngine to flag profile restrictions. Optional for
     /// backward-compatible decoding of older snapshots.
     var dietFlags: [String]? = nil
+    /// Normalized Open Food Facts allergen tags (e.g. "milk", "peanuts"), used for
+    /// deterministic allergen matching. Optional for backward-compatible decoding.
+    var allergenTags: [String]? = nil
+    /// Raw ingredient text from Open Food Facts, used as a fallback for allergen
+    /// keyword matching. Optional for backward-compatible decoding.
+    var ingredientsText: String? = nil
 }
 
 struct HistoryEntry: Identifiable, Hashable {
@@ -82,6 +88,8 @@ struct UserProfile: Codable {
     var objective: String
     var restrictions: [String]
     var preferences: [String]
+    /// Optional for backward-compatible decoding of profiles saved before allergens existed.
+    var allergies: [String]? = nil
     var unitSystem: String
     var subscriptionStatus: String
     var subscriptionDaysLeft: Int

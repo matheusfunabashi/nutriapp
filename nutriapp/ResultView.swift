@@ -14,6 +14,7 @@ struct ResultView: View {
             VStack(spacing: 0) {
                 topBar(dark: dark)
                 productHeader(dark: dark)
+                allergenSection(dark: dark)
                 dualScoreCard(dark: dark)
                     .padding(.horizontal, 16).padding(.bottom, 14)
                 SectionTitle(title: "Breakdown", dark: dark)
@@ -264,6 +265,22 @@ struct ResultView: View {
                     }
                 }
                 .padding(.horizontal, 16).padding(.top, 8)
+            }
+        }
+    }
+
+    private func allergenSection(dark: Bool) -> some View {
+        let userAllergies = store.user.allergies ?? []
+        let warnings = AllergenMatcher.warnings(product: product, allergies: userAllergies)
+        return Group {
+            if !userAllergies.isEmpty {
+                VStack(spacing: 8) {
+                    ForEach(warnings) { w in
+                        AllergenBanner(label: w.label, fromTag: w.fromTag, dark: dark)
+                    }
+                    AllergenDisclaimer(hasMatch: !warnings.isEmpty, dark: dark)
+                }
+                .padding(.horizontal, 16).padding(.bottom, 14)
             }
         }
     }
@@ -617,6 +634,66 @@ struct SeriousFlag: View {
         .overlay(
             RoundedRectangle(cornerRadius: 18, style: .continuous)
                 .stroke(Color(hex: "C9442B").opacity(0.30), lineWidth: 1.5)
+        )
+    }
+}
+
+// MARK: - Allergen banners
+
+struct AllergenBanner: View {
+    let label: String
+    let fromTag: Bool
+    let dark: Bool
+    var body: some View {
+        let fg = Color(hex: "C9442B")
+        HStack(spacing: 12) {
+            Image(systemName: "exclamationmark.octagon.fill")
+                .font(.system(size: 18))
+                .foregroundColor(fg)
+            VStack(alignment: .leading, spacing: 1) {
+                Text("\(fromTag ? "Contains" : "May contain") \(label.lowercased())")
+                    .font(.system(size: 14, weight: .heavy)).tracking(-0.2)
+                    .foregroundColor(dark ? Color(hex: "FF8B6E") : fg)
+                Text(fromTag ? "Listed as an allergen for this product"
+                             : "Detected in the ingredient list")
+                    .font(.system(size: 11))
+                    .foregroundColor((dark ? Color(hex: "FF8B6E") : fg).opacity(0.85))
+            }
+            Spacer()
+        }
+        .padding(14)
+        .background(
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .fill(fg.opacity(dark ? 0.18 : 0.10))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .stroke(fg.opacity(0.30), lineWidth: 1.5)
+        )
+    }
+}
+
+struct AllergenDisclaimer: View {
+    let hasMatch: Bool
+    let dark: Bool
+    var body: some View {
+        HStack(spacing: 8) {
+            Image(systemName: "info.circle")
+                .font(.system(size: 12))
+                .foregroundColor(Theme.textSecondary(dark))
+            Text(hasMatch
+                 ? "Always confirm on the product packaging — allergen data can be incomplete."
+                 : "No declared allergens matched your profile, but data may be incomplete — always check the packaging.")
+                .font(.system(size: 11))
+                .foregroundColor(Theme.textSecondary(dark))
+                .lineSpacing(1)
+                .fixedSize(horizontal: false, vertical: true)
+            Spacer()
+        }
+        .padding(.horizontal, 12).padding(.vertical, 10)
+        .background(
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .fill(dark ? Color.white.opacity(0.04) : Color.black.opacity(0.03))
         )
     }
 }
