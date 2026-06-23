@@ -15,3 +15,8 @@ xcuserdata/
 Packages/
 Package.resolved
 .swiftpm/
+
+# Local agent / Cursor tooling (per-developer, not part of the app)
+.cursor/
+.agents/
+skills-lock.json

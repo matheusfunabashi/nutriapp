@@ -12,50 +12,66 @@ struct HistoryView: View {
         let dark = store.darkMode
         ScrollView(showsIndicators: false) {
             VStack(alignment: .leading, spacing: 0) {
-                VStack(alignment: .leading, spacing: 2) {
-                    Text("Library")
-                        .font(.system(size: 13, weight: .semibold))
-                        .foregroundColor(Theme.textSecondary(dark))
-                    Text("History")
-                        .font(.system(size: 32, weight: .heavy)).tracking(-1)
-                        .foregroundColor(Theme.textPrimary(dark))
-                }
-                .padding(.horizontal, 24).padding(.top, 60).padding(.bottom, 8)
-
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 6) {
-                        ForEach(filterItems, id: \.id) { f in
-                            FilterChip(label: f.label, count: f.count,
-                                       active: filter == f.id, dark: dark) {
-                                filter = f.id
-                            }
-                        }
+                StaggeredAppear(index: 0) {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Library")
+                            .font(.system(size: 13, weight: .semibold))
+                            .foregroundColor(Theme.textSecondary(dark))
+                        Text("History")
+                            .font(.system(size: 32, weight: .heavy)).tracking(-1)
+                            .foregroundColor(Theme.textPrimary(dark))
                     }
-                    .padding(.horizontal, 16).padding(.vertical, 8)
+                    .padding(.horizontal, 24).padding(.top, 60).padding(.bottom, 8)
                 }
 
-                ForEach(groupedDays, id: \.day) { entry in
-                    Text(entry.day.uppercased())
-                        .font(.system(size: 11, weight: .heavy)).tracking(1.4)
-                        .foregroundColor(Theme.textSecondary(dark))
-                        .padding(.horizontal, 24).padding(.top, 20).padding(.bottom, 8)
-
-                    CardView(dark: dark) {
-                        VStack(spacing: 0) {
-                            ForEach(Array(entry.items.enumerated()), id: \.element.id) { (i, h) in
-                                if let p = store.products[h.productId] {
-                                    HistoryRow(product: p, when: h.time,
-                                               divider: i > 0, dark: dark) {
-                                        onOpenProduct(p.id)
+                StaggeredAppear(index: 1) {
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: 6) {
+                            ForEach(filterItems, id: \.id) { f in
+                                FilterChip(label: f.label, count: f.count,
+                                           active: filter == f.id, dark: dark) {
+                                    // Spring keeps the chip transition interruptible
+                                    // if the user flicks between filters.
+                                    withAnimation(.spring(response: 0.3, dampingFraction: 0.85)) {
+                                        filter = f.id
                                     }
                                 }
                             }
                         }
+                        .padding(.horizontal, 16).padding(.vertical, 8)
                     }
-                    .padding(.horizontal, 16)
                 }
 
-                if groupedDays.isEmpty { EmptyHistory(dark: dark) }
+                ForEach(Array(groupedDays.enumerated()), id: \.element.day) { (gIdx, entry) in
+                    // Stagger each day group so multi-day pantries reveal in
+                    // sequence rather than as one block.
+                    StaggeredAppear(index: gIdx + 2) {
+                        VStack(alignment: .leading, spacing: 0) {
+                            Text(entry.day.uppercased())
+                                .font(.system(size: 11, weight: .heavy)).tracking(1.4)
+                                .foregroundColor(Theme.textSecondary(dark))
+                                .padding(.horizontal, 24).padding(.top, 20).padding(.bottom, 8)
+
+                            CardView(dark: dark) {
+                                VStack(spacing: 0) {
+                                    ForEach(Array(entry.items.enumerated()), id: \.element.id) { (i, h) in
+                                        if let p = store.products[h.productId] {
+                                            HistoryRow(product: p, when: h.time,
+                                                       divider: i > 0, dark: dark) {
+                                                onOpenProduct(p.id)
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            .padding(.horizontal, 16)
+                        }
+                    }
+                }
+
+                if groupedDays.isEmpty {
+                    StaggeredAppear(index: 2) { EmptyHistory(dark: dark) }
+                }
                 Spacer().frame(height: 120)
             }
         }
@@ -112,11 +128,12 @@ private struct FilterChip: View {
                 Text("\(count)")
                     .font(.system(size: 11, weight: .heavy))
                     .opacity(active ? 0.7 : 0.5)
-                    .monospacedDigit()
+                    .monospacedDigit() // counts can shift as scans pile up
+                    .contentTransition(.numericText()) // smooth count updates
             }
             .foregroundColor(active ? (dark ? .black : .white)
                               : Theme.textPrimary(dark))
-            .padding(.horizontal, 14).padding(.vertical, 8)
+            .padding(.horizontal, 14).padding(.vertical, 9)
             .background(
                 Capsule().fill(
                     active ? (dark ? Color.white : Color.black)
@@ -124,8 +141,9 @@ private struct FilterChip: View {
                 )
             )
             .cardShadow(!active && !dark)
+            .minHitArea(40) // chips are slim — keep thumb target healthy
         }
-        .buttonStyle(.plain)
+        .buttonStyle(.pressable)
     }
 }
 
@@ -149,6 +167,7 @@ private struct HistoryRow: View {
                         .lineLimit(1)
                     Text(when)
                         .font(.system(size: 11))
+                        .monospacedDigit() // align times across rows
                         .foregroundColor(Theme.textSecondary(dark))
                 }
                 Spacer(minLength: 8)
@@ -160,11 +179,13 @@ private struct HistoryRow: View {
             .padding(.horizontal, 14).padding(.vertical, 12)
             .overlay(alignment: .top) {
                 if divider {
+                    // Dividers stay as borders (layout separation, not depth)
+                    // per the skill's "shadows over borders" exception.
                     Theme.divider(dark).frame(height: 0.5).padding(.horizontal, 12)
                 }
             }
         }
-        .buttonStyle(.plain)
+        .buttonStyle(.pressable)
     }
 }
 

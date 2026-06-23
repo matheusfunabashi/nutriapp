@@ -65,9 +65,12 @@ struct ScanCameraView: View {
         HStack {
             CameraCircleBtn(systemName: "xmark", action: onClose)
             Spacer()
+            // Cross-fade title when the mode flips so it doesn't snap.
             Text(mode == .barcode ? "Scan barcode" : "Scan label")
                 .font(.system(size: 14, weight: .semibold)).tracking(-0.2)
                 .foregroundColor(.white)
+                .contentTransition(.opacity)
+                .animation(.easeInOut(duration: 0.2), value: mode)
             Spacer()
             CameraCircleBtn(systemName: "list.bullet", action: onHistory)
         }
@@ -90,7 +93,14 @@ struct ScanCameraView: View {
         HStack(spacing: 8) {
             ForEach([(Mode.barcode, "Barcode"), (Mode.label, "Manual entry")], id: \.1) { (m, label) in
                 let active = mode == m
-                Button { mode = m } label: {
+                Button {
+                    // Interruptible transition: clicking the other side
+                    // mid-animation retargets smoothly (skill: prefer
+                    // value-driven animations over fire-and-forget).
+                    withAnimation(.spring(response: 0.35, dampingFraction: 0.85)) {
+                        mode = m
+                    }
+                } label: {
                     Text(label)
                         .font(.system(size: 13, weight: .heavy)).tracking(-0.1)
                         .foregroundColor(active ? Color(hex: "111111") : .white.opacity(0.95))
@@ -101,7 +111,7 @@ struct ScanCameraView: View {
                                 .fill(active ? Color.white : Color.black.opacity(0.5))
                         )
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(.pressable)
             }
         }
         .padding(.horizontal, 16)
@@ -109,19 +119,19 @@ struct ScanCameraView: View {
 
     private var shutterRow: some View {
         HStack {
-            CameraCircleBtn(systemName: "bolt", size: 42)
+            CameraCircleBtn(systemName: "bolt", size: 44)
             Spacer()
-            Button {
-                flashToast()
-            } label: {
+            Button(action: flashToast) {
                 Circle()
                     .fill(Color.white)
                     .frame(width: 70, height: 70)
                     .overlay(Circle().stroke(Color.white.opacity(0.35), lineWidth: 4))
+                    // Soft halo lifts the shutter off the dark camera bg
+                    .shadow(color: Color.black.opacity(0.25), radius: 18, x: 0, y: 6)
             }
-            .buttonStyle(.plain)
+            .buttonStyle(.pressable)
             Spacer()
-            CameraCircleBtn(systemName: "questionmark", size: 42)
+            CameraCircleBtn(systemName: "questionmark", size: 44)
         }
         .padding(.horizontal, 32)
     }
@@ -144,7 +154,8 @@ struct ScanCameraView: View {
 
 private struct CameraCircleBtn: View {
     let systemName: String
-    var size: CGFloat = 38
+    // Visible size; hit area below always lifts to at least 44.
+    var size: CGFloat = 44
     var action: () -> Void = {}
     var body: some View {
         Button(action: action) {
@@ -153,8 +164,9 @@ private struct CameraCircleBtn: View {
                 .foregroundColor(.white)
                 .frame(width: size, height: size)
                 .background(Circle().fill(Color.black.opacity(0.45)))
+                .minHitArea(44)
         }
-        .buttonStyle(.plain)
+        .buttonStyle(.pressable)
     }
 }
 

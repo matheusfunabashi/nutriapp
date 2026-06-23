@@ -13,50 +13,64 @@ struct ProfileView: View {
         let dark = store.darkMode
         ScrollView(showsIndicators: false) {
             VStack(alignment: .leading, spacing: 0) {
-                Text("Profile")
-                    .font(.system(size: 34, weight: .heavy)).tracking(-1)
-                    .foregroundColor(Theme.textPrimary(dark))
-                    .padding(.horizontal, 24).padding(.top, 60).padding(.bottom, 12)
+                StaggeredAppear(index: 0) {
+                    Text("Profile")
+                        .font(.system(size: 34, weight: .heavy)).tracking(-1)
+                        .foregroundColor(Theme.textPrimary(dark))
+                        .padding(.horizontal, 24).padding(.top, 60).padding(.bottom, 12)
+                }
 
-                identityCard(dark: dark).padding(.horizontal, 16).padding(.top, 8)
+                StaggeredAppear(index: 1) {
+                    identityCard(dark: dark).padding(.horizontal, 16).padding(.top, 8)
+                }
 
-                sectionLabel("Account", dark: dark)
-                CardView(dark: dark) {
-                    VStack(spacing: 0) {
-                        ProfileRow(systemImage: "person.text.rectangle",
-                                   label: "Personal Details", divider: false,
-                                   dark: dark, onTap: onOpenPersonal)
-                        ProfileRow(systemImage: "target", label: "Objective",
-                                   value: store.user.objective.capitalized,
-                                   divider: true, dark: dark, onTap: onOpenNutritionGoals)
-                        ProfileRow(systemImage: "flag", label: "Dietary preferences",
-                                   divider: true, dark: dark, onTap: onOpenDietary)
-                        ProfileRow(systemImage: "character.book.closed", label: "Language",
-                                   value: "English", divider: true, dark: dark)
-                        ProfileRow(systemImage: "slider.horizontal.3", label: "Preferences",
-                                   divider: true, dark: dark, onTap: onOpenPreferences)
+                StaggeredAppear(index: 2) {
+                    Group {
+                        sectionLabel("Account", dark: dark)
+                        CardView(dark: dark) {
+                            VStack(spacing: 0) {
+                                ProfileRow(systemImage: "person.text.rectangle",
+                                           label: "Personal Details", divider: false,
+                                           dark: dark, onTap: onOpenPersonal)
+                                ProfileRow(systemImage: "target", label: "Objective",
+                                           value: store.user.objective.capitalized,
+                                           divider: true, dark: dark, onTap: onOpenNutritionGoals)
+                                ProfileRow(systemImage: "flag", label: "Dietary preferences",
+                                           divider: true, dark: dark, onTap: onOpenDietary)
+                                ProfileRow(systemImage: "character.book.closed", label: "Language",
+                                           value: "English", divider: true, dark: dark)
+                                ProfileRow(systemImage: "slider.horizontal.3", label: "Preferences",
+                                           divider: true, dark: dark, onTap: onOpenPreferences)
+                            }
+                        }
+                        .padding(.horizontal, 16)
                     }
                 }
-                .padding(.horizontal, 16)
 
-                sectionLabel("Help", dark: dark)
-                CardView(dark: dark) {
-                    VStack(spacing: 0) {
-                        ProfileRow(systemImage: "info.circle", label: "How we score",
-                                   divider: false, dark: dark, onTap: onOpenMethodology)
-                        ProfileRow(systemImage: "shield", label: "Disclaimer",
-                                   divider: true, dark: dark, onTap: onOpenDisclaimer)
-                        ProfileRow(systemImage: "lifepreserver", label: "Support",
-                                   divider: true, dark: dark)
+                StaggeredAppear(index: 3) {
+                    Group {
+                        sectionLabel("Help", dark: dark)
+                        CardView(dark: dark) {
+                            VStack(spacing: 0) {
+                                ProfileRow(systemImage: "info.circle", label: "How we score",
+                                           divider: false, dark: dark, onTap: onOpenMethodology)
+                                ProfileRow(systemImage: "shield", label: "Disclaimer",
+                                           divider: true, dark: dark, onTap: onOpenDisclaimer)
+                                ProfileRow(systemImage: "lifepreserver", label: "Support",
+                                           divider: true, dark: dark)
+                            }
+                        }
+                        .padding(.horizontal, 16)
                     }
                 }
-                .padding(.horizontal, 16)
 
-                Text("Sage v1.0.3 · Database from Open Food Facts")
-                    .font(.system(size: 11))
-                    .foregroundColor(Theme.textSecondary(dark))
-                    .frame(maxWidth: .infinity, alignment: .center)
-                    .padding(.horizontal, 24).padding(.top, 32).padding(.bottom, 24)
+                StaggeredAppear(index: 4) {
+                    Text("Sage v1.0.3 · Database from Open Food Facts")
+                        .font(.system(size: 11))
+                        .foregroundColor(Theme.textSecondary(dark))
+                        .frame(maxWidth: .infinity, alignment: .center)
+                        .padding(.horizontal, 24).padding(.top, 32).padding(.bottom, 24)
+                }
 
                 Spacer().frame(height: 120)
             }
@@ -93,6 +107,7 @@ struct ProfileView: View {
                                 .font(.system(size: 11))
                             Text(subLabel)
                                 .font(.system(size: 11, weight: .heavy))
+                                .monospacedDigit() // "5d" countdown stays aligned
                                 .foregroundColor(Theme.textSecondary(dark))
                         }
                     }
@@ -111,7 +126,7 @@ struct ProfileView: View {
             )
             .cardShadow(dark)
         }
-        .buttonStyle(.plain)
+        .buttonStyle(.pressable)
     }
 
     private func sectionLabel(_ text: String, dark: Bool) -> some View {
@@ -155,13 +170,16 @@ struct ProfileRow: View {
                 }
             }
             .padding(.horizontal, 16).padding(.vertical, 14)
+            .contentShape(Rectangle()) // full row tappable, not just text
             .overlay(alignment: .top) {
                 if divider {
+                    // Border (not shadow) — purely layout separation.
                     Theme.divider(dark).frame(height: 0.5).padding(.horizontal, 12)
                 }
             }
         }
-        .buttonStyle(.plain)
+        // Skip scale on rows that aren't actionable (no onTap).
+        .buttonStyle(onTap == nil ? PressableButtonStyle(isStatic: true) : PressableButtonStyle())
         .disabled(onTap == nil)
     }
 }

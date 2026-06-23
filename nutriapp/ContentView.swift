@@ -5,7 +5,6 @@ enum Overlay: Identifiable, Hashable {
     case compare(aId: String, bId: String)
     case paywall
     case manual
-    case onboarding
     case methodology
     case personal
     case preferences
@@ -18,7 +17,6 @@ enum Overlay: Identifiable, Hashable {
         case .compare(let a, let b): return "compare_\(a)_\(b)"
         case .paywall:               return "paywall"
         case .manual:                return "manual"
-        case .onboarding:            return "onboarding"
         case .methodology:           return "methodology"
         case .personal:              return "personal"
         case .preferences:           return "preferences"
@@ -31,7 +29,7 @@ enum Overlay: Identifiable, Hashable {
 struct ContentView: View {
     @EnvironmentObject var store: AppStore
 
-    @State private var tab: AppTab = .scanner
+    @State private var tab: AppTab = .home
     @State private var stack: [Overlay] = []
     @State private var showCamera = false
     @State private var showFirstLaunch = false
@@ -42,9 +40,28 @@ struct ContentView: View {
     @State private var isLookingUp = false
     @State private var lookupError: String? = nil
 
+    // First-launch onboarding: persisted across app relaunches so each user
+    // sees the flow exactly once. Set to true the moment the user finishes
+    // (or signs in from) the welcome flow.
+    @AppStorage("sage.hasCompletedOnboarding") private var hasCompletedOnboarding: Bool = false
+
     private let foodFacts = OpenFoodFactsService()
 
     var body: some View {
+        if !hasCompletedOnboarding {
+            OnboardingFlow {
+                withAnimation(.easeInOut(duration: 0.3)) {
+                    hasCompletedOnboarding = true
+                }
+            }
+            .transition(.opacity)
+        } else {
+            mainContent
+                .transition(.opacity)
+        }
+    }
+
+    private var mainContent: some View {
         ZStack {
             tabContent
                 .ignoresSafeArea(.keyboard)
@@ -58,7 +75,7 @@ struct ContentView: View {
             if !showCamera && stack.isEmpty && !showFirstLaunch {
                 VStack {
                     Spacer()
-                    TabBar(tab: $tab)
+                    TabBar(tab: $tab, onScan: startScan)
                 }
                 .zIndex(50)
             }
@@ -66,7 +83,7 @@ struct ContentView: View {
             if showCamera {
                 ScanCameraView(
                     onClose: { closeCamera() },
-                    onHistory: { closeCamera(); tab = .history },
+                    onHistory: { closeCamera(); tab = .pantry },
                     onScanComplete: { code in finishScan(barcode: code) }
                 )
                 .zIndex(60)
@@ -109,17 +126,17 @@ struct ContentView: View {
 
     @ViewBuilder private var tabContent: some View {
         switch tab {
-        case .scanner:
+        case .home:
             ScannerHomeView(
                 onTapScan: { startScan() },
-                onTapHistory: { tab = .history },
+                onTapHistory: { tab = .pantry },
                 onOpenProduct: { id in openProduct(id) }
             )
-        case .history:
+        case .pantry:
             HistoryView(onOpenProduct: { id in openProduct(id) })
         case .search:
             SearchView(onOpenProduct: { id in openProduct(id) })
-        case .profile:
+        case .you:
             ProfileView(
                 onOpenPersonal: { push(.personal) },
                 onOpenPreferences: { push(.preferences) },
@@ -149,7 +166,6 @@ struct ContentView: View {
             }
         case .paywall:        PaywallView(onDismiss: pop)
         case .manual:         ManualEntryView(onCancel: pop, onSubmit: pop)
-        case .onboarding:     OnboardingView(onFinish: pop)
         case .methodology:    MethodologyView(onBack: pop)
         case .personal:       PersonalDetailsView(onBack: pop)
         case .preferences:    PreferencesView(onBack: pop)
@@ -300,7 +316,7 @@ struct ErrorToast: View {
     }
 }
 
-// MARK: - Paywall / Manual / Onboarding (lightweight placeholders)
+// MARK: - Paywall / Manual (lightweight placeholders)
 
 struct PaywallView: View {
     let onDismiss: () -> Void
@@ -377,28 +393,3 @@ struct ManualEntryView: View {
     }
 }
 
-struct OnboardingView: View {
-    let onFinish: () -> Void
-    @EnvironmentObject var store: AppStore
-    var body: some View {
-        let dark = store.darkMode
-        ZStack {
-            Theme.bg(dark).ignoresSafeArea()
-            VStack(spacing: 20) {
-                Spacer()
-                SageMark(size: 64, color: store.accent)
-                Text("Welcome to Sage").font(.system(size: 28, weight: .heavy))
-                    .foregroundColor(Theme.textPrimary(dark))
-                Text("Scan any barcode for an instant rating, personalized for you.")
-                    .font(.system(size: 15))
-                    .multilineTextAlignment(.center)
-                    .foregroundColor(Theme.textSecondary(dark))
-                    .padding(.horizontal, 30)
-                Spacer()
-                PillButton(title: "Get started", variant: .primary, dark: dark,
-                           fullWidth: true, action: onFinish)
-                    .padding(.horizontal, 20).padding(.bottom, 40)
-            }
-        }
-    }
-}

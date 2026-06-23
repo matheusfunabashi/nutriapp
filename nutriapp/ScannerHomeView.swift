@@ -11,14 +11,21 @@ struct ScannerHomeView: View {
         ScrollView(showsIndicators: false) {
             VStack(spacing: 0) {
                 header(dark: dark)
-                greeting(dark: dark)
-                heroCard(dark: dark)
-                    .padding(.horizontal, 16)
-                    .padding(.top, 12).padding(.bottom, 6)
-                quickAction(dark: dark)
-                    .padding(.horizontal, 16).padding(.vertical, 12)
-                recentSection(dark: dark)
-                tip(dark: dark)
+                // Split + stagger: greeting → hero → quick action → recent → tip.
+                // Each chunk fades, blurs, and lifts independently, matching
+                // the skill's "don't animate one big container" rule.
+                StaggeredAppear(index: 0) { greeting(dark: dark) }
+                StaggeredAppear(index: 1) {
+                    heroCard(dark: dark)
+                        .padding(.horizontal, 16)
+                        .padding(.top, 12).padding(.bottom, 6)
+                }
+                StaggeredAppear(index: 2) {
+                    quickAction(dark: dark)
+                        .padding(.horizontal, 16).padding(.vertical, 12)
+                }
+                StaggeredAppear(index: 3) { recentSection(dark: dark) }
+                StaggeredAppear(index: 4) { tip(dark: dark) }
                 Spacer().frame(height: 120)
             }
         }
@@ -33,6 +40,7 @@ struct ScannerHomeView: View {
                     .font(.system(size: 22, weight: .heavy)).tracking(-0.6)
                     .foregroundColor(Theme.textPrimary(dark))
             }
+            .debugMenuTap()
             Spacer()
             Button(action: onTapHistory) {
                 ZStack {
@@ -43,7 +51,9 @@ struct ScannerHomeView: View {
                 }
                 .frame(width: 38, height: 38)
                 .cardShadow(dark)
-            }.buttonStyle(.plain)
+                .minHitArea(44) // visible 38pt; tap target lifts to 44 (WCAG)
+            }
+            .buttonStyle(.pressable)
         }
         .padding(.horizontal, 20).padding(.top, 60).padding(.bottom, 4)
     }
@@ -116,27 +126,33 @@ struct ScannerHomeView: View {
             .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
             .shadow(color: store.accent.opacity(0.25), radius: 24, x: 0, y: 14)
         }
-        .buttonStyle(.plain)
+        .buttonStyle(.pressable)
     }
 
     private func quickAction(dark: Bool) -> some View {
-        HStack(spacing: 12) {
-            Text("✏️").font(.system(size: 22))
-            VStack(alignment: .leading, spacing: 1) {
-                Text("Manual entry")
-                    .font(.system(size: 13, weight: .heavy)).tracking(-0.2)
-                    .foregroundColor(Theme.textPrimary(dark))
-                Text("Not in our DB")
-                    .font(.system(size: 11))
+        Button(action: onTapScan) {
+            HStack(spacing: 12) {
+                Text("✏️").font(.system(size: 22))
+                VStack(alignment: .leading, spacing: 1) {
+                    Text("Manual entry")
+                        .font(.system(size: 13, weight: .heavy)).tracking(-0.2)
+                        .foregroundColor(Theme.textPrimary(dark))
+                    Text("Not in our DB")
+                        .font(.system(size: 11))
+                        .foregroundColor(Theme.textSecondary(dark))
+                }
+                Spacer()
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 12, weight: .bold))
                     .foregroundColor(Theme.textSecondary(dark))
             }
-            Spacer()
+            .padding(14)
+            .background(
+                RoundedRectangle(cornerRadius: 18, style: .continuous).fill(Theme.surface(dark))
+            )
+            .cardShadow(dark)
         }
-        .padding(14)
-        .background(
-            RoundedRectangle(cornerRadius: 18, style: .continuous).fill(Theme.surface(dark))
-        )
-        .cardShadow(dark)
+        .buttonStyle(.pressable)
     }
 
     private func recentSection(dark: Bool) -> some View {
@@ -148,9 +164,13 @@ struct ScannerHomeView: View {
                     .foregroundColor(Theme.textPrimary(dark))
                 Spacer()
                 if !recent.isEmpty {
-                    Button("See all", action: onTapHistory)
-                        .font(.system(size: 13, weight: .semibold))
-                        .foregroundColor(store.accent)
+                    Button(action: onTapHistory) {
+                        Text("See all")
+                            .font(.system(size: 13, weight: .semibold))
+                            .foregroundColor(store.accent)
+                            .padding(.vertical, 8).padding(.leading, 12) // larger hit area
+                    }
+                    .buttonStyle(.pressable)
                 }
             }
             .padding(.horizontal, 24).padding(.top, 20).padding(.bottom, 10)
@@ -216,6 +236,7 @@ private struct RecentRow: View {
                         .lineLimit(1)
                     Text(when)
                         .font(.system(size: 11, weight: .medium))
+                        .monospacedDigit() // dates align across rows
                         .foregroundColor(Theme.textSecondary(dark))
                 }
                 Spacer(minLength: 8)
@@ -230,7 +251,7 @@ private struct RecentRow: View {
             )
             .cardShadow(dark)
         }
-        .buttonStyle(.plain)
+        .buttonStyle(.pressable)
     }
 }
 

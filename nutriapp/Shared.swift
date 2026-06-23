@@ -42,24 +42,35 @@ struct ScoreRing: View {
 // MARK: - Product thumbnail
 
 struct ProductThumb: View {
+    @EnvironmentObject private var store: AppStore
     let glyph: String
     let score: Int
     var size: CGFloat = 48
 
     var body: some View {
         let c = scoreColor(score)
+        // Concentric: when nested inside a 18pt-radius row with ~12pt
+        // padding the inner radius wants to be ~6–10. 10 keeps the tile
+        // shape recognisable without fighting the parent capsule.
+        let r: CGFloat = 10
+        let dark = store.darkMode
+
         ZStack {
-            RoundedRectangle(cornerRadius: 14, style: .continuous)
+            RoundedRectangle(cornerRadius: r, style: .continuous)
                 .fill(LinearGradient(
                     colors: [c.opacity(0.12), c.opacity(0.04)],
                     startPoint: .topLeading, endPoint: .bottomTrailing))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 14, style: .continuous)
-                        .stroke(c.opacity(0.19), lineWidth: 1)
-                )
             Text(glyph).font(.system(size: size * 0.5))
         }
         .frame(width: size, height: size)
+        // Pure black/white outline (skill: never tinted) — keeps a clean
+        // edge against any surface color.
+        .overlay(
+            RoundedRectangle(cornerRadius: r, style: .continuous)
+                .inset(by: 0.5)
+                .stroke(dark ? Color.white.opacity(0.10) : Color.black.opacity(0.10),
+                        lineWidth: 1)
+        )
     }
 }
 
@@ -140,23 +151,37 @@ struct CircleIconButton: View {
 
 // MARK: - Tab bar
 
+/// Tab cases drive what's rendered in the main area. "Scan" isn't a tab
+/// because it triggers an action (open the camera) rather than swap a
+/// destination view.
 enum AppTab: String, CaseIterable {
-    case history, scanner, search, profile
+    case home, search, pantry, you
 
     var label: String {
         switch self {
-        case .history: return "History"
-        case .scanner: return "Scan"
-        case .search:  return "Search"
-        case .profile: return "Profile"
+        case .home:   return "Home"
+        case .search: return "Search"
+        case .pantry: return "Pantry"
+        case .you:    return "You"
         }
     }
+
     var icon: String {
         switch self {
-        case .history: return "list.bullet"
-        case .scanner: return "viewfinder"
-        case .search:  return "magnifyingglass"
-        case .profile: return "person"
+        case .home:   return "house"
+        case .search: return "magnifyingglass"
+        case .pantry: return "line.3.horizontal"
+        case .you:    return "person"
+        }
+    }
+
+    /// Filled variant for the active state; falls back to `icon` when no
+    /// filled symbol meaningfully differs.
+    var activeIcon: String {
+        switch self {
+        case .home: return "house.fill"
+        case .you:  return "person.fill"
+        default:    return icon
         }
     }
 }
@@ -164,71 +189,102 @@ enum AppTab: String, CaseIterable {
 struct TabBar: View {
     @EnvironmentObject var store: AppStore
     @Binding var tab: AppTab
+    /// Tapping the center hero opens the camera — it's an action, not a tab swap.
+    let onScan: () -> Void
 
     var body: some View {
         let dark = store.darkMode
-        HStack(spacing: 2) {
-            tabButton(.history)
-            scanHero
+        HStack(spacing: 0) {
+            tabButton(.home)
             tabButton(.search)
-            tabButton(.profile)
+            scanHero
+            tabButton(.pantry)
+            tabButton(.you)
         }
-        .padding(8)
+        .padding(.horizontal, 6)
+        .padding(.vertical, 10)
         .background(
-            RoundedRectangle(cornerRadius: 30, style: .continuous)
-                .fill(dark ? Color(white: 0.08).opacity(0.85) : Color.white.opacity(0.85))
-                .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 30, style: .continuous))
+            Capsule(style: .continuous)
+                .fill(dark ? Color(white: 0.10).opacity(0.92) : Color.white.opacity(0.96))
+                .background(.ultraThinMaterial, in: Capsule(style: .continuous))
         )
         .overlay(
-            RoundedRectangle(cornerRadius: 30, style: .continuous)
-                .stroke(dark ? Color.white.opacity(0.08) : Color.black.opacity(0.06), lineWidth: 0.5)
+            Capsule(style: .continuous)
+                .stroke(dark ? Color.white.opacity(0.06) : Color.black.opacity(0.04),
+                        lineWidth: 0.5)
         )
-        .shadow(color: Color.black.opacity(0.12), radius: 32, x: 0, y: 12)
-        .padding(.horizontal, 12)
-        .padding(.bottom, 24)
+        .shadow(color: Color.black.opacity(0.10), radius: 24, x: 0, y: 10)
+        .padding(.horizontal, 16)
+        .padding(.bottom, 18)
     }
 
-    @ViewBuilder private func tabButton(_ t: AppTab) -> some View {
+    // MARK: Standard tab slot
+
+    @ViewBuilder
+    private func tabButton(_ t: AppTab) -> some View {
         let active = tab == t
         let dark = store.darkMode
-        let c = active ? store.accent : (dark ? Color.white.opacity(0.5) : Color.black.opacity(0.45))
-        Button { tab = t } label: {
-            VStack(spacing: 2) {
-                Image(systemName: t.icon)
-                    .font(.system(size: 18, weight: .semibold))
+        let primary = Theme.textPrimary(dark)
+        let dim = dark ? Color.white.opacity(0.42) : Color.black.opacity(0.38)
+        let c = active ? primary : dim
+
+        Button {
+            // Spring keeps the active-state transition interruptible — if
+            // the user taps a third tab mid-animation it retargets smoothly.
+            withAnimation(.spring(response: 0.32, dampingFraction: 0.85)) {
+                tab = t
+            }
+        } label: {
+            VStack(spacing: 4) {
+                // Contextual icon swap: cross-fade with scale + opacity
+                // instead of snapping between two symbols. iOS 17+ supports
+                // a symbol replace transition that does the spring for us.
+                Image(systemName: active ? t.activeIcon : t.icon)
+                    .font(.system(size: 22, weight: active ? .bold : .regular))
                     .foregroundColor(c)
+                    .frame(height: 26)
+                    .contentTransition(.symbolEffect(.replace))
+                    .animation(.spring(response: 0.3, dampingFraction: 0.85), value: active)
                 Text(t.label)
-                    .font(.system(size: 10, weight: .heavy))
-                    .tracking(0.2)
+                    .font(.system(size: 11, weight: active ? .heavy : .semibold))
+                    .tracking(-0.1)
                     .foregroundColor(c)
             }
-            .padding(.vertical, 8)
-            .frame(maxWidth: .infinity)
-            .background(
-                RoundedRectangle(cornerRadius: 22, style: .continuous)
-                    .fill(active ? store.accent.opacity(0.08) : Color.clear)
-            )
+            .frame(maxWidth: .infinity, minHeight: 44) // ≥44pt hit area
+            .contentShape(Rectangle())
         }
-        .buttonStyle(.plain)
+        // Static — the tab slot already communicates press via its color
+        // change and active backdrop; scaling on top of that is fussy.
+        .buttonStyle(.pressableStatic)
     }
 
+    // MARK: Center hero — circular, lifted above the bar
+
     private var scanHero: some View {
-        Button { tab = .scanner } label: {
-            HStack(spacing: 6) {
+        Button(action: onScan) {
+            VStack(spacing: 2) {
                 Image(systemName: "viewfinder")
-                    .font(.system(size: 18, weight: .bold))
+                    .font(.system(size: 22, weight: .heavy))
                     .foregroundColor(.white)
                 Text("Scan")
-                    .font(.system(size: 13, weight: .heavy))
-                    .tracking(-0.2)
+                    .font(.system(size: 11, weight: .heavy)).tracking(-0.1)
                     .foregroundColor(.white)
             }
-            .padding(.horizontal, 16)
-            .frame(height: 52)
-            .background(Capsule().fill(store.accent))
-            .shadow(color: store.accent.opacity(0.4), radius: 12, x: 0, y: 4)
+            .frame(width: 60, height: 60)
+            .background(
+                Circle()
+                    .fill(store.accent)
+                    // Hairline highlight reads as a 1px inner light source
+                    // rather than a tinted border.
+                    .overlay(
+                        Circle().stroke(Color.white.opacity(0.18), lineWidth: 1)
+                    )
+            )
+            .shadow(color: store.accent.opacity(0.35), radius: 12, x: 0, y: 6)
+            .offset(y: -10)
         }
-        .buttonStyle(.plain)
+        .buttonStyle(.pressable) // primary action — does want a press scale
+        .frame(maxWidth: .infinity)
     }
 }
 
@@ -425,3 +481,87 @@ struct PillButton: View {
         return .clear
     }
 }
+
+// MARK: - Polish primitives
+//
+// Small reusable building blocks that implement the
+// `make-interfaces-feel-better` skill rules across the app.
+
+/// Tactile scale-on-press for any Button. SwiftUI's implicit animation
+/// on `.scaleEffect` is naturally interruptible — releasing mid-press
+/// retargets to 1.0 smoothly, exactly like a CSS transition.
+///
+/// - Always `0.96` (skill rule: anything below 0.95 feels exaggerated).
+/// - Use `.static` for chrome where motion would be distracting
+///   (e.g. tab bar slot already has its own selection visual).
+struct PressableButtonStyle: ButtonStyle {
+    var pressedScale: CGFloat = 0.96
+    var pressedOpacity: Double = 0.92
+    var isStatic: Bool = false
+
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .scaleEffect(isStatic ? 1 : (configuration.isPressed ? pressedScale : 1))
+            .opacity(configuration.isPressed ? pressedOpacity : 1)
+            .animation(.easeOut(duration: 0.15), value: configuration.isPressed)
+    }
+}
+
+extension ButtonStyle where Self == PressableButtonStyle {
+    /// Default tactile press — scales to 0.96 with a soft opacity dip.
+    static var pressable: PressableButtonStyle { .init() }
+    /// No-scale variant for chrome/static contexts.
+    static var pressableStatic: PressableButtonStyle { .init(isStatic: true) }
+}
+
+/// Staggered enter for a slice of layout. Wrap each "semantic chunk"
+/// in its own `StaggeredAppear` and bump `index` so the chunks blur+fade
+/// in one after another (~80ms gap), matching the skill rule of splitting
+/// containers instead of animating one big block.
+struct StaggeredAppear<Content: View>: View {
+    let index: Int
+    var stagger: Double = 0.07
+    var duration: Double = 0.45
+    var offset: CGFloat = 12
+    @ViewBuilder var content: () -> Content
+
+    @State private var visible = false
+
+    var body: some View {
+        content()
+            .opacity(visible ? 1 : 0)
+            .blur(radius: visible ? 0 : 4)
+            .offset(y: visible ? 0 : offset)
+            .onAppear {
+                // Skip work entirely if SwiftUI re-uses the same view
+                // (e.g. tab swap back) — the state already says visible.
+                guard !visible else { return }
+                withAnimation(
+                    .easeOut(duration: duration).delay(Double(index) * stagger)
+                ) { visible = true }
+            }
+    }
+}
+
+/// Expands the tappable area around a small visual element without
+/// resizing it visually. Use on icon-only buttons whose visible glyph
+/// is < 44×44.
+///
+/// Skill rule: minimum 40×40 hit area. Two hit areas should never overlap;
+/// `min` lets the caller pick the smallest expansion that still clears
+/// 40pt without colliding with a neighbour.
+struct MinHitArea: ViewModifier {
+    var min: CGFloat = 44
+    func body(content: Content) -> some View {
+        content
+            .contentShape(Rectangle())
+            .frame(minWidth: min, minHeight: min)
+    }
+}
+
+extension View {
+    func minHitArea(_ size: CGFloat = 44) -> some View {
+        modifier(MinHitArea(min: size))
+    }
+}
+
