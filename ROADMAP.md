@@ -72,9 +72,10 @@ fruit/veg sugar so an apple isn't penalized; also drives the "eat healthier" goa
 - Penalty `P = 0.35·procPen + 0.25·sugarPen + 0.20·satPen + 0.20·sodiumPen`
 - Quality `Q = 0.40·protDensScore + 0.35·fiberScore + 0.25·(1 − procPen)`
 
-**Score 1 (Overall) — goal-neutral, same for everyone:**
+**Score 1 (Overall) — goal-neutral, same for everyone (LOCKED):**
 `Score1 = clamp(round(100·(Q − 0.5·P)), 0, 100)`  (the no-driver baseline; equals the
-"maintain" case below by construction)
+"maintain" case below by construction). This composite **replaces** the current
+Nutri-Score-anchored Overall.
 
 **Score 2 (Your Score) — goal-dependent (the ONLY place the class matters):**
 `Score2 = clamp(round(100·(w_d·D_goal + w_q·Q − w_p·P)), 0, 100)`
@@ -107,13 +108,14 @@ even for muscle (Cheetos' NOVA4 + sodium + satfat penalty sinks its protein driv
 or smooth curve) — outputs cluster low/mid, under-using 0–100; (2) tune weights against
 20–30 known foods until the ranking matches intuition.
 
-**To resolve before implementing:**
-- **Score 1 form (only open scope question):** adopt this goal-neutral composite for
-  Overall (proposed: `Q − 0.5·P`), or keep the current Nutri-Score-anchored Overall? The
-  class question is settled — goal affects **only Score 2**.
-- **Integration impact:** rewrites `ScoringEngine.computePersonal` and `computeOverall`;
-  LLM explanation factors come from these composites; bump the explanation cache `version`
-  when the model changes; carry over the restriction hard-cap (≤20) + nutrient bonuses.
+**Decided (no open scope questions remain for this model):** Score 1 adopts the composite
+`Q − 0.5·P` and **replaces** the Nutri-Score-anchored Overall; goal/class affects **only
+Score 2**; all 4 goals have drivers.
+
+**Integration impact:** rewrites `ScoringEngine.computeOverall` (→ composite Score 1) and
+`computePersonal` (→ per-goal Score 2); LLM explanation factors come from these composites;
+bump the explanation cache `version` when the model changes; carry over the restriction
+hard-cap (≤20) + nutrient bonuses. Remaining tuning is calibration + weight-fitting only.
 
 ---
 
