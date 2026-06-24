@@ -34,10 +34,76 @@ Each branch builds on the previous; all pushed to `origin`.
 | **2 — Open Food Facts + barcode** | ✅ Done | `OpenFoodFactsService`, `Additives.json`. Mapper tests passed. ⚠️ Barcode only testable on a real device. |
 | **3 — Scoring engine** | ✅ Done | `ScoringEngine.swift`. Tests written, run not yet confirmed. |
 | **4a — Allergens** | ✅ Done | Deterministic (no LLM). Tests written, run not yet confirmed. |
+| **3.5 — Scoring engine v2 (composite model)** | ⏳ **Planned — do next** | Richer Penalty/Quality/Driver model using kcal + fruit/veg estimate. Do **before 4b** so the LLM explanation reflects the final scoring. See "Scoring engine v2" section. |
 | **4b — LLM explanations + backend** | ⏳ **Not started** | Backend proxy decided; hosting platform still open. See Backend section. |
 | **5 — Search** | ⏳ Not started | Connect Search tab to OFF search endpoint. |
 | **6 — Edge cases/cleanup** | ⏳ Not started | Offline handling, dup-scan prevention, delete/clear history. |
 | **Later** | ⏳ | Frontend polish → Onboarding → Paywall (placeholders exist). |
+
+---
+
+## Scoring engine v2 — composite model (Phase 3.5 — do before 4b)
+
+Proposed upgrade (from team) for better accuracy, using OFF fields more fully. Pure
+on-device logic, no backend dependency. **Sequence it before Phase 4b** so the LLM
+explanation describes the final scoring model.
+
+**Base decision:** per-100g canonical (already used), plus ratio features
+(protein/kcal, kcal/100g). Score the *food*, not the portion eaten — "how much you ate"
+is a separate future logging layer.
+
+**New OFF fields required (mapper fetches neither today):**
+`energy-kcal_100g` and `fruits-vegetables-nuts-estimate-from-ingredients_100g` (the "fvn"
+field Nutri-Score uses — discounts natural fruit/veg sugar so an apple isn't penalized).
+
+**Building blocks (each normalized 0–1):**
+- `protDensScore = min(1, (protein / (kcal/100)) / 15)`  — protein per 100 kcal
+- `lowEnergy = clamp((500 − kcal)/450, 0, 1)`
+- `fiberScore = min(1, fiber/8)`
+- `sugarPen = min(1, sugars·(1 − fvn/100) / 25)`
+- `satPen = min(1, satfat/10)`
+- `sodiumPen = clamp((sodium_mg − 100)/700, 0, 1)`
+- `procPen` (NOVA): 1→0, 2→0.2, 3→0.5, 4→1.0
+- Guard: if `kcal < 5` → `protDens = 0`, `lowEnergy = 1`
+
+**Composites:**
+- Penalty `P = 0.35·procPen + 0.25·sugarPen + 0.20·satPen + 0.20·sodiumPen`
+- Quality `Q = 0.40·protDensScore + 0.35·fiberScore + 0.25·(1 − procPen)`  (≈ heart of Overall/Score 1)
+- Driver `D` (by objective): Build muscle → `protDensScore`; Lose fat →
+  `0.5·protDensScore + 0.3·lowEnergy + 0.2·fiberScore`; Maintain → `Q`
+
+**Final:** `Score2 = clamp(round(100·(w_d·D + w_q·Q − w_p·P)), 0, 100)`
+
+| Objective | w_d | w_q | w_p |
+|---|---|---|---|
+| Build muscle | 0.55 | 0.45 | 0.45 |
+| Lose fat | 0.50 | 0.50 | 0.55 |
+| Maintain | 0.50 | 0.50 | 0.50 |
+
+**Validation (apple vs Cheetos vs chicken)** — breaks the tie; apple beats Cheetos even
+for muscle despite Cheetos' higher protein/kcal (NOVA4 + sodium + satfat penalty sinks it):
+
+| | Muscle | Lose fat | Maintain |
+|---|---|---|---|
+| Chicken | 83 | 68 | 64 |
+| Apple | 19 | 37 | 37 |
+| Cheetos | 0 | 0 | 0 |
+
+**Follow-ups after locking weights:** (1) calibrate against a reference food set (min-max
+or a smooth curve) — current outputs cluster low/mid, under-using the 0–100 range;
+(2) tune weights against 20–30 known foods until the ranking matches intuition.
+
+**To resolve before implementing:**
+- **Scope:** does this composite **replace** the Nutri-Score-anchored Overall (Score 1)
+  too, or only the personalized Your Score (Score 2)? Member frames `Quality` as the heart
+  of Score 1 → it could redefine both.
+- **Goal mapping:** the app has **4 goals** (lose weight, maintain, build muscle, eat
+  healthier); the proposal only specs **3 Drivers** (muscle / fat-loss / maintain). Need a
+  Driver for **"eat healthier"** (likely `Q`) and confirm "lose weight" == "lose fat".
+- **Integration impact:** rewrites `ScoringEngine.computePersonal` (and maybe
+  `computeOverall`); LLM explanation factors come from these composites; bump the
+  explanation cache `version` when the model changes; restriction hard-cap + bonuses logic
+  must be carried over.
 
 ---
 
