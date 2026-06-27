@@ -1,97 +1,133 @@
 import Foundation
 
-// MARK: - Scoring engine
+// MARK: - Scoring engine (v2 — composite model)
 //
-// Two scores:
-//   • Overall  — food-only, the same for everyone. Anchored on the official
-//     Nutri-Score grade, then adjusted for NOVA processing, additives, and
-//     trans fats.
-//   • Your Score — Overall, then personalized by the user's objective and
-//     preferences (swing up to ±35). Conflicting dietary restrictions hard-cap
-//     the score and raise a warning banner.
+// Two scores, both built from the same per-100g building blocks:
+//   • Overall (Score 1) — goal-neutral, the same for everyone: Q − 0.5·P.
+//   • Your Score (Score 2) — Overall plus a goal-specific Driver; the ONLY place
+//     the user's objective changes the number. Conflicting dietary restrictions
+//     hard-cap it to ≤20 and raise a warning banner.
 //
-// Both are deterministic and rule-based. The deltaReason text generated here is
-// a rule-based placeholder; Phase 4 replaces it with a Claude-generated one.
+// Penalty (P) and Quality (Q) are objective-independent. The Driver (D) and its
+// weights vary by goal. All deterministic; the deltaReason text is a rule-based
+// placeholder that Phase 4b replaces with an LLM-generated one.
 
 enum ScoringEngine {
 
-    // Tunables
-    static let maxPersonalSwing = 35.0
     static let restrictionCap = 20
 
-    /// Returns a copy of `product` with overallScore, yourScore, bonuses,
-    /// restrictions, and deltaReason filled in for the given profile.
+    // MARK: Public API
+
+    /// Returns a copy of `product` with both scores, bonuses, restrictions, and
+    /// deltaReason filled in for the given profile.
     static func score(_ product: Product, for profile: UserProfile) -> Product {
         var out = product
-        let overall = computeOverall(product)
-        out.overallScore = overall
-
-        let result = computePersonal(product, profile: profile, overall: overall)
-        out.yourScore = result.score
-        out.bonuses = result.bonuses
-        out.restrictions = result.restrictions
-        out.deltaReason = result.reason
+        let b = Blocks(product)
+        out.overallScore = clampScore(100 * (quality(b) - 0.5 * penalty(b)))
+        let r = computePersonal(product, profile: profile, blocks: b, overall: out.overallScore)
+        out.yourScore = r.score
+        out.bonuses = r.bonuses
+        out.restrictions = r.restrictions
+        out.deltaReason = r.reason
         return out
     }
 
-    // MARK: Overall (food-only)
-
+    /// Overall (Score 1) — goal-neutral.
     static func computeOverall(_ p: Product) -> Int {
-        var s = Double(gradeBase(p.nutriGrade) ?? nutrientBase(p.nutrients))
-
-        // NOVA processing level.
-        switch p.novaGroup {
-        case 1:  s += 5
-        case 2:  s += 2
-        case 3:  s -= 4
-        case 4:  s -= 8
-        default: break
-        }
-
-        // Trans fats — the single most penalized input.
-        if p.transFats { s -= 15 }
-
-        // Additives, weighted by risk and capped.
-        let high = p.additives.filter { $0.risk == .high }.count
-        let moderate = p.additives.filter { $0.risk == .moderate }.count
-        s -= min(Double(high) * 6 + Double(moderate) * 2, 20)
-
-        return clampScore(s)
+        let b = Blocks(p)
+        return clampScore(100 * (quality(b) - 0.5 * penalty(b)))
     }
 
-    /// Nutri-Score grade → anchor score.
-    private static func gradeBase(_ grade: String) -> Int? {
-        switch grade.uppercased() {
-        case "A": return 90
-        case "B": return 75
-        case "C": return 58
-        case "D": return 40
-        case "E": return 22
-        default:  return nil
+    // MARK: Building blocks (each normalized 0–1)
+
+    private struct Blocks {
+        let protDensScore: Double   // protein per 100 kcal
+        let lowEnergy: Double       // calorie lightness
+        let fiberScore: Double
+        let fvnScore: Double        // fruit/veg/nuts fraction
+        let sugarPen: Double        // fvn discounts fruit/veg sugar
+        let satPen: Double
+        let sodiumPen: Double
+        let procPen: Double         // NOVA processing
+
+        init(_ p: Product) {
+            let n = p.nutrients
+            let fvn = n.fvn ?? 0
+
+            // Guard: near-zero energy (water, diet soda) — no protein density, treat as light.
+            if let kcal = n.kcal, kcal < 5 {
+                protDensScore = 0
+                lowEnergy = 1
+            } else if let kcal = n.kcal, kcal > 0 {
+                let protDens = (n.protein_g ?? 0) / (kcal / 100)
+                protDensScore = min(1, protDens / 15)
+                lowEnergy = max(0, min(1, (500 - kcal) / 450))
+            } else {
+                // kcal missing → neutral
+                protDensScore = 0
+                lowEnergy = 0.5
+            }
+
+            fiberScore = min(1, (n.fiber_g ?? 0) / 8)
+            fvnScore = min(1, fvn / 100)
+            sugarPen = min(1, (n.sugar_g ?? 0) * (1 - fvn / 100) / 25)
+            satPen = min(1, (n.satFat_g ?? 0) / 10)
+            sodiumPen = max(0, min(1, ((n.sodium_mg ?? 0) - 100) / 700))
+            procPen = Self.procPen(p.novaGroup)
+        }
+
+        private static func procPen(_ nova: Int) -> Double {
+            switch nova {
+            case 1:  return 0.0
+            case 2:  return 0.2
+            case 3:  return 0.5
+            case 4:  return 1.0
+            default: return 0.5   // unknown processing → mid penalty
+            }
         }
     }
 
-    /// Fallback anchor from raw nutrients when no Nutri-Score is available.
-    private static func nutrientBase(_ n: Nutrients) -> Int {
-        var s = 60.0
-        if let sugar = n.sugar_g {
-            if sugar > 22.5 { s -= 15 } else if sugar > 12.5 { s -= 8 }
-            else if sugar > 5 { s -= 3 } else { s += 2 }
+    // MARK: Composites (goal-independent)
+
+    private static func penalty(_ b: Blocks) -> Double {
+        0.35 * b.procPen + 0.25 * b.sugarPen + 0.20 * b.satPen + 0.20 * b.sodiumPen
+    }
+
+    private static func quality(_ b: Blocks) -> Double {
+        0.40 * b.protDensScore + 0.35 * b.fiberScore + 0.25 * (1 - b.procPen)
+    }
+
+    // MARK: Goal driver + weights (the only goal-dependent part — Score 2 only)
+
+    private struct GoalWeights { let wd, wq, wp: Double }
+
+    private static func driver(_ b: Blocks, objective: String) -> Double {
+        switch objective.lowercased() {
+        case "build muscle":
+            return b.protDensScore
+        case "lose weight":
+            return 0.5 * b.protDensScore + 0.3 * b.lowEnergy + 0.2 * b.fiberScore
+        case "eat healthier":
+            return 0.40 * b.fiberScore + 0.35 * (1 - b.procPen) + 0.25 * b.fvnScore
+        default: // maintain (goal-neutral → Score 2 == Score 1)
+            return quality(b)
         }
-        if let sodium = n.sodium_mg {
-            if sodium > 600 { s -= 12 } else if sodium > 300 { s -= 6 }
-            else if sodium > 120 { s -= 2 }
+    }
+
+    private static func weights(_ objective: String) -> GoalWeights {
+        switch objective.lowercased() {
+        case "build muscle":  return GoalWeights(wd: 0.55, wq: 0.45, wp: 0.45)
+        case "lose weight":   return GoalWeights(wd: 0.50, wq: 0.50, wp: 0.55)
+        case "eat healthier": return GoalWeights(wd: 0.50, wq: 0.50, wp: 0.60)
+        default:              return GoalWeights(wd: 0.50, wq: 0.50, wp: 0.50)
         }
-        if let sat = n.satFat_g {
-            if sat > 5 { s -= 10 } else if sat > 1.5 { s -= 4 }
-        }
-        if let fiber = n.fiber_g {
-            if fiber >= 6 { s += 8 } else if fiber >= 3 { s += 4 }
-        }
-        if let protein = n.protein_g {
-            if protein >= 12 { s += 8 } else if protein >= 5 { s += 4 }
-        }
-        return clampScore(s)
+    }
+
+    private static func score2(_ b: Blocks, objective: String) -> Int {
+        let w = weights(objective)
+        return clampScore(100 * (w.wd * driver(b, objective: objective)
+                                 + w.wq * quality(b)
+                                 - w.wp * penalty(b)))
     }
 
     // MARK: Personalized (Your Score)
@@ -103,48 +139,34 @@ enum ScoringEngine {
         let reason: DeltaReason?
     }
 
-    private struct Contribution {
-        let value: Double          // signed point impact
-        let text: String           // human explanation
-    }
-
-    static func computePersonal(_ p: Product, profile: UserProfile, overall: Int) -> PersonalResult {
-        let n = p.nutrients
-        let bonuses = nutrientBonuses(n)
+    private static func computePersonal(_ product: Product, profile: UserProfile,
+                                        blocks b: Blocks, overall: Int) -> PersonalResult {
+        let bonuses = nutrientBonuses(product.nutrients)
 
         // Restriction conflicts (gated by the auto-flag toggle).
         var restrictions: [Restriction] = []
         if profile.autoFlagRestrictions {
             for r in profile.restrictions {
-                if let hit = evalRestriction(r, product: p) {
+                if let hit = evalRestriction(r, product: product) {
                     restrictions.append(Restriction(type: hit.type, trigger: hit.trigger))
                 }
             }
         }
 
-        // If personalization is off, Your Score mirrors Overall.
+        // Personalization off → Your Score mirrors the goal-neutral Overall.
         guard profile.personalizeScoring else {
             return PersonalResult(score: overall, bonuses: bonuses,
                                   restrictions: restrictions, reason: nil)
         }
 
-        // Accumulate objective + preference contributions.
-        var contributions: [Contribution] = []
-        contributions += objectiveContributions(profile.objective, product: p)
-        contributions += preferenceContributions(profile.preferences, product: p)
+        var your = score2(b, objective: profile.objective)
 
-        let rawDelta = contributions.reduce(0) { $0 + $1.value }
-        let pDelta = max(-maxPersonalSwing, min(maxPersonalSwing, rawDelta))
-        var your = clampScore(Double(overall) + pDelta)
-
-        // Restriction hard cap.
         let hardCapped = !restrictions.isEmpty
         if hardCapped { your = min(your, restrictionCap) }
 
-        let reason = deltaReason(your: your, overall: overall,
-                                 contributions: contributions,
-                                 restriction: restrictions.first,
-                                 hardCapped: hardCapped)
+        let reason = deltaReason(objective: profile.objective, blocks: b,
+                                 your: your, overall: overall,
+                                 restriction: restrictions.first, hardCapped: hardCapped)
 
         return PersonalResult(score: your, bonuses: bonuses,
                               restrictions: restrictions, reason: reason)
@@ -156,81 +178,6 @@ enum ScoringEngine {
         if let p = n.protein_g, p >= 12 { b.append("protein") }
         if let c = n.calcium_mg, c >= 120 { b.append("calcium") }
         return b
-    }
-
-    // MARK: Objective weighting
-
-    private static func objectiveContributions(_ objective: String, product p: Product) -> [Contribution] {
-        let n = p.nutrients
-        var c: [Contribution] = []
-        let sugar = n.sugar_g, sodium = n.sodium_mg, sat = n.satFat_g
-        let fiber = n.fiber_g, protein = n.protein_g
-        let highRiskAdditives = p.additives.filter { $0.risk == .high }.count
-
-        switch objective.lowercased() {
-        case "build muscle":
-            if let pr = protein, pr >= 12 { c.append(.init(value: 12, text: "High protein supports your muscle-building goal")) }
-            else if let pr = protein, pr < 5 { c.append(.init(value: -6, text: "Low protein for a muscle-building goal")) }
-            if let f = fiber, f >= 6 { c.append(.init(value: 4, text: "Good fiber content")) }
-
-        case "lose weight":
-            if let s = sugar, s > 12.5 { c.append(.init(value: -12, text: "High sugar works against weight loss")) }
-            if let st = sat, st > 5 { c.append(.init(value: -8, text: "High saturated fat for a weight-loss goal")) }
-            if let pr = protein, pr >= 12 { c.append(.init(value: 8, text: "High protein helps you stay full")) }
-            if let f = fiber, f >= 6 { c.append(.init(value: 6, text: "High fiber helps you stay full")) }
-            if p.novaGroup == 4 { c.append(.init(value: -5, text: "Ultra-processed")) }
-
-        case "eat healthier":
-            if p.novaGroup == 1 { c.append(.init(value: 10, text: "Whole, minimally processed food")) }
-            if p.novaGroup == 4 { c.append(.init(value: -12, text: "Ultra-processed")) }
-            if highRiskAdditives > 0 { c.append(.init(value: -8, text: "Contains higher-risk additives")) }
-            if let f = fiber, f >= 6 { c.append(.init(value: 6, text: "High fiber")) }
-            if let s = sugar, s > 12.5 { c.append(.init(value: -6, text: "High sugar")) }
-
-        case "maintain":
-            if let s = sugar, s > 22.5 { c.append(.init(value: -6, text: "Very high sugar")) }
-            if let sd = sodium, sd > 600 { c.append(.init(value: -5, text: "Very high sodium")) }
-            if let pr = protein, pr >= 12 { c.append(.init(value: 4, text: "Good protein")) }
-            if let f = fiber, f >= 6 { c.append(.init(value: 4, text: "Good fiber")) }
-
-        default:
-            break
-        }
-        return c
-    }
-
-    // MARK: Preference weighting
-
-    private static func preferenceContributions(_ preferences: [String], product p: Product) -> [Contribution] {
-        let n = p.nutrients
-        var c: [Contribution] = []
-        let prefs = Set(preferences.map { $0.lowercased() })
-
-        if prefs.contains("high protein") {
-            if let pr = n.protein_g, pr >= 12 { c.append(.init(value: 8, text: "Matches your high-protein preference")) }
-            else if let pr = n.protein_g, pr < 5 { c.append(.init(value: -5, text: "Low protein vs your preference")) }
-        }
-        if prefs.contains("low sugar") {
-            if let s = n.sugar_g, s > 12.5 { c.append(.init(value: -8, text: "High sugar vs your low-sugar preference")) }
-            else if let s = n.sugar_g, s <= 5 { c.append(.init(value: 3, text: "Low sugar, as you prefer")) }
-        }
-        if prefs.contains("low sodium") {
-            if let s = n.sodium_mg, s > 400 { c.append(.init(value: -8, text: "High sodium vs your low-sodium preference")) }
-            else if let s = n.sodium_mg, s <= 120 { c.append(.init(value: 3, text: "Low sodium, as you prefer")) }
-        }
-        if prefs.contains("low fat") {
-            if let st = n.satFat_g, st > 5 { c.append(.init(value: -7, text: "High saturated fat vs your low-fat preference")) }
-            else if let st = n.satFat_g, st <= 1.5 { c.append(.init(value: 2, text: "Low saturated fat")) }
-        }
-        if prefs.contains("high fiber") {
-            if let f = n.fiber_g, f >= 6 { c.append(.init(value: 8, text: "High fiber, as you prefer")) }
-            else if let f = n.fiber_g, f < 3 { c.append(.init(value: -3, text: "Low fiber vs your preference")) }
-        }
-        if prefs.contains("minimally processed") {
-            if p.novaGroup == 4 { c.append(.init(value: -8, text: "Ultra-processed vs your preference")) }
-            else if p.novaGroup == 1 { c.append(.init(value: 6, text: "Minimally processed, as you prefer")) }
-        }
-        return c
     }
 
     // MARK: Restriction evaluation
@@ -258,22 +205,40 @@ enum ScoringEngine {
         }
     }
 
-    // MARK: deltaReason (rule-based placeholder for Phase 4)
+    // MARK: deltaReason (rule-based placeholder for Phase 4b)
 
-    private static func deltaReason(your: Int, overall: Int,
-                                    contributions: [Contribution],
-                                    restriction: Restriction?,
-                                    hardCapped: Bool) -> DeltaReason? {
+    private static func deltaReason(objective: String, blocks b: Blocks,
+                                    your: Int, overall: Int,
+                                    restriction: Restriction?, hardCapped: Bool) -> DeltaReason? {
         if hardCapped, let r = restriction {
             return DeltaReason(tone: .negative,
                                text: "Capped — contains \(r.trigger), which conflicts with your \(r.type) restriction.")
         }
         let delta = your - overall
         guard abs(delta) >= 5 else { return nil }
+        let positive = delta > 0
 
-        // Surface the single biggest driver.
-        guard let top = contributions.max(by: { abs($0.value) < abs($1.value) }) else { return nil }
-        return DeltaReason(tone: top.value >= 0 ? .positive : .negative, text: top.text)
+        let text: String
+        switch objective.lowercased() {
+        case "build muscle":
+            text = positive ? "High protein per calorie supports building muscle."
+                            : "Low protein per calorie for a muscle-building goal."
+        case "lose weight":
+            if positive {
+                text = b.lowEnergy >= 0.6 ? "Light and lower in calories for weight loss."
+                                          : "Protein and fiber help you stay full."
+            } else {
+                text = b.sugarPen >= b.satPen ? "Sugar content works against your weight-loss goal."
+                                              : "Higher in fat and calories for a weight-loss goal."
+            }
+        case "eat healthier":
+            text = positive ? "Whole, minimally processed — good for eating healthier."
+                            : "Highly processed with little whole-food content."
+        default: // maintain — Score 2 ≈ Score 1, rarely reached
+            text = positive ? "Slightly better than its overall rating for you."
+                            : "Slightly below its overall rating for you."
+        }
+        return DeltaReason(tone: positive ? .positive : .negative, text: text)
     }
 
     // MARK: Helpers

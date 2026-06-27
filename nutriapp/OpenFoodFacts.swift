@@ -119,7 +119,9 @@ struct OpenFoodFactsService {
             satFat_g: n?.saturatedFat,
             fiber_g: n?.fiber,
             protein_g: n?.proteins,
-            calcium_mg: n?.calcium.map { $0 * 1000 }
+            calcium_mg: n?.calcium.map { $0 * 1000 },
+            kcal: n?.energyKcal,
+            fvn: n?.fvn
         )
 
         let additives = (off.additivesTags ?? []).map { AdditiveCatalog.additive(for: $0) }
@@ -328,6 +330,8 @@ struct OFFNutriments: Decodable {
     let proteins: Double?
     let calcium: Double?
     let caffeine: Double?
+    let energyKcal: Double?
+    let fvn: Double?   // fruit/veg/nuts estimate 0–100
 
     enum CodingKeys: String, CodingKey {
         case sugars = "sugars_100g"
@@ -339,6 +343,9 @@ struct OFFNutriments: Decodable {
         case proteins = "proteins_100g"
         case calcium = "calcium_100g"
         case caffeine = "caffeine_100g"
+        case energyKcal = "energy-kcal_100g"
+        case fvnNuts = "fruits-vegetables-nuts-estimate-from-ingredients_100g"
+        case fvnLegumes = "fruits-vegetables-legumes-estimate-from-ingredients_100g"
     }
 
     init(from decoder: Decoder) throws {
@@ -358,5 +365,8 @@ struct OFFNutriments: Decodable {
         proteins = value(.proteins)
         calcium = value(.calcium)
         caffeine = value(.caffeine)
+        energyKcal = value(.energyKcal)
+        // OFF populates the "nuts" or the newer "legumes" variant depending on version.
+        fvn = value(.fvnNuts) ?? value(.fvnLegumes)
     }
 }
