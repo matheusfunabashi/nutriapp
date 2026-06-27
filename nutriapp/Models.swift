@@ -25,6 +25,11 @@ struct Nutrients: Hashable, Codable {
     var fiber_g: Double?
     var protein_g: Double?
     var calcium_mg: Double?
+    /// Energy in kcal per 100g (drives protein-density + calorie features in scoring v2).
+    var kcal: Double? = nil
+    /// Fruit/veg/nuts estimate 0–100 from ingredients (Nutri-Score field); discounts
+    /// natural fruit/veg sugar and rewards whole-food content. Optional for back-compat.
+    var fvn: Double? = nil
 }
 
 struct DeltaReason: Hashable, Codable {
