@@ -1,0 +1,4 @@
+# Copy to `.dev.vars` for local `wrangler dev` (this file is git-ignored as .dev.vars).
+# For production use `wrangler secret put <NAME>` instead.
+OPENAI_API_KEY=sk-replace-me
+GOUPC_API_KEY=

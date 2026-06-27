@@ -1,0 +1,27 @@
+name = "sage-backend"
+main = "src/index.ts"
+compatibility_date = "2026-01-01"
+
+# --- Cache (KV): product snapshots + bucketed explanations ---
+# Create with:  wrangler kv namespace create CACHE
+#               wrangler kv namespace create CACHE --preview
+# then paste the ids below.
+[[kv_namespaces]]
+binding = "CACHE"
+id = "REPLACE_WITH_KV_ID"
+preview_id = "REPLACE_WITH_KV_PREVIEW_ID"
+
+# --- D1 (SQLite): usage counters, product metadata, fetch log ---
+# Create with:  wrangler d1 create sage   (paste database_id below)
+[[d1_databases]]
+binding = "DB"
+database_name = "sage"
+database_id = "REPLACE_WITH_D1_ID"
+
+[vars]
+EXPLANATION_VERSION = "exp-v1"   # bump to invalidate cached explanations
+FREE_DAILY_LIMIT = "1"           # free-tier scans per device per day
+
+# Secrets (DO NOT put in this file) — set with:
+#   wrangler secret put OPENAI_API_KEY
+#   wrangler secret put GOUPC_API_KEY
