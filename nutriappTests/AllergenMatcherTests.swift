@@ -1,6 +1,6 @@
 import Testing
 import Foundation
-@testable import nutriapp
+@testable import Sage
 
 struct AllergenMatcherTests {
 

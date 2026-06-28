@@ -241,8 +241,8 @@ These are needed to actually ship but aren't part of the feature phases:
 
 ## How to run the tests
 ```bash
-cd /Users/matheusfunabashi/Downloads/nutriapp
-xcodebuild test -project nutriapp.xcodeproj -scheme nutriapp \
+cd /Users/felipeassis/Desktop/Sage
+xcodebuild test -project Sage.xcodeproj -scheme Sage \
   -destination 'platform=iOS Simulator,name=iPhone 16 Pro' \
   -only-testing:nutriappTests
 ```
