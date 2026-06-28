@@ -6,12 +6,14 @@
 import type { Env, ExplainRequest } from "./types";
 
 const MODEL = "gpt-4o-mini-2024-07-18"; // pinned snapshot — no silent price/behaviour drift
-const MAX_TOKENS = 60;
+const MAX_TOKENS = 80;
 
 const SYSTEM_PROMPT =
-  "You explain a personalized food score in ONE short sentence (max 18 words). " +
-  "Use ONLY the facts provided — never invent nutrition claims or numbers. " +
-  "Speak directly to the user about why their score differs from the overall score.";
+  "You are Sage, a friendly nutrition guide. In ONE supportive sentence (max 24 words), " +
+  "explain why the user's personalized score differs from the overall score: name the main " +
+  "reason it moved up or down for their goal, and briefly acknowledge the trade-off if there is one. " +
+  "Use ONLY the facts provided — never invent numbers, nutrients, or medical claims. " +
+  "Address the user as 'you'; do not restate the score numbers.";
 
 export async function generateExplanation(env: Env, input: ExplainRequest): Promise<string | null> {
   const apiKey = env.OPENAI_API_KEY;
@@ -41,15 +43,27 @@ export async function generateExplanation(env: Env, input: ExplainRequest): Prom
   return data.choices?.[0]?.message?.content?.trim() ?? null;
 }
 
+// `factors` are short signed drivers from the app's ScoringEngine:
+//   "+ ..." = raised the personalized score, "- ..." = held it back.
+// We split them so the model can explain the trade-off ("higher because X, even though Y").
 function buildPrompt(i: ExplainRequest): string {
   const delta = i.your - i.overall;
   const sign = delta >= 0 ? "+" : "";
-  const factors = (i.factors ?? []).join("; ") || "(none provided)";
-  return [
+  const factors = i.factors ?? [];
+
+  const strip = (f: string) => f.replace(/^\s*[+\-•]\s*/, "").trim();
+  const raised = factors.filter((f) => f.trim().startsWith("+")).map(strip);
+  const heldBack = factors.filter((f) => f.trim().startsWith("-")).map(strip);
+  const other = factors.filter((f) => !/^\s*[+\-]/.test(f)).map(strip);
+
+  const lines = [
     `Product: ${i.productName ?? "this product"}`,
-    `Overall score: ${i.overall}/100`,
-    `Personalized score: ${i.your}/100 (goal: ${i.objective ?? "maintain"}, difference: ${sign}${delta})`,
-    `Drivers of the difference: ${factors}`,
-    "Write one sentence explaining the personalized score.",
-  ].join("\n");
+    `Goal: ${i.objective ?? "maintain"}`,
+    `Personalized score is ${delta === 0 ? "the same as" : delta > 0 ? "higher than" : "lower than"} the overall score (${sign}${delta}).`,
+  ];
+  if (raised.length) lines.push(`What raised it: ${raised.join("; ")}`);
+  if (heldBack.length) lines.push(`What held it back: ${heldBack.join("; ")}`);
+  if (other.length) lines.push(`Other notes: ${other.join("; ")}`);
+  lines.push("Write the one-sentence explanation.");
+  return lines.join("\n");
 }

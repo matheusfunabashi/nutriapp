@@ -6,6 +6,7 @@ export interface Env {
   GOUPC_API_KEY?: string;
   EXPLANATION_VERSION?: string;
   FREE_DAILY_LIMIT?: string;
+  GOUPC_MONTHLY_CAP?: string;   // hard spend cap on Go-UPC calls/month (0 = disabled)
 }
 
 /// Body of POST /lookup.
@@ -24,5 +25,8 @@ export interface ExplainRequest {
   objective?: string;
   overall: number;
   your: number;
-  factors?: string[];      // human-readable scoring drivers
+  // Signed scoring drivers from the app's ScoringEngine. Prefix each with
+  // "+ " if it raised the personalized score or "- " if it held it back, e.g.
+  //   ["+ very low calorie density helps weight loss", "- high sugar"]
+  factors?: string[];
 }

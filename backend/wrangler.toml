@@ -8,19 +8,20 @@ compatibility_date = "2026-01-01"
 # then paste the ids below.
 [[kv_namespaces]]
 binding = "CACHE"
-id = "REPLACE_WITH_KV_ID"
-preview_id = "REPLACE_WITH_KV_PREVIEW_ID"
+id = "d7591a27121647058da82ff5f0787914"
+preview_id = "3deae660eb29480bb8a4e8a154516d3b"
 
 # --- D1 (SQLite): usage counters, product metadata, fetch log ---
 # Create with:  wrangler d1 create sage   (paste database_id below)
 [[d1_databases]]
 binding = "DB"
 database_name = "sage"
-database_id = "REPLACE_WITH_D1_ID"
+database_id = "99dba7b9-0a2f-4c3d-b893-bdfeea1e5591"
 
 [vars]
 EXPLANATION_VERSION = "exp-v1"   # bump to invalidate cached explanations
 FREE_DAILY_LIMIT = "1"           # free-tier scans per device per day
+GOUPC_MONTHLY_CAP = "0"          # hard cap on Go-UPC calls/month (0 = disabled; set e.g. 4500 when live)
 
 # Secrets (DO NOT put in this file) — set with:
 #   wrangler secret put OPENAI_API_KEY
