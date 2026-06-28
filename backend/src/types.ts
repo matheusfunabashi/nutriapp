@@ -6,6 +6,7 @@ export interface Env {
   GOUPC_API_KEY?: string;
   EXPLANATION_VERSION?: string;
   FREE_DAILY_LIMIT?: string;
+  GOUPC_MONTHLY_CAP?: string;   // hard spend cap on Go-UPC calls/month (0 = disabled)
 }
 
 /// Body of POST /lookup.

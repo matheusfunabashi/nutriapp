@@ -66,3 +66,27 @@ export async function logFetch(
     .bind(api, barcode, reason, new Date().toISOString())
     .run();
 }
+
+/// Total Go-UPC calls this calendar month (fallback + image). This is the shared
+/// quota usage — premium fallbacks and the image backfill draw from the same pool.
+export async function goUpcCallsThisMonth(db: D1Database): Promise<number> {
+  const month = new Date().toISOString().slice(0, 7); // YYYY-MM
+  const row = await db
+    .prepare("SELECT COUNT(*) AS n FROM fetch_log WHERE api = 'go_upc' AND substr(ts, 1, 7) = ?")
+    .bind(month)
+    .first<{ n: number }>();
+  return row ? Number(row.n) : 0;
+}
+
+/// Mark a product as Go-UPC-sourced so it can be purged on subscription end (ToS).
+export async function markGoUpcSourced(db: D1Database, barcode: string): Promise<void> {
+  const now = new Date().toISOString();
+  await db
+    .prepare(
+      `INSERT INTO product_meta (barcode, scan_count, has_off_image, go_upc_fetched, updated_at)
+       VALUES (?, 0, 0, 1, ?)
+       ON CONFLICT(barcode) DO UPDATE SET go_upc_fetched = 1, updated_at = ?`,
+    )
+    .bind(barcode, now, now)
+    .run();
+}

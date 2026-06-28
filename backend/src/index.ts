@@ -15,7 +15,11 @@ import {
   getProduct, putProduct,
   explanationKey, getExplanation, putExplanation,
 } from "./cache";
-import { checkAndIncrementUsage, bumpScanCount, logFetch } from "./db";
+import {
+  checkAndIncrementUsage, bumpScanCount, logFetch,
+  goUpcCallsThisMonth, markGoUpcSourced,
+} from "./db";
+import { fetchGoUPC } from "./goupc";
 import { generateExplanation } from "./explanation";
 
 const app = new Hono<{ Bindings: Env }>();
@@ -44,14 +48,30 @@ app.post("/lookup", async (c) => {
 
   // Miss → Open Food Facts.
   let product = await fetchOFF(barcode).catch(() => null);
+  let source = "off";
+
+  // Premium fallback → Go-UPC. Gated on: premium user, key configured, and under
+  // the monthly spend cap (shared with image backfill) to avoid overage charges.
+  if (!product && body.isPremium && c.env.GOUPC_API_KEY) {
+    const cap = Number(c.env.GOUPC_MONTHLY_CAP ?? "0");
+    const used = await goUpcCallsThisMonth(c.env.DB);
+    if (cap > 0 && used < cap) {
+      product = await fetchGoUPC(barcode, c.env.GOUPC_API_KEY).catch(() => null);
+      if (product) {
+        source = "go_upc";
+        c.executionCtx.waitUntil(logFetch(c.env.DB, "go_upc", barcode, "fallback"));
+        c.executionCtx.waitUntil(markGoUpcSourced(c.env.DB, barcode));
+      }
+    }
+  }
+
   if (!product) {
-    // TODO: premium && OFF miss → Go-UPC fallback (then logFetch 'go_upc').
     return c.json({ error: "not_found" }, 404);
   }
 
   c.executionCtx.waitUntil(putProduct(c.env.CACHE, barcode, product));
   c.executionCtx.waitUntil(bumpScanCount(c.env.DB, barcode, hasImage(product)));
-  return c.json({ source: "off", product });
+  return c.json({ source, product });
 });
 
 // --- Personalized explanation --------------------------------------------
