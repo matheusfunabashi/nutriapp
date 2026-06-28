@@ -7,6 +7,7 @@ export interface Env {
   EXPLANATION_VERSION?: string;
   FREE_DAILY_LIMIT?: string;
   GOUPC_MONTHLY_CAP?: string;   // hard spend cap on Go-UPC calls/month (0 = disabled)
+  SAGE_API_KEY?: string;        // shared secret the app sends as X-Sage-Key (gate)
 }
 
 /// Body of POST /lookup.
