@@ -25,5 +25,8 @@ export interface ExplainRequest {
   objective?: string;
   overall: number;
   your: number;
-  factors?: string[];      // human-readable scoring drivers
+  // Signed scoring drivers from the app's ScoringEngine. Prefix each with
+  // "+ " if it raised the personalized score or "- " if it held it back, e.g.
+  //   ["+ very low calorie density helps weight loss", "- high sugar"]
+  factors?: string[];
 }
