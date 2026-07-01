@@ -39,6 +39,17 @@ struct OpenFoodFactsMappingTests {
         #expect(p.glyph == "🥤")                  // beverage category
     }
 
+    @Test func derivesKcalFromKilojoulesWhenKcalMissing() throws {
+        // Many EU products report only kJ; scoring needs kcal for protein density.
+        let json = """
+        { "product": { "product_name": "EU Snack", "nova_group": 1,
+          "nutriments": { "energy-kj_100g": 1000, "proteins_100g": 8 } } }
+        """
+        let p = try OpenFoodFactsService.makeProduct(from: Data(json.utf8), barcode: "eu1")
+        #expect(p.nutrients.kcal != nil)                         // 1000 kJ ÷ 4.184 ≈ 239
+        #expect(abs((p.nutrients.kcal ?? 0) - 239.0) < 1.0)
+    }
+
     @Test func placeholderScoreFromGrade() throws {
         let p = try OpenFoodFactsService.makeProduct(from: Data(colaJSON.utf8), barcode: "123")
         #expect(p.overallScore == 16)            // grade E placeholder
