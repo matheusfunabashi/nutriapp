@@ -8,7 +8,7 @@
 // Scores are computed on-device (the Swift ScoringEngine is the single source of
 // truth); the app sends them + the drivers to /explain.
 
-import { Hono } from "hono";
+import { Hono, type MiddlewareHandler } from "hono";
 import type { Env, LookupRequest, ExplainRequest } from "./types";
 import { fetchOFF, hasImage } from "./off";
 import {
@@ -23,6 +23,18 @@ import { fetchGoUPC } from "./goupc";
 import { generateExplanation } from "./explanation";
 
 const app = new Hono<{ Bindings: Env }>();
+
+// Shared-secret gate on data endpoints (/health stays open for monitoring).
+// Enforced only when SAGE_API_KEY is configured, so local dev without it still works.
+const requireKey: MiddlewareHandler<{ Bindings: Env }> = async (c, next) => {
+  const expected = c.env.SAGE_API_KEY;
+  if (expected && c.req.header("X-Sage-Key") !== expected) {
+    return c.json({ error: "unauthorized" }, 401);
+  }
+  await next();
+};
+app.use("/lookup", requireKey);
+app.use("/explain", requireKey);
 
 app.get("/health", (c) => c.json({ ok: true, service: "sage-backend" }));
 
