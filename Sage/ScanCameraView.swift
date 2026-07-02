@@ -14,13 +14,14 @@ struct ScanCameraView: View {
 
     enum Mode { case barcode, label }
     @State private var mode: Mode = .barcode
+    @State private var isTorchOn = false
     @State private var showToast = false
     @State private var toastTimer: Timer? = nil
     @State private var didEmit = false
 
     var body: some View {
         ZStack {
-            CameraPreview(onBarcode: handleBarcode)
+            CameraPreview(isTorchOn: isTorchOn, onBarcode: handleBarcode)
                 .ignoresSafeArea()
                 .background(Color.black.ignoresSafeArea())
 
@@ -32,16 +33,16 @@ struct ScanCameraView: View {
             .ignoresSafeArea()
             .allowsHitTesting(false)
 
-            CutoutMask(mode: mode)
             CornerBrackets(mode: mode)
 
             VStack {
                 topBar
+                modeSegments
+                    .padding(.top, 12)
                 Spacer()
                 hintArea
                 Spacer().frame(height: 30)
-                modeSegments.padding(.bottom, 20)
-                shutterRow.padding(.bottom, 40)
+                bottomButtonsRow.padding(.bottom, 40)
             }
 
             if showToast {
@@ -58,7 +59,10 @@ struct ScanCameraView: View {
             }
         }
         .animation(.easeOut(duration: 0.2), value: showToast)
-        .onDisappear { toastTimer?.invalidate() }
+        .onDisappear {
+            toastTimer?.invalidate()
+            isTorchOn = false
+        }
     }
 
     private var topBar: some View {
@@ -74,13 +78,13 @@ struct ScanCameraView: View {
             Spacer()
             CameraCircleBtn(systemName: "list.bullet", action: onHistory)
         }
-        .padding(.horizontal, 16).padding(.top, 60)
+        .padding(.horizontal, 16).padding(.top, 8)
     }
 
     private var hintArea: some View {
         VStack(spacing: 6) {
             Text("Align the barcode")
-                .font(.system(size: 20, weight: .heavy)).tracking(-0.4)
+                .font(.system(size: 20, weight: .regular)).tracking(-0.4)
                 .foregroundColor(.white)
             Text("Hold steady — we'll detect it automatically")
                 .font(.system(size: 13, weight: .medium))
@@ -117,31 +121,15 @@ struct ScanCameraView: View {
         .padding(.horizontal, 16)
     }
 
-    private var shutterRow: some View {
+    private var bottomButtonsRow: some View {
         HStack {
-            CameraCircleBtn(systemName: "bolt", size: 44)
-            Spacer()
-            Button(action: flashToast) {
-                Circle()
-                    .fill(Color.white)
-                    .frame(width: 70, height: 70)
-                    .overlay(Circle().stroke(Color.white.opacity(0.35), lineWidth: 4))
-                    // Soft halo lifts the shutter off the dark camera bg
-                    .shadow(color: Color.black.opacity(0.25), radius: 18, x: 0, y: 6)
+            CameraCircleBtn(systemName: isTorchOn ? "bolt.fill" : "bolt", size: 44) {
+                isTorchOn.toggle()
             }
-            .buttonStyle(.pressable)
             Spacer()
             CameraCircleBtn(systemName: "questionmark", size: 44)
         }
         .padding(.horizontal, 32)
-    }
-
-    private func flashToast() {
-        showToast = true
-        toastTimer?.invalidate()
-        toastTimer = Timer.scheduledTimer(withTimeInterval: 1.6, repeats: false) { _ in
-            showToast = false
-        }
     }
 
     private func handleBarcode(_ code: String) {
@@ -170,33 +158,6 @@ private struct CameraCircleBtn: View {
     }
 }
 
-private struct CutoutMask: View {
-    let mode: ScanCameraView.Mode
-    var body: some View {
-        GeometryReader { geo in
-            let w = geo.size.width, h = geo.size.height
-            let dims: (CGFloat, CGFloat) = mode == .barcode ? (290, 180) : (280, 320)
-            let rectW = dims.0, rectH = dims.1
-            let topY = h * 0.46
-            let cx = w / 2
-
-            Color.black.opacity(0.55)
-                .mask(
-                    ZStack {
-                        Rectangle().fill(Color.white)
-                        RoundedRectangle(cornerRadius: 22)
-                            .fill(Color.black)
-                            .frame(width: rectW, height: rectH)
-                            .position(x: cx, y: topY)
-                            .blendMode(.destinationOut)
-                    }
-                    .compositingGroup()
-                )
-                .allowsHitTesting(false)
-        }
-    }
-}
-
 private struct CornerBrackets: View {
     let mode: ScanCameraView.Mode
     var body: some View {
@@ -219,12 +180,18 @@ private struct CornerBrackets: View {
         .allowsHitTesting(false)
     }
     private func bracket(x: CGFloat, y: CGFloat, x2: CGFloat, y2: CGFloat) -> some View {
-        Path { p in
-            p.move(to: CGPoint(x: x, y: y + 32 * y2))
-            p.addLine(to: CGPoint(x: x, y: y))
-            p.addLine(to: CGPoint(x: x + 32 * x2, y: y))
+        let arm: CGFloat = 32
+        let cornerRadius: CGFloat = 8
+        return Path { p in
+            p.move(to: CGPoint(x: x, y: y + arm * y2))
+            p.addLine(to: CGPoint(x: x, y: y + cornerRadius * y2))
+            p.addQuadCurve(
+                to: CGPoint(x: x + cornerRadius * x2, y: y),
+                control: CGPoint(x: x, y: y)
+            )
+            p.addLine(to: CGPoint(x: x + arm * x2, y: y))
         }
-        .stroke(Color.white, style: StrokeStyle(lineWidth: 3, lineCap: .round))
+        .stroke(Color.white, style: StrokeStyle(lineWidth: 4, lineCap: .round, lineJoin: .round))
     }
 }
 
@@ -233,6 +200,7 @@ private struct CornerBrackets: View {
 #if canImport(UIKit) && canImport(AVFoundation)
 
 private struct CameraPreview: UIViewRepresentable {
+    var isTorchOn: Bool = false
     var onBarcode: (String) -> Void = { _ in }
 
     func makeUIView(context: Context) -> CameraPreviewView {
@@ -245,6 +213,7 @@ private struct CameraPreview: UIViewRepresentable {
 
     func updateUIView(_ uiView: CameraPreviewView, context: Context) {
         uiView.onBarcode = onBarcode
+        uiView.setTorchEnabled(isTorchOn)
     }
 
     static func dismantleUIView(_ uiView: CameraPreviewView, coordinator: ()) {
@@ -260,9 +229,32 @@ final class CameraPreviewView: UIView, AVCaptureMetadataOutputObjectsDelegate {
     private let session = AVCaptureSession()
     private let sessionQueue = DispatchQueue(label: "sage.camera.session")
     private let metadataOutput = AVCaptureMetadataOutput()
+    private var captureDevice: AVCaptureDevice?
+    private var torchEnabled = false
     private var didEmit = false
 
     var onBarcode: ((String) -> Void)?
+
+    func setTorchEnabled(_ enabled: Bool) {
+        guard torchEnabled != enabled else { return }
+        torchEnabled = enabled
+        sessionQueue.async { [weak self] in
+            self?.applyTorch(enabled)
+        }
+    }
+
+    private func applyTorch(_ enabled: Bool) {
+        guard let device = captureDevice, device.hasTorch else { return }
+        do {
+            try device.lockForConfiguration()
+            defer { device.unlockForConfiguration() }
+            if enabled {
+                try device.setTorchModeOn(level: AVCaptureDevice.maxAvailableTorchLevel)
+            } else {
+                device.torchMode = .off
+            }
+        } catch {}
+    }
 
     func requestAccessAndStart() {
         previewLayer.videoGravity = .resizeAspectFill
@@ -292,6 +284,7 @@ final class CameraPreviewView: UIView, AVCaptureMetadataOutputObjectsDelegate {
                let input = try? AVCaptureDeviceInput(device: device),
                self.session.canAddInput(input) {
                 self.session.addInput(input)
+                self.captureDevice = device
             }
 
             if self.session.outputs.isEmpty, self.session.canAddOutput(self.metadataOutput) {
@@ -310,6 +303,9 @@ final class CameraPreviewView: UIView, AVCaptureMetadataOutputObjectsDelegate {
 
             if !self.session.isRunning {
                 self.session.startRunning()
+            }
+            if self.torchEnabled {
+                self.applyTorch(true)
             }
         }
     }
@@ -330,6 +326,7 @@ final class CameraPreviewView: UIView, AVCaptureMetadataOutputObjectsDelegate {
     func stop() {
         sessionQueue.async { [weak self] in
             guard let self else { return }
+            self.applyTorch(false)
             if self.session.isRunning {
                 self.session.stopRunning()
             }
@@ -341,6 +338,7 @@ final class CameraPreviewView: UIView, AVCaptureMetadataOutputObjectsDelegate {
 
 // Fallback on platforms without UIKit/AVFoundation (e.g. previews on macOS without camera)
 private struct CameraPreview: View {
+    var isTorchOn: Bool = false
     var onBarcode: (String) -> Void = { _ in }
     var body: some View {
         ZStack {
