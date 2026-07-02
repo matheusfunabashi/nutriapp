@@ -15,6 +15,8 @@ export interface LookupRequest {
   barcode: string;
   deviceId?: string;   // for free-tier limiting (later: validated via App Attest)
   isPremium?: boolean;
+  clientTag?: string;  // dev-phase device label, logged with paid calls (Go-UPC)
+                       // so trial quota is attributable; DeviceCheck replaces it
 }
 
 /// Body of POST /explain. The app computes scores locally (single source of

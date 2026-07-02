@@ -15,6 +15,7 @@ struct ResultView: View {
                 topBar(dark: dark)
                 productHeader(dark: dark)
                 allergenSection(dark: dark)
+                aiAdviceSection(dark: dark)
                 dualScoreCard(dark: dark)
                     .padding(.horizontal, 16).padding(.bottom, 14)
                 SectionTitle(title: "Breakdown", dark: dark)
@@ -67,11 +68,45 @@ struct ResultView: View {
         .padding(.horizontal, 24).padding(.bottom, 16)
     }
 
+    /// The personalized explanation — rule-based text first, swapped for the
+    /// GPT sentence when /explain returns. Plain block (no tinted background),
+    /// shown above the score dials.
+    @ViewBuilder private func aiAdviceSection(dark: Bool) -> some View {
+        if let reason = product.deltaReason {
+            let delta = product.yourScore - product.overallScore
+            VStack(alignment: .leading, spacing: 6) {
+                HStack(spacing: 8) {
+                    Image(systemName: "sparkles")
+                        .font(.system(size: 12, weight: .bold))
+                        .foregroundColor(store.accent)
+                    Text("AI ADVICE")
+                        .font(.system(size: 11, weight: .heavy)).tracking(1.3)
+                        .foregroundColor(Theme.textSecondary(dark))
+                    if delta != 0 {
+                        Text("\(delta > 0 ? "+" : "")\(delta)")
+                            .font(.system(size: 10, weight: .heavy))
+                            .monospacedDigit()
+                            .foregroundColor(.white)
+                            .padding(.horizontal, 7).padding(.vertical, 2)
+                            .background(
+                                Capsule().fill(reason.tone == .positive ? Color(hex: "1F8A5B") : Color(hex: "C9442B"))
+                            )
+                    }
+                    Spacer(minLength: 0)
+                }
+                Text(reason.text)
+                    .font(.system(size: 13))
+                    .foregroundColor(Theme.textPrimary(dark))
+                    .lineSpacing(2)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
+            .padding(.horizontal, 24)
+            .padding(.bottom, 16)
+        }
+    }
+
     private func dualScoreCard(dark: Bool) -> some View {
-        let delta = product.yourScore - product.overallScore
-        let showDelta = abs(delta) >= 5 && product.deltaReason != nil
-        let tone = product.deltaReason?.tone ?? (delta > 0 ? .positive : .negative)
-        return ZStack(alignment: .topTrailing) {
+        ZStack(alignment: .topTrailing) {
             VStack(spacing: 0) {
                 HStack(spacing: 12) {
                     DualScoreCol(score: product.overallScore,
@@ -87,31 +122,6 @@ struct ResultView: View {
                             .background(Capsule().fill(store.accent))
                             .offset(y: -8)
                     }
-                }
-                if showDelta, let reason = product.deltaReason {
-                    HStack(alignment: .top, spacing: 10) {
-                        Text("\(delta > 0 ? "+" : "")\(delta)")
-                            .font(.system(size: 11, weight: .heavy))
-                            .monospacedDigit()
-                            .foregroundColor(.white)
-                            .padding(.horizontal, 8).padding(.vertical, 3)
-                            .background(
-                                Capsule().fill(tone == .positive ? Color(hex: "1F8A5B") : Color(hex: "C9442B"))
-                            )
-                        Text(reason.text)
-                            .font(.system(size: 13))
-                            .foregroundColor(Theme.textPrimary(dark))
-                            .lineSpacing(2)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                    }
-                    .padding(14)
-                    .background(
-                        RoundedRectangle(cornerRadius: 14, style: .continuous)
-                            .fill(tone == .positive
-                                  ? Color(hex: "1F8A5B").opacity(dark ? 0.14 : 0.08)
-                                  : Color(hex: "C9442B").opacity(dark ? 0.14 : 0.07))
-                    )
-                    .padding(.top, 18)
                 }
                 Button(action: onCompare) {
                     HStack(spacing: 8) {

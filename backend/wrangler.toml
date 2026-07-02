@@ -19,9 +19,9 @@ database_name = "sage"
 database_id = "99dba7b9-0a2f-4c3d-b893-bdfeea1e5591"
 
 [vars]
-EXPLANATION_VERSION = "exp-v1"   # bump to invalidate cached explanations
+EXPLANATION_VERSION = "exp-v4"   # bump to invalidate cached explanations (v4 = every scan, incl. capped)
 FREE_DAILY_LIMIT = "1"           # free-tier scans per device per day
-GOUPC_MONTHLY_CAP = "0"          # hard cap on Go-UPC calls/month (0 = disabled; set e.g. 4500 when live)
+GOUPC_MONTHLY_CAP = "140"        # hard cap on Go-UPC calls/month (trial key = 150 total; headroom for races)
 
 # Secrets (DO NOT put in this file) — set with:
 #   wrangler secret put OPENAI_API_KEY

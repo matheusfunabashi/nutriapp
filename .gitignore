@@ -7,6 +7,9 @@ xcuserdata/
 *.xcodeproj/xcuserdata/
 *.xcodeproj/project.xcworkspace/xcuserdata/
 
+# Local secrets (copy Secrets.swift.example → Sage/Secrets.swift)
+Sage/Secrets.swift
+
 # macOS
 .DS_Store
 

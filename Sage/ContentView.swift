@@ -45,7 +45,7 @@ struct ContentView: View {
     // (or signs in from) the welcome flow.
     @AppStorage("sage.hasCompletedOnboarding") private var hasCompletedOnboarding: Bool = false
 
-    private let foodFacts = OpenFoodFactsService()
+    private let backend = BackendService()
 
     var body: some View {
         if !hasCompletedOnboarding {
@@ -214,7 +214,7 @@ struct ContentView: View {
 
         Task { @MainActor in
             do {
-                let raw = try await foodFacts.fetchProduct(barcode: barcode)
+                let raw = try await backend.lookup(barcode: barcode)
                 let product = ScoringEngine.score(raw, for: store.user)
                 isLookingUp = false
                 if let a = compareWith {
@@ -224,6 +224,7 @@ struct ContentView: View {
                     store.recordScan(product)
                     push(.result(productId: product.id, fromScan: true))
                 }
+                fetchExplanation(for: product)
             } catch {
                 isLookingUp = false
                 lookupError = Self.lookupMessage(for: error, barcode: barcode)
@@ -231,12 +232,47 @@ struct ContentView: View {
         }
     }
 
+    /// Fires `/explain` after the result is already on screen and swaps the
+    /// rule-based deltaReason for the LLM sentence when it arrives. Every scan
+    /// gets one — capped and personalization-off included; the class-bucket
+    /// cache (hash covers objective, preferences, restrictions, and toggles)
+    /// keeps repeat cost at zero.
+    private func fetchExplanation(for product: Product) {
+        let classHash = ScoreClass(store.user).hash
+        let payload = BackendService.ExplainPayload(
+            barcode: product.id,
+            classHash: classHash,
+            productName: product.name,
+            objective: store.user.objective,
+            overall: product.overallScore,
+            your: product.yourScore,
+            factors: ScoringEngine.signedFactors(product, profile: store.user)
+        )
+        guard !payload.factors.isEmpty else { return }   // data-poor product
+        Task { @MainActor in
+            guard let text = await backend.explain(payload) else { return }
+            // Drop a stale reply: the profile class changed mid-flight, or the
+            // product was rescored/removed while we waited.
+            guard ScoreClass(store.user).hash == classHash,
+                  var current = store.products[product.id],
+                  current.yourScore == product.yourScore else { return }
+            let delta = product.yourScore - product.overallScore
+            let tone: DeltaReason.Tone = delta > 0 ? .positive
+                : delta < 0 ? .negative
+                : (payload.factors.first?.hasPrefix("+") == true ? .positive : .negative)
+            current.deltaReason = DeltaReason(tone: tone, text: text)
+            store.saveProduct(current)
+        }
+    }
+
     private static func lookupMessage(for error: Error, barcode: String) -> String {
-        guard let e = error as? OpenFoodFactsService.LookupError else {
+        guard let e = error as? BackendService.LookupError else {
             return "Something went wrong. Please try again."
         }
         switch e {
         case .notFound: return "No match for barcode \(barcode). It may not be in the database yet — try manual entry."
+        case .dailyLimitReached: return "You've used today's free scan. Upgrade to Premium for unlimited scans."
+        case .unauthorized: return "Couldn't authenticate with the Sage server. Please update the app."
         case .network:  return "Network error. Check your connection and try again."
         case .decoding: return "We found the product but couldn't read its data."
         }
