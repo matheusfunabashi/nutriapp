@@ -16,8 +16,8 @@ daily scan limit.
 | Method | Path | Body | Notes |
 |---|---|---|---|
 | GET | `/health` | — | liveness |
-| POST | `/lookup` | `{ barcode, deviceId?, isPremium? }` | OFF lookup + KV cache; enforces free limit; tracks popularity. Go-UPC fallback = TODO |
-| POST | `/explain` | `{ barcode, classHash, overall, your, objective?, productName?, factors? }` | bucketed LLM explanation; cache-first; only calls the LLM when `|your-overall| >= 5` |
+| POST | `/lookup` | `{ barcode, deviceId?, isPremium?, clientTag? }` | OFF lookup + KV cache; enforces free limit; tracks popularity; Go-UPC premium fallback (calls logged to `fetch_log` with `fallback:<clientTag>` for per-device attribution) |
+| POST | `/explain` | `{ barcode, classHash, overall, your, objective?, productName?, factors? }` | bucketed LLM explanation of how the product fits the user's goal; cache-first; skips when `factors` is empty |
 
 ## First-time setup
 ```bash
@@ -59,7 +59,6 @@ npm run deploy
 - `FREE_DAILY_LIMIT` — free-tier scans per device per day.
 
 ## TODO (next backend steps)
-- Go-UPC premium fallback in `/lookup` (+ `fetch_log` 'go_upc').
 - App Attest / DeviceCheck validation of `deviceId` (currently trusted).
 - StoreKit receipt validation for `isPremium`.
 - Image-backfill admin endpoints (popularity-ranked, manual trigger, monthly cap).

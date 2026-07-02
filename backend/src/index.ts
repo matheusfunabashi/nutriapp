@@ -71,7 +71,8 @@ app.post("/lookup", async (c) => {
       product = await fetchGoUPC(barcode, c.env.GOUPC_API_KEY).catch(() => null);
       if (product) {
         source = "go_upc";
-        c.executionCtx.waitUntil(logFetch(c.env.DB, "go_upc", barcode, "fallback"));
+        const reason = body.clientTag ? `fallback:${body.clientTag}` : "fallback";
+        c.executionCtx.waitUntil(logFetch(c.env.DB, "go_upc", barcode, reason));
         c.executionCtx.waitUntil(markGoUpcSourced(c.env.DB, barcode));
       }
     }
@@ -100,8 +101,9 @@ app.post("/explain", async (c) => {
   const cached = await getExplanation(c.env.CACHE, key);
   if (cached) return c.json({ source: "cache", explanation: cached });
 
-  // Only spend a call when the personalization actually moved the score.
-  if (Math.abs((body.your ?? 0) - (body.overall ?? 0)) < 5) {
+  // Nothing to explain without factors (e.g. a data-poor product); the app
+  // keeps its rule-based text. Cost stays bounded by the class-bucket cache.
+  if (!body.factors?.length) {
     return c.json({ source: "skip", explanation: null });
   }
 

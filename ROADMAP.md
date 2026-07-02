@@ -42,7 +42,36 @@ Each branch builds on the previous; all pushed to `origin`.
 
 ---
 
-## Scoring engine v2 — composite model (Phase 3.5 — do before 4b)
+## Scoring engine v3 — anchored modifier model (CURRENT, replaces v2)
+
+Anchored scale: **100 perfect · 70 good · 50 neutral · 30 bad · 10 shouldn't eat
+it** — scores are floored at 10, never 0. Same per-100g building blocks as v2,
+restructured:
+
+- **Overall (goal-neutral):** `clamp(50 + quality − penalty, 10, 100)` where
+  quality = `14·protDens + 12·fiber + 14·fvn + 10·(1−procPen)` (max +50) and
+  penalty = `12·sugarPen + 8·satPen + 8·sodiumPen + 6·upfPen + 4·additivesPen
+  + 6·transPen`. New signals vs v2: **additive risk** (risk-weighted load from
+  the Additives catalog) and **trans fats** (heaviest flat penalty) now enter
+  the score; `upfPen` only punishes NOVA 4 (unknown NOVA is neutral).
+- **Your Score = Overall + signed adjustments (capped ±20):** personalization
+  *tunes* the universal number instead of recomputing it, so junk that floors
+  both scores still shows a delta (fixes the "0 vs 0 → no explanation" hole).
+  Goal drivers: muscle → protein density (centered, so low-protein foods dip);
+  lose weight → calorie lightness **gated by sugar** (sugary drinks get no
+  "light" bonus; zero-cal soda rises a bit) + satiety (protein/fiber) − sugar;
+  eat healthier → fvn + fiber + processing (NOVA 4 dips) − additives.
+  **Preferences now adjust too** (±4-level nudges: low sugar/sodium/fat, high
+  protein/fiber, minimally processed; "Organic" has no data signal → inert).
+- The adjustment list is the single source for the rule-based deltaReason AND
+  the signed `/explain` factors, so the LLM only ever sees factors the score
+  used. UI tiers rebanded: 80+ Excellent · 60+ Good · 40+ OK · else Bad.
+- Validation (Overall/muscle/lose/healthy): chicken 73/85/82/78 · apple
+  78/74/86/93 · Cheetos 34/32/31/30 · Coke Zero ~42, +7 for lose weight.
+- Known limitation: plain water lands ~60 (no positive drivers) — revisit with
+  a beverage-specific rule if it bothers users.
+
+## Scoring engine v2 — composite model (SUPERSEDED by v3 above)
 
 Team-proposed upgrade for better accuracy, **refined to cover all 4 goals**. Key rule:
 **the goal/class only changes Score 2 (Your Score); Score 1 (Overall) is goal-neutral and

@@ -70,17 +70,19 @@ enum ScoreTier: String {
         switch self {
         case .excellent: return "Excellent"
         case .good:      return "Good"
-        case .poor:      return "Poor"
+        case .poor:      return "OK"
         case .bad:       return "Bad"
         }
     }
 }
 
+/// Bands follow the v3 anchored scale (100 perfect · 70 good · 50 neutral ·
+/// 30 bad · 10 avoid); scores are floored at 10, never 0.
 func scoreTier(_ score: Int) -> ScoreTier {
     switch score {
-    case 75...: return .excellent
-    case 50...: return .good
-    case 25...: return .poor
+    case 80...: return .excellent
+    case 60...: return .good
+    case 40...: return .poor
     default:    return .bad
     }
 }

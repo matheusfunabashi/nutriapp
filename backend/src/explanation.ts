@@ -9,9 +9,11 @@ const MODEL = "gpt-4o-mini-2024-07-18"; // pinned snapshot — no silent price/b
 const MAX_TOKENS = 80;
 
 const SYSTEM_PROMPT =
-  "You are Sage, a friendly nutrition guide. In ONE supportive sentence (max 24 words), " +
-  "explain why the user's personalized score differs from the overall score: name the main " +
-  "reason it moved up or down for their goal, and briefly acknowledge the trade-off if there is one. " +
+  "You are Sage, a friendly nutrition guide. In ONE supportive sentence (max 26 words), " +
+  "explain how well this product fits the user's goal: lead with the main factor for or " +
+  "against it, and briefly acknowledge the trade-off if there is one. If the personalized " +
+  "score moved versus the overall, say why. If a dietary-restriction conflict is listed, " +
+  "lead with that. " +
   "Use ONLY the facts provided — never invent numbers, nutrients, or medical claims. " +
   "Address the user as 'you'; do not restate the score numbers.";
 
@@ -61,9 +63,9 @@ function buildPrompt(i: ExplainRequest): string {
     `Goal: ${i.objective ?? "maintain"}`,
     `Personalized score is ${delta === 0 ? "the same as" : delta > 0 ? "higher than" : "lower than"} the overall score (${sign}${delta}).`,
   ];
-  if (raised.length) lines.push(`What raised it: ${raised.join("; ")}`);
-  if (heldBack.length) lines.push(`What held it back: ${heldBack.join("; ")}`);
+  if (raised.length) lines.push(`Speaks for it: ${raised.join("; ")}`);
+  if (heldBack.length) lines.push(`Speaks against it: ${heldBack.join("; ")}`);
   if (other.length) lines.push(`Other notes: ${other.join("; ")}`);
-  lines.push("Write the one-sentence explanation.");
+  lines.push("Write the one-sentence explanation of how it fits the user's goal.");
   return lines.join("\n");
 }

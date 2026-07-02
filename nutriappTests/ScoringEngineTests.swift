@@ -46,7 +46,8 @@ struct ScoringEngineTests {
         return u
     }
 
-    // Canonical reference foods (per 100g) used in the v2 validation table.
+    // Canonical reference foods (per 100g) used in the v3 validation table.
+    // Anchors: 100 perfect · 70 good · 50 neutral · 30 bad · 10 avoid.
     private var chicken: Product { product(kcal: 165, protein: 31, fiber: 0, sugar: 0, satFat: 1, sodium: 74, fvn: 0, nova: 1) }
     private var apple: Product   { product(kcal: 52, protein: 0.3, fiber: 2.4, sugar: 10.4, satFat: 0, sodium: 1, fvn: 100, nova: 1) }
     private var cheetos: Product { product(kcal: 570, protein: 6, fiber: 1, sugar: 3, satFat: 4, sodium: 800, fvn: 0, nova: 4) }
@@ -58,29 +59,79 @@ struct ScoringEngineTests {
     // MARK: Overall (Score 1, goal-neutral)
 
     @Test func overallMatchesValidation() {
-        #expect(ScoringEngine.computeOverall(chicken) == 64)
-        #expect(ScoringEngine.computeOverall(apple) == 37)
-        #expect(ScoringEngine.computeOverall(cheetos) == 0)
+        #expect(ScoringEngine.computeOverall(chicken) == 73)   // good food
+        #expect(ScoringEngine.computeOverall(apple) == 78)     // good food
+        #expect(ScoringEngine.computeOverall(cheetos) == 34)   // bad, but never 0
     }
 
     // MARK: Score 2 per goal — the validation table
 
     @Test func buildMuscleColumn() {
-        #expect(your(chicken, "build muscle") == 83)
-        #expect(your(apple, "build muscle") == 19)
-        #expect(your(cheetos, "build muscle") == 0)
+        #expect(your(chicken, "build muscle") == 85)
+        #expect(your(apple, "build muscle") == 74)
+        #expect(your(cheetos, "build muscle") == 32)
     }
 
     @Test func loseWeightColumn() {
-        #expect(your(chicken, "lose weight") == 68)
-        #expect(your(apple, "lose weight") == 37)
-        #expect(your(cheetos, "lose weight") == 0)
+        #expect(your(chicken, "lose weight") == 82)
+        #expect(your(apple, "lose weight") == 86)
+        #expect(your(cheetos, "lose weight") == 31)
     }
 
     @Test func eatHealthierColumn() {
-        #expect(your(apple, "eat healthier") == 55)
-        #expect(your(chicken, "eat healthier") == 49)
-        #expect(your(cheetos, "eat healthier") == 0)
+        #expect(your(apple, "eat healthier") == 93)
+        #expect(your(chicken, "eat healthier") == 78)
+        #expect(your(cheetos, "eat healthier") == 30)
+    }
+
+    // MARK: Anchored scale invariants
+
+    @Test func scoresNeverHitZero() {
+        // Max out every penalty: sugary, fatty, salty, ultra-processed junk.
+        let worst = product(kcal: 600, fiber: 0, sugar: 80, satFat: 30, sodium: 2000, fvn: 0, nova: 4)
+        #expect(ScoringEngine.computeOverall(worst) >= ScoringEngine.floorScore)
+        for goal in ["build muscle", "lose weight", "eat healthier", "maintain"] {
+            #expect(your(worst, goal) >= ScoringEngine.floorScore)
+        }
+    }
+
+    @Test func personalizationTunesRatherThanReplaces() {
+        // Your Score stays within the ±20 adjustment band around Overall.
+        for p in [chicken, apple, cheetos] {
+            let overall = ScoringEngine.computeOverall(p)
+            for goal in ["build muscle", "lose weight", "eat healthier"] {
+                #expect(abs(your(p, goal) - overall) <= Int(ScoringEngine.maxAdjustment))
+            }
+        }
+    }
+
+    @Test func zeroCalorieSodaRisesForWeightLoss() {
+        // The Coke Zero case: low overall, but nudged up when losing weight.
+        let dietSoda = product(kcal: 0.3, sugar: 0, sodium: 15, fvn: 0, nova: 4)
+        let overall = ScoringEngine.computeOverall(dietSoda)
+        #expect(your(dietSoda, "lose weight") > overall)
+        #expect(your(dietSoda, "eat healthier") < overall)   // …but not "healthier"
+    }
+
+    @Test func sugaryDrinkGetsNoLightnessBonus() {
+        // Regular soda is low-kcal per 100ml but must not collect the
+        // low-calorie-density bonus — the sugar gate blocks it.
+        let soda = product(kcal: 42, sugar: 10.6, fvn: 0, nova: 4)
+        #expect(your(soda, "lose weight") <= ScoringEngine.computeOverall(soda))
+    }
+
+    // MARK: Preferences tune the score too
+
+    @Test func preferencesAdjustScore() {
+        var lowSodiumFan = profile(objective: "maintain")
+        lowSodiumFan.preferences = ["Low sodium"]
+        let scored = ScoringEngine.score(cheetos, for: lowSodiumFan)
+        #expect(scored.yourScore < scored.overallScore)   // 800mg sodium
+
+        var proteinFan = profile(objective: "maintain")
+        proteinFan.preferences = ["High protein"]
+        let chick = ScoringEngine.score(chicken, for: proteinFan)
+        #expect(chick.yourScore > chick.overallScore)
     }
 
     @Test func maintainEqualsOverall() {
@@ -107,12 +158,12 @@ struct ScoringEngineTests {
 
     @Test func lowEnergyGuardDoesNotCrash() {
         let dietSoda = product(kcal: 0.4, protein: 0, sugar: 0, sodium: 10, fvn: 0, nova: 4)
-        #expect(ScoringEngine.computeOverall(dietSoda) >= 0)
+        #expect(ScoringEngine.computeOverall(dietSoda) >= ScoringEngine.floorScore)
     }
 
     @Test func missingKcalStillScores() {
         let p = product(kcal: nil, protein: 10, fiber: 5, sugar: 3, nova: 1)
-        #expect(ScoringEngine.computeOverall(p) >= 0)
+        #expect(ScoringEngine.computeOverall(p) >= ScoringEngine.floorScore)
     }
 
     // MARK: Restrictions

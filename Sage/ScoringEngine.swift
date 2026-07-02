@@ -1,20 +1,30 @@
 import Foundation
 
-// MARK: - Scoring engine (v2 — composite model)
+// MARK: - Scoring engine (v3 — anchored modifier model)
 //
-// Two scores, both built from the same per-100g building blocks:
-//   • Overall (Score 1) — goal-neutral, the same for everyone: Q − 0.5·P.
-//   • Your Score (Score 2) — Overall plus a goal-specific Driver; the ONLY place
-//     the user's objective changes the number. Conflicting dietary restrictions
-//     hard-cap it to ≤20 and raise a warning banner.
+// Scale anchors: 100 perfect · 70 good · 50 neither good nor bad · 30 bad ·
+// 10 shouldn't eat it. Scores are floored at 10 — never 0.
 //
-// Penalty (P) and Quality (Q) are objective-independent. The Driver (D) and its
-// weights vary by goal. All deterministic; the deltaReason text is a rule-based
-// placeholder that Phase 4b replaces with an LLM-generated one.
+//   • Overall (Score 1) — goal-neutral, identical for everyone: start at a
+//     neutral 50, add quality points (protein density, fiber, whole-food
+//     content, low processing) and subtract penalty points (sugar, saturated
+//     fat, sodium, ultra-processing, additive risk, trans fats).
+//   • Your Score (Score 2) — Overall plus signed adjustments from the user's
+//     objective and preferences, capped at ±20: personalization *tunes* the
+//     universal number rather than replacing it, so a food that's bad for
+//     everyone can still be a little better or worse for *you* (e.g. a
+//     zero-calorie soda nudges up for weight loss). Conflicting dietary
+//     restrictions hard-cap it to ≤20 and raise a warning banner.
+//
+// The same adjustment list drives the rule-based deltaReason placeholder and
+// the signed "+/-" factors sent to the backend /explain prompt, so the LLM can
+// never cite a factor the score didn't actually use.
 
 enum ScoringEngine {
 
+    static let floorScore = 10
     static let restrictionCap = 20
+    static let maxAdjustment = 20.0
 
     // MARK: Public API
 
@@ -23,7 +33,7 @@ enum ScoringEngine {
     static func score(_ product: Product, for profile: UserProfile) -> Product {
         var out = product
         let b = Blocks(product)
-        out.overallScore = clampScore(100 * (quality(b) - 0.5 * penalty(b)))
+        out.overallScore = overall(b)
         let r = computePersonal(product, profile: profile, blocks: b, overall: out.overallScore)
         out.yourScore = r.score
         out.bonuses = r.bonuses
@@ -34,21 +44,49 @@ enum ScoringEngine {
 
     /// Overall (Score 1) — goal-neutral.
     static func computeOverall(_ p: Product) -> Int {
-        let b = Blocks(p)
-        return clampScore(100 * (quality(b) - 0.5 * penalty(b)))
+        overall(Blocks(p))
+    }
+
+    /// Short signed drivers for the backend `/explain` prompt: "+ " prefixes
+    /// what speaks for the product (for this user), "- " what speaks against
+    /// it. Personal goal/preference adjustments come first, then the main
+    /// overall drivers (deduped), so the LLM can explain the verdict even when
+    /// the personalized delta is small — but never cites a fact the score
+    /// didn't use. With personalization off, only the overall drivers are
+    /// sent. Expects the *scored* product: a restriction conflict (hard-cap)
+    /// is always the lead factor.
+    static func signedFactors(_ product: Product, profile: UserProfile) -> [String] {
+        let b = Blocks(product)
+        let adjs = profile.personalizeScoring
+            ? adjustments(b, objective: profile.objective, preferences: profile.preferences)
+            : []
+        var factors = merge(adjs, overallDrivers(b))
+            .filter { abs($0.points) >= 1 }
+            .sorted { abs($0.points) > abs($1.points) }
+            .prefix(4)
+            .map { ($0.points > 0 ? "+ " : "- ") + $0.label }
+        if let r = product.restrictions.first {
+            factors.insert("- conflicts with your \(r.type) restriction (\(r.trigger))", at: 0)
+        }
+        return factors
     }
 
     // MARK: Building blocks (each normalized 0–1)
 
     private struct Blocks {
         let protDensScore: Double   // protein per 100 kcal
+        let absProteinScore: Double // absolute protein per 100g
         let lowEnergy: Double       // calorie lightness
         let fiberScore: Double
         let fvnScore: Double        // fruit/veg/nuts fraction
         let sugarPen: Double        // fvn discounts fruit/veg sugar
         let satPen: Double
         let sodiumPen: Double
-        let procPen: Double         // NOVA processing
+        let procPen: Double         // NOVA processing (0.5 when unknown)
+        let upfPen: Double          // ultra-processed share (NOVA 4 → 1)
+        let novaKnown: Bool
+        let additivesPen: Double    // risk-weighted additive load
+        let transPen: Double        // 1 when trans fats present
 
         init(_ p: Product) {
             let n = p.nutrients
@@ -68,12 +106,27 @@ enum ScoringEngine {
                 lowEnergy = 0.5
             }
 
+            absProteinScore = min(1, (n.protein_g ?? 0) / 25)
             fiberScore = min(1, (n.fiber_g ?? 0) / 8)
             fvnScore = min(1, fvn / 100)
             sugarPen = min(1, (n.sugar_g ?? 0) * (1 - fvn / 100) / 25)
             satPen = min(1, (n.satFat_g ?? 0) / 10)
             sodiumPen = max(0, min(1, ((n.sodium_mg ?? 0) - 100) / 700))
+            novaKnown = (1...4).contains(p.novaGroup)
             procPen = Self.procPen(p.novaGroup)
+            upfPen = max(0, (procPen - 0.5) / 0.5)
+
+            // Risk-weighted additive load: a couple of high-risk additives is
+            // enough to max the penalty; benign ones barely register.
+            let riskLoad = p.additives.reduce(0.0) { acc, a in
+                switch a.risk {
+                case .high:     return acc + 1.5
+                case .moderate: return acc + 0.75
+                case .low, .unrated: return acc + 0.25
+                }
+            }
+            additivesPen = min(1, riskLoad / 5)
+            transPen = p.transFats ? 1 : 0
         }
 
         private static func procPen(_ nova: Int) -> Double {
@@ -87,47 +140,142 @@ enum ScoringEngine {
         }
     }
 
-    // MARK: Composites (goal-independent)
+    // MARK: Overall (Score 1) — 50 ± points
 
-    private static func penalty(_ b: Blocks) -> Double {
-        0.35 * b.procPen + 0.25 * b.sugarPen + 0.20 * b.satPen + 0.20 * b.sodiumPen
+    private static func overall(_ b: Blocks) -> Int {
+        // Quality: max +50 (→ 100 for a perfect food).
+        let quality = 14 * b.protDensScore
+                    + 12 * b.fiberScore
+                    + 14 * b.fvnScore
+                    + 10 * (1 - b.procPen)
+        // Penalty: enough to reach the floor (clamped at 10, "shouldn't eat it").
+        // Trans fats are the heaviest flat penalty — no safe intake level.
+        let penalty = 12 * b.sugarPen
+                    +  8 * b.satPen
+                    +  8 * b.sodiumPen
+                    +  6 * b.upfPen
+                    +  4 * b.additivesPen
+                    +  6 * b.transPen
+        return clampScore(50 + quality - penalty)
     }
 
-    private static func quality(_ b: Blocks) -> Double {
-        0.40 * b.protDensScore + 0.35 * b.fiberScore + 0.25 * (1 - b.procPen)
+    // MARK: Personalization adjustments (the only goal/preference-dependent part)
+
+    /// What a factor is about — used to dedupe personal adjustments against
+    /// overall drivers when building the /explain factor list.
+    private enum FactorKey {
+        case protein, absProtein, energy, fiber, fvn, processing,
+             sugar, satFat, sodium, additives, transFat
     }
 
-    // MARK: Goal driver + weights (the only goal-dependent part — Score 2 only)
+    /// One signed nudge with a human-readable label, used for Your Score, the
+    /// deltaReason placeholder, and the /explain factors.
+    private struct Adjustment {
+        let key: FactorKey
+        let points: Double
+        let label: String
+    }
 
-    private struct GoalWeights { let wd, wq, wp: Double }
+    private static func adjustments(_ b: Blocks, objective: String,
+                                    preferences: [String]) -> [Adjustment] {
+        var out: [Adjustment] = []
+        func add(_ key: FactorKey, _ points: Double, _ label: String) {
+            guard abs(points) >= 0.5 else { return }   // drop noise
+            out.append(Adjustment(key: key, points: points, label: label))
+        }
 
-    private static func driver(_ b: Blocks, objective: String) -> Double {
         switch objective.lowercased() {
         case "build muscle":
-            return b.protDensScore
+            // Centered: protein-dense foods rise, protein-poor foods dip.
+            let dens = 12 * (b.protDensScore - 0.35)
+            add(.protein, dens, dens > 0 ? "high protein per calorie"
+                                         : "low protein per calorie for a muscle goal")
+            add(.absProtein, 4 * b.absProteinScore, "protein-rich per 100g")
+            add(.sugar, -4 * b.sugarPen, "high sugar")
+
         case "lose weight":
-            return 0.5 * b.protDensScore + 0.3 * b.lowEnergy + 0.2 * b.fiberScore
+            // Calorie lightness only counts when the calories aren't sugar —
+            // a sugary drink must not collect a "light" bonus.
+            let sugarGate = max(0, 1 - 2 * b.sugarPen)
+            let energy = 10 * (b.lowEnergy * sugarGate - 0.3)
+            add(.energy, energy, energy > 0 ? "low calorie density" : "calorie-dense")
+            add(.protein, 5 * b.protDensScore, "protein that keeps you full")
+            add(.fiber, 4 * b.fiberScore, "filling fiber")
+            add(.sugar, -8 * b.sugarPen, "high sugar")
+
         case "eat healthier":
-            return 0.40 * b.fiberScore + 0.35 * (1 - b.procPen) + 0.25 * b.fvnScore
-        default: // maintain (goal-neutral → Score 2 == Score 1)
-            return quality(b)
+            add(.fvn, 8 * b.fvnScore, "mostly whole fruits, vegetables, or nuts")
+            add(.fiber, 5 * b.fiberScore, "high fiber")
+            if b.novaKnown {
+                let proc = 5 * ((1 - b.procPen) - b.upfPen)
+                add(.processing, proc, processingLabel(b))
+            }
+            add(.additives, -4 * b.additivesPen, "contains riskier additives")
+
+        default: // maintain — goal-neutral, only preferences below apply
+            break
         }
+
+        // Preference nudges (smaller than goal drivers, all objectives).
+        // "Organic" has no reliable signal in the data, so it never adjusts.
+        let prefs = Set(preferences.map { $0.lowercased() })
+        if prefs.contains("low sugar") {
+            add(.sugar, -4 * b.sugarPen, "high sugar (you prefer low sugar)")
+        }
+        if prefs.contains("low sodium") {
+            add(.sodium, -4 * b.sodiumPen, "high sodium (you prefer low sodium)")
+        }
+        if prefs.contains("low fat") {
+            add(.satFat, -4 * b.satPen, "high saturated fat (you prefer low fat)")
+        }
+        if prefs.contains("high protein") {
+            add(.protein, 4 * b.protDensScore, "protein-dense (your high-protein preference)")
+        }
+        if prefs.contains("high fiber") {
+            add(.fiber, 4 * b.fiberScore, "fiber-rich (your high-fiber preference)")
+        }
+        if prefs.contains("minimally processed"), b.novaKnown {
+            let proc = 3 * ((1 - b.procPen) - b.upfPen)
+            add(.processing, proc, proc > 0 ? processingLabel(b)
+                                            : "ultra-processed (you prefer whole foods)")
+        }
+        return out
     }
 
-    private static func weights(_ objective: String) -> GoalWeights {
-        switch objective.lowercased() {
-        case "build muscle":  return GoalWeights(wd: 0.55, wq: 0.45, wp: 0.45)
-        case "lose weight":   return GoalWeights(wd: 0.50, wq: 0.50, wp: 0.55)
-        case "eat healthier": return GoalWeights(wd: 0.50, wq: 0.50, wp: 0.60)
-        default:              return GoalWeights(wd: 0.50, wq: 0.50, wp: 0.50)
+    /// The main goal-neutral score drivers, labeled for the /explain prompt.
+    /// Points mirror the overall formula's weights so sorting by magnitude
+    /// surfaces what actually moved the number.
+    private static func overallDrivers(_ b: Blocks) -> [Adjustment] {
+        var out: [Adjustment] = []
+        func add(_ key: FactorKey, _ points: Double, _ label: String) {
+            guard abs(points) >= 0.5 else { return }
+            out.append(Adjustment(key: key, points: points, label: label))
         }
+        add(.protein, 14 * b.protDensScore, "high protein per calorie")
+        add(.fiber, 12 * b.fiberScore, "high fiber")
+        add(.fvn, 14 * b.fvnScore, "mostly whole fruits, vegetables, or nuts")
+        if b.novaKnown {
+            add(.processing, 10 * (1 - b.procPen) - 6 * b.upfPen, processingLabel(b))
+        }
+        add(.sugar, -12 * b.sugarPen, "high sugar")
+        add(.satFat, -8 * b.satPen, "high saturated fat")
+        add(.sodium, -8 * b.sodiumPen, "high sodium")
+        add(.additives, -4 * b.additivesPen, "contains riskier additives")
+        add(.transFat, -6 * b.transPen, "contains trans fats")
+        return out
     }
 
-    private static func score2(_ b: Blocks, objective: String) -> Int {
-        let w = weights(objective)
-        return clampScore(100 * (w.wd * driver(b, objective: objective)
-                                 + w.wq * quality(b)
-                                 - w.wp * penalty(b)))
+    /// Personal adjustments win over overall drivers on the same topic.
+    private static func merge(_ adjustments: [Adjustment],
+                              _ drivers: [Adjustment]) -> [Adjustment] {
+        let covered = Set(adjustments.map(\.key))
+        return adjustments + drivers.filter { !covered.contains($0.key) }
+    }
+
+    private static func processingLabel(_ b: Blocks) -> String {
+        if b.procPen <= 0.2 { return "minimally processed" }
+        if b.procPen < 1 { return "moderately processed" }
+        return "ultra-processed (NOVA 4)"
     }
 
     // MARK: Personalized (Your Score)
@@ -159,12 +307,16 @@ enum ScoringEngine {
                                   restrictions: restrictions, reason: nil)
         }
 
-        var your = score2(b, objective: profile.objective)
+        let adjs = adjustments(b, objective: profile.objective,
+                               preferences: profile.preferences)
+        let delta = max(-maxAdjustment, min(maxAdjustment,
+                                            adjs.reduce(0) { $0 + $1.points }))
+        var your = clampScore(Double(overall) + delta)
 
         let hardCapped = !restrictions.isEmpty
         if hardCapped { your = min(your, restrictionCap) }
 
-        let reason = deltaReason(objective: profile.objective, blocks: b,
+        let reason = deltaReason(adjustments: adjs, drivers: overallDrivers(b),
                                  your: your, overall: overall,
                                  restriction: restrictions.first, hardCapped: hardCapped)
 
@@ -205,9 +357,9 @@ enum ScoringEngine {
         }
     }
 
-    // MARK: deltaReason (rule-based placeholder for Phase 4b)
+    // MARK: deltaReason (rule-based placeholder; the LLM sentence replaces it)
 
-    private static func deltaReason(objective: String, blocks b: Blocks,
+    private static func deltaReason(adjustments: [Adjustment], drivers: [Adjustment],
                                     your: Int, overall: Int,
                                     restriction: Restriction?, hardCapped: Bool) -> DeltaReason? {
         if hardCapped, let r = restriction {
@@ -215,35 +367,31 @@ enum ScoringEngine {
                                text: "Capped — contains \(r.trigger), which conflicts with your \(r.type) restriction.")
         }
         let delta = your - overall
-        guard abs(delta) >= 5 else { return nil }
-        let positive = delta > 0
 
-        let text: String
-        switch objective.lowercased() {
-        case "build muscle":
-            text = positive ? "High protein per calorie supports building muscle."
-                            : "Low protein per calorie for a muscle-building goal."
-        case "lose weight":
-            if positive {
-                text = b.lowEnergy >= 0.6 ? "Light and lower in calories for weight loss."
-                                          : "Protein and fiber help you stay full."
-            } else {
-                text = b.sugarPen >= b.satPen ? "Sugar content works against your weight-loss goal."
-                                              : "Higher in fat and calories for a weight-loss goal."
-            }
-        case "eat healthier":
-            text = positive ? "Whole, minimally processed — good for eating healthier."
-                            : "Highly processed with little whole-food content."
-        default: // maintain — Score 2 ≈ Score 1, rarely reached
-            text = positive ? "Slightly better than its overall rating for you."
-                            : "Slightly below its overall rating for you."
+        // Meaningful delta: lead with the strongest same-signed adjustment.
+        if abs(delta) >= 5,
+           let top = adjustments
+               .filter({ delta > 0 ? $0.points > 0 : $0.points < 0 })
+               .max(by: { abs($0.points) < abs($1.points) }) {
+            let text = delta > 0 ? "Scores higher for you — \(top.label)."
+                                 : "Scores lower for you — \(top.label)."
+            return DeltaReason(tone: delta > 0 ? .positive : .negative, text: text)
         }
+
+        // Small delta: still explain the verdict, led by the strongest factor
+        // overall. (The LLM sentence replaces this once /explain returns.)
+        guard let top = merge(adjustments, drivers)
+            .max(by: { abs($0.points) < abs($1.points) })
+        else { return nil }
+        let positive = top.points > 0
+        let text = positive ? "For your goal it's much like for everyone — the main plus: \(top.label)."
+                            : "For your goal it's much like for everyone — mainly held back by \(top.label)."
         return DeltaReason(tone: positive ? .positive : .negative, text: text)
     }
 
     // MARK: Helpers
 
     private static func clampScore(_ v: Double) -> Int {
-        Int(max(0, min(100, v)).rounded())
+        Int(max(Double(floorScore), min(100, v)).rounded())
     }
 }

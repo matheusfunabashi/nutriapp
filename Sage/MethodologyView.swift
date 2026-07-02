@@ -15,7 +15,7 @@ struct MethodologyView: View {
                     Text("Two scores, one product")
                         .font(.system(size: 26, weight: .heavy)).tracking(-0.6)
                         .foregroundColor(Theme.textPrimary(dark))
-                    Text("Every product gets an Overall score (0-100) from public nutrition data, plus a Your Score adjusted to your profile.")
+                    Text("Every product gets an Overall score (10-100) from public nutrition data, plus a Your Score tuned to your profile.")
                         .font(.system(size: 14))
                         .foregroundColor(Theme.textSecondary(dark))
                         .lineSpacing(2)
@@ -24,19 +24,19 @@ struct MethodologyView: View {
 
                 methodCard(
                     title: "Overall score",
-                    body: "Combines Nutri-Score (per 100g/ml nutrients), NOVA classification (processing level), and additive risk into a 0-100 scale.",
+                    body: "Starts every food at a neutral 50, adds points for protein density, fiber, and whole-food content (per 100g/ml), and subtracts for sugar, saturated fat, sodium, ultra-processing (NOVA), and risky additives. 100 = perfect food, 70 = good, 50 = neither good nor bad, 30 = bad for you, 10 = best avoided.",
                     dark: dark)
                 methodCard(
                     title: "Your Score",
-                    body: "Starts from Overall, then applies your objective, restrictions, and preferences. Restriction conflicts dock points; matching boosts (protein, fiber, calcium) bump it up.",
+                    body: "Starts from Overall, then tunes it to your objective and preferences — e.g. protein-dense foods rise if you're building muscle; zero-calorie drinks rise a little if you're losing weight. Restriction conflicts cap it hard.",
                     dark: dark)
                 methodCard(
                     title: "Tiers",
-                    body: "75-100 Excellent · 50-74 Good · 25-49 Poor · 0-24 Bad",
+                    body: "80-100 Excellent · 60-79 Good · 40-59 OK · 10-39 Bad",
                     dark: dark)
                 methodCard(
                     title: "Trans fats",
-                    body: "Trans fats trigger our heaviest penalty. We surface them with a dedicated red flag.",
+                    body: "Industrial trans fats have no safe intake level, so any amount triggers our heaviest flat penalty and a dedicated red flag.",
                     dark: dark)
 
                 Spacer().frame(height: 60)
@@ -94,7 +94,7 @@ struct MethodologyModal: View {
                                                               : Color.black.opacity(0.06)))
                     }.buttonStyle(.plain)
                 }
-                Text("Sage combines public nutrition data (Nutri-Score, NOVA, additive risk) into an Overall score, then re-weights it against your profile to compute Your Score.")
+                Text("Sage combines public nutrition data (per-100g nutrients, NOVA processing level, additive risk) into an Overall score, then tunes it to your goal and preferences to compute Your Score.")
                     .font(.system(size: 14))
                     .foregroundColor(Theme.textSecondary(dark))
                     .lineSpacing(3)
