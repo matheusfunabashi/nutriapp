@@ -423,23 +423,27 @@ struct NovaCard: View {
 struct NutrientRow: View {
     let label: String
     let value: String
-    let tag: Tag
+    let tag: Tag?
     var bonus: Bool = false
     let divider: Bool
     let dark: Bool
 
-    enum Tag { case low, med, high, none
-        var fg: Color { switch self {
-            case .low:  return Color(hex: "1F8A5B")
-            case .med:  return Color(hex: "D4A02D")
-            case .high: return Color(hex: "C9442B")
-            case .none: return .gray }
+    /// The word states the measured amount (Low/Mod/High); the tone says how
+    /// that amount should feel for this nutrient — they must stay independent
+    /// so "Fiber 0g" reads LOW (not a red HIGH) and "Protein 30g" reads a
+    /// green HIGH (not LOW).
+    struct Tag: Equatable {
+        enum Tone { case good, mid, bad, neutral }
+        let word: String
+        let tone: Tone
+
+        var fg: Color { switch tone {
+            case .good:    return Color(hex: "1F8A5B")
+            case .mid:     return Color(hex: "D4A02D")
+            case .bad:     return Color(hex: "C9442B")
+            case .neutral: return .gray }
         }
         var bg: Color { fg.opacity(0.10) }
-        var label: String { switch self {
-            case .low: return "Low"; case .med: return "Mod"
-            case .high: return "High"; case .none: return "" }
-        }
     }
 
     var body: some View {
@@ -462,8 +466,8 @@ struct NutrientRow: View {
                 .monospacedDigit().tracking(-0.2)
                 .foregroundColor(Theme.textPrimary(dark))
                 .frame(minWidth: 56, alignment: .trailing)
-            if tag != .none {
-                Text(tag.label.uppercased())
+            if let tag {
+                Text(tag.word.uppercased())
                     .font(.system(size: 10, weight: .heavy)).tracking(0.4)
                     .foregroundColor(tag.fg)
                     .frame(minWidth: 52)
@@ -716,13 +720,15 @@ func fmt(_ v: Double) -> String {
 
 func tagFromValue(_ v: Double, t1: Double, t2: Double, higherIsBetter: Bool) -> NutrientRow.Tag {
     if higherIsBetter {
-        if v >= t2 { return .low }
-        if v >= t1 { return .med }
-        return .high
+        // Plenty of a beneficial nutrient is good news; little of it is
+        // merely unremarkable (neutral), not an alarm.
+        if v >= t2 { return .init(word: "High", tone: .good) }
+        if v >= t1 { return .init(word: "Mod", tone: .mid) }
+        return .init(word: "Low", tone: .neutral)
     } else {
-        if v <= t1 { return .low }
-        if v <= t2 { return .med }
-        return .high
+        if v <= t1 { return .init(word: "Low", tone: .good) }
+        if v <= t2 { return .init(word: "Mod", tone: .mid) }
+        return .init(word: "High", tone: .bad)
     }
 }
 
