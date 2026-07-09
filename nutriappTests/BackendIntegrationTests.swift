@@ -39,6 +39,41 @@ struct BackendIntegrationTests {
         }
     }
 
+    // MARK: Product images
+
+    @Test func imageURLMappedFromLookup() throws {
+        let body = """
+        {
+          "source": "off",
+          "product": {
+            "product_name": "Pictured product",
+            "nutriments": {},
+            "image_front_url": "https://images.openfoodfacts.org/x/front.jpg"
+          }
+        }
+        """.data(using: .utf8)!
+        let p = try OpenFoodFactsService.makeProduct(from: body, barcode: "1")
+        #expect(p.imageURL == "https://images.openfoodfacts.org/x/front.jpg")
+    }
+
+    @Test func missingImageIsNilNotError() throws {
+        // "No image" is a first-class state — the glyph placeholder renders.
+        let body = #"{"source":"off","product":{"product_name":"Bare","nutriments":{}}}"#
+            .data(using: .utf8)!
+        let p = try OpenFoodFactsService.makeProduct(from: body, barcode: "2")
+        #expect(p.imageURL == nil)
+    }
+
+    @Test func imageURLSanitizing() {
+        #expect(OpenFoodFactsService.sanitizedImageURL(nil) == nil)
+        #expect(OpenFoodFactsService.sanitizedImageURL("") == nil)
+        #expect(OpenFoodFactsService.sanitizedImageURL("   ") == nil)
+        // Plain http would be blocked by ATS — treated as no image.
+        #expect(OpenFoodFactsService.sanitizedImageURL("http://img.example/a.jpg") == nil)
+        #expect(OpenFoodFactsService.sanitizedImageURL("https://img.example/a.jpg")
+                == "https://img.example/a.jpg")
+    }
+
     // MARK: signedFactors
 
     private func product(

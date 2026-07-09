@@ -60,7 +60,8 @@ struct OpenFoodFactsService {
         "code", "product_name", "brands", "quantity",
         "nutriscore_grade", "nova_group", "nutriments",
         "additives_tags", "ingredients_analysis_tags", "allergens_tags",
-        "ingredients_text", "categories_tags"
+        "ingredients_text", "categories_tags",
+        "image_front_url", "image_url"
     ].joined(separator: ",")
 
     func fetchProduct(barcode: String) async throws -> Product {
@@ -156,8 +157,21 @@ struct OpenFoodFactsService {
             restrictions: [],            // populated by the ScoringEngine per profile
             dietFlags: dietFlags,
             allergenTags: allergenTags,
-            ingredientsText: off.ingredientsText
+            ingredientsText: off.ingredientsText,
+            imageURL: sanitizedImageURL(off.imageFrontUrl ?? off.imageUrl)
         )
+    }
+
+    /// Only keep a usable image URL: non-empty, parseable, and https (ATS
+    /// blocks plain http anyway). Anything else is the designed "no image"
+    /// state, not an error.
+    static func sanitizedImageURL(_ raw: String?) -> String? {
+        guard let s = raw?.trimmingCharacters(in: .whitespacesAndNewlines),
+              !s.isEmpty,
+              let url = URL(string: s),
+              url.scheme?.lowercased() == "https"
+        else { return nil }
+        return s
     }
 
     /// Normalize OFF ingredient-analysis + allergen tags into simple diet flags
@@ -281,6 +295,8 @@ struct OFFProduct: Decodable {
     let allergensTags: [String]?
     let ingredientsText: String?
     let categoriesTags: [String]?
+    let imageFrontUrl: String?
+    let imageUrl: String?
 
     enum CodingKeys: String, CodingKey {
         case productName = "product_name"
@@ -293,6 +309,8 @@ struct OFFProduct: Decodable {
         case allergensTags = "allergens_tags"
         case ingredientsText = "ingredients_text"
         case categoriesTags = "categories_tags"
+        case imageFrontUrl = "image_front_url"
+        case imageUrl = "image_url"
     }
 
     init(from decoder: Decoder) throws {
@@ -307,6 +325,8 @@ struct OFFProduct: Decodable {
         allergensTags = try? c.decodeIfPresent([String].self, forKey: .allergensTags)
         ingredientsText = try? c.decodeIfPresent(String.self, forKey: .ingredientsText)
         categoriesTags = try? c.decodeIfPresent([String].self, forKey: .categoriesTags)
+        imageFrontUrl = try? c.decodeIfPresent(String.self, forKey: .imageFrontUrl)
+        imageUrl = try? c.decodeIfPresent(String.self, forKey: .imageUrl)
         // nova_group may arrive as Int, Double, or String — decode flexibly.
         if let i = try? c.decodeIfPresent(Int.self, forKey: .novaGroup) {
             novaGroup = i

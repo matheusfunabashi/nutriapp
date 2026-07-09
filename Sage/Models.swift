@@ -68,6 +68,10 @@ struct Product: Identifiable, Hashable, Codable {
     /// Raw ingredient text from Open Food Facts, used as a fallback for allergen
     /// keyword matching. Optional for backward-compatible decoding.
     var ingredientsText: String? = nil
+    /// Product photo URL (OFF front image, or Go-UPC via the backend fallback).
+    /// nil = no image, a first-class state rendered as the glyph placeholder.
+    /// Optional for backward-compatible decoding of older snapshots.
+    var imageURL: String? = nil
 }
 
 struct HistoryEntry: Identifiable, Hashable {
