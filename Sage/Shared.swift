@@ -46,6 +46,9 @@ struct ProductThumb: View {
     let glyph: String
     let score: Int
     var size: CGFloat = 48
+    /// Product photo; nil (or a failed load) falls back to the glyph tile —
+    /// "no image" is a designed state, never an error.
+    var imageURL: String? = nil
 
     var body: some View {
         let c = scoreColor(score)
@@ -60,9 +63,27 @@ struct ProductThumb: View {
                 .fill(LinearGradient(
                     colors: [c.opacity(0.12), c.opacity(0.04)],
                     startPoint: .topLeading, endPoint: .bottomTrailing))
-            Text(glyph).font(.system(size: size * 0.5))
+            if let url = imageURL.flatMap(URL.init(string:)) {
+                AsyncImage(url: url) { phase in
+                    switch phase {
+                    case .success(let image):
+                        // OFF/Go-UPC photos are usually on white — give them
+                        // a matching backdrop so transparent edges stay clean.
+                        image.resizable()
+                            .scaledToFill()
+                            .frame(width: size, height: size)
+                            .background(Color.white)
+                    default:
+                        // .empty (loading) and .failure both show the glyph.
+                        glyphLabel
+                    }
+                }
+            } else {
+                glyphLabel
+            }
         }
         .frame(width: size, height: size)
+        .clipShape(RoundedRectangle(cornerRadius: r, style: .continuous))
         // Pure black/white outline (skill: never tinted) — keeps a clean
         // edge against any surface color.
         .overlay(
@@ -71,6 +92,10 @@ struct ProductThumb: View {
                 .stroke(dark ? Color.white.opacity(0.10) : Color.black.opacity(0.10),
                         lineWidth: 1)
         )
+    }
+
+    private var glyphLabel: some View {
+        Text(glyph).font(.system(size: size * 0.5))
     }
 }
 

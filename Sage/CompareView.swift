@@ -132,7 +132,8 @@ struct CompareCol: View {
                 .offset(y: -22)
                 .padding(.bottom, -22)
             }
-            ProductThumb(glyph: product.glyph, score: product.yourScore, size: 60)
+            ProductThumb(glyph: product.glyph, score: product.yourScore, size: 60,
+                         imageURL: product.imageURL)
             Text(product.brand.uppercased())
                 .font(.system(size: 10, weight: .heavy)).tracking(1.2)
                 .foregroundColor(Theme.textSecondary(dark))

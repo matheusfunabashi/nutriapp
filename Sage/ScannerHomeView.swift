@@ -228,7 +228,8 @@ private struct RecentRow: View {
     var body: some View {
         Button(action: onTap) {
             HStack(spacing: 12) {
-                ProductThumb(glyph: product.glyph, score: product.yourScore, size: 48)
+                ProductThumb(glyph: product.glyph, score: product.yourScore, size: 48,
+                             imageURL: product.imageURL)
                 VStack(alignment: .leading, spacing: 1) {
                     Text(product.brand.uppercased())
                         .font(.system(size: 10, weight: .heavy)).tracking(1.2)

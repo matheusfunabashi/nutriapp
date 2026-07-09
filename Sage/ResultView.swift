@@ -51,7 +51,8 @@ struct ResultView: View {
 
     private func productHeader(dark: Bool) -> some View {
         HStack(spacing: 16) {
-            ProductThumb(glyph: product.glyph, score: product.yourScore, size: 64)
+            ProductThumb(glyph: product.glyph, score: product.yourScore, size: 64,
+                         imageURL: product.imageURL)
             VStack(alignment: .leading, spacing: 2) {
                 Text(product.brand.uppercased())
                     .font(.system(size: 11, weight: .heavy)).tracking(1.2)
