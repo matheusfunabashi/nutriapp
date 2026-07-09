@@ -45,6 +45,21 @@ enum Theme {
     }
 }
 
+// MARK: - Semantic score / alarm colors (product detail + shared UI)
+
+extension Color {
+    /// Saturated red — reserve for the single worst on-screen signal (e.g. BAD Your Score).
+    static let scoreBad = Color(hex: "C9442B")
+    /// Muted amber for middling scores and non-primary warnings.
+    static let scoreOk = Color(hex: "B0832A")
+    /// Positive / good band.
+    static let scoreGood = Color(hex: "1F8A5B")
+    /// De-emphasized body copy, secondary stats, and quiet warnings.
+    static let neutralMuted = Color(hex: "8A8A8A")
+    /// Soft caution — restrictions, moderate risk, non-primary deltas.
+    static let cautionMuted = Color(hex: "9A8475")
+}
+
 // MARK: - Score helpers
 
 enum ScoreTier: String {

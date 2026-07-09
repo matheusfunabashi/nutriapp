@@ -63,13 +63,21 @@ struct ContentView: View {
 
     private var mainContent: some View {
         ZStack {
-            tabContent
-                .ignoresSafeArea(.keyboard)
+            if stack.isEmpty {
+                tabContent
+                    .ignoresSafeArea(.keyboard)
+            }
 
-            ForEach(Array(stack.enumerated()), id: \.offset) { (i, screen) in
-                overlayView(for: screen)
-                    .zIndex(Double(30 + i))
-                    .transition(.move(edge: .trailing).combined(with: .opacity))
+            if !stack.isEmpty {
+                Theme.bg(store.darkMode).ignoresSafeArea()
+                ForEach(Array(stack.enumerated()), id: \.offset) { (i, screen) in
+                    overlayView(for: screen)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        .background(Theme.bg(store.darkMode).ignoresSafeArea())
+                        .clipped()
+                        .zIndex(Double(30 + i))
+                        .transition(.move(edge: .trailing).combined(with: .opacity))
+                }
             }
 
             if !showCamera && stack.isEmpty && !showFirstLaunch {

@@ -8,11 +8,13 @@ struct ScoreRing: View {
     var stroke: CGFloat = 11
     var dark: Bool = false
     var sublabel: String? = nil
+    /// When set, overrides the tier-derived arc color (e.g. muted Overall reference).
+    var ringColor: Color? = nil
 
     @State private var animated: Double = 0
 
     var body: some View {
-        let color = scoreColor(score)
+        let color = ringColor ?? scoreColor(score)
         let track = dark ? Color.white.opacity(0.08) : Color.black.opacity(0.06)
         ZStack {
             Circle().stroke(track, lineWidth: stroke)
@@ -198,6 +200,7 @@ struct CircleIconButton: View {
     let systemName: String
     let dark: Bool
     var size: CGFloat = 42
+    var accessibilityLabel: String? = nil
     var action: () -> Void = {}
 
     var body: some View {
@@ -212,6 +215,7 @@ struct CircleIconButton: View {
             .cardShadow(dark)
         }
         .buttonStyle(.plain)
+        .accessibilityLabel(accessibilityLabel ?? systemName)
     }
 }
 
@@ -402,19 +406,14 @@ struct ChipView: View {
 enum RiskStyle {
     static func fg(_ r: RiskLevel) -> Color {
         switch r {
-        case .low:      return Color(hex: "1F8A5B")
-        case .moderate: return Color(hex: "D4A02D")
-        case .high:     return Color(hex: "C9442B")
-        case .unrated:  return Color(hex: "8A8A8A")
+        case .low:      return Color.scoreGood
+        case .moderate: return Color.cautionMuted
+        case .high:     return Color.scoreBad
+        case .unrated:  return Color.neutralMuted
         }
     }
     static func bg(_ r: RiskLevel) -> Color {
-        switch r {
-        case .low:      return Color(hex: "1F8A5B").opacity(0.10)
-        case .moderate: return Color(hex: "D4A02D").opacity(0.12)
-        case .high:     return Color(hex: "C9442B").opacity(0.10)
-        case .unrated:  return Color(hex: "8A8A8A").opacity(0.12)
-        }
+        fg(r).opacity(r == .high ? 0.10 : 0.12)
     }
     static func label(_ r: RiskLevel) -> String {
         switch r {
