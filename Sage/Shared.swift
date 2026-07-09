@@ -39,6 +39,47 @@ struct ScoreRing: View {
     }
 }
 
+/// Compact score ring for list rows (e.g. Recent scans on Home).
+struct CompactScoreRing: View {
+    let score: Int
+    var dark: Bool = false
+
+    private let size: CGFloat = 52
+    private let stroke: CGFloat = 4.5
+
+    var body: some View {
+        let style = Self.style(for: score)
+        let track = dark ? Color.white.opacity(0.08) : Color.black.opacity(0.06)
+
+        ZStack {
+            Circle().stroke(track, lineWidth: stroke)
+            Circle()
+                .trim(from: 0, to: CGFloat(score) / 100)
+                .stroke(style.color, style: StrokeStyle(lineWidth: stroke, lineCap: .round))
+                .rotationEffect(.degrees(-90))
+            VStack(spacing: 1) {
+                Text("\(score)")
+                    .font(.system(size: 13, weight: .bold))
+                    .monospacedDigit()
+                    .foregroundColor(Theme.textPrimary(dark))
+                Text(style.label)
+                    .font(.system(size: 9, weight: .medium))
+                    .foregroundColor(Theme.textSecondary(dark))
+            }
+        }
+        .frame(width: size, height: size)
+    }
+
+    private static func style(for score: Int) -> (color: Color, label: String) {
+        switch score {
+        case 81...100: return (Color(hex: "1F8A5B"), "Great")
+        case 61...80:  return (Color(hex: "2BA66D"), "Good")
+        case 31...60:  return (Color(hex: "E07A26"), "Okay")
+        default:       return (Color(hex: "C9442B"), "Bad")
+        }
+    }
+}
+
 // MARK: - Product thumbnail
 
 struct ProductThumb: View {

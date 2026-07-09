@@ -140,7 +140,7 @@ struct ScannerHomeView: View {
                     Text("Manual entry")
                         .font(.system(size: 13, weight: .heavy)).tracking(-0.2)
                         .foregroundColor(Theme.textPrimary(dark))
-                    Text("Not in our DB")
+                    Text("Can't find it? Enter it yourself")
                         .font(.system(size: 11))
                         .foregroundColor(Theme.textSecondary(dark))
                 }
@@ -170,7 +170,7 @@ struct ScannerHomeView: View {
                     Button(action: onTapHistory) {
                         Text("See all")
                             .font(.system(size: 13, weight: .semibold))
-                            .foregroundColor(store.accent)
+                            .foregroundColor(Theme.textSecondary(dark))
                             .padding(.vertical, 8).padding(.leading, 12) // larger hit area
                     }
                     .buttonStyle(.pressable)
@@ -198,7 +198,7 @@ struct ScannerHomeView: View {
                 VStack(spacing: 8) {
                     ForEach(recent) { h in
                         if let p = store.products[h.productId] {
-                            RecentRow(product: p, when: h.when, dark: dark) {
+                            RecentRow(product: p, dark: dark) {
                                 onOpenProduct(p.id)
                             }
                         }
@@ -221,7 +221,6 @@ struct ScannerHomeView: View {
 
 private struct RecentRow: View {
     let product: Product
-    let when: String
     let dark: Bool
     let onTap: () -> Void
 
@@ -230,21 +229,12 @@ private struct RecentRow: View {
             HStack(spacing: 12) {
                 ProductThumb(glyph: product.glyph, score: product.yourScore, size: 48,
                              imageURL: product.imageURL)
-                VStack(alignment: .leading, spacing: 1) {
-                    Text(product.brand.uppercased())
-                        .font(.system(size: 10, weight: .heavy)).tracking(1.2)
-                        .foregroundColor(Theme.textSecondary(dark))
-                    Text(product.name)
-                        .font(.system(size: 14, weight: .heavy)).tracking(-0.2)
-                        .foregroundColor(Theme.textPrimary(dark))
-                        .lineLimit(1)
-                    Text(when)
-                        .font(.system(size: 11, weight: .medium))
-                        .monospacedDigit() // dates align across rows
-                        .foregroundColor(Theme.textSecondary(dark))
-                }
+                Text(product.name)
+                    .font(.system(size: 14, weight: .bold))
+                    .foregroundColor(Theme.textPrimary(dark))
+                    .lineLimit(1)
                 Spacer(minLength: 8)
-                YourScorePill(score: product.yourScore)
+                CompactScoreRing(score: product.yourScore, dark: dark)
                 Image(systemName: "chevron.right")
                     .font(.system(size: 12, weight: .bold))
                     .foregroundColor(Theme.textSecondary(dark))

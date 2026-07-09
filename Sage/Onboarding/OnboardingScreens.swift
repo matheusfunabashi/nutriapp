@@ -1217,14 +1217,9 @@ struct OnboardingLoadingScreen: View {
             Spacer()
 
             StaggeredAppear(index: 0) {
-                // contentTransition(.numericText) makes each digit roll instead
-                // of swap, matching the skill's "tabular nums + contextual"
-                // guidance. monospacedDigit keeps the column width steady.
                 Text("\(percent)%")
                     .font(.system(size: 88, weight: .heavy)).monospacedDigit()
                     .foregroundColor(Theme.textPrimary(dark))
-                    .contentTransition(.numericText(value: Double(percent)))
-                    .animation(.linear(duration: 0.05), value: percent)
             }
 
             StaggeredAppear(index: 1) {
