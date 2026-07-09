@@ -9,10 +9,11 @@
 // truth); the app sends them + the drivers to /explain.
 
 import { Hono, type MiddlewareHandler } from "hono";
-import type { Env, LookupRequest, ExplainRequest } from "./types";
-import { fetchOFF, hasImage } from "./off";
+import type { Env, LookupRequest, ExplainRequest, SearchRequest } from "./types";
+import { fetchOFF, searchOFF, hasImage } from "./off";
 import {
   getProduct, putProduct,
+  getSearch, putSearch,
   explanationKey, getExplanation, putExplanation,
 } from "./cache";
 import {
@@ -35,6 +36,7 @@ const requireKey: MiddlewareHandler<{ Bindings: Env }> = async (c, next) => {
 };
 app.use("/lookup", requireKey);
 app.use("/explain", requireKey);
+app.use("/search", requireKey);
 
 app.get("/health", (c) => c.json({ ok: true, service: "sage-backend" }));
 
@@ -85,6 +87,24 @@ app.post("/lookup", async (c) => {
   c.executionCtx.waitUntil(putProduct(c.env.CACHE, barcode, product));
   c.executionCtx.waitUntil(bumpScanCount(c.env.DB, barcode, hasImage(product)));
   return c.json({ source, product });
+});
+
+// --- Free-text name search -------------------------------------------------
+// Typeahead: not metered against the free-tier scan limit (that stays on
+// /lookup, which fires when the user actually selects a product).
+app.post("/search", async (c) => {
+  const body = await c.req.json<SearchRequest>().catch(() => null);
+  const query = body?.query?.trim().toLowerCase().replace(/\s+/g, " ") ?? "";
+  if (query.length < 2) return c.json({ error: "query_too_short" }, 400);
+
+  const cached = await getSearch(c.env.CACHE, query);
+  if (cached) return c.json({ source: "cache", results: cached });
+
+  const results = await searchOFF(query).catch(() => null);
+  if (results === null) return c.json({ error: "search_failed" }, 502);
+
+  c.executionCtx.waitUntil(putSearch(c.env.CACHE, query, results));
+  return c.json({ source: "off", results });
 });
 
 // --- Personalized explanation --------------------------------------------

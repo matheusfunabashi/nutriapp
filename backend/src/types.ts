@@ -19,6 +19,11 @@ export interface LookupRequest {
                        // so trial quota is attributable; DeviceCheck replaces it
 }
 
+/// Body of POST /search (free-text product name/brand search).
+export interface SearchRequest {
+  query: string;
+}
+
 /// Body of POST /explain. The app computes scores locally (single source of
 /// truth = the Swift ScoringEngine) and sends the factors for the prompt.
 export interface ExplainRequest {

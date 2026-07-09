@@ -143,7 +143,7 @@ struct ContentView: View {
         case .pantry:
             HistoryView(onOpenProduct: { id in openProduct(id) })
         case .search:
-            SearchView(onOpenProduct: { id in openProduct(id) })
+            SearchView(onSelect: { code in openFromSearch(barcode: code) })
         case .you:
             ProfileView(
                 onOpenPersonal: { push(.personal) },
@@ -232,6 +232,26 @@ struct ContentView: View {
                     store.recordScan(product)
                     push(.result(productId: product.id, fromScan: true))
                 }
+                fetchExplanation(for: product)
+            } catch {
+                isLookingUp = false
+                lookupError = Self.lookupMessage(for: error, barcode: barcode)
+            }
+        }
+    }
+
+    /// A search selection runs the same pipeline as a scan (/lookup → score →
+    /// result page → async /explain); it just skips the camera and doesn't
+    /// enter scan history.
+    private func openFromSearch(barcode: String) {
+        isLookingUp = true
+        Task { @MainActor in
+            do {
+                let raw = try await backend.lookup(barcode: barcode)
+                let product = ScoringEngine.score(raw, for: store.user)
+                isLookingUp = false
+                store.saveProduct(product)
+                push(.result(productId: product.id, fromScan: false))
                 fetchExplanation(for: product)
             } catch {
                 isLookingUp = false
