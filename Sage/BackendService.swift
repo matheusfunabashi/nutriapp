@@ -75,6 +75,48 @@ struct BackendService {
         }
     }
 
+    // MARK: /search
+
+    /// One typeahead result. `code` is the barcode — selecting a hit re-enters
+    /// the normal scan pipeline (/lookup → score → /explain).
+    struct SearchHit: Decodable, Identifiable, Equatable {
+        let code: String
+        let name: String
+        let brand: String
+        let quantity: String?
+        let imageURL: String?
+        var id: String { code }
+    }
+
+    private struct SearchBody: Encodable { let query: String }
+    struct SearchResponse: Decodable { let results: [SearchHit] }
+
+    enum SearchError: Error, Equatable {
+        case network
+        case unauthorized
+    }
+
+    /// Free-text name/brand search against OFF via the Worker (KV-cached).
+    /// Empty array = genuinely no matches ("Product not available.").
+    func search(_ query: String) async throws -> [SearchHit] {
+        let data: Data
+        let status: Int
+        do {
+            (data, status) = try await post(path: "search", body: SearchBody(query: query))
+        } catch {
+            throw SearchError.network
+        }
+        switch status {
+        case 200:
+            guard let decoded = try? JSONDecoder().decode(SearchResponse.self, from: data) else {
+                throw SearchError.network
+            }
+            return decoded.results
+        case 401: throw SearchError.unauthorized
+        default:  throw SearchError.network
+        }
+    }
+
     // MARK: /explain
 
     struct ExplainPayload: Encodable {

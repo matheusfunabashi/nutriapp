@@ -17,6 +17,7 @@ daily scan limit.
 |---|---|---|---|
 | GET | `/health` | — | liveness |
 | POST | `/lookup` | `{ barcode, deviceId?, isPremium?, clientTag? }` | OFF lookup + KV cache; enforces free limit; tracks popularity; Go-UPC premium fallback (calls logged to `fetch_log` with `fallback:<clientTag>` for per-device attribution) |
+| POST | `/search` | `{ query }` | free-text OFF name/brand search (typeahead); KV-cached 24h; not metered against the free-tier limit |
 | POST | `/explain` | `{ barcode, classHash, overall, your, objective?, productName?, factors? }` | bucketed LLM explanation of how the product fits the user's goal; cache-first; skips when `factors` is empty |
 
 ## First-time setup

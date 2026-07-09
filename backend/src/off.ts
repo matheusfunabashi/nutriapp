@@ -34,3 +34,75 @@ export async function fetchOFF(barcode: string): Promise<OFFProduct | null> {
 export function hasImage(p: OFFProduct | null): boolean {
   return !!(p && (p["image_front_url"] || p["image_url"]));
 }
+
+// --- Free-text name search -------------------------------------------------
+// OFF's search endpoint does the "contains the typed words" matching
+// server-side (full-text over name/brand). NOTE: it is rate-limited harder
+// than product reads (~10 req/min/IP), which is why /search sits behind the
+// Worker's KV cache and the app debounces keystrokes.
+
+import type { SearchHit } from "./cache";
+
+const SEARCH_FIELDS = "code,product_name,brands,quantity,image_front_small_url,image_front_url";
+const SEARCH_UA = { "User-Agent": "Sage/1.0 (backend proxy; contact@sage.app)" };
+
+export async function searchOFF(query: string, pageSize = 20): Promise<SearchHit[]> {
+  // Primary: search-a-licious (fast, powers the OFF website). Fallback: the
+  // legacy CGI search, which is slower and 503s under load.
+  const raw = (await searchModern(query, pageSize).catch(() => null))
+           ?? (await searchLegacy(query, pageSize));
+
+  // Collapse size/regional/case variants of the same product (same brand +
+  // name, different barcodes — e.g. 400g vs 750g Nutella). Per-100g nutrition
+  // is the same across pack sizes, so one row represents them all. We
+  // over-fetch then trim so dedup doesn't leave a sparse list.
+  const seen = new Set<string>();
+  const deduped = raw.filter((h) => {
+    const key = `${h.brand.toLowerCase()}|${h.name.toLowerCase()}`;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+  return deduped.slice(0, 12);
+}
+
+async function searchModern(query: string, pageSize: number): Promise<SearchHit[]> {
+  const url =
+    "https://search.openfoodfacts.org/search" +
+    `?q=${encodeURIComponent(query)}&page_size=${pageSize}&fields=${SEARCH_FIELDS}`;
+  const res = await fetch(url, { headers: SEARCH_UA });
+  if (!res.ok) throw new Error(`OFF search-a-licious ${res.status}`);
+  const data = (await res.json()) as { hits?: Record<string, unknown>[] };
+  return mapHits(data.hits ?? []);
+}
+
+async function searchLegacy(query: string, pageSize: number): Promise<SearchHit[]> {
+  const url =
+    "https://world.openfoodfacts.org/cgi/search.pl?action=process&json=1&search_simple=1" +
+    `&search_terms=${encodeURIComponent(query)}&page_size=${pageSize}&fields=${SEARCH_FIELDS}`;
+  const res = await fetch(url, { headers: SEARCH_UA });
+  if (!res.ok) throw new Error(`OFF search ${res.status}`);
+  const data = (await res.json()) as { products?: Record<string, unknown>[] };
+  return mapHits(data.products ?? []);
+}
+
+/// Both endpoints share field names, but search-a-licious returns `brands`
+/// as an array while the CGI returns a comma-joined string.
+function mapHits(items: Record<string, unknown>[]): SearchHit[] {
+  return items
+    .filter((p) => typeof p["code"] === "string" && p["code"] !== "" && p["product_name"])
+    .map((p) => {
+      const brands = p["brands"];
+      const brand = Array.isArray(brands)
+        ? String(brands[0] ?? "").trim()
+        : typeof brands === "string" ? brands.split(",")[0].trim() : "";
+      return {
+        code: p["code"] as string,
+        name: String(p["product_name"]).trim(),
+        brand,
+        quantity: typeof p["quantity"] === "string" && p["quantity"] !== ""
+          ? (p["quantity"] as string).trim() : null,
+        imageURL: (p["image_front_small_url"] ?? p["image_front_url"] ?? null) as string | null,
+      };
+    });
+}

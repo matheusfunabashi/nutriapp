@@ -39,6 +39,28 @@ struct BackendIntegrationTests {
         }
     }
 
+    // MARK: /search response
+
+    @Test func searchResponseDecodes() throws {
+        let body = """
+        {
+          "source": "off",
+          "results": [
+            {"code": "3017620422003", "name": "Nutella", "brand": "Ferrero",
+             "quantity": "400 g",
+             "imageURL": "https://images.openfoodfacts.org/x/front_small.jpg"},
+            {"code": "123", "name": "Bare product", "brand": "", "quantity": null,
+             "imageURL": null}
+          ]
+        }
+        """.data(using: .utf8)!
+        let decoded = try JSONDecoder().decode(BackendService.SearchResponse.self, from: body)
+        #expect(decoded.results.count == 2)
+        #expect(decoded.results[0].code == "3017620422003")
+        #expect(decoded.results[0].imageURL != nil)
+        #expect(decoded.results[1].imageURL == nil)   // no image is a valid hit
+    }
+
     // MARK: Product images
 
     @Test func imageURLMappedFromLookup() throws {
