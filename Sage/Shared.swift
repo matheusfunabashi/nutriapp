@@ -89,6 +89,8 @@ struct ProductThumb: View {
     let glyph: String
     let score: Int
     var size: CGFloat = 48
+    /// When true, uses a neutral backdrop instead of the score-tinted gradient.
+    var neutral: Bool = false
     /// Product photo; nil (or a failed load) falls back to the glyph tile —
     /// "no image" is a designed state, never an error.
     var imageURL: String? = nil
@@ -103,9 +105,11 @@ struct ProductThumb: View {
 
         ZStack {
             RoundedRectangle(cornerRadius: r, style: .continuous)
-                .fill(LinearGradient(
-                    colors: [c.opacity(0.12), c.opacity(0.04)],
-                    startPoint: .topLeading, endPoint: .bottomTrailing))
+                .fill(neutral
+                      ? AnyShapeStyle(dark ? Color.white.opacity(0.08) : Color.white)
+                      : AnyShapeStyle(LinearGradient(
+                          colors: [c.opacity(0.12), c.opacity(0.04)],
+                          startPoint: .topLeading, endPoint: .bottomTrailing)))
             if let url = imageURL.flatMap(URL.init(string:)) {
                 AsyncImage(url: url) { phase in
                     switch phase {
@@ -161,12 +165,13 @@ struct YourScorePill: View {
 struct EyebrowLabel: View {
     let text: String
     let dark: Bool
+    var horizontalPadding: CGFloat = 24
     var body: some View {
         Text(text.uppercased())
             .font(.system(size: 10, weight: .heavy))
             .tracking(1.4)
             .foregroundColor(Theme.textSecondary(dark))
-            .padding(.horizontal, 24)
+            .padding(.horizontal, horizontalPadding)
             .padding(.top, 14).padding(.bottom, 6)
             .frame(maxWidth: .infinity, alignment: .leading)
     }
@@ -176,6 +181,7 @@ struct SectionTitle: View {
     let title: String
     var subtitle: String? = nil
     let dark: Bool
+    var horizontalPadding: CGFloat = 24
     var body: some View {
         VStack(alignment: .leading, spacing: 2) {
             Text(title)
@@ -188,7 +194,7 @@ struct SectionTitle: View {
                     .foregroundColor(Theme.textSecondary(dark))
             }
         }
-        .padding(.horizontal, 24)
+        .padding(.horizontal, horizontalPadding)
         .padding(.top, 20).padding(.bottom, 10)
         .frame(maxWidth: .infinity, alignment: .leading)
     }

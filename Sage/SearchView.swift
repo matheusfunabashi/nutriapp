@@ -130,9 +130,7 @@ struct SearchView: View {
     @ViewBuilder private func phaseContent(dark: Bool) -> some View {
         switch phase {
         case .idle:
-            hint(icon: "🔎", title: "Find any food",
-                 body: "Type a product or brand name — results appear as you type.",
-                 dark: dark)
+            categoryGrid(dark: dark)
         case .searching:
             VStack(spacing: 12) {
                 ProgressView().tint(store.accent)
@@ -145,7 +143,14 @@ struct SearchView: View {
         case .results(let hits):
             VStack(spacing: 8) {
                 ForEach(hits) { hit in
-                    SearchHitRow(hit: hit, dark: dark) { onSelect(hit.code) }
+                    SearchHitRow(hit: hit, dark: dark) {
+                        // Drop the keyboard before the result is pushed. If it's
+                        // still up when the overlay appears, iOS's tap-to-dismiss
+                        // gesture swallows the first tap on the new view — which
+                        // reads as the back button "not working" on first press.
+                        focused = false
+                        onSelect(hit.code)
+                    }
                 }
             }
             .padding(.horizontal, 16).padding(.top, 14)
@@ -158,6 +163,58 @@ struct SearchView: View {
                  body: "Check your connection and try again.",
                  dark: dark)
         }
+    }
+
+    // MARK: Browse categories (idle opener)
+
+    /// Tapping a tile drops the term into the search field, which fires the same
+    /// debounced typeahead pipeline as manual typing.
+    private static let categories: [(emoji: String, name: String)] = [
+        ("🥤", "Soda"),        ("💧", "Water"),
+        ("🍫", "Chocolate"),   ("🍪", "Cookies"),
+        ("🥣", "Cereal"),      ("🧀", "Cheese"),
+        ("🥛", "Yogurt"),      ("🍞", "Bread"),
+        ("🧃", "Juice"),       ("🍟", "Chips"),
+        ("☕", "Coffee"),      ("🍝", "Pasta"),
+        ("🍦", "Ice cream"),   ("🍼", "Baby food"),
+    ]
+
+    private func categoryGrid(dark: Bool) -> some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("BROWSE")
+                .font(.system(size: 11, weight: .heavy)).tracking(1.3)
+                .foregroundColor(Theme.textSecondary(dark))
+                .padding(.horizontal, 8)
+
+            LazyVGrid(columns: [GridItem(.flexible(), spacing: 10),
+                                GridItem(.flexible(), spacing: 10)], spacing: 10) {
+                ForEach(Self.categories, id: \.name) { category in
+                    Button {
+                        focused = false
+                        query = category.name
+                    } label: {
+                        HStack(spacing: 10) {
+                            Text(category.name)
+                                .font(.system(size: 15, weight: .bold)).tracking(-0.2)
+                                .foregroundColor(Theme.textPrimary(dark))
+                                .lineLimit(1)
+                            Spacer(minLength: 4)
+                            Text(category.emoji).font(.system(size: 22))
+                        }
+                        .padding(.horizontal, 14).padding(.vertical, 18)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .background(
+                            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                                .fill(Theme.surface(dark))
+                        )
+                        .cardShadow(dark)
+                    }
+                    .buttonStyle(.pressable)
+                    .accessibilityLabel("Browse \(category.name)")
+                }
+            }
+        }
+        .padding(.horizontal, 16).padding(.top, 14)
     }
 
     private func hint(icon: String, title: String, body: String, dark: Bool) -> some View {

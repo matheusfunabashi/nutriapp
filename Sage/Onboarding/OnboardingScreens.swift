@@ -648,7 +648,6 @@ struct OnboardingPersonalDetailsScreen: View {
                 VStack(alignment: .leading, spacing: 22) {
                     StaggeredAppear(index: 1) { dobSection }
                     StaggeredAppear(index: 2) { genderSection }
-                    StaggeredAppear(index: 3) { lifeStageSection }
                 }
                 .padding(.horizontal, 24)
                 .padding(.bottom, 24)
