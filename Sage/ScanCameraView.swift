@@ -83,7 +83,7 @@ struct ScanCameraView: View {
 
     private var hintArea: some View {
         VStack(spacing: 6) {
-            Text("Align the barcode")
+            Text(mode == .barcode ? "Align the barcode" : "Align the label")
                 .font(.system(size: 20, weight: .regular)).tracking(-0.4)
                 .foregroundColor(.white)
             Text("Hold steady — we'll detect it automatically")

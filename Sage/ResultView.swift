@@ -52,10 +52,10 @@ struct ResultView: View {
         VStack(spacing: 8) {
             topBar(dark: dark)
             productHeader(dark: dark)
-            VStack(spacing: 8) {
+            VStack(spacing: 12) {
                 scoreGapLine(dark: dark)
                 aiAdviceSection(dark: dark)
-                compareButton(dark: dark)
+                scoreComparisonCard(dark: dark)
                     .padding(.horizontal, 16)
             }
             .padding(.top, 14)
@@ -68,11 +68,19 @@ struct ResultView: View {
             CircleIconButton(systemName: "chevron.left", dark: dark,
                              accessibilityLabel: "Back", action: onBack)
             Spacer()
-            Text("Sage")
-                .font(.system(size: 18, weight: .bold))
-                .tracking(-0.4)
-                .foregroundColor(Theme.textPrimary(dark))
-                .accessibilityAddTraits(.isHeader)
+            if isSaved {
+                Text("SAVED")
+                    .font(.system(size: 13, weight: .heavy))
+                    .tracking(1.6)
+                    .foregroundColor(Theme.textSecondary(dark))
+                    .accessibilityAddTraits(.isHeader)
+            } else {
+                Text("Sage")
+                    .font(.system(size: 18, weight: .bold))
+                    .tracking(-0.4)
+                    .foregroundColor(Theme.textPrimary(dark))
+                    .accessibilityAddTraits(.isHeader)
+            }
             Spacer()
             CircleIconButton(
                 systemName: isSaved ? "bookmark.fill" : "bookmark",
@@ -84,95 +92,107 @@ struct ResultView: View {
     }
 
     private func productHeader(dark: Bool) -> some View {
-        VStack(spacing: 0) {
-            HStack(alignment: .center, spacing: 12) {
-                ProductThumb(glyph: product.glyph, score: product.yourScore, size: 64,
-                             imageURL: product.imageURL)
+        HStack(alignment: .center, spacing: 12) {
+            ProductThumb(glyph: product.glyph, score: product.yourScore, size: 64,
+                         neutral: true, imageURL: product.imageURL)
 
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(product.brand.uppercased())
-                        .font(.system(size: 11, weight: .heavy)).tracking(1.2)
-                        .foregroundColor(store.accent)
-                    Text(product.name)
-                        .font(.system(size: 22, weight: .bold)).tracking(-0.5)
-                        .foregroundColor(Theme.textPrimary(dark))
-                        .lineLimit(2)
-                        .truncationMode(.tail)
-                        .minimumScaleFactor(0.9)
-                    Text(product.size)
-                        .font(.system(size: 13))
-                        .foregroundColor(Theme.textSecondary(dark))
-                }
-                .frame(minWidth: 0, maxWidth: .infinity, alignment: .leading)
-                .layoutPriority(1)
-
-                yourScoreRing(dark: dark)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(product.brand.uppercased())
+                    .font(.system(size: 11, weight: .heavy)).tracking(1.2)
+                    .foregroundColor(store.accent)
+                Text(product.name)
+                    .font(.system(size: 22, weight: .bold)).tracking(-0.5)
+                    .foregroundColor(Theme.textPrimary(dark))
+                    .lineLimit(2)
+                    .truncationMode(.tail)
+                    .minimumScaleFactor(0.9)
+                Text(product.size)
+                    .font(.system(size: 13))
+                    .foregroundColor(Theme.textSecondary(dark))
             }
-
-            overallStatRow(dark: dark)
-                .padding(.top, 10)
+            .frame(minWidth: 0, maxWidth: .infinity, alignment: .leading)
+            .layoutPriority(1)
         }
         .padding(.horizontal, 16)
     }
 
-    private func yourScoreRing(dark: Bool) -> some View {
-        let yourLabel = scoreLabel(product.yourScore)
-        let yourAccent = yourScoreIsWorstSignal ? Color.scoreBad : scoreColor(product.yourScore)
-
-        return VStack(spacing: 3) {
-            Text("FOR YOU")
-                .font(.system(size: 8, weight: .heavy)).tracking(1.1)
-                .foregroundColor(store.accent)
-            ScoreRing(score: product.yourScore, size: 66, stroke: 5, dark: dark,
-                      ringColor: yourAccent)
-            Text(yourLabel.uppercased())
-                .font(.system(size: 9, weight: .heavy)).tracking(0.3)
-                .foregroundColor(yourScoreIsWorstSignal ? Color.scoreBad : Theme.textSecondary(dark))
+    /// Side-by-side dials: the universal Overall score next to the
+    /// personalized "for you" score, with the compare action tucked below.
+    private func scoreComparisonCard(dark: Bool) -> some View {
+        VStack(spacing: 12) {
+            HStack(alignment: .top, spacing: 12) {
+                scorePanel(title: "OVERALL",
+                           score: product.overallScore,
+                           ringColor: scoreColor(product.overallScore),
+                           emphasized: false, dark: dark)
+                scorePanel(title: "YOUR SCORE",
+                           score: product.yourScore,
+                           ringColor: yourScoreIsWorstSignal ? Color.scoreBad
+                                                             : scoreColor(product.yourScore),
+                           emphasized: true, dark: dark)
+            }
+            compareButton(dark: dark)
         }
-        .fixedSize()
-        .accessibilityElement(children: .combine)
-        .accessibilityLabel("Your score \(product.yourScore), \(yourLabel)")
+        .padding(14)
+        .background(
+            RoundedRectangle(cornerRadius: 24, style: .continuous)
+                .fill(Theme.surface(dark))
+        )
+        .cardShadow(dark)
     }
 
-    private func overallStatRow(dark: Bool) -> some View {
-        let overallLabel = scoreLabel(product.overallScore)
-        let overallColor = scoreColor(product.overallScore)
-
-        return VStack(spacing: 0) {
-            Rectangle()
-                .fill(Theme.divider(dark))
-                .frame(height: 0.5)
-
-            HStack(alignment: .center, spacing: 6) {
-                Circle()
-                    .fill(overallColor)
-                    .frame(width: 6, height: 6)
-
-                (Text("Overall ")
-                    .foregroundColor(Theme.textSecondary(dark))
-                 + Text("\(product.overallScore)")
-                    .fontWeight(.bold)
-                    .foregroundColor(Theme.textPrimary(dark))
-                 + Text(" · \(overallLabel) universal score")
-                    .foregroundColor(Theme.textSecondary(dark)))
-                    .font(.system(size: 12))
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.9)
-
-                Spacer(minLength: 8)
-
+    private func scorePanel(title: String, score: Int, ringColor: Color,
+                            emphasized: Bool, dark: Bool) -> some View {
+        let label = scoreLabel(score)
+        let panelFill: Color = emphasized
+            ? ringColor.opacity(dark ? 0.14 : 0.06)
+            : (dark ? Color.white.opacity(0.04) : Color.black.opacity(0.03))
+        return VStack(spacing: 12) {
+            Text(title)
+                .font(.system(size: 11, weight: .heavy)).tracking(1.2)
+                .foregroundColor(Theme.textSecondary(dark))
+            ScoreRing(score: score, size: 96, stroke: 7, dark: dark, ringColor: ringColor)
+            Text(label.uppercased())
+                .font(.system(size: 11, weight: .heavy)).tracking(0.6)
+                .foregroundColor(.white)
+                .padding(.horizontal, 12).padding(.vertical, 5)
+                .background(Capsule().fill(ringColor))
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 18).padding(.horizontal, 8)
+        .background(
+            RoundedRectangle(cornerRadius: 18, style: .continuous).fill(panelFill)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .stroke(emphasized ? ringColor.opacity(0.35) : Color.clear, lineWidth: 1.5)
+        )
+        .overlay(alignment: .top) {
+            if emphasized {
+                HStack(spacing: 3) {
+                    Image(systemName: "star.fill").font(.system(size: 8, weight: .bold))
+                    Text("FOR YOU").font(.system(size: 9, weight: .heavy)).tracking(0.8)
+                }
+                .foregroundColor(.white)
+                .padding(.horizontal, 10).padding(.vertical, 4)
+                .background(Capsule().fill(store.accent))
+                .offset(y: -9)
+            }
+        }
+        .overlay(alignment: .topTrailing) {
+            if emphasized {
                 Button(action: onOpenMethodology) {
                     Image(systemName: "info.circle")
-                        .font(.system(size: 14, weight: .semibold))
+                        .font(.system(size: 13, weight: .semibold))
                         .foregroundColor(Theme.textSecondary(dark))
                 }
                 .buttonStyle(.plain)
+                .padding(8)
                 .accessibilityLabel("How scoring works")
             }
-            .padding(.top, 10)
-            .accessibilityElement(children: .combine)
-            .accessibilityLabel("Overall score \(product.overallScore), \(overallLabel), universal score")
         }
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("\(title) \(score), \(label)")
     }
 
     @ViewBuilder private func scoreGapLine(dark: Bool) -> some View {
@@ -196,19 +216,17 @@ struct ResultView: View {
                     Image(systemName: "sparkles")
                         .font(.system(size: 12, weight: .bold))
                         .foregroundColor(store.accent)
-                    Text("Overview")
+                    Text("AI ADVICE")
                         .font(.system(size: 11, weight: .heavy)).tracking(1.3)
                         .foregroundColor(Theme.textSecondary(dark))
-                    if let badge = deltaBadgeLabel(delta: delta) {
-                        Text(badge)
-                            .font(.system(size: 10, weight: .semibold))
-                            .foregroundColor(Theme.textSecondary(dark))
+                    if delta != 0 {
+                        let tint = delta < 0 ? Color.scoreBad : Color.scoreGood
+                        Text(delta < 0 ? "\(delta)" : "+\(delta)")
+                            .font(.system(size: 10, weight: .heavy))
+                            .foregroundColor(.white)
                             .padding(.horizontal, 8).padding(.vertical, 3)
-                            .background(
-                                Capsule().fill(dark ? Color.white.opacity(0.08)
-                                                    : Color.black.opacity(0.05))
-                            )
-                            .accessibilityLabel(badge)
+                            .background(Capsule().fill(tint))
+                            .accessibilityLabel(deltaBadgeLabel(delta: delta) ?? "")
                     }
                     Spacer(minLength: 0)
                 }
@@ -590,7 +608,7 @@ struct NutrientRow: View {
         var fg: Color { switch tone {
             case .good:    return Color.scoreGood
             case .mid:     return Color.scoreOk
-            case .bad:     return Color.cautionMuted
+            case .bad:     return Color.scoreBad
             case .neutral: return Color.neutralMuted }
         }
         var bg: Color { fg.opacity(0.10) }
@@ -645,8 +663,7 @@ struct AdditiveRow: View {
     var allowAlarmRed: Bool = true
 
     private var riskFg: Color {
-        if additive.risk == .high && allowAlarmRed { return Color.scoreBad }
-        if additive.risk == .high { return Color.cautionMuted }
+        if additive.risk == .high { return Color.scoreBad }
         return RiskStyle.fg(additive.risk)
     }
 
@@ -688,8 +705,7 @@ struct SeverityBar: View {
     var allowAlarmRed: Bool = true
 
     private func barColor(for risk: RiskLevel) -> Color {
-        if risk == .high && allowAlarmRed { return Color.scoreBad }
-        if risk == .high { return Color.cautionMuted }
+        if risk == .high { return Color.scoreBad }
         return RiskStyle.fg(risk)
     }
 
@@ -735,8 +751,7 @@ struct RiskDot: View {
     var allowAlarmRed: Bool = true
 
     private var color: Color {
-        if risk == .high && allowAlarmRed { return Color.scoreBad }
-        if risk == .high { return Color.cautionMuted }
+        if risk == .high { return Color.scoreBad }
         return RiskStyle.fg(risk)
     }
 
