@@ -30,6 +30,20 @@ struct Nutrients: Hashable, Codable {
     /// Fruit/veg/nuts estimate 0–100 from ingredients (Nutri-Score field); discounts
     /// natural fruit/veg sugar and rewards whole-food content. Optional for back-compat.
     var fvn: Double? = nil
+    /// Added sugars per 100g — mostly US labels; scoring v4's S3 prefers it and
+    /// falls back to fvn-discounted total sugars. Optional for back-compat.
+    var addedSugar_g: Double? = nil
+}
+
+/// One parsed ingredient with its declared or estimated recipe share.
+/// Drives the v4 hero-ingredient rule (S10 — "the 2% almond problem").
+struct IngredientShare: Hashable, Codable {
+    /// Normalized OFF id without the language prefix, e.g. "oats".
+    let name: String
+    /// Declared on the pack (high trust).
+    let percent: Double?
+    /// OFF's heuristic estimate (v4 rules trust it at 75%).
+    let percentEstimate: Double?
 }
 
 struct DeltaReason: Hashable, Codable {
@@ -72,6 +86,77 @@ struct Product: Identifiable, Hashable, Codable {
     /// nil = no image, a first-class state rendered as the glyph placeholder.
     /// Optional for backward-compatible decoding of older snapshots.
     var imageURL: String? = nil
+
+    // MARK: Scoring-v4 data foundation (SCORING_V4.md §2) — all optional so
+    // snapshots saved before Phase A keep decoding.
+
+    /// Normalized label/certification tags (e.g. "organic", "fair-trade").
+    /// Tier-1 signals: absence means "not claimed", never "unknown".
+    var labels: [String]? = nil
+    /// Normalized packaging materials (e.g. "glass", "pet", "aluminium").
+    var packagingMaterials: [String]? = nil
+    /// Normalized origin tags (e.g. "united-kingdom").
+    var origins: [String]? = nil
+    /// Parsed ingredients with recipe shares (S10 hero-ingredient rule).
+    var ingredientShares: [IngredientShare]? = nil
+    /// Environmental grade "a"–"e" (Eco-Score); nil when unknown/not applicable.
+    var ecoGrade: String? = nil
+    /// Raw serving size text (free-form; per-100g stays primary in scoring).
+    var servingSize: String? = nil
+    /// OFF's own 0–1 completeness estimate for this record.
+    var completeness: Double? = nil
+    /// When the OFF record last changed (staleness display: "updated X ago").
+    var lastModified: Date? = nil
+    /// Markets the product is sold in (sibling-inheritance guard, v4.1).
+    var countries: [String]? = nil
+}
+
+// MARK: - Data confidence (SCORING_V4.md §3.2–3.3)
+
+enum DataConfidence: String, Codable {
+    case high, medium, low
+}
+
+extension Product {
+    var hasIngredientData: Bool {
+        (ingredientsText?.isEmpty == false) || !(ingredientShares ?? []).isEmpty
+    }
+
+    var hasNutritionData: Bool {
+        let n = nutrients
+        return [n.kcal, n.sugar_g, n.satFat_g, n.sodium_mg, n.protein_g, n.fiber_g]
+            .contains { $0 != nil }
+    }
+
+    /// Minimum data requirement: never score a product that has neither an
+    /// ingredient list nor a nutrition table — show the insufficient-data
+    /// state instead.
+    var hasMinimumData: Bool { hasIngredientData || hasNutritionData }
+
+    /// Provisional Phase-A confidence: a presence checklist over the signals
+    /// scoring uses. Phase B replaces this with the rule-weight-backed version
+    /// once the v4 engine lands; thresholds (0.8 / 0.5) already match the spec.
+    var dataConfidenceScore: Double {
+        let n = nutrients
+        let core: [Double?] = [n.kcal, n.sugar_g, n.satFat_g, n.sodium_mg, n.protein_g, n.fiber_g]
+        let nutritionFraction = Double(core.filter { $0 != nil }.count) / Double(core.count)
+
+        var score = 0.0
+        if hasIngredientData { score += 0.30 }
+        score += 0.30 * nutritionFraction
+        if (1...4).contains(novaGroup) { score += 0.15 }
+        if !(packagingMaterials ?? []).isEmpty { score += 0.15 }
+        if let g = ecoGrade, ("a"..."e").contains(g) { score += 0.05 }
+        if !(origins ?? []).isEmpty { score += 0.05 }
+        return score
+    }
+
+    var dataConfidence: DataConfidence {
+        let s = dataConfidenceScore
+        if s >= 0.8 { return .high }
+        if s >= 0.5 { return .medium }
+        return .low
+    }
 }
 
 struct HistoryEntry: Identifiable, Hashable {

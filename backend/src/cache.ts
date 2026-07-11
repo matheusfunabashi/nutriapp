@@ -6,7 +6,10 @@ const PRODUCT_TTL_SECONDS = 60 * 60 * 24 * 30; // 30 days
 // --- Product snapshots ---
 
 export function productKey(barcode: string): string {
-  return `product:${barcode}`;
+  // v2: snapshots carry the widened scoring-v4 field set (labels, packaging,
+  // origins, ingredient percents, completeness…). New prefix so v1-shaped
+  // entries aren't served to clients expecting the richer payload.
+  return `product:v2:${barcode}`;
 }
 
 export async function getProduct(kv: KVNamespace, barcode: string): Promise<OFFProduct | null> {
