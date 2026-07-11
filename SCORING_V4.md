@@ -131,17 +131,24 @@ Yuka-aligned working set: **75–100 Excellent · 50–74 Good · 25–49 Medioc
 copy) must read from **one** band definition in the ruleset — the current
 three-way divergence is a bug this spec removes.
 
-### 3.5 Severity caps (the Yuka mechanism) [OPEN: cap values for team sign-off]
+### 3.5 Severity caps — **[DECIDED 2026-07-11: NOT adopted]**
 
-Band placement alone doesn't produce the Yuka feel — the additive hard-cap
-does. Proposal: applied to the Base Score **after** the weighted sum,
-strongest cap wins:
+The team chose interpretation 1: Yuka-aligned **bands only** (75/50/25), no
+hard caps. The score is always the weighted sum; a Tier-A additive hurts
+through S1's −0.33 fraction but never overrides the average. (Proposal kept
+below for the record in case calibration reopens it.)
 
-- Any **Tier-A** additive present → Base capped at **24** (top of "Bad").
-- Two or more **Tier-B** additives → Base capped at **49** (top of "Mediocre").
-- Caps never raise a score, and the floor of 10 still applies underneath.
-- The capping additive is always named in the score chips ("capped — contains
-  titanium dioxide"), same attributability contract as everything else.
+> Rejected proposal: Tier-A additive → Base capped at 24; 2× Tier-B → 49.
+
+**Consequence (important):** all harshness must now come from rule weights
+and calibration. First hand-run finding: under the provisional §6 weights, an
+additive-clean ultra-processed snack (NOVA 4) could still reach ~64 "Good".
+**Resolved by the 2026-07-11 calibration run** (ruleset `2026.07-b2`): NOVA
+promoted to the second-biggest rule in all three Phase-B profiles → 81.8% of
+NOVA-4 products land below 50 while whole foods hold at median 81. Details in
+§12.7. Residual trait of interpretation 1: the "Bad" band (<25) is sparse —
+soda/candy land ~33 "Mediocre", not "Bad"; only near-worst-case products
+reach the bottom band.
 
 ---
 
@@ -285,9 +292,9 @@ Weights shown per rule; score = Σ(w·f)/Σw regardless of totals.
 
 | Profile | Weights |
 |---|---|
-| **General packaged food** (fallback) | S1 45 · S2 12 · S3 10 · S4 5 · S5 5 · **S12 15** · S7 5 · S8 3 |
-| **Snacks** | S1 40 · S2 10 · S3 14 · S4 9 · S5 9 · **S12 10** · S7 5 · S8 3 |
-| **Drinks** (sodas, juices, kombucha, energy, RTD) | S1 42 · S3 20 (drink thresholds) · S6 10 · S2 10 · **S12 5** · S7 8 · S8 5 |
+| **General packaged food** (fallback) — **calibrated, ruleset 2026.07-b2** | S1 28 · **S2 26** · S3 12 · S4 6 · S5 6 · **S12 18** · S7 5 · S8 3 |
+| **Snacks** — **calibrated, ruleset 2026.07-b2** | S1 24 · **S2 26** · S3 14 · S4 10 · S5 9 · **S12 12** · S7 5 · S8 3 |
+| **Drinks** (sodas, juices, kombucha, energy, RTD) — **calibrated, ruleset 2026.07-b2** | S1 28 · S3 22 (drink thresholds) · S6 12 · **S2 24** · **S12 5** · S7 8 · S8 5 |
 | **Bottled water** | Water source 30 (mineral 1.0 · spring 0.80 · well 0.70 · purified/RO 0.40 · unknown 0 Tier-1) · S7 30 · S1 20 · Mineral profile disclosed 10 (Ca/Mg in `nutriments` → 1.0 else 0) · S8/labels 10 |
 | **Plant-based milks** | S1 30 · S10 15 · Crop pesticide risk 12 (organic 1.0 · non-org low-risk crop 0.60 · non-org high-risk crop [oat/soy/rice/wheat/corn] 0.20 · rice base capped 0.40) · S3 12 · **S12 8** · S2 8 · S7 8 · S8 5 |
 | **Dairy milk** (yogurt/cheese: S3 weight 15, yogurt thresholds) | S1 25 · Dairy quality labels 18 (organic +5 · grass-fed +5 · pasture-raised +5 · no-added-hormones +3 · Certified Humane +2, cap = rule max; Tier-1) · Processing 12 (vat 1.0 · pasteurized 0.85 · UHT 0.40 · ultra-filtered 0.25 · **raw 0.50 + mandatory safety chip**) · S3 10 · **S12 12** · S7 10 · S8 5 · Milk-fat level deliberately unscored (preference → Your Score) |
@@ -398,14 +405,13 @@ Profile: plant-based milks. Σw = 98.
 
 `raw = 52.5 / 98 × 100 = 53.6` → **Base 54 · "Good" band (Yuka-aligned
 75/50/25) · Confidence High** (every rule had data; S3 chip notes the
-total-sugar fallback). No severity cap applies — its flagged additives are
-Tier C/D only (a Tier-A additive would have capped it at 24 regardless of
-the weighted sum, per §3.5).
+total-sugar fallback).
 
 Sanity check vs. v1.0: same product landed 54 there too — but there it read
 "Poor" and the S1 math inside was wrong in a way that grows with every
 non-45-weight category. Here the math has no scaling step, and the harshness
-comes from severity caps + calibration rather than band lettering.
+comes from weight calibration (no severity caps — §3.5) rather than band
+lettering.
 
 Personalization spot-checks: a **lose-weight** user (S3 ×2, S12 ×1.5, S6 ×0.5)
 → ≈ 55 (+1: low sugar helps, weak nutrition holds it back). A **gut-health**
@@ -490,16 +496,37 @@ explanations always match the math that produced them.
    plain Greek yogurt, canned beans, olive oil → **Excellent/Good (75+)** ·
    white bread, granola bar, flavored yogurt → **Mediocre (25–49)** · Coke
    Zero, Cheetos, gummy candy, regular soda, maple-flavored corn syrup →
-   **Bad (10–24)**, with Tier-A/severity caps doing the work where additives
-   are the reason. Distribution target: the median mainstream ultra-processed
-   product lands in the **bottom half**. **[OPEN: extend to ~25–30 products
-   during Phase B.]**
+   **bottom bands**, with S1 tier fractions plus rebalanced NOVA/S12 weights
+   doing the work (no severity caps — §3.5). Distribution target: the median
+   mainstream ultra-processed product lands in the **bottom half**. **[OPEN:
+   extend to ~25–30 products during Phase B.]**
 5. **Tune weights → rerun** (2–3 iterations typical). Fixes go to weights and
    rule params; bands are placed **last**, where the wholesome/junk clusters
    actually sit on a centered scale.
 6. **Freeze:** weights + bands lock into ruleset `2026.MM`; the distribution
    snapshot is stored so every future ruleset change ships with a diff
    ("moves median snack −4; changes bands for 12% of corpus").
+
+### 12.7 First calibration run — 2026-07-11 (ruleset 2026.07-b2)
+
+- **Corpus:** 8,157 unique EN-market products sampled from the official OFF
+  dataset (HF parquet via the rows API — dump channel, not the product API);
+  7,250 scored, 907 failed the minimum-data requirement (11% — validates the
+  RMP gate).
+- **Change:** NOVA (S2) promoted to the second-biggest rule in all three
+  Phase-B profiles; S1 reduced, S12 raised (tables in §6).
+- **Results (baseline → b2):** NOVA-4 share below 50: 37.6% → **81.8%**;
+  NOVA-4 median 53 → **40**; whole foods (NOVA 1–2) median 82 → **81**, share
+  ≥60 92.8% → 88.6% — harshness achieved almost entirely without collateral
+  damage to real food.
+- **Anchors (baseline → b2):** chicken 84→83 · apple 84→83 · oats 88→87 ·
+  yogurt 84→83 (all Excellent) · white bread 62→**49** · cheese puffs
+  57→**43** · cola 43→**33** · cola zero 45→**39** · gummy candy 42→**33**.
+- **Bands kept at 75/50/25** — the harsh distribution came from weights, so
+  band placement needed no change from the Yuka-aligned provisional set.
+- Reference implementation: `scratchpad/calibrate.py` mirror of the Swift
+  engine, driven by the identical RulesetV4.json; Swift anchor tests updated
+  to the b2 numbers (`ScoringV4Tests`).
 
 ---
 
@@ -524,7 +551,7 @@ explanations always match the math that produced them.
 | # | Item | Proposal on the table |
 |---|---|---|
 | 1 | Band cutoffs | Yuka-aligned 75/50/25 provisional; locked after §12 |
-| 0 | Severity-cap values (§3.5) | Tier-A → cap 24 · 2× Tier-B → cap 49 — **confirm this is what "Yuka format" means**, vs. only band placement |
+| 0 | ~~Severity caps~~ | **Resolved 2026-07-11: not adopted** — bands only; harshness via weights/calibration (§3.5) |
 | 2 | Avoid-list vocabulary | 10-item list in §7.1 |
 | 3 | Multiplier values | Table in §7.2; validated during calibration |
 | 4 | Hard-gate cap values | 20 (diet conflict) / 49 (avoid-list) |

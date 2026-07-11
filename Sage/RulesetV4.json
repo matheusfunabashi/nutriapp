@@ -1,0 +1,89 @@
+{
+  "version": "2026.07-b2",
+  "bands": { "excellent": 75, "good": 50, "mediocre": 25 },
+  "tierFractions": { "A": 0.33, "B": 0.18, "C": 0.09, "D": 0.045 },
+  "dampening": { "afterCount": 3, "factor": 0.5 },
+  "additiveTiers": {
+    "e924": "A", "e927a": "A", "e171": "A",
+    "e249": "A", "e250": "A", "e251": "A", "e252": "A",
+    "e320": "A", "e319": "A", "e443": "A", "e127": "A",
+    "e951": "B", "e954": "B",
+    "e102": "B", "e104": "B", "e110": "B", "e122": "B", "e124": "B", "e129": "B",
+    "e150c": "B", "e150d": "B", "e321": "B", "e433": "B", "e407": "B",
+    "e955": "C", "e950": "C", "e466": "C", "e471": "C",
+    "e338": "C", "e339": "C", "e340": "C", "e341": "C", "e343": "C",
+    "e450": "C", "e451": "C", "e452": "C",
+    "e410": "D", "e412": "D", "e415": "D", "e418": "D"
+  },
+  "gumCodes": ["e410", "e412", "e415", "e418"],
+  "sweetenerCodes": ["e950", "e951", "e954", "e955", "e961", "e962", "e969"],
+  "textSignals": {
+    "high fructose corn syrup": "B",
+    "high-fructose corn syrup": "B",
+    "artificial flavor": "C",
+    "artificial flavour": "C",
+    "natural flavor": "D",
+    "natural flavour": "D"
+  },
+  "s3Thresholds": { "foods": [5, 12.5, 22.5], "drinks": [1, 4, 8] },
+  "s4Thresholds": [120, 400, 800],
+  "s5Thresholds": [3, 8, 15],
+  "s7Materials": {
+    "glass": 1.0,
+    "paper": 0.9, "cardboard": 0.9, "pulp": 0.9,
+    "tetra-pak": 0.7, "carton": 0.7,
+    "aluminium": 0.55, "aluminum": 0.55, "steel": 0.55,
+    "hdpe": 0.4, "polypropylene": 0.4,
+    "pet": 0.25,
+    "polystyrene": 0.0, "pvc": 0.0,
+    "plastic": 0.3
+  },
+  "certLabels": [
+    "organic", "eu-organic", "usda-organic", "organic-certification",
+    "non-gmo-project", "no-gmos",
+    "fair-trade", "fairtrade", "fairtrade-international", "fair-trade-usa",
+    "certified-humane", "regenerative-organic-certified", "demeter",
+    "glyphosate-residue-free", "rainforest-alliance",
+    "sustainable-seafood-msc", "msc", "asc", "responsible-aquaculture-asc",
+    "best-aquaculture-practices"
+  ],
+  "profiles": {
+    "general": [
+      { "rule": "S1",  "w": 28 },
+      { "rule": "S2",  "w": 26 },
+      { "rule": "S3",  "w": 12, "variant": "foods" },
+      { "rule": "S4",  "w": 6 },
+      { "rule": "S5",  "w": 6 },
+      { "rule": "S12", "w": 18 },
+      { "rule": "S7",  "w": 5 },
+      { "rule": "S8",  "w": 3 }
+    ],
+    "snacks": [
+      { "rule": "S1",  "w": 24 },
+      { "rule": "S2",  "w": 26 },
+      { "rule": "S3",  "w": 14, "variant": "foods" },
+      { "rule": "S4",  "w": 10 },
+      { "rule": "S5",  "w": 9 },
+      { "rule": "S12", "w": 12 },
+      { "rule": "S7",  "w": 5 },
+      { "rule": "S8",  "w": 3 }
+    ],
+    "drinks": [
+      { "rule": "S1",  "w": 28 },
+      { "rule": "S3",  "w": 22, "variant": "drinks" },
+      { "rule": "S6",  "w": 12 },
+      { "rule": "S2",  "w": 24 },
+      { "rule": "S12", "w": 5 },
+      { "rule": "S7",  "w": 8 },
+      { "rule": "S8",  "w": 5 }
+    ]
+  },
+  "router": [
+    { "match": "milks",                         "profile": "general" },
+    { "match": "dairies",                       "profile": "general" },
+    { "match": "plant-based-milk-alternatives", "profile": "general" },
+    { "match": "plant-milks",                   "profile": "general" },
+    { "match": "beverages",                     "profile": "drinks" },
+    { "match": "snacks",                        "profile": "snacks" }
+  ]
+}
