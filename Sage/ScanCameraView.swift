@@ -49,7 +49,7 @@ struct ScanCameraView: View {
                 VStack {
                     Spacer()
                     Text("Database coming soon")
-                        .font(.system(size: 14, weight: .heavy)).tracking(-0.2)
+                        .font(.sageBold(14)).tracking(-0.2)
                         .foregroundColor(.white)
                         .padding(.horizontal, 18).padding(.vertical, 11)
                         .background(Capsule().fill(Color.black.opacity(0.78)))
@@ -71,7 +71,7 @@ struct ScanCameraView: View {
             Spacer()
             // Cross-fade title when the mode flips so it doesn't snap.
             Text(mode == .barcode ? "Scan barcode" : "Scan label")
-                .font(.system(size: 14, weight: .semibold)).tracking(-0.2)
+                .font(.sageSemiBold(14)).tracking(-0.2)
                 .foregroundColor(.white)
                 .contentTransition(.opacity)
                 .animation(.easeInOut(duration: 0.2), value: mode)
@@ -84,10 +84,10 @@ struct ScanCameraView: View {
     private var hintArea: some View {
         VStack(spacing: 6) {
             Text(mode == .barcode ? "Align the barcode" : "Align the label")
-                .font(.system(size: 20, weight: .regular)).tracking(-0.4)
+                .font(.sageRegular(20)).tracking(-0.4)
                 .foregroundColor(.white)
             Text("Hold steady — we'll detect it automatically")
-                .font(.system(size: 13, weight: .medium))
+                .font(.sageMedium(13))
                 .foregroundColor(.white.opacity(0.7))
         }
         .offset(y: -80)
@@ -106,7 +106,7 @@ struct ScanCameraView: View {
                     }
                 } label: {
                     Text(label)
-                        .font(.system(size: 13, weight: .heavy)).tracking(-0.1)
+                        .font(.sageBold(13)).tracking(-0.1)
                         .foregroundColor(active ? Color(hex: "111111") : .white.opacity(0.95))
                         .padding(.vertical, 11)
                         .frame(maxWidth: .infinity)
@@ -148,7 +148,7 @@ private struct CameraCircleBtn: View {
     var body: some View {
         Button(action: action) {
             Image(systemName: systemName)
-                .font(.system(size: 15, weight: .semibold))
+                .font(.sageSemiBold(15))
                 .foregroundColor(.white)
                 .frame(width: size, height: size)
                 .background(Circle().fill(Color.black.opacity(0.45)))
@@ -345,10 +345,10 @@ private struct CameraPreview: View {
             Color.black
             VStack(spacing: 6) {
                 Image(systemName: "camera.fill")
-                    .font(.system(size: 32))
+                    .font(.sageRegular(32))
                     .foregroundColor(.white.opacity(0.5))
                 Text("Camera unavailable")
-                    .font(.system(size: 13, weight: .semibold))
+                    .font(.sageSemiBold(13))
                     .foregroundColor(.white.opacity(0.6))
             }
         }

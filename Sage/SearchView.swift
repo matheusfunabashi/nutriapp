@@ -27,7 +27,7 @@ struct SearchView: View {
             VStack(alignment: .leading, spacing: 0) {
                 StaggeredAppear(index: 0) {
                     Text("Search")
-                        .font(.system(size: 34, weight: .heavy)).tracking(-1)
+                        .font(.sageBold(34)).tracking(-1)
                         .foregroundColor(Theme.textPrimary(dark))
                         // 12pt above the system safe-area; ContentView's
                         // tabContent isn't ignoring it, so this is the only
@@ -85,7 +85,7 @@ struct SearchView: View {
                 .animation(.easeOut(duration: 0.18), value: focused)
             TextField("Search by product or brand", text: $query)
                 .focused($focused)
-                .font(.system(size: 15, weight: .medium))
+                .font(.sageMedium(15))
                 .foregroundColor(Theme.textPrimary(dark))
                 .submitLabel(.search)
                 .autocorrectionDisabled()
@@ -96,7 +96,7 @@ struct SearchView: View {
                     query = ""; focused = true
                 } label: {
                     Image(systemName: "xmark")
-                        .font(.system(size: 10, weight: .bold))
+                        .font(.sageBold(10))
                         .foregroundColor(Theme.textPrimary(dark))
                         .padding(5)
                         .background(Circle().fill(dark ? Color.white.opacity(0.12)
@@ -135,7 +135,7 @@ struct SearchView: View {
             VStack(spacing: 12) {
                 ProgressView().tint(store.accent)
                 Text("Searching…")
-                    .font(.system(size: 13))
+                    .font(.sageRegular(13))
                     .foregroundColor(Theme.textSecondary(dark))
             }
             .frame(maxWidth: .infinity)
@@ -182,7 +182,7 @@ struct SearchView: View {
     private func categoryGrid(dark: Bool) -> some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("BROWSE")
-                .font(.system(size: 11, weight: .heavy)).tracking(1.3)
+                .font(.sageBold(11)).tracking(1.3)
                 .foregroundColor(Theme.textSecondary(dark))
                 .padding(.horizontal, 8)
 
@@ -195,11 +195,11 @@ struct SearchView: View {
                     } label: {
                         HStack(spacing: 10) {
                             Text(category.name)
-                                .font(.system(size: 15, weight: .bold)).tracking(-0.2)
+                                .font(.sageBold(15)).tracking(-0.2)
                                 .foregroundColor(Theme.textPrimary(dark))
                                 .lineLimit(1)
                             Spacer(minLength: 4)
-                            Text(category.emoji).font(.system(size: 22))
+                            Text(category.emoji).font(.sageRegular(22))
                         }
                         .padding(.horizontal, 14).padding(.vertical, 18)
                         .frame(maxWidth: .infinity, alignment: .leading)
@@ -219,12 +219,12 @@ struct SearchView: View {
 
     private func hint(icon: String, title: String, body: String, dark: Bool) -> some View {
         VStack(spacing: 8) {
-            Text(icon).font(.system(size: 32))
+            Text(icon).font(.sageRegular(32))
             Text(title)
-                .font(.system(size: 16, weight: .bold))
+                .font(.sageBold(16))
                 .foregroundColor(Theme.textPrimary(dark))
             Text(body)
-                .font(.system(size: 13))
+                .font(.sageRegular(13))
                 .foregroundColor(Theme.textSecondary(dark))
                 .multilineTextAlignment(.center)
         }
@@ -247,18 +247,18 @@ private struct SearchHitRow: View {
                 VStack(alignment: .leading, spacing: 1) {
                     if !eyebrow.isEmpty {
                         Text(eyebrow.uppercased())
-                            .font(.system(size: 10, weight: .heavy)).tracking(1.2)
+                            .font(.sageBold(10)).tracking(1.2)
                             .foregroundColor(Theme.textSecondary(dark))
                     }
                     Text(hit.name)
-                        .font(.system(size: 14, weight: .bold))
+                        .font(.sageBold(14))
                         .foregroundColor(Theme.textPrimary(dark))
                         .lineLimit(2)
                         .multilineTextAlignment(.leading)
                 }
                 Spacer(minLength: 8)
                 Image(systemName: "chevron.right")
-                    .font(.system(size: 12, weight: .bold))
+                    .font(.sageBold(12))
                     .foregroundColor(Theme.textSecondary(dark))
             }
             .padding(12)
@@ -292,11 +292,11 @@ private struct SearchHitRow: View {
                             .frame(width: 44, height: 44)
                             .background(Color.white)
                     } else {
-                        Text("🛒").font(.system(size: 20))
+                        Text("🛒").font(.sageRegular(20))
                     }
                 }
             } else {
-                Text("🛒").font(.system(size: 20))
+                Text("🛒").font(.sageRegular(20))
             }
         }
         .frame(width: 44, height: 44)

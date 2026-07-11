@@ -74,12 +74,12 @@ struct ContentView: View {
 
             if !stack.isEmpty {
                 Theme.bg(store.darkMode).ignoresSafeArea()
-                ForEach(Array(stack.enumerated()), id: \.offset) { (i, screen) in
+                if let screen = stack.last {
                     overlayView(for: screen)
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                         .background(Theme.bg(store.darkMode).ignoresSafeArea())
                         .clipped()
-                        .zIndex(Double(30 + i))
+                        .id(screen.id)
                         .transition(.move(edge: .trailing).combined(with: .opacity))
                 }
             }
@@ -167,31 +167,57 @@ struct ContentView: View {
                 ResultView(
                     product: p,
                     fromScan: fromScan,
-                    onBack: pop,
+                    onBack: dismissOverlay,
                     onCompare: { beginCompare(productId: id) },
                     onOpenMethodology: { showMethodModal = true }
+                )
+            } else {
+                OverlayFallbackView(
+                    title: "Product unavailable",
+                    message: "This product couldn't be loaded.",
+                    onBack: dismissOverlay
                 )
             }
         case .insufficientData(let id):
             if let p = store.products[id] {
-                InsufficientDataView(product: p, onBack: pop)
+                InsufficientDataView(product: p, onBack: dismissOverlay)
+            } else {
+                OverlayFallbackView(
+                    title: "Product unavailable",
+                    message: "This product couldn't be loaded.",
+                    onBack: dismissOverlay
+                )
             }
         case .compare(let aId, let bId):
             if let a = store.products[aId], let b = store.products[bId] {
-                CompareView(a: a, b: b, onBack: pop)
+                CompareView(a: a, b: b, onBack: dismissOverlay)
+            } else {
+                OverlayFallbackView(
+                    title: "Comparison unavailable",
+                    message: "One or both products couldn't be loaded.",
+                    onBack: dismissOverlay
+                )
             }
-        case .paywall:        PaywallView(onDismiss: pop)
-        case .manual:         ManualEntryView(onCancel: pop, onSubmit: pop)
-        case .methodology:    MethodologyView(onBack: pop)
-        case .personal:       PersonalDetailsView(onBack: pop)
-        case .preferences:    PreferencesView(onBack: pop)
-        case .nutritionGoals: NutritionGoalsView(onBack: pop)
-        case .dietary:        DietaryView(onBack: pop)
+        case .paywall:        PaywallView(onDismiss: dismissOverlay)
+        case .manual:         ManualEntryView(onCancel: dismissOverlay, onSubmit: dismissOverlay)
+        case .methodology:    MethodologyView(onBack: dismissOverlay)
+        case .personal:       PersonalDetailsView(onBack: dismissOverlay)
+        case .preferences:    PreferencesView(onBack: dismissOverlay)
+        case .nutritionGoals: NutritionGoalsView(onBack: dismissOverlay)
+        case .dietary:        DietaryView(onBack: dismissOverlay)
         }
     }
 
     private func push(_ s: Overlay) { stack.append(s) }
-    private func pop() { _ = stack.popLast() }
+
+    /// Pops the overlay stack and clears any modal that would block the back button.
+    private func dismissOverlay() {
+        showMethodModal = false
+        guard !stack.isEmpty else { return }
+        _ = stack.popLast()
+    }
+
+    private func pop() { dismissOverlay() }
     private func reset() { stack.removeAll() }
 
     private func openProduct(_ id: String) {
@@ -337,6 +363,48 @@ struct ContentView: View {
     }
 }
 
+// MARK: - Overlay fallback (missing product data — still needs a working back button)
+
+struct OverlayFallbackView: View {
+    let title: String
+    let message: String
+    let onBack: () -> Void
+    @EnvironmentObject var store: AppStore
+
+    var body: some View {
+        let dark = store.darkMode
+        ZStack {
+            Theme.bg(dark).ignoresSafeArea()
+            VStack(spacing: 0) {
+                HStack {
+                    CircleIconButton(systemName: "chevron.left", dark: dark,
+                                     accessibilityLabel: "Back", action: onBack)
+                    Spacer()
+                    Text("Sage")
+                        .font(.sageBold(18)).tracking(-0.4)
+                        .foregroundColor(Theme.textPrimary(dark))
+                    Spacer()
+                    Color.clear.frame(width: 42, height: 42)
+                }
+                .padding(.horizontal, 16).padding(.top, 8)
+
+                Spacer()
+                VStack(spacing: 8) {
+                    Text(title)
+                        .font(.sageBold(18))
+                        .foregroundColor(Theme.textPrimary(dark))
+                    Text(message)
+                        .font(.sageRegular(13))
+                        .foregroundColor(Theme.textSecondary(dark))
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal, 32)
+                }
+                Spacer()
+            }
+        }
+    }
+}
+
 // MARK: - Insufficient data state (SCORING_V4.md §3.3)
 
 /// Shown when a product exists in the database but has neither an ingredient
@@ -357,7 +425,7 @@ struct InsufficientDataView: View {
                                      accessibilityLabel: "Back", action: onBack)
                     Spacer()
                     Text("Sage")
-                        .font(.system(size: 18, weight: .bold)).tracking(-0.4)
+                        .font(.sageBold(18)).tracking(-0.4)
                         .foregroundColor(Theme.textPrimary(dark))
                     Spacer()
                     // Balances the back button so the title stays centered.
@@ -373,11 +441,11 @@ struct InsufficientDataView: View {
                     VStack(spacing: 2) {
                         if !product.brand.isEmpty {
                             Text(product.brand.uppercased())
-                                .font(.system(size: 11, weight: .heavy)).tracking(1.2)
+                                .font(.sageBold(11)).tracking(1.2)
                                 .foregroundColor(store.accent)
                         }
                         Text(product.name)
-                            .font(.system(size: 22, weight: .bold)).tracking(-0.5)
+                            .font(.sageBold(22)).tracking(-0.5)
                             .foregroundColor(Theme.textPrimary(dark))
                             .multilineTextAlignment(.center)
                             .lineLimit(3)
@@ -386,10 +454,10 @@ struct InsufficientDataView: View {
 
                     VStack(spacing: 8) {
                         Text("Not enough data to score")
-                            .font(.system(size: 16, weight: .bold))
+                            .font(.sageBold(16))
                             .foregroundColor(Theme.textPrimary(dark))
                         Text("This product is in the database, but its ingredient list and nutrition facts haven't been added yet — so an honest score isn't possible. Try another pack size, or check back later.")
-                            .font(.system(size: 13))
+                            .font(.sageRegular(13))
                             .foregroundColor(Theme.textSecondary(dark))
                             .multilineTextAlignment(.center)
                             .lineSpacing(2)
@@ -419,7 +487,7 @@ struct LookupOverlay: View {
                     .tint(store.accent)
                     .scaleEffect(1.3)
                 Text("Looking up product…")
-                    .font(.system(size: 14, weight: .heavy)).tracking(-0.2)
+                    .font(.sageBold(14)).tracking(-0.2)
                     .foregroundColor(Theme.textPrimary(dark))
             }
             .padding(28)
@@ -443,15 +511,15 @@ struct ErrorToast: View {
             HStack(alignment: .top, spacing: 12) {
                 Image(systemName: "exclamationmark.triangle.fill")
                     .foregroundColor(Color(hex: "D4A02D"))
-                    .font(.system(size: 16))
+                    .font(.sageRegular(16))
                 Text(message)
-                    .font(.system(size: 13, weight: .semibold))
+                    .font(.sageSemiBold(13))
                     .foregroundColor(Theme.textPrimary(dark))
                     .fixedSize(horizontal: false, vertical: true)
                 Spacer(minLength: 8)
                 Button(action: onDismiss) {
                     Image(systemName: "xmark")
-                        .font(.system(size: 11, weight: .bold))
+                        .font(.sageBold(11))
                         .foregroundColor(Theme.textSecondary(dark))
                         .padding(6)
                         .background(Circle().fill(dark ? Color.white.opacity(0.12) : Color.black.opacity(0.06)))
@@ -497,9 +565,9 @@ struct PaywallView: View {
                 }.padding(.horizontal, 16).padding(.top, 60)
                 Spacer().frame(height: 60)
                 Image(systemName: "crown.fill").font(.system(size: 56)).foregroundColor(.yellow)
-                Text("Sage Premium").font(.system(size: 32, weight: .heavy)).foregroundColor(.white)
+                Text("Sage Premium").font(.sageBold(32)).foregroundColor(.white)
                 Text("Unlimited scans, AI ingredient analysis, and personalized insights.")
-                    .font(.system(size: 15))
+                    .font(.sageRegular(15))
                     .multilineTextAlignment(.center)
                     .foregroundColor(.white.opacity(0.8))
                     .padding(.horizontal, 30)
@@ -508,7 +576,7 @@ struct PaywallView: View {
                            fullWidth: true, action: onDismiss)
                     .padding(.horizontal, 20)
                 Button("Restore purchase", action: onDismiss)
-                    .font(.system(size: 13, weight: .semibold))
+                    .font(.sageSemiBold(13))
                     .foregroundColor(.white.opacity(0.7))
                     .padding(.bottom, 60)
             }
@@ -530,7 +598,7 @@ struct ManualEntryView: View {
                 HStack {
                     Button("Cancel", action: onCancel).foregroundColor(Theme.textPrimary(dark))
                     Spacer()
-                    Text("Manual Entry").font(.system(size: 16, weight: .bold))
+                    Text("Manual Entry").font(.sageBold(16))
                         .foregroundColor(Theme.textPrimary(dark))
                     Spacer()
                     Button("Save", action: onSubmit)

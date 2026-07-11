@@ -13,10 +13,10 @@ struct MethodologyView: View {
 
                 VStack(alignment: .leading, spacing: 12) {
                     Text("Two scores, one product")
-                        .font(.system(size: 26, weight: .heavy)).tracking(-0.6)
+                        .font(.sageBold(26)).tracking(-0.6)
                         .foregroundColor(Theme.textPrimary(dark))
                     Text("Every product gets an Overall score (10-100) from public nutrition data, plus a Your Score tuned to your profile.")
-                        .font(.system(size: 14))
+                        .font(.sageRegular(14))
                         .foregroundColor(Theme.textSecondary(dark))
                         .lineSpacing(2)
                 }
@@ -48,10 +48,10 @@ struct MethodologyView: View {
     private func methodCard(title: String, body: String, dark: Bool) -> some View {
         VStack(alignment: .leading, spacing: 6) {
             Text(title)
-                .font(.system(size: 16, weight: .heavy)).tracking(-0.3)
+                .font(.sageBold(16)).tracking(-0.3)
                 .foregroundColor(Theme.textPrimary(dark))
             Text(body)
-                .font(.system(size: 13))
+                .font(.sageRegular(13))
                 .foregroundColor(Theme.textSecondary(dark))
                 .lineSpacing(3)
         }
@@ -82,12 +82,12 @@ struct MethodologyModal: View {
             VStack(alignment: .leading, spacing: 14) {
                 HStack {
                     Text("How we score")
-                        .font(.system(size: 20, weight: .heavy)).tracking(-0.4)
+                        .font(.sageBold(20)).tracking(-0.4)
                         .foregroundColor(Theme.textPrimary(dark))
                     Spacer()
                     Button(action: onDismiss) {
                         Image(systemName: "xmark")
-                            .font(.system(size: 13, weight: .bold))
+                            .font(.sageBold(13))
                             .foregroundColor(Theme.textPrimary(dark))
                             .frame(width: 32, height: 32)
                             .background(Circle().fill(dark ? Color.white.opacity(0.08)
@@ -95,7 +95,7 @@ struct MethodologyModal: View {
                     }.buttonStyle(.plain)
                 }
                 Text("Sage combines public nutrition data (per-100g nutrients, NOVA processing level, additive risk) into an Overall score, then tunes it to your goal and preferences to compute Your Score.")
-                    .font(.system(size: 14))
+                    .font(.sageRegular(14))
                     .foregroundColor(Theme.textSecondary(dark))
                     .lineSpacing(3)
                 HStack(spacing: 10) {
@@ -128,11 +128,11 @@ struct DisclaimerModal: View {
             VStack(spacing: 18) {
                 SageMark(size: 44, color: store.accent)
                 Text("Sage is informational, not advice")
-                    .font(.system(size: 22, weight: .heavy)).tracking(-0.5)
+                    .font(.sageBold(22)).tracking(-0.5)
                     .multilineTextAlignment(.center)
                     .foregroundColor(Theme.textPrimary(dark))
                 Text("Scores are a guide, not medical or professional nutrition advice. For specific dietary needs, please consult a registered dietitian or doctor.")
-                    .font(.system(size: 14))
+                    .font(.sageRegular(14))
                     .multilineTextAlignment(.center)
                     .foregroundColor(Theme.textSecondary(dark))
                     .lineSpacing(3)

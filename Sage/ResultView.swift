@@ -10,13 +10,14 @@ struct ResultView: View {
 
     var body: some View {
         let dark = store.darkMode
-        ZStack {
-            Theme.bg(dark).ignoresSafeArea()
+        VStack(spacing: 0) {
+            topBar(dark: dark)
+                .background(Theme.bg(dark))
 
             GeometryReader { geo in
                 ScrollView(.vertical, showsIndicators: false) {
                     VStack(spacing: 0) {
-                        headerBlock(dark: dark)
+                        scrollableHeader(dark: dark)
                         allergenSection(dark: dark)
                         SectionTitle(title: "Breakdown", dark: dark)
                         gradesRow(dark: dark)
@@ -38,6 +39,7 @@ struct ResultView: View {
                 .scrollBounceBehavior(.basedOnSize, axes: .vertical)
             }
         }
+        .background(Theme.bg(dark).ignoresSafeArea())
     }
 
     private var isSaved: Bool {
@@ -48,9 +50,8 @@ struct ResultView: View {
         scoreTier(product.yourScore) == .bad
     }
 
-    private func headerBlock(dark: Bool) -> some View {
+    private func scrollableHeader(dark: Bool) -> some View {
         VStack(spacing: 8) {
-            topBar(dark: dark)
             productHeader(dark: dark)
             VStack(spacing: 12) {
                 scoreGapLine(dark: dark)
@@ -71,13 +72,13 @@ struct ResultView: View {
             Spacer()
             if isSaved {
                 Text("SAVED")
-                    .font(.system(size: 13, weight: .heavy))
+                    .font(.sageBold(13))
                     .tracking(1.6)
                     .foregroundColor(Theme.textSecondary(dark))
                     .accessibilityAddTraits(.isHeader)
             } else {
                 Text("Sage")
-                    .font(.system(size: 18, weight: .bold))
+                    .font(.sageBold(18))
                     .tracking(-0.4)
                     .foregroundColor(Theme.textPrimary(dark))
                     .accessibilityAddTraits(.isHeader)
@@ -99,16 +100,16 @@ struct ResultView: View {
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(product.brand.uppercased())
-                    .font(.system(size: 11, weight: .heavy)).tracking(1.2)
+                    .font(.sageBold(11)).tracking(1.2)
                     .foregroundColor(store.accent)
                 Text(product.name)
-                    .font(.system(size: 22, weight: .bold)).tracking(-0.5)
+                    .font(.sageBold(22)).tracking(-0.5)
                     .foregroundColor(Theme.textPrimary(dark))
                     .lineLimit(2)
                     .truncationMode(.tail)
                     .minimumScaleFactor(0.9)
                 Text(product.size)
-                    .font(.system(size: 13))
+                    .font(.sageRegular(13))
                     .foregroundColor(Theme.textSecondary(dark))
             }
             .frame(minWidth: 0, maxWidth: .infinity, alignment: .leading)
@@ -150,11 +151,11 @@ struct ResultView: View {
             : (dark ? Color.white.opacity(0.04) : Color.black.opacity(0.03))
         return VStack(spacing: 12) {
             Text(title)
-                .font(.system(size: 11, weight: .heavy)).tracking(1.2)
+                .font(.sageBold(11)).tracking(1.2)
                 .foregroundColor(Theme.textSecondary(dark))
             ScoreRing(score: score, size: 96, stroke: 7, dark: dark, ringColor: ringColor)
             Text(label.uppercased())
-                .font(.system(size: 11, weight: .heavy)).tracking(0.6)
+                .font(.sageBold(11)).tracking(0.6)
                 .foregroundColor(.white)
                 .padding(.horizontal, 12).padding(.vertical, 5)
                 .background(Capsule().fill(ringColor))
@@ -172,7 +173,7 @@ struct ResultView: View {
             if emphasized {
                 HStack(spacing: 3) {
                     Image(systemName: "star.fill").font(.system(size: 8, weight: .bold))
-                    Text("FOR YOU").font(.system(size: 9, weight: .heavy)).tracking(0.8)
+                    Text("FOR YOU").font(.sageBold(9)).tracking(0.8)
                 }
                 .foregroundColor(.white)
                 .padding(.horizontal, 10).padding(.vertical, 4)
@@ -184,7 +185,7 @@ struct ResultView: View {
             if emphasized {
                 Button(action: onOpenMethodology) {
                     Image(systemName: "info.circle")
-                        .font(.system(size: 13, weight: .semibold))
+                        .font(.sageSemiBold(13))
                         .foregroundColor(Theme.textSecondary(dark))
                 }
                 .buttonStyle(.plain)
@@ -204,11 +205,11 @@ struct ResultView: View {
             HStack(spacing: 6) {
                 Image(systemName: product.dataConfidence == .medium
                       ? "info.circle" : "exclamationmark.circle")
-                    .font(.system(size: 12, weight: .semibold))
+                    .font(.sageSemiBold(12))
                 Text(product.dataConfidence == .medium
                      ? "Some label data is missing — the score may shift as data improves."
                      : "Limited label data — treat this score as provisional.")
-                    .font(.system(size: 12))
+                    .font(.sageRegular(12))
                     .lineSpacing(1)
                 Spacer(minLength: 0)
             }
@@ -221,7 +222,7 @@ struct ResultView: View {
     @ViewBuilder private func scoreGapLine(dark: Bool) -> some View {
         if let gap = product.scoreGapReason {
             Text(gap)
-                .font(.system(size: 12))
+                .font(.sageRegular(12))
                 .foregroundColor(Theme.textSecondary(dark))
                 .lineSpacing(2)
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -237,15 +238,15 @@ struct ResultView: View {
             VStack(alignment: .leading, spacing: 6) {
                 HStack(spacing: 8) {
                     Image(systemName: "sparkles")
-                        .font(.system(size: 12, weight: .bold))
+                        .font(.sageBold(12))
                         .foregroundColor(store.accent)
                     Text("AI ADVICE")
-                        .font(.system(size: 11, weight: .heavy)).tracking(1.3)
+                        .font(.sageBold(11)).tracking(1.3)
                         .foregroundColor(Theme.textSecondary(dark))
                     if delta != 0 {
                         let tint = delta < 0 ? Color.scoreBad : Color.scoreGood
                         Text(delta < 0 ? "\(delta)" : "+\(delta)")
-                            .font(.system(size: 10, weight: .heavy))
+                            .font(.sageBold(10))
                             .foregroundColor(.white)
                             .padding(.horizontal, 8).padding(.vertical, 3)
                             .background(Capsule().fill(tint))
@@ -255,7 +256,7 @@ struct ResultView: View {
                 }
                 if let body = product.overviewBodyText {
                     Text(body)
-                        .font(.system(size: 13))
+                        .font(.sageRegular(13))
                         .foregroundColor(Theme.textPrimary(dark))
                         .lineSpacing(2)
                         .frame(maxWidth: .infinity, alignment: .leading)
@@ -276,9 +277,9 @@ struct ResultView: View {
         Button(action: onCompare) {
             HStack(spacing: 8) {
                 Image(systemName: "arrow.left.arrow.right")
-                    .font(.system(size: 14, weight: .semibold))
+                    .font(.sageSemiBold(14))
                 Text("Compare with another")
-                    .font(.system(size: 14, weight: .semibold)).tracking(-0.2)
+                    .font(.sageSemiBold(14)).tracking(-0.2)
             }
             .foregroundColor(Theme.textPrimary(dark))
             .padding(.vertical, 13)
@@ -337,7 +338,7 @@ struct ResultView: View {
                     HStack(spacing: 10) {
                         RiskDot(risk: .low)
                         Text("No additives detected")
-                            .font(.system(size: 14, weight: .semibold))
+                            .font(.sageSemiBold(14))
                             .foregroundColor(Theme.textPrimary(dark))
                     }
                     .padding(.horizontal, 16).padding(.vertical, 14)
@@ -418,7 +419,7 @@ struct ResultView: View {
 
     private func disclaimer(dark: Bool) -> some View {
         Text("This is not professional advice. For specialized recommendation, seek a nutritionist.")
-            .font(.system(size: 11))
+            .font(.sageRegular(11))
             .multilineTextAlignment(.center)
             .foregroundColor(Theme.textSecondary(dark))
             .lineSpacing(2)
@@ -453,13 +454,13 @@ struct NutriScoreCard: View {
         let c = colors[g] ?? Color.neutralMuted
         return HStack(alignment: .center, spacing: 12) {
             Text(g)
-                .font(.system(size: 28, weight: .heavy)).tracking(-1)
+                .font(.sageBold(28)).tracking(-1)
                 .foregroundColor(.white)
                 .frame(width: 52, height: 52)
                 .background(RoundedRectangle(cornerRadius: 14, style: .continuous).fill(c))
             VStack(alignment: .leading, spacing: 6) {
                 Text("NUTRI-SCORE")
-                    .font(.system(size: 9, weight: .heavy)).tracking(1.2)
+                    .font(.sageBold(9)).tracking(1.2)
                     .foregroundColor(Theme.textSecondary(dark))
                 HStack(spacing: 2) {
                     ForEach(["A","B","C","D","E"], id: \.self) { letter in
@@ -484,7 +485,7 @@ struct NutriScoreCard: View {
     private var unknownBody: some View {
         HStack(alignment: .center, spacing: 12) {
             Text("?")
-                .font(.system(size: 24, weight: .heavy)).tracking(-0.5)
+                .font(.sageBold(24)).tracking(-0.5)
                 .foregroundColor(Theme.textSecondary(dark))
                 .frame(width: 52, height: 52)
                 .background(
@@ -493,10 +494,10 @@ struct NutriScoreCard: View {
                 )
             VStack(alignment: .leading, spacing: 6) {
                 Text("NUTRI-SCORE")
-                    .font(.system(size: 9, weight: .heavy)).tracking(1.2)
+                    .font(.sageBold(9)).tracking(1.2)
                     .foregroundColor(Theme.textSecondary(dark))
                 Text("Not rated")
-                    .font(.system(size: 13, weight: .semibold))
+                    .font(.sageSemiBold(13))
                     .foregroundColor(Theme.textSecondary(dark))
                 HStack(spacing: 2) {
                     ForEach(0..<5, id: \.self) { _ in
@@ -554,13 +555,13 @@ struct NovaCard: View {
             .frame(width: 52, height: 52, alignment: .bottom)
             VStack(alignment: .leading, spacing: 3) {
                 Text("PROCESSING")
-                    .font(.system(size: 9, weight: .heavy)).tracking(1.2)
+                    .font(.sageBold(9)).tracking(1.2)
                     .foregroundColor(Theme.textSecondary(dark))
                 Text("NOVA \(group)")
-                    .font(.system(size: 13, weight: .heavy)).tracking(-0.2)
+                    .font(.sageBold(13)).tracking(-0.2)
                     .foregroundColor(Theme.textPrimary(dark))
                 Text(labels[group] ?? "")
-                    .font(.system(size: 11, weight: .semibold))
+                    .font(.sageSemiBold(11))
                     .foregroundColor(labelColor)
                     .lineLimit(1)
                     .minimumScaleFactor(0.85)
@@ -588,13 +589,13 @@ struct NovaCard: View {
             .frame(width: 52, height: 52, alignment: .bottom)
             VStack(alignment: .leading, spacing: 3) {
                 Text("PROCESSING")
-                    .font(.system(size: 9, weight: .heavy)).tracking(1.2)
+                    .font(.sageBold(9)).tracking(1.2)
                     .foregroundColor(Theme.textSecondary(dark))
                 Text("Not rated")
-                    .font(.system(size: 13, weight: .heavy)).tracking(-0.2)
+                    .font(.sageBold(13)).tracking(-0.2)
                     .foregroundColor(Theme.textPrimary(dark))
                 Text("Unknown")
-                    .font(.system(size: 11, weight: .semibold))
+                    .font(.sageSemiBold(11))
                     .foregroundColor(Color.neutralMuted)
                     .lineLimit(1)
             }
@@ -641,14 +642,14 @@ struct NutrientRow: View {
         HStack(spacing: 8) {
             HStack(spacing: 7) {
                 Text(label)
-                    .font(.system(size: 14, weight: .semibold)).tracking(-0.2)
+                    .font(.sageSemiBold(14)).tracking(-0.2)
                     .foregroundColor(Theme.textPrimary(dark))
                     .lineLimit(1)
                     .minimumScaleFactor(0.85)
                     .layoutPriority(1)
                 if bonus {
                     Text("+ BOOST")
-                        .font(.system(size: 10, weight: .heavy)).tracking(0.3)
+                        .font(.sageBold(10)).tracking(0.3)
                         .foregroundColor(Color(hex: "1F8A5B"))
                         .padding(.horizontal, 7).padding(.vertical, 2)
                         .background(Capsule().fill(Color(hex: "1F8A5B").opacity(0.12)))
@@ -657,13 +658,13 @@ struct NutrientRow: View {
             }
             Spacer(minLength: 0)
             Text(value)
-                .font(.system(size: 14, weight: .heavy))
+                .font(.sageBold(14))
                 .monospacedDigit().tracking(-0.2)
                 .foregroundColor(Theme.textPrimary(dark))
                 .fixedSize(horizontal: true, vertical: false)
             if let tag {
                 Text(tag.word.uppercased())
-                    .font(.system(size: 10, weight: .heavy)).tracking(0.4)
+                    .font(.sageBold(10)).tracking(0.4)
                     .foregroundColor(tag.fg)
                     .padding(.horizontal, 9).padding(.vertical, 3)
                     .background(Capsule().fill(tag.bg))
@@ -697,13 +698,13 @@ struct AdditiveRow: View {
             RiskDot(risk: additive.risk, allowAlarmRed: allowAlarmRed)
             VStack(alignment: .leading, spacing: 2) {
                 Text(additive.name)
-                    .font(.system(size: 14, weight: .semibold)).tracking(-0.2)
+                    .font(.sageSemiBold(14)).tracking(-0.2)
                     .foregroundColor(Theme.textPrimary(dark))
                     .lineLimit(2)
                     .fixedSize(horizontal: false, vertical: true)
                 if let note = additive.note, !note.isEmpty {
                     Text(note)
-                        .font(.system(size: 11))
+                        .font(.sageRegular(11))
                         .foregroundColor(Theme.textSecondary(dark))
                         .lineSpacing(1)
                         .fixedSize(horizontal: false, vertical: true)
@@ -711,7 +712,7 @@ struct AdditiveRow: View {
             }
             Spacer()
             Text(RiskStyle.label(additive.risk).uppercased())
-                .font(.system(size: 10, weight: .heavy)).tracking(0.4)
+                .font(.sageBold(10)).tracking(0.4)
                 .foregroundColor(riskFg)
                 .padding(.horizontal, 9).padding(.vertical, 3)
                 .background(Capsule().fill(riskBg))
@@ -758,7 +759,7 @@ struct SeverityBar: View {
                     HStack(spacing: 5) {
                         RiskDot(risk: r, size: 7, allowAlarmRed: allowAlarmRed)
                         Text("\(counts[r] ?? 0) \(RiskStyle.label(r).lowercased())")
-                            .font(.system(size: 11, weight: .heavy))
+                            .font(.sageBold(11))
                             .foregroundColor(barColor(for: r))
                     }
                 }
@@ -791,15 +792,15 @@ struct InfoRow: View {
     var body: some View {
         HStack(spacing: 12) {
             Text(emoji)
-                .font(.system(size: 14))
+                .font(.sageRegular(14))
                 .frame(width: 28, height: 28)
                 .background(RoundedRectangle(cornerRadius: 8).fill(Color.black.opacity(0.04)))
             VStack(alignment: .leading, spacing: 1) {
                 Text(label)
-                    .font(.system(size: 13, weight: .heavy)).tracking(-0.2)
+                    .font(.sageBold(13)).tracking(-0.2)
                     .foregroundColor(Theme.textPrimary(dark))
                 Text(detail)
-                    .font(.system(size: 11))
+                    .font(.sageRegular(11))
                     .foregroundColor(Theme.textSecondary(dark))
             }
             Spacer()
@@ -819,13 +820,13 @@ struct RestrictionBannerView: View {
     var body: some View {
         let fg = Color.cautionMuted
         HStack(alignment: .top, spacing: 10) {
-            Text("⚠️").font(.system(size: 14))
+            Text("⚠️").font(.sageRegular(14))
             VStack(alignment: .leading, spacing: 1) {
                 Text("Contains \(trigger), flagged by your profile")
-                    .font(.system(size: 13, weight: .heavy)).tracking(-0.1)
+                    .font(.sageBold(13)).tracking(-0.1)
                     .foregroundColor(fg)
                 Text(type.uppercased())
-                    .font(.system(size: 11, weight: .heavy)).tracking(0.4)
+                    .font(.sageBold(11)).tracking(0.4)
                     .foregroundColor(fg.opacity(0.85))
             }
             Spacer()
@@ -847,16 +848,16 @@ struct SeriousFlag: View {
         let fg = Color.cautionMuted
         HStack(spacing: 12) {
             Text("!")
-                .font(.system(size: 16, weight: .heavy))
+                .font(.sageBold(16))
                 .foregroundColor(.white)
                 .frame(width: 36, height: 36)
                 .background(RoundedRectangle(cornerRadius: 10).fill(fg))
             VStack(alignment: .leading, spacing: 1) {
                 Text("Contains trans fats")
-                    .font(.system(size: 14, weight: .heavy)).tracking(-0.2)
+                    .font(.sageBold(14)).tracking(-0.2)
                     .foregroundColor(fg)
                 Text("The most heavily penalized input in your score.")
-                    .font(.system(size: 11))
+                    .font(.sageRegular(11))
                     .foregroundColor(fg.opacity(0.85))
             }
             Spacer()
@@ -883,15 +884,15 @@ struct AllergenBanner: View {
         let fg = Color.cautionMuted
         HStack(spacing: 12) {
             Image(systemName: "exclamationmark.octagon.fill")
-                .font(.system(size: 18))
+                .font(.sageRegular(18))
                 .foregroundColor(fg)
             VStack(alignment: .leading, spacing: 1) {
                 Text("\(fromTag ? "Contains" : "May contain") \(label.lowercased())")
-                    .font(.system(size: 14, weight: .heavy)).tracking(-0.2)
+                    .font(.sageBold(14)).tracking(-0.2)
                     .foregroundColor(fg)
                 Text(fromTag ? "Listed as an allergen for this product"
                              : "Detected in the ingredient list")
-                    .font(.system(size: 11))
+                    .font(.sageRegular(11))
                     .foregroundColor(fg.opacity(0.85))
             }
             Spacer()
@@ -914,12 +915,12 @@ struct AllergenDisclaimer: View {
     var body: some View {
         HStack(spacing: 8) {
             Image(systemName: "info.circle")
-                .font(.system(size: 12))
+                .font(.sageRegular(12))
                 .foregroundColor(Theme.textSecondary(dark))
             Text(hasMatch
                  ? "Always confirm on the product packaging — allergen data can be incomplete."
                  : "No declared allergens matched your profile, but data may be incomplete — always check the packaging.")
-                .font(.system(size: 11))
+                .font(.sageRegular(11))
                 .foregroundColor(Theme.textSecondary(dark))
                 .lineSpacing(1)
                 .fixedSize(horizontal: false, vertical: true)

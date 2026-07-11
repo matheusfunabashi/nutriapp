@@ -15,10 +15,10 @@ struct HistoryView: View {
                 StaggeredAppear(index: 0) {
                     VStack(alignment: .leading, spacing: 2) {
                         Text("Library")
-                            .font(.system(size: 13, weight: .semibold))
+                            .font(.sageSemiBold(13))
                             .foregroundColor(Theme.textSecondary(dark))
                         Text("History")
-                            .font(.system(size: 32, weight: .heavy)).tracking(-1)
+                            .font(.sageBold(32)).tracking(-1)
                             .foregroundColor(Theme.textPrimary(dark))
                     }
                     // 12pt above the system safe-area; ContentView's
@@ -51,7 +51,7 @@ struct HistoryView: View {
                     StaggeredAppear(index: gIdx + 2) {
                         VStack(alignment: .leading, spacing: 0) {
                             Text(entry.day.uppercased())
-                                .font(.system(size: 11, weight: .heavy)).tracking(1.4)
+                                .font(.sageBold(11)).tracking(1.4)
                                 .foregroundColor(Theme.textSecondary(dark))
                                 .padding(.horizontal, 24).padding(.top, 20).padding(.bottom, 8)
 
@@ -127,9 +127,9 @@ private struct FilterChip: View {
         Button(action: action) {
             HStack(spacing: 6) {
                 Text(label)
-                    .font(.system(size: 13, weight: .heavy)).tracking(-0.1)
+                    .font(.sageBold(13)).tracking(-0.1)
                 Text("\(count)")
-                    .font(.system(size: 11, weight: .heavy))
+                    .font(.sageBold(11))
                     .opacity(active ? 0.7 : 0.5)
                     .monospacedDigit() // counts can shift as scans pile up
                     .contentTransition(.numericText()) // smooth count updates
@@ -163,21 +163,21 @@ private struct HistoryRow: View {
                              imageURL: product.imageURL)
                 VStack(alignment: .leading, spacing: 1) {
                     Text(product.brand.uppercased())
-                        .font(.system(size: 10, weight: .heavy)).tracking(1.2)
+                        .font(.sageBold(10)).tracking(1.2)
                         .foregroundColor(Theme.textSecondary(dark))
                     Text(product.name)
-                        .font(.system(size: 14, weight: .heavy)).tracking(-0.2)
+                        .font(.sageBold(14)).tracking(-0.2)
                         .foregroundColor(Theme.textPrimary(dark))
                         .lineLimit(1)
                     Text(when)
-                        .font(.system(size: 11))
+                        .font(.sageRegular(11))
                         .monospacedDigit() // align times across rows
                         .foregroundColor(Theme.textSecondary(dark))
                 }
                 Spacer(minLength: 8)
                 YourScorePill(score: product.yourScore)
                 Image(systemName: "chevron.right")
-                    .font(.system(size: 12, weight: .bold))
+                    .font(.sageBold(12))
                     .foregroundColor(Theme.textSecondary(dark))
             }
             .padding(.horizontal, 14).padding(.vertical, 12)
@@ -197,12 +197,12 @@ private struct EmptyHistory: View {
     let dark: Bool
     var body: some View {
         VStack(spacing: 8) {
-            Text("🌱").font(.system(size: 32))
+            Text("🌱").font(.sageRegular(32))
             Text("Nothing here yet")
-                .font(.system(size: 16, weight: .bold))
+                .font(.sageBold(16))
                 .foregroundColor(Theme.textPrimary(dark))
             Text("Scan a product to see it in your history.")
-                .font(.system(size: 13))
+                .font(.sageRegular(13))
                 .foregroundColor(Theme.textSecondary(dark))
         }
         .frame(maxWidth: .infinity)

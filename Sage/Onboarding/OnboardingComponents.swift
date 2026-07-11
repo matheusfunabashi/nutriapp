@@ -38,7 +38,7 @@ struct OnboardingHeader: View {
         HStack(spacing: 14) {
             Button(action: onBack) {
                 Image(systemName: "chevron.left")
-                    .font(.system(size: 15, weight: .semibold))
+                    .font(.sageSemiBold(15))
                     .foregroundColor(Theme.textPrimary(dark))
                     .frame(width: 36, height: 36)
                     .background(
@@ -55,7 +55,7 @@ struct OnboardingHeader: View {
             if step.allowsSkip, let onSkip {
                 Button(action: onSkip) {
                     Text("Skip")
-                        .font(.system(size: 14, weight: .semibold))
+                        .font(.sageSemiBold(14))
                         .foregroundColor(Theme.textSecondary(dark))
                         .padding(.vertical, 10).padding(.leading, 10)
                         .minHitArea(44)
@@ -82,13 +82,13 @@ struct OnboardingTitle: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             Text(title)
-                .font(.system(size: 28, weight: .heavy)).tracking(-0.7)
+                .font(.sageBold(28)).tracking(-0.7)
                 .foregroundColor(Theme.textPrimary(dark))
                 .fixedSize(horizontal: false, vertical: true)
                 .multilineTextAlignment(.leading)
             if let subtitle {
                 Text(subtitle)
-                    .font(.system(size: 15))
+                    .font(.sageRegular(15))
                     .lineSpacing(3)
                     .foregroundColor(Theme.textSecondary(dark))
                     .fixedSize(horizontal: false, vertical: true)
@@ -108,7 +108,7 @@ struct OnboardingEyebrow: View {
 
     var body: some View {
         Text(text.uppercased())
-            .font(.system(size: 11, weight: .heavy)).tracking(1.4)
+            .font(.sageBold(11)).tracking(1.4)
             .foregroundColor(Theme.textSecondary(dark))
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.horizontal, 24)
@@ -126,7 +126,7 @@ struct OnboardingCTAButton: View {
     var body: some View {
         Button(action: action) {
             Text(title)
-                .font(.system(size: 16, weight: .heavy)).tracking(-0.2)
+                .font(.sageBold(16)).tracking(-0.2)
                 // Locked to white on black across the entire onboarding,
                 // regardless of dark mode. Onboarding's CTA must read as
                 // the same neutral primary action on every step — not flip
@@ -154,7 +154,7 @@ struct OnboardingGhostButton: View {
     var body: some View {
         Button(action: action) {
             Text(title)
-                .font(.system(size: 14, weight: .semibold))
+                .font(.sageSemiBold(14))
                 .foregroundColor(Theme.textSecondary(dark))
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 10) // bumped from 6 → 10 for thumb reach
@@ -180,7 +180,7 @@ struct OnboardingSelectionCard: View {
             VStack(alignment: .leading, spacing: 8) {
                 HStack(alignment: .top) {
                     if let emoji {
-                        Text(emoji).font(.system(size: 24))
+                        Text(emoji).font(.sageRegular(24))
                     }
                     Spacer(minLength: 0)
                     // Contextual icon: empty ring → filled check with a smooth
@@ -195,7 +195,7 @@ struct OnboardingSelectionCard: View {
                         ZStack {
                             Circle().fill(accent).frame(width: 22, height: 22)
                             Image(systemName: "checkmark")
-                                .font(.system(size: 11, weight: .black))
+                                .font(.sageBold(11))
                                 .foregroundColor(.white)
                         }
                         .opacity(selected ? 1 : 0)
@@ -204,12 +204,12 @@ struct OnboardingSelectionCard: View {
                     .animation(.spring(response: 0.32, dampingFraction: 0.7), value: selected)
                 }
                 Text(title)
-                    .font(.system(size: 15, weight: .heavy)).tracking(-0.2)
+                    .font(.sageBold(15)).tracking(-0.2)
                     .foregroundColor(Theme.textPrimary(dark))
                     .multilineTextAlignment(.leading)
                 if let subtitle {
                     Text(subtitle)
-                        .font(.system(size: 12))
+                        .font(.sageRegular(12))
                         .foregroundColor(Theme.textSecondary(dark))
                         .multilineTextAlignment(.leading)
                 }
@@ -245,7 +245,7 @@ struct OnboardingDietPill: View {
     var body: some View {
         Button(action: action) {
             Text(label)
-                .font(.system(size: 14, weight: .heavy)).tracking(-0.2)
+                .font(.sageBold(14)).tracking(-0.2)
                 .foregroundColor(selected ? .white : Theme.textPrimary(dark))
                 .padding(.horizontal, 16).padding(.vertical, 11)
                 .background(
@@ -273,7 +273,7 @@ struct OnboardingAllergenCell: View {
     var body: some View {
         Button(action: action) {
             Text(label)
-                .font(.system(size: 14, weight: .heavy)).tracking(-0.2)
+                .font(.sageBold(14)).tracking(-0.2)
                 .foregroundColor(selected ? .white : Theme.textPrimary(dark))
                 .multilineTextAlignment(.center)
                 .lineLimit(2)
@@ -307,7 +307,7 @@ struct OnboardingChip: View {
     var body: some View {
         Button(action: action) {
             Text(label)
-                .font(.system(size: 14, weight: .heavy)).tracking(-0.2)
+                .font(.sageBold(14)).tracking(-0.2)
                 .foregroundColor(selected ? .white : Theme.textPrimary(dark))
                 .padding(.horizontal, 16).padding(.vertical, 11)
                 .background(
@@ -401,9 +401,9 @@ struct OnboardingHeroImage: View {
                     .overlay(
                         VStack(spacing: 6) {
                             Image(systemName: "photo")
-                                .font(.system(size: 22, weight: .medium))
+                                .font(.sageMedium(22))
                             Text("Add \(assetName).png")
-                                .font(.system(size: 12, weight: .semibold))
+                                .font(.sageSemiBold(12))
                         }
                         .foregroundColor(Theme.textSecondary(dark))
                     )
@@ -443,9 +443,9 @@ struct PhoneShowcase: View {
                         VStack(spacing: 6) {
                             Capsule().fill(Color(hex: "B7A786")).frame(width: 56, height: 6)
                             Text("HILLTOP")
-                                .font(.system(size: 10, weight: .black)).tracking(1.2)
+                                .font(.sageBold(10)).tracking(1.2)
                             Text("GREEK\nYOGURT")
-                                .font(.system(size: 10, weight: .black))
+                                .font(.sageBold(10))
                                 .multilineTextAlignment(.center)
                                 .lineSpacing(0)
                             barcode
@@ -505,15 +505,15 @@ struct PhoneShowcase: View {
             Circle().fill(accent).frame(width: 6, height: 6)
             VStack(alignment: .leading, spacing: 0) {
                 Text(title)
-                    .font(.system(size: 12, weight: .heavy)).tracking(-0.2)
+                    .font(.sageBold(12)).tracking(-0.2)
                     .foregroundColor(.black)
                 Text(subtitle)
-                    .font(.system(size: 10, weight: .semibold))
+                    .font(.sageSemiBold(10))
                     .foregroundColor(accent)
             }
             if trailingCheck {
                 Image(systemName: "checkmark")
-                    .font(.system(size: 10, weight: .black))
+                    .font(.sageBold(10))
                     .foregroundColor(accent)
             }
         }
