@@ -10,6 +10,9 @@ struct Additive: Identifiable, Hashable, Codable {
     let risk: RiskLevel
     /// Short justification, shown for higher-risk additives. nil when not applicable.
     var note: String? = nil
+    /// Normalized E-number ("e150d") — scoring v4 looks tiers up by code.
+    /// Optional for back-compat with snapshots saved before Phase B.
+    var code: String? = nil
 }
 
 struct Restriction: Identifiable, Hashable, Codable {
@@ -109,6 +112,9 @@ struct Product: Identifiable, Hashable, Codable {
     var lastModified: Date? = nil
     /// Markets the product is sold in (sibling-inheritance guard, v4.1).
     var countries: [String]? = nil
+    /// Normalized category tags (e.g. "beverages", "salty-snacks") — drives
+    /// the v4 category router. Optional for back-compat.
+    var categories: [String]? = nil
 }
 
 // MARK: - Data confidence (SCORING_V4.md §3.2–3.3)

@@ -37,10 +37,10 @@ enum AdditiveCatalog {
     static func additive(for tag: String) -> Additive {
         let code = normalize(tag)
         if let info = entries[code] {
-            return Additive(name: info.name, risk: info.risk, note: info.note)
+            return Additive(name: info.name, risk: info.risk, note: info.note, code: code)
         }
         // Unknown additive: show the code, no risk judgment.
-        return Additive(name: code.uppercased(), risk: .unrated)
+        return Additive(name: code.uppercased(), risk: .unrated, code: code)
     }
 }
 
@@ -174,7 +174,8 @@ struct OpenFoodFactsService {
             servingSize: off.servingSize?.isEmpty == false ? off.servingSize : nil,
             completeness: off.completeness,
             lastModified: off.lastModifiedT.map { Date(timeIntervalSince1970: $0) },
-            countries: normalizedTags(off.countriesTags)
+            countries: normalizedTags(off.countriesTags),
+            categories: normalizedTags(off.categoriesTags)
         )
     }
 
