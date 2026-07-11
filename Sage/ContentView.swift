@@ -2,6 +2,9 @@ import SwiftUI
 
 enum Overlay: Identifiable, Hashable {
     case result(productId: String, fromScan: Bool)
+    /// Product exists but fails the minimum-data requirement (no ingredient
+    /// list AND no nutrition table) — never show a made-up score.
+    case insufficientData(productId: String)
     case compare(aId: String, bId: String)
     case paywall
     case manual
@@ -13,8 +16,9 @@ enum Overlay: Identifiable, Hashable {
 
     var id: String {
         switch self {
-        case .result(let id, _):     return "result_\(id)"
-        case .compare(let a, let b): return "compare_\(a)_\(b)"
+        case .result(let id, _):        return "result_\(id)"
+        case .insufficientData(let id): return "insufficient_\(id)"
+        case .compare(let a, let b):    return "compare_\(a)_\(b)"
         case .paywall:               return "paywall"
         case .manual:                return "manual"
         case .methodology:           return "methodology"
@@ -168,6 +172,10 @@ struct ContentView: View {
                     onOpenMethodology: { showMethodModal = true }
                 )
             }
+        case .insufficientData(let id):
+            if let p = store.products[id] {
+                InsufficientDataView(product: p, onBack: pop)
+            }
         case .compare(let aId, let bId):
             if let a = store.products[aId], let b = store.products[bId] {
                 CompareView(a: a, b: b, onBack: pop)
@@ -223,8 +231,12 @@ struct ContentView: View {
         Task { @MainActor in
             do {
                 let raw = try await backend.lookup(barcode: barcode)
-                let product = ScoringEngine.score(raw, for: store.user)
                 isLookingUp = false
+                guard raw.hasMinimumData else {
+                    presentInsufficientData(raw)
+                    return
+                }
+                let product = ScoringEngine.score(raw, for: store.user)
                 if let a = compareWith {
                     store.saveProduct(product)
                     push(.compare(aId: a.id, bId: product.id))
@@ -240,6 +252,15 @@ struct ContentView: View {
         }
     }
 
+    /// Minimum-data requirement (SCORING_V4.md §3.3): the product exists but
+    /// has neither an ingredient list nor a nutrition table, so no score can
+    /// honestly be computed. Snapshot it (unscored) and show the data-gap
+    /// state instead of a result page.
+    private func presentInsufficientData(_ product: Product) {
+        store.saveProduct(product)
+        push(.insufficientData(productId: product.id))
+    }
+
     /// A search selection runs the same pipeline as a scan (/lookup → score →
     /// result page → async /explain); it just skips the camera and doesn't
     /// enter scan history.
@@ -248,8 +269,12 @@ struct ContentView: View {
         Task { @MainActor in
             do {
                 let raw = try await backend.lookup(barcode: barcode)
-                let product = ScoringEngine.score(raw, for: store.user)
                 isLookingUp = false
+                guard raw.hasMinimumData else {
+                    presentInsufficientData(raw)
+                    return
+                }
+                let product = ScoringEngine.score(raw, for: store.user)
                 store.saveProduct(product)
                 push(.result(productId: product.id, fromScan: false))
                 fetchExplanation(for: product)
@@ -309,6 +334,74 @@ struct ContentView: View {
     private func beginCompare(productId: String) {
         pendingCompareA = store.products[productId]
         showCamera = true
+    }
+}
+
+// MARK: - Insufficient data state (SCORING_V4.md §3.3)
+
+/// Shown when a product exists in the database but has neither an ingredient
+/// list nor a nutrition table. "No data" is a first-class state — we never
+/// render a score built purely from unknown-tier defaults.
+struct InsufficientDataView: View {
+    let product: Product
+    let onBack: () -> Void
+    @EnvironmentObject var store: AppStore
+
+    var body: some View {
+        let dark = store.darkMode
+        ZStack {
+            Theme.bg(dark).ignoresSafeArea()
+            VStack(spacing: 0) {
+                HStack {
+                    CircleIconButton(systemName: "chevron.left", dark: dark,
+                                     accessibilityLabel: "Back", action: onBack)
+                    Spacer()
+                    Text("Sage")
+                        .font(.system(size: 18, weight: .bold)).tracking(-0.4)
+                        .foregroundColor(Theme.textPrimary(dark))
+                    Spacer()
+                    // Balances the back button so the title stays centered.
+                    Color.clear.frame(width: 42, height: 42)
+                }
+                .padding(.horizontal, 16).padding(.top, 8)
+
+                Spacer()
+
+                VStack(spacing: 14) {
+                    ProductThumb(glyph: product.glyph, score: 0, size: 84,
+                                 neutral: true, imageURL: product.imageURL)
+                    VStack(spacing: 2) {
+                        if !product.brand.isEmpty {
+                            Text(product.brand.uppercased())
+                                .font(.system(size: 11, weight: .heavy)).tracking(1.2)
+                                .foregroundColor(store.accent)
+                        }
+                        Text(product.name)
+                            .font(.system(size: 22, weight: .bold)).tracking(-0.5)
+                            .foregroundColor(Theme.textPrimary(dark))
+                            .multilineTextAlignment(.center)
+                            .lineLimit(3)
+                    }
+                    .padding(.horizontal, 32)
+
+                    VStack(spacing: 8) {
+                        Text("Not enough data to score")
+                            .font(.system(size: 16, weight: .bold))
+                            .foregroundColor(Theme.textPrimary(dark))
+                        Text("This product is in the database, but its ingredient list and nutrition facts haven't been added yet — so an honest score isn't possible. Try another pack size, or check back later.")
+                            .font(.system(size: 13))
+                            .foregroundColor(Theme.textSecondary(dark))
+                            .multilineTextAlignment(.center)
+                            .lineSpacing(2)
+                            .padding(.horizontal, 36)
+                    }
+                    .padding(.top, 8)
+                }
+
+                Spacer()
+                Spacer()
+            }
+        }
     }
 }
 

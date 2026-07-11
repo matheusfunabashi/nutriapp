@@ -57,6 +57,7 @@ struct ResultView: View {
                 aiAdviceSection(dark: dark)
                 scoreComparisonCard(dark: dark)
                     .padding(.horizontal, 16)
+                dataConfidenceLine(dark: dark)
             }
             .padding(.top, 14)
         }
@@ -193,6 +194,28 @@ struct ResultView: View {
         }
         .accessibilityElement(children: .combine)
         .accessibilityLabel("\(title) \(score), \(label)")
+    }
+
+    /// Data Confidence (SCORING_V4.md §3.2): tells the user how much of the
+    /// score is backed by real label data. High stays silent; Medium/Low get
+    /// an honest caveat instead of silently punished data gaps.
+    @ViewBuilder private func dataConfidenceLine(dark: Bool) -> some View {
+        if product.dataConfidence != .high {
+            HStack(spacing: 6) {
+                Image(systemName: product.dataConfidence == .medium
+                      ? "info.circle" : "exclamationmark.circle")
+                    .font(.system(size: 12, weight: .semibold))
+                Text(product.dataConfidence == .medium
+                     ? "Some label data is missing — the score may shift as data improves."
+                     : "Limited label data — treat this score as provisional.")
+                    .font(.system(size: 12))
+                    .lineSpacing(1)
+                Spacer(minLength: 0)
+            }
+            .foregroundColor(Theme.textSecondary(dark))
+            .padding(.horizontal, 20)
+            .accessibilityElement(children: .combine)
+        }
     }
 
     @ViewBuilder private func scoreGapLine(dark: Bool) -> some View {

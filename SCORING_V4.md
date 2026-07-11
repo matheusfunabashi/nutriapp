@@ -17,7 +17,7 @@ ROADMAP.md and the "Sage Scoring System v1.0" proposal once approved.
 | # | Topic | v1.0 proposal | v4 resolution |
 |---|---|---|---|
 | 1 | Positive nutrition | Absent — all rules were penalty-avoidance; the app's four objectives (build muscle / lose weight / maintain / eat healthier) had no levers | **[DECIDED]** New shared rule **S12 Nutrient quality** (protein density, fiber, whole-food content — the proven v3 blocks) joins every food profile. The four objectives stay and act through S12 + rule multipliers (§7) |
-| 2 | Scale philosophy | Harsh (90/80/70/60 bands; example oat milk = 54 "Poor"; scores can hit 0) | **[DECIDED]** Centered scale, v3-style: ~50 reads "neither good nor bad", **floor at 10 — a score is never 0**. Bands provisional until calibration (§12) |
+| 2 | Scale philosophy | Harsh (90/80/70/60 bands; scores can hit 0) | **[DECIDED, revised 2026-07-11]** **Harsh, Yuka-aligned scale** (team reversal of the earlier centered decision): mainstream ultra-processed food should cluster in the bottom half, "Good" is earned. **Floor at 10 stays — a score is never 0.** Harshness comes primarily from the Tier-A additive cap (§3.5), not from band placement alone. Bands provisional until calibration (§12) |
 | 3 | Rule math | Absolute penalty points "calibrated for a 45-pt max", rescaled per category — the worked example scaled in the wrong direction | **[DECIDED]** Every rule returns a **fraction ∈ [0, 1]** and never knows its point value; profiles own the weights. No rescaling step exists, so the bug class is structurally impossible (§3) |
 | 4 | Personalization inputs | Continuous priority sliders + free-text avoid list | **[DECIDED]** All personalization inputs are **discrete and few-optioned** (3-step sliders, fixed avoid-list vocabulary) so ScoreClass explanation-cache bucketing survives (§7.4) |
 | 5 | Where scoring runs | Unspecified | **[DECIDED]** **On-device Swift engine + versioned JSON rulesets** (bundled default, background-refreshed from the Worker, never blocking launch or scans, fully offline-capable). Ruleset version joins the explanation cache key (§10) |
@@ -46,8 +46,11 @@ detail-level corrections noted inline below.
 4. **Positive nutrition matters.** A product is not merely the absence of bad
    ingredients; protein density, fiber, and whole-food content earn points
    (S12). This keeps the goal-based personalization meaningful.
-5. **Centered, floored scale.** ~50 = neither good nor bad; 10 = floor; 100 =
-   attainable. Personalization *tunes* the base verdict, it doesn't replace it.
+5. **Harsh, floored scale (Yuka-aligned).** A "Good" verdict is earned, not
+   default: clean whole foods reach the top bands, mainstream ultra-processed
+   products cluster in the bottom half, and a major-concern additive caps the
+   score outright (§3.5). 10 = floor (never 0); 100 = attainable.
+   Personalization *tunes* the base verdict, it doesn't replace it.
 6. **No fake data.** OFF has no lab results; Sage never implies it does. The
    Data Confidence chip + methodology page carry that honesty.
 7. **Scope:** food and beverages only. Non-food `categories_tags` (pet food,
@@ -123,10 +126,22 @@ state: show name/brand/photo, no score, and the photograph-the-label prompt.
 
 ### 3.4 Score bands — PROVISIONAL [OPEN until §12 calibration]
 
-Centered working set (aligned with the current UI): **80–100 Excellent ·
-60–79 Good · 40–59 OK · 10–39 Bad**. All UI components (`scoreTier`,
-`CompactScoreRing`, methodology copy) must read from **one** band definition
-in the ruleset — the current three-way divergence is a bug this spec removes.
+Yuka-aligned working set: **75–100 Excellent · 50–74 Good · 25–49 Mediocre ·
+10–24 Bad**. All UI components (`scoreTier`, `CompactScoreRing`, methodology
+copy) must read from **one** band definition in the ruleset — the current
+three-way divergence is a bug this spec removes.
+
+### 3.5 Severity caps (the Yuka mechanism) [OPEN: cap values for team sign-off]
+
+Band placement alone doesn't produce the Yuka feel — the additive hard-cap
+does. Proposal: applied to the Base Score **after** the weighted sum,
+strongest cap wins:
+
+- Any **Tier-A** additive present → Base capped at **24** (top of "Bad").
+- Two or more **Tier-B** additives → Base capped at **49** (top of "Mediocre").
+- Caps never raise a score, and the floor of 10 still applies underneath.
+- The capping additive is always named in the score chips ("capped — contains
+  titanium dioxide"), same attributability contract as everything else.
 
 ---
 
@@ -381,13 +396,16 @@ Profile: plant-based milks. Σw = 98.
 | S8 | 5 | 0.00 | 0.0 | none |
 | **Σ** | **98** | | **52.5** | |
 
-`raw = 52.5 / 98 × 100 = 53.6` → **Base 54 · "OK" band · Confidence High**
-(every rule had data; S3 chip notes the total-sugar fallback).
+`raw = 52.5 / 98 × 100 = 53.6` → **Base 54 · "Good" band (Yuka-aligned
+75/50/25) · Confidence High** (every rule had data; S3 chip notes the
+total-sugar fallback). No severity cap applies — its flagged additives are
+Tier C/D only (a Tier-A additive would have capped it at 24 regardless of
+the weighted sum, per §3.5).
 
 Sanity check vs. v1.0: same product landed 54 there too — but there it read
 "Poor" and the S1 math inside was wrong in a way that grows with every
-non-45-weight category. Here the verdict is centered ("OK") and the math has
-no scaling step.
+non-45-weight category. Here the math has no scaling step, and the harshness
+comes from severity caps + calibration rather than band lettering.
 
 Personalization spot-checks: a **lose-weight** user (S3 ×2, S12 ×1.5, S6 ×0.5)
 → ≈ 55 (+1: low sugar helps, weak nutrition holds it back). A **gut-health**
@@ -468,11 +486,14 @@ explanations always match the math that produced them.
    category bunching — e.g. "all waters ≥ 85" or "all snacks ≤ 45" means that
    profile's weights need work, not the bands).
 4. **Anchor list** (acceptance criteria, becomes an automated golden-test
-   suite): rolled oats, chicken breast, apple, plain Greek yogurt, canned
-   beans, olive oil → **Good or better** · Coke Zero, white bread, flavored
-   yogurt, granola bar → **honest middle** · Cheetos, gummy candy, regular
-   soda, maple-flavored corn syrup → **bottom bands**. **[OPEN: extend to
-   ~25–30 products during Phase B.]**
+   suite) — Yuka-aligned expectations: rolled oats, chicken breast, apple,
+   plain Greek yogurt, canned beans, olive oil → **Excellent/Good (75+)** ·
+   white bread, granola bar, flavored yogurt → **Mediocre (25–49)** · Coke
+   Zero, Cheetos, gummy candy, regular soda, maple-flavored corn syrup →
+   **Bad (10–24)**, with Tier-A/severity caps doing the work where additives
+   are the reason. Distribution target: the median mainstream ultra-processed
+   product lands in the **bottom half**. **[OPEN: extend to ~25–30 products
+   during Phase B.]**
 5. **Tune weights → rerun** (2–3 iterations typical). Fixes go to weights and
    rule params; bands are placed **last**, where the wholesome/junk clusters
    actually sit on a centered scale.
@@ -502,7 +523,8 @@ explanations always match the math that produced them.
 
 | # | Item | Proposal on the table |
 |---|---|---|
-| 1 | Band cutoffs | 80/60/40 provisional; locked after §12 |
+| 1 | Band cutoffs | Yuka-aligned 75/50/25 provisional; locked after §12 |
+| 0 | Severity-cap values (§3.5) | Tier-A → cap 24 · 2× Tier-B → cap 49 — **confirm this is what "Yuka format" means**, vs. only band placement |
 | 2 | Avoid-list vocabulary | 10-item list in §7.1 |
 | 3 | Multiplier values | Table in §7.2; validated during calibration |
 | 4 | Hard-gate cap values | 20 (diet conflict) / 49 (avoid-list) |

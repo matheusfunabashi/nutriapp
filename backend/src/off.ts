@@ -2,12 +2,20 @@
 // existing mapper stays the single source of truth for parsing. The Worker is a
 // thin caching proxy over OFF (with Go-UPC as a premium fallback — TODO).
 
+// Scoring v4 (SCORING_V4.md §2) widened this list: labels/certifications,
+// packaging, origins, per-ingredient percents, eco grade, data-completeness
+// signals, serving size, and market countries all feed the rule engine.
 const FIELDS = [
   "code", "product_name", "brands", "quantity",
   "nutriscore_grade", "nova_group", "nutriments",
   "additives_tags", "ingredients_analysis_tags", "allergens_tags",
   "ingredients_text", "categories_tags",
   "image_front_url", "image_url",
+  "labels_tags", "packagings", "packaging_materials_tags",
+  "origins_tags", "manufacturing_places", "ingredients",
+  "ecoscore_grade", "environmental_score_grade",
+  "completeness", "states_tags", "last_modified_t",
+  "serving_size", "countries_tags",
 ].join(",");
 
 export type OFFProduct = Record<string, unknown>;

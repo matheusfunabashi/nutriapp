@@ -61,7 +61,13 @@ struct OpenFoodFactsService {
         "nutriscore_grade", "nova_group", "nutriments",
         "additives_tags", "ingredients_analysis_tags", "allergens_tags",
         "ingredients_text", "categories_tags",
-        "image_front_url", "image_url"
+        "image_front_url", "image_url",
+        // Scoring-v4 data foundation (kept in sync with the Worker's list).
+        "labels_tags", "packagings", "packaging_materials_tags",
+        "origins_tags", "manufacturing_places", "ingredients",
+        "ecoscore_grade", "environmental_score_grade",
+        "completeness", "states_tags", "last_modified_t",
+        "serving_size", "countries_tags"
     ].joined(separator: ",")
 
     func fetchProduct(barcode: String) async throws -> Product {
@@ -122,7 +128,8 @@ struct OpenFoodFactsService {
             protein_g: n?.proteins,
             calcium_mg: n?.calcium.map { $0 * 1000 },
             kcal: n?.energyKcal ?? n?.energyKj.map { $0 / 4.184 },  // kJ→kcal fallback
-            fvn: n?.fvn
+            fvn: n?.fvn,
+            addedSugar_g: n?.addedSugars
         )
 
         let additives = (off.additivesTags ?? []).map { AdditiveCatalog.additive(for: $0) }
@@ -158,8 +165,59 @@ struct OpenFoodFactsService {
             dietFlags: dietFlags,
             allergenTags: allergenTags,
             ingredientsText: off.ingredientsText,
-            imageURL: sanitizedImageURL(off.imageFrontUrl ?? off.imageUrl)
+            imageURL: sanitizedImageURL(off.imageFrontUrl ?? off.imageUrl),
+            labels: normalizedTags(off.labelsTags),
+            packagingMaterials: packagingMaterials(off),
+            origins: normalizedTags(off.originsTags),
+            ingredientShares: ingredientShares(off.ingredients),
+            ecoGrade: ecoGrade(off),
+            servingSize: off.servingSize?.isEmpty == false ? off.servingSize : nil,
+            completeness: off.completeness,
+            lastModified: off.lastModifiedT.map { Date(timeIntervalSince1970: $0) },
+            countries: normalizedTags(off.countriesTags)
         )
+    }
+
+    // MARK: Scoring-v4 field mapping
+
+    private static func normalizedTags(_ tags: [String]?) -> [String]? {
+        guard let tags, !tags.isEmpty else { return nil }
+        return tags.map { AdditiveCatalog.normalize($0) }
+    }
+
+    /// Merge structured `packagings[].material` with the flat materials tags;
+    /// deduped, normalized. Empty → nil ("no packaging data" state for S7).
+    private static func packagingMaterials(_ off: OFFProduct) -> [String]? {
+        var out: [String] = []
+        for m in (off.packagings ?? []).compactMap(\.material) {
+            let n = AdditiveCatalog.normalize(m)
+            if !n.isEmpty, !out.contains(n) { out.append(n) }
+        }
+        for t in off.packagingMaterialsTags ?? [] {
+            let n = AdditiveCatalog.normalize(t)
+            if !n.isEmpty, !out.contains(n) { out.append(n) }
+        }
+        return out.isEmpty ? nil : out
+    }
+
+    private static func ingredientShares(_ ingredients: [OFFIngredient]?) -> [IngredientShare]? {
+        guard let ingredients, !ingredients.isEmpty else { return nil }
+        let shares = ingredients.compactMap { ing -> IngredientShare? in
+            guard let raw = ing.id ?? ing.text else { return nil }
+            return IngredientShare(name: AdditiveCatalog.normalize(raw),
+                                   percent: ing.percent,
+                                   percentEstimate: ing.percentEstimate)
+        }
+        return shares.isEmpty ? nil : shares
+    }
+
+    /// "a"–"e" only; OFF also emits "not-applicable"/"unknown", which we treat
+    /// as no data. Newer OFF versions rename ecoscore → environmental score.
+    private static func ecoGrade(_ off: OFFProduct) -> String? {
+        for g in [off.ecoscoreGrade, off.environmentalScoreGrade] {
+            if let g = g?.lowercased(), g.count == 1, ("a"..."e").contains(g) { return g }
+        }
+        return nil
     }
 
     /// Only keep a usable image URL: non-empty, parseable, and https (ATS
@@ -297,6 +355,17 @@ struct OFFProduct: Decodable {
     let categoriesTags: [String]?
     let imageFrontUrl: String?
     let imageUrl: String?
+    let labelsTags: [String]?
+    let packagings: [OFFPackaging]?
+    let packagingMaterialsTags: [String]?
+    let originsTags: [String]?
+    let ingredients: [OFFIngredient]?
+    let ecoscoreGrade: String?
+    let environmentalScoreGrade: String?
+    let completeness: Double?
+    let lastModifiedT: Double?
+    let servingSize: String?
+    let countriesTags: [String]?
 
     enum CodingKeys: String, CodingKey {
         case productName = "product_name"
@@ -311,6 +380,17 @@ struct OFFProduct: Decodable {
         case categoriesTags = "categories_tags"
         case imageFrontUrl = "image_front_url"
         case imageUrl = "image_url"
+        case labelsTags = "labels_tags"
+        case packagings
+        case packagingMaterialsTags = "packaging_materials_tags"
+        case originsTags = "origins_tags"
+        case ingredients
+        case ecoscoreGrade = "ecoscore_grade"
+        case environmentalScoreGrade = "environmental_score_grade"
+        case completeness
+        case lastModifiedT = "last_modified_t"
+        case servingSize = "serving_size"
+        case countriesTags = "countries_tags"
     }
 
     init(from decoder: Decoder) throws {
@@ -327,6 +407,24 @@ struct OFFProduct: Decodable {
         categoriesTags = try? c.decodeIfPresent([String].self, forKey: .categoriesTags)
         imageFrontUrl = try? c.decodeIfPresent(String.self, forKey: .imageFrontUrl)
         imageUrl = try? c.decodeIfPresent(String.self, forKey: .imageUrl)
+        labelsTags = try? c.decodeIfPresent([String].self, forKey: .labelsTags)
+        packagings = try? c.decodeIfPresent([OFFPackaging].self, forKey: .packagings)
+        packagingMaterialsTags = try? c.decodeIfPresent([String].self, forKey: .packagingMaterialsTags)
+        originsTags = try? c.decodeIfPresent([String].self, forKey: .originsTags)
+        ingredients = try? c.decodeIfPresent([OFFIngredient].self, forKey: .ingredients)
+        ecoscoreGrade = try? c.decodeIfPresent(String.self, forKey: .ecoscoreGrade)
+        environmentalScoreGrade = try? c.decodeIfPresent(String.self, forKey: .environmentalScoreGrade)
+        completeness = try? c.decodeIfPresent(Double.self, forKey: .completeness)
+        // Epoch seconds, but occasionally a string in old records.
+        if let d = try? c.decodeIfPresent(Double.self, forKey: .lastModifiedT) {
+            lastModifiedT = d
+        } else if let s = try? c.decodeIfPresent(String.self, forKey: .lastModifiedT) {
+            lastModifiedT = Double(s)
+        } else {
+            lastModifiedT = nil
+        }
+        servingSize = try? c.decodeIfPresent(String.self, forKey: .servingSize)
+        countriesTags = try? c.decodeIfPresent([String].self, forKey: .countriesTags)
         // nova_group may arrive as Int, Double, or String — decode flexibly.
         if let i = try? c.decodeIfPresent(Int.self, forKey: .novaGroup) {
             novaGroup = i
@@ -337,6 +435,38 @@ struct OFFProduct: Decodable {
         } else {
             novaGroup = nil
         }
+    }
+}
+
+/// One entry of OFF's structured `packagings[]` array.
+struct OFFPackaging: Decodable {
+    let material: String?
+}
+
+/// One entry of OFF's parsed `ingredients[]` array. Percent fields arrive as
+/// numbers or strings depending on record age — decode leniently.
+struct OFFIngredient: Decodable {
+    let id: String?
+    let text: String?
+    let percent: Double?
+    let percentEstimate: Double?
+
+    enum CodingKeys: String, CodingKey {
+        case id, text, percent
+        case percentEstimate = "percent_estimate"
+    }
+
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        id = try? c.decodeIfPresent(String.self, forKey: .id)
+        text = try? c.decodeIfPresent(String.self, forKey: .text)
+        func value(_ key: CodingKeys) -> Double? {
+            if let d = try? c.decodeIfPresent(Double.self, forKey: key) { return d }
+            if let s = try? c.decodeIfPresent(String.self, forKey: key) { return Double(s) }
+            return nil
+        }
+        percent = value(.percent)
+        percentEstimate = value(.percentEstimate)
     }
 }
 
@@ -353,6 +483,7 @@ struct OFFNutriments: Decodable {
     let energyKcal: Double?
     let energyKj: Double?   // fallback when kcal is absent (common for EU products)
     let fvn: Double?        // fruit/veg/nuts estimate 0–100
+    let addedSugars: Double? // mostly US labels; v4 S3 prefers it over total sugars
 
     enum CodingKeys: String, CodingKey {
         case sugars = "sugars_100g"
@@ -368,6 +499,7 @@ struct OFFNutriments: Decodable {
         case energyKj = "energy-kj_100g"
         case fvnNuts = "fruits-vegetables-nuts-estimate-from-ingredients_100g"
         case fvnLegumes = "fruits-vegetables-legumes-estimate-from-ingredients_100g"
+        case addedSugars = "added-sugars_100g"
     }
 
     init(from decoder: Decoder) throws {
@@ -391,5 +523,6 @@ struct OFFNutriments: Decodable {
         energyKj = value(.energyKj)
         // OFF populates the "nuts" or the newer "legumes" variant depending on version.
         fvn = value(.fvnNuts) ?? value(.fvnLegumes)
+        addedSugars = value(.addedSugars)
     }
 }
