@@ -104,16 +104,17 @@ struct ScoringV4Tests {
     }
 
     @Test func s1TextSignalsDetected() {
-        let p = product(kcal: 100, ingredientsText: "corn, high fructose corn syrup, salt")
+        let p = product(kcal: 100, sugar: 0, sodium: 0, nova: 4,
+                        ingredientsText: "corn, high fructose corn syrup, salt")
         let s1 = ScoringEngineV4.score(p)!.rules.first { $0.rule == "S1" }!
         #expect(abs(s1.fraction - 0.82) < 0.001)   // HFCS = Tier B −0.18
     }
 
     @Test func s3FvnDiscountsFruitSugar() {
         // Same total sugar; whole-fruit smoothie keeps full credit, soda gets zero.
-        let smoothie = product(kcal: 50, sugar: 12, fvn: 100,
+        let smoothie = product(kcal: 50, sugar: 12, satFat: 0, sodium: 0, fvn: 100,
                                categories: ["beverages", "smoothies"])
-        let soda = product(kcal: 50, sugar: 12, fvn: 0,
+        let soda = product(kcal: 50, sugar: 12, satFat: 0, sodium: 0, fvn: 0,
                            categories: ["beverages", "sodas"])
         let s3 = { (p: Product) in
             ScoringEngineV4.score(p)!.rules.first { $0.rule == "S3" }!.fraction
@@ -138,15 +139,15 @@ struct ScoringV4Tests {
     }
 
     @Test func s7WorstMaterialWins() {
-        let mixed = product(kcal: 100, packaging: ["cardboard", "pet"])
+        let mixed = product(kcal: 100, sugar: 0, sodium: 0, packaging: ["cardboard", "pet"])
         let s7 = ScoringEngineV4.score(mixed)!.rules.first { $0.rule == "S7" }!
         #expect(s7.fraction == 0.25)   // PET beats cardboard downward
         #expect(s7.hadData)
     }
 
     @Test func s8CertificationBinary() {
-        let organic = product(kcal: 100, labels: ["organic", "vegan"])
-        let none = product(kcal: 100, labels: ["vegan"])
+        let organic = product(kcal: 100, sugar: 0, sodium: 0, labels: ["organic", "vegan"])
+        let none = product(kcal: 100, sugar: 0, sodium: 0, labels: ["vegan"])
         let s8 = { (p: Product) in
             ScoringEngineV4.score(p)!.rules.first { $0.rule == "S8" }!
         }
@@ -160,6 +161,8 @@ struct ScoringV4Tests {
     @Test func engineRefusesInsufficientData() {
         let empty = product(kcal: nil, ingredientsText: nil)
         #expect(ScoringEngineV4.score(empty) == nil)
+        let textOnly = product(kcal: nil, nova: 0, ingredientsText: "água mineral natural")
+        #expect(ScoringEngineV4.score(textOnly) == nil)
     }
 
     @Test func confidenceIsWeightBacked() {

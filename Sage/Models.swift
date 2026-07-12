@@ -142,10 +142,18 @@ extension Product {
         return core.compactMap { $0 }.count >= 3
     }
 
-    /// Minimum data requirement: never score a product that has neither an
-    /// ingredient list nor a nutrition table — show the insufficient-data
-    /// state instead.
-    var hasMinimumData: Bool { hasIngredientData || hasNutritionData }
+    /// Known NOVA group (1–4) from Open Food Facts.
+    var hasKnownNova: Bool { (1...4).contains(novaGroup) }
+
+    /// Ingredient-side signal strong enough to score without a nutrition table:
+    /// known processing level or at least one AdditiveDetector hit.
+    var hasScoreableIngredientSignal: Bool {
+        hasKnownNova || !additives.isEmpty
+    }
+
+    /// Scoreable only with a real nutrition table OR a scoreable ingredient signal.
+    /// Ingredient text alone is never sufficient.
+    var hasMinimumData: Bool { hasNutritionData || hasScoreableIngredientSignal }
 
     /// Provisional Phase-A confidence: a presence checklist over the signals
     /// scoring uses. Phase B replaces this with the rule-weight-backed version
@@ -180,9 +188,28 @@ struct HistoryEntry: Identifiable, Hashable {
     let productId: String
     let when: String
     let dateLabel: String
+    let scannedAt: Date
 
     var day: String { dateLabel.components(separatedBy: " · ").first ?? "" }
     var time: String { dateLabel.components(separatedBy: " · ").last ?? "" }
+
+    /// Relative scan time for list subtitles, e.g. "Scanned 4 days ago".
+    static func scannedAgoLabel(since date: Date, now: Date = .now) -> String {
+        let elapsed = max(0, now.timeIntervalSince(date))
+        if elapsed < 3600 {
+            let minutes = max(1, Int(elapsed / 60))
+            let unit = minutes == 1 ? "minute" : "minutes"
+            return "Scanned \(minutes) \(unit) ago"
+        }
+        if elapsed < 86_400 {
+            let hours = Int(elapsed / 3600)
+            let unit = hours == 1 ? "hour" : "hours"
+            return "Scanned \(hours) \(unit) ago"
+        }
+        let days = Int(elapsed / 86_400)
+        let unit = days == 1 ? "day" : "days"
+        return "Scanned \(days) \(unit) ago"
+    }
 }
 
 struct UserProfile: Codable {

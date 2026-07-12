@@ -188,7 +188,8 @@ final class AppStore: ObservableObject {
         )
         let recs = (try? context.fetch(desc)) ?? []
         history = recs.map {
-            HistoryEntry(productId: $0.productId, when: $0.when, dateLabel: $0.dateLabel)
+            HistoryEntry(productId: $0.productId, when: $0.when,
+                         dateLabel: $0.dateLabel, scannedAt: $0.scannedAt)
         }
     }
 
@@ -243,11 +244,14 @@ final class AppStore: ObservableObject {
     func recordScan(_ product: Product, when: String = "Just now") {
         saveProduct(product)
         guard user.saveScansToHistory else { return }
-        let label = Self.dateLabel(for: .now)
-        context.insert(HistoryRecord(productId: product.id, when: when, dateLabel: label))
+        let now = Date.now
+        let label = Self.dateLabel(for: now)
+        context.insert(HistoryRecord(productId: product.id, when: when,
+                                     dateLabel: label, scannedAt: now))
         try? context.save()
         history.insert(
-            HistoryEntry(productId: product.id, when: when, dateLabel: label),
+            HistoryEntry(productId: product.id, when: when,
+                         dateLabel: label, scannedAt: now),
             at: 0
         )
     }
