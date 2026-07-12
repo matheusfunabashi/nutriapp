@@ -19,7 +19,7 @@ database_name = "sage"
 database_id = "99dba7b9-0a2f-4c3d-b893-bdfeea1e5591"
 
 [vars]
-EXPLANATION_VERSION = "exp-v5"   # bump to invalidate cached explanations (v5 = NOVA term dropped from factors)
+EXPLANATION_VERSION = "exp-v6"   # bump to invalidate cached explanations (v6 = badge-consistent nutrient levels)
 FREE_DAILY_LIMIT = "1"           # free-tier scans per device per day
 GOUPC_MONTHLY_CAP = "140"        # hard cap on Go-UPC calls/month (trial key = 150 total; headroom for races)
 

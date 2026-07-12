@@ -127,6 +127,10 @@ struct BackendService {
         let overall: Int
         let your: Int
         let factors: [String]
+        /// Ground truth for the LLM: the exact LOW/MOD/HIGH levels the user
+        /// sees on the Breakdown badges (e.g. "sugar: low (4g)"). The prompt
+        /// instructs the model to never contradict these.
+        let nutrientLevels: [String]
     }
 
     private struct ExplainResponse: Decodable {

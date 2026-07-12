@@ -14,6 +14,9 @@ const SYSTEM_PROMPT =
   "against it, and briefly acknowledge the trade-off if there is one. If the personalized " +
   "score moved versus the overall, say why. If a dietary-restriction conflict is listed, " +
   "lead with that. " +
+  "The app shows the user low/moderate/high badges for each nutrient; when 'Displayed " +
+  "nutrient levels' are listed, your wording MUST agree with them — never describe a " +
+  "nutrient as high or low unless that list says so. " +
   "Use ONLY the facts provided — never invent numbers, nutrients, or medical claims. " +
   "Address the user as 'you'; do not restate the score numbers.";
 
@@ -66,6 +69,9 @@ function buildPrompt(i: ExplainRequest): string {
   if (raised.length) lines.push(`Speaks for it: ${raised.join("; ")}`);
   if (heldBack.length) lines.push(`Speaks against it: ${heldBack.join("; ")}`);
   if (other.length) lines.push(`Other notes: ${other.join("; ")}`);
+  if (i.nutrientLevels?.length) {
+    lines.push(`Displayed nutrient levels (your wording must agree): ${i.nutrientLevels.join("; ")}`);
+  }
   lines.push("Write the one-sentence explanation of how it fits the user's goal.");
   return lines.join("\n");
 }
