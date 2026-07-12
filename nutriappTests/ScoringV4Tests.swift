@@ -12,25 +12,29 @@ struct ScoringV4Tests {
     private func product(
         kcal: Double? = nil, protein: Double? = nil, fiber: Double? = nil,
         sugar: Double? = nil, addedSugar: Double? = nil, satFat: Double? = nil,
-        sodium: Double? = nil, fvn: Double? = nil, nova: Int = 0,
+        sodium: Double? = nil, calcium: Double? = nil, fvn: Double? = nil, nova: Int = 0,
+        name: String = "T",
         ingredientsText: String? = "some ingredients",
         additives: [Additive] = [],
+        shares: [IngredientShare]? = nil,
         categories: [String]? = nil,
         packaging: [String]? = nil,
-        labels: [String]? = nil
+        labels: [String]? = nil,
+        origins: [String]? = nil
     ) -> Product {
         Product(
-            id: "x", name: "T", brand: "B", size: "", glyph: "🛒",
+            id: "x", name: name, brand: "B", size: "", glyph: "🛒",
             overallScore: 0, yourScore: 0, deltaReason: nil,
             nutriGrade: "?", novaGroup: nova,
             nutrients: Nutrients(sugar_g: sugar, sodium_mg: sodium, satFat_g: satFat,
-                                 fiber_g: fiber, protein_g: protein, calcium_mg: nil,
+                                 fiber_g: fiber, protein_g: protein, calcium_mg: calcium,
                                  kcal: kcal, fvn: fvn, addedSugar_g: addedSugar),
             bonuses: [], transFats: false, caffeine_mg: nil,
             sweeteners: [], seedOils: false, additives: additives, restrictions: [],
             dietFlags: nil, allergenTags: nil,
             ingredientsText: ingredientsText, imageURL: nil,
-            labels: labels, packagingMaterials: packaging,
+            labels: labels, packagingMaterials: packaging, origins: origins,
+            ingredientShares: shares,
             categories: categories
         )
     }
@@ -55,18 +59,29 @@ struct ScoringV4Tests {
                 nova: 4, ingredientsText: "cornmeal, oil, cheese seasoning",
                 categories: ["snacks", "salty-snacks"])
     }
-    private var water: Product {
-        product(kcal: 0.3, sugar: 0, sodium: 2, nova: 1, ingredientsText: "water",
-                categories: ["beverages", "waters"])
+    private var mineralWater: Product {
+        product(kcal: 0, sugar: 0, sodium: 2, calcium: 80, nova: 1,
+                name: "natural mineral water", ingredientsText: "natural mineral water",
+                categories: ["beverages", "waters", "mineral-waters"], packaging: ["glass"])
+    }
+    private var oatMilk: Product {   // the SCORING_V4.md §8 worked example
+        product(kcal: 45, protein: 1, fiber: 0.8, sugar: 4, nova: 4, name: "oat drink",
+                ingredientsText: "water, oats, canola oil, dipotassium phosphate, gellan gum, salt",
+                additives: [Additive(name: "e340", risk: .moderate, code: "e340"),
+                            Additive(name: "e418", risk: .low, code: "e418")],
+                shares: [IngredientShare(name: "water", percent: nil, percentEstimate: 88),
+                         IngredientShare(name: "oats", percent: 10, percentEstimate: 10)],
+                categories: ["beverages", "plant-based-milk-alternatives"],
+                packaging: ["tetra-pak"])
     }
 
     // MARK: Ruleset + router
 
     @Test func bundledRulesetLoads() {
         let rs = RulesetV4.bundled
-        #expect(rs.version == "2026.07-b2")   // b2 = post-calibration weights
+        #expect(rs.version == "2026.07-c1")   // c1 = full Phase-C profile set
         #expect(rs.bands.excellent == 75)
-        #expect(rs.profiles.count == 3)
+        #expect(rs.profiles.count == 12)
         #expect(rs.bandLabel(80) == "Excellent")
         #expect(rs.bandLabel(50) == "Good")
         #expect(rs.bandLabel(30) == "Mediocre")
@@ -77,10 +92,17 @@ struct ScoringV4Tests {
         #expect(ScoringEngineV4.route(coke) == "drinks")
         #expect(ScoringEngineV4.route(cheetos) == "snacks")
         #expect(ScoringEngineV4.route(chicken) == "general")   // no categories → fallback
+        #expect(ScoringEngineV4.route(mineralWater) == "water")
+        #expect(ScoringEngineV4.route(oatMilk) == "plant_milk")
         // Milk is tagged as a beverage too — the milks entry must win.
         let milk = product(kcal: 64, protein: 3.3, sugar: 4.8,
                            categories: ["beverages", "dairies", "milks"])
-        #expect(ScoringEngineV4.route(milk) == "general")
+        #expect(ScoringEngineV4.route(milk) == "dairy_milk")
+        // Bottled iced tea is a drink; loose tea is tea_coffee.
+        #expect(ScoringEngineV4.route(product(categories: ["beverages", "teas", "iced-teas"])) == "drinks")
+        #expect(ScoringEngineV4.route(product(categories: ["teas", "green-teas"])) == "tea_coffee")
+        // Ice cream is a dairy — must be caught before the dairies entry.
+        #expect(ScoringEngineV4.route(product(categories: ["dairies", "frozen-desserts", "ice-creams"])) == "ice_cream")
     }
 
     // MARK: Rule mechanics
@@ -187,16 +209,68 @@ struct ScoringV4Tests {
         #expect(RulesetV4.bundled.bandLabel(r.base) == "Mediocre")
     }
 
-    @Test func anchorWaterScoresHigh() {
-        #expect(ScoringEngineV4.score(water)!.base >= 80)   // 85 under b2
+    @Test func anchorWaterProfile() {
+        // Glass mineral water with a disclosed mineral profile → Excellent;
+        // unknown-source generic water would sink (Tier-1 source rule).
+        let r = ScoringEngineV4.score(mineralWater)!
+        #expect(r.profileId == "water")
+        #expect(r.base == 90)
+    }
+
+    @Test func anchorOatMilkReproducesWorkedExample() {
+        // SCORING_V4.md §8 documents this exact product at Base 54.
+        let r = ScoringEngineV4.score(oatMilk)!
+        #expect(r.profileId == "plant_milk")
+        #expect(r.base == 54)
+    }
+
+    // MARK: Phase C anchors (runtime-verified via the macOS harness 2026-07-11)
+
+    @Test func anchorTeaHoneyMilk() {
+        let tea = product(kcal: 1, sugar: 0, nova: 1, name: "loose leaf green tea",
+                          ingredientsText: "green tea",
+                          shares: [IngredientShare(name: "green-tea", percent: nil, percentEstimate: 100)],
+                          categories: ["teas"], labels: ["organic"], origins: ["japan"])
+        #expect(ScoringEngineV4.score(tea)!.base == 95)
+
+        let honey = product(kcal: 304, sugar: 82, nova: 1, name: "raw honey",
+                            ingredientsText: "raw honey",
+                            shares: [IngredientShare(name: "honey", percent: nil, percentEstimate: 100)],
+                            categories: ["sweeteners", "honeys"], packaging: ["glass"])
+        #expect(ScoringEngineV4.score(honey)!.base == 90)
+
+        let milk = product(kcal: 64, protein: 3.3, fiber: 0, sugar: 4.8, satFat: 2.3,
+                           sodium: 44, nova: 1, name: "whole milk", ingredientsText: "organic milk",
+                           categories: ["dairies", "milks"], packaging: ["glass"],
+                           labels: ["organic", "grass-fed", "pasture-raised"])
+        #expect(ScoringEngineV4.score(milk)!.base == 82)
+    }
+
+    @Test func anchorProcessedCategories() {
+        let sausage = product(kcal: 300, protein: 14, sugar: 1, satFat: 9, sodium: 800,
+                              nova: 4, name: "cured sausage",
+                              ingredientsText: "pork, salt, spices, preservative",
+                              additives: [Additive(name: "e250", risk: .high, code: "e250")],
+                              categories: ["meats"])
+        let s = ScoringEngineV4.score(sausage)!
+        #expect(s.profileId == "meat")
+        #expect(s.base == 32)   // nitrites = Tier A, the category's biggest differentiator
+
+        let iceCream = product(kcal: 207, protein: 3.5, sugar: 21, satFat: 7, sodium: 80,
+                               nova: 4, name: "vanilla ice cream",
+                               ingredientsText: "cream, sugar, egg yolk, vanilla, stabilizers",
+                               additives: [Additive(name: "e407", risk: .moderate, code: "e407"),
+                                           Additive(name: "e412", risk: .low, code: "e412")],
+                               categories: ["frozen-desserts", "ice-creams"], packaging: ["cardboard"])
+        #expect(ScoringEngineV4.score(iceCream)!.base == 40)
     }
 
     @Test func anchorOrderingHolds() {
-        let scores = [chicken, apple, water, coke, cheetos]
+        let scores = [chicken, apple, mineralWater, coke, cheetos]
             .map { ScoringEngineV4.score($0)!.base }
         #expect(scores[0] > scores[3])   // chicken > coke
         #expect(scores[1] > scores[4])   // apple > cheetos
-        #expect(scores[2] > scores[3])   // water > coke
+        #expect(scores[2] > scores[3])   // mineral water > coke
     }
 
     /// The former "calibration gap": before the §12 run, an additive-clean

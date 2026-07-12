@@ -24,7 +24,7 @@ struct MethodologyView: View {
 
                 methodCard(
                     title: "Overall score",
-                    body: "Starts every food at a neutral 50, adds points for protein density, fiber, and whole-food content (per 100g/ml), and subtracts for sugar, saturated fat, sodium, ultra-processing (NOVA), and risky additives. 100 = perfect food, 70 = good, 50 = neither good nor bad, 30 = bad for you, 10 = best avoided.",
+                    body: "Starts every food at a neutral 50, adds points for protein density, fiber, and whole-food content (per 100g/ml), and subtracts for sugar, saturated fat, sodium, ultra-processing, and risky additives. 100 = perfect food, 70 = good, 50 = neither good nor bad, 30 = bad for you, 10 = best avoided.",
                     dark: dark)
                 methodCard(
                     title: "Your Score",
@@ -94,7 +94,7 @@ struct MethodologyModal: View {
                                                               : Color.black.opacity(0.06)))
                     }.buttonStyle(.plain)
                 }
-                Text("Sage combines public nutrition data (per-100g nutrients, NOVA processing level, additive risk) into an Overall score, then tunes it to your goal and preferences to compute Your Score.")
+                Text("Sage combines public nutrition data (per-100g nutrients, ingredient-derived processing level, additive risk) into an Overall score, then tunes it to your goal and preferences to compute Your Score.")
                     .font(.system(size: 14))
                     .foregroundColor(Theme.textSecondary(dark))
                     .lineSpacing(3)

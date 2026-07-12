@@ -556,7 +556,7 @@ struct NovaCard: View {
                 Text("PROCESSING")
                     .font(.system(size: 9, weight: .heavy)).tracking(1.2)
                     .foregroundColor(Theme.textSecondary(dark))
-                Text("NOVA \(group)")
+                Text("Level \(group) of 4")
                     .font(.system(size: 13, weight: .heavy)).tracking(-0.2)
                     .foregroundColor(Theme.textPrimary(dark))
                 Text(labels[group] ?? "")
@@ -607,7 +607,7 @@ struct NovaCard: View {
             RoundedRectangle(cornerRadius: 18, style: .continuous).fill(Theme.surface(dark))
         )
         .cardShadow(dark)
-        .accessibilityLabel("NOVA processing not rated, unknown")
+        .accessibilityLabel("Processing level not rated, unknown")
     }
 }
 

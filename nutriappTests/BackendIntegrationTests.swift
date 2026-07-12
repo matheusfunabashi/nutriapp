@@ -192,6 +192,6 @@ struct BackendIntegrationTests {
         u.personalizeScoring = false
         let f = ScoringEngine.signedFactors(cheetos, profile: u)
         #expect(!f.contains("- low protein per calorie for a muscle goal"))
-        #expect(f.contains("- ultra-processed (NOVA 4)"))
+        #expect(f.contains("- ultra-processed"))
     }
 }

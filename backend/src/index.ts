@@ -22,6 +22,10 @@ import {
 } from "./db";
 import { fetchGoUPC } from "./goupc";
 import { generateExplanation } from "./explanation";
+// Scoring-v4 ruleset served to clients (SCORING_V4.md §10). Keep in sync:
+// `cp Sage/RulesetV4.json backend/src/ruleset.json` before deploying — the
+// app treats the served version as newer than its bundled copy.
+import ruleset from "./ruleset.json";
 
 const app = new Hono<{ Bindings: Env }>();
 
@@ -39,6 +43,22 @@ app.use("/explain", requireKey);
 app.use("/search", requireKey);
 
 app.get("/health", (c) => c.json({ ok: true, service: "sage-backend" }));
+
+// --- Scoring ruleset (v4) --------------------------------------------------
+// Version probe is tiny and edge-cached hard; the full document is fetched
+// only on a version mismatch. Both stay behind the shared-secret gate.
+app.use("/ruleset", requireKey);
+app.use("/ruleset/version", requireKey);
+
+app.get("/ruleset/version", (c) => {
+  c.header("Cache-Control", "public, max-age=300");
+  return c.json({ version: (ruleset as { version: string }).version });
+});
+
+app.get("/ruleset", (c) => {
+  c.header("Cache-Control", "public, max-age=300");
+  return c.json(ruleset);
+});
 
 // --- Product lookup -------------------------------------------------------
 app.post("/lookup", async (c) => {

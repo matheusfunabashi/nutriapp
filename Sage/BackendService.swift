@@ -145,7 +145,36 @@ struct BackendService {
         return text
     }
 
+    // MARK: /ruleset (scoring-v4 remote config)
+
+    private struct RulesetVersionResponse: Decodable { let version: String }
+
+    /// Tiny edge-cached probe — the background refresh checks this first.
+    func rulesetVersion() async -> String? {
+        guard let (data, status) = try? await get(path: "ruleset/version"), status == 200,
+              let decoded = try? JSONDecoder().decode(RulesetVersionResponse.self, from: data)
+        else { return nil }
+        return decoded.version
+    }
+
+    /// Full ruleset; returns the raw bytes too so the store can persist
+    /// exactly what it validated.
+    func fetchRuleset() async -> (Data, RulesetV4)? {
+        guard let (data, status) = try? await get(path: "ruleset"), status == 200,
+              let rs = try? JSONDecoder().decode(RulesetV4.self, from: data)
+        else { return nil }
+        return (data, rs)
+    }
+
     // MARK: Transport
+
+    private func get(path: String) async throws -> (Data, Int) {
+        var req = URLRequest(url: baseURL.appendingPathComponent(path))
+        req.setValue(apiKey, forHTTPHeaderField: "X-Sage-Key")
+        req.setValue("Sage/1.0 (iOS)", forHTTPHeaderField: "User-Agent")
+        let (data, response) = try await session.data(for: req)
+        return (data, (response as? HTTPURLResponse)?.statusCode ?? 0)
+    }
 
     private func post(path: String, body: some Encodable) async throws -> (Data, Int) {
         var req = URLRequest(url: baseURL.appendingPathComponent(path))

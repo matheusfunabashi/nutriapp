@@ -62,6 +62,9 @@ struct ContentView: View {
         } else {
             mainContent
                 .transition(.opacity)
+                // Fire-and-forget ruleset refresh (SCORING_V4.md §11): never
+                // blocks anything; offline silently keeps the current tables.
+                .task { RulesetStore.refreshInBackground(backend: backend) }
         }
     }
 
