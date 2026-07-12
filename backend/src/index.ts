@@ -9,7 +9,7 @@
 // truth); the app sends them + the drivers to /explain.
 
 import { Hono, type MiddlewareHandler } from "hono";
-import type { Env, LookupRequest, ExplainRequest, SearchRequest } from "./types";
+import type { Env, LookupRequest, ExplainRequest, SearchRequest, AttestRegisterRequest } from "./types";
 import { fetchOFF, searchOFF, hasImage } from "./off";
 import {
   getProduct, putProduct,
@@ -19,6 +19,7 @@ import {
 import {
   checkAndIncrementUsage, bumpScanCount, logFetch,
   goUpcCallsThisMonth, markGoUpcSourced,
+  storeAppAttestRegistration,
 } from "./db";
 import { fetchGoUPC } from "./goupc";
 import { generateExplanation } from "./explanation";
@@ -41,8 +42,33 @@ const requireKey: MiddlewareHandler<{ Bindings: Env }> = async (c, next) => {
 app.use("/lookup", requireKey);
 app.use("/explain", requireKey);
 app.use("/search", requireKey);
+app.use("/attest/challenge", requireKey);
+app.use("/attest/register", requireKey);
 
 app.get("/health", (c) => c.json({ ok: true, service: "sage-backend" }));
+
+// --- App Attest -----------------------------------------------------------
+app.post("/attest/challenge", (c) => {
+  const bytes = crypto.getRandomValues(new Uint8Array(32));
+  const challenge = btoa(String.fromCharCode(...bytes));
+  return c.json({ challenge });
+});
+
+app.post("/attest/register", async (c) => {
+  const body = await c.req.json<AttestRegisterRequest>().catch(() => null);
+  if (!body?.keyId || !body.attestation || !body.challenge) {
+    return c.json({ error: "missing_attest_fields" }, 400);
+  }
+  const verified = false; // TODO: verify attestation with Apple when DEVICE_CHECK_* is set
+  await storeAppAttestRegistration(
+    c.env.DB,
+    body.keyId,
+    body.attestation,
+    body.challenge,
+    verified,
+  );
+  return c.json({ ok: true, verified });
+});
 
 // --- Scoring ruleset (v4) --------------------------------------------------
 // Version probe is tiny and edge-cached hard; the full document is fetched

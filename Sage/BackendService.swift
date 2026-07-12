@@ -46,7 +46,38 @@ struct BackendService {
         let barcode: String
         let isPremium: Bool
         let clientTag: String
+        let deviceId: String?
+        let assertion: String?
+        let clientDataHash: String?
     }
+
+    private struct AttestChallengeResponse: Decodable { let challenge: String }
+    private struct AttestRegisterBody: Encodable {
+        let keyId: String
+        let attestation: String
+        let challenge: String
+    }
+
+    /// Fresh random challenge from the backend (base64). Used for attestation
+    /// and per-request assertions.
+    func attestChallenge() async throws -> Data {
+        let (data, status) = try await post(path: "attest/challenge", body: EmptyBody())
+        guard status == 200,
+              let decoded = try? JSONDecoder().decode(AttestChallengeResponse.self, from: data),
+              let challenge = Data(base64Encoded: decoded.challenge)
+        else { throw LookupError.network }
+        return challenge
+    }
+
+    /// One-time key attestation after generateKey(). Backend verifies with Apple
+    /// once the DeviceCheck .p8 key is configured.
+    func registerAttestation(keyId: String, attestation: String, challenge: String) async throws {
+        let body = AttestRegisterBody(keyId: keyId, attestation: attestation, challenge: challenge)
+        let (_, status) = try await post(path: "attest/register", body: body)
+        guard status == 200 else { throw LookupError.network }
+    }
+
+    private struct EmptyBody: Encodable {}
 
     func lookup(barcode: String) async throws -> Product {
         let trimmed = barcode.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -54,7 +85,26 @@ struct BackendService {
 
         // isPremium is stubbed true until StoreKit receipt validation lands;
         // the free-tier limit also needs DeviceCheck, so nothing enforces yet.
-        let body = LookupBody(barcode: trimmed, isPremium: true, clientTag: Self.clientTag)
+        await AppAttestService.prepareRegistration(backend: self)
+
+        let core = LookupBody(
+            barcode: trimmed,
+            isPremium: true,
+            clientTag: Self.clientTag,
+            deviceId: AppAttestService.registeredDeviceId,
+            assertion: nil,
+            clientDataHash: nil
+        )
+        let encoded = try JSONEncoder().encode(core)
+        let attest = await AppAttestService.payload(for: encoded, backend: self)
+        let body = LookupBody(
+            barcode: trimmed,
+            isPremium: true,
+            clientTag: Self.clientTag,
+            deviceId: attest?.deviceId ?? AppAttestService.registeredDeviceId,
+            assertion: attest?.assertion,
+            clientDataHash: attest?.clientDataHash
+        )
         let (data, status) = try await post(path: "lookup", body: body)
 
         switch status {
