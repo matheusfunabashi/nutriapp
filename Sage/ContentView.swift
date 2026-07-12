@@ -415,6 +415,12 @@ struct InsufficientDataView: View {
     let onBack: () -> Void
     @EnvironmentObject var store: AppStore
 
+    private var hasKnownNutrients: Bool {
+        let n = product.nutrients
+        return [n.sugar_g, n.sodium_mg, n.satFat_g, n.fiber_g, n.protein_g,
+                n.calcium_mg, n.kcal].contains { $0 != nil }
+    }
+
     var body: some View {
         let dark = store.darkMode
         ZStack {
@@ -456,7 +462,7 @@ struct InsufficientDataView: View {
                         Text("Not enough data to score")
                             .font(.sageBold(16))
                             .foregroundColor(Theme.textPrimary(dark))
-                        Text("This product is in the database, but its ingredient list and nutrition facts haven't been added yet — so an honest score isn't possible. Try another pack size, or check back later.")
+                        Text("This product isn't fully catalogued yet.")
                             .font(.sageRegular(13))
                             .foregroundColor(Theme.textSecondary(dark))
                             .multilineTextAlignment(.center)
@@ -464,11 +470,56 @@ struct InsufficientDataView: View {
                             .padding(.horizontal, 36)
                     }
                     .padding(.top, 8)
+
+                    if hasKnownNutrients {
+                        VStack(spacing: 0) {
+                            EyebrowLabel(text: "Per 100g / 100ml", dark: dark)
+                            insufficientNutrientsCard(dark: dark)
+                                .padding(.horizontal, 16)
+                        }
+                        .padding(.top, 12)
+                    }
                 }
 
                 Spacer()
                 Spacer()
             }
+        }
+    }
+
+    private func insufficientNutrientsCard(dark: Bool) -> some View {
+        let n = product.nutrients
+        var rows: [(String, String)] = []
+        if let v = n.protein_g { rows.append(("Protein", "\(fmt(v)) g")) }
+        if let v = n.kcal { rows.append(("Energy", "\(fmt(v)) kcal")) }
+        if let v = n.sugar_g { rows.append(("Sugar", "\(fmt(v)) g")) }
+        if let v = n.sodium_mg { rows.append(("Sodium", "\(fmt(v)) mg")) }
+        if let v = n.satFat_g { rows.append(("Saturated fat", "\(fmt(v)) g")) }
+        if let v = n.fiber_g { rows.append(("Fiber", "\(fmt(v)) g")) }
+        if let v = n.calcium_mg { rows.append(("Calcium", "\(fmt(v)) mg")) }
+
+        return CardView(dark: dark) {
+            VStack(spacing: 0) {
+                ForEach(Array(rows.enumerated()), id: \.offset) { i, row in
+                    HStack {
+                        Text(row.0)
+                            .font(.sageSemiBold(14))
+                            .foregroundColor(Theme.textPrimary(dark))
+                        Spacer()
+                        Text(row.1)
+                            .font(.sageBold(14))
+                            .monospacedDigit()
+                            .foregroundColor(Theme.textPrimary(dark))
+                    }
+                    .padding(.horizontal, 14).padding(.vertical, 12)
+                    .overlay(alignment: .top) {
+                        if i > 0 {
+                            Theme.divider(dark).frame(height: 0.5).padding(.horizontal, 8)
+                        }
+                    }
+                }
+            }
+            .padding(.vertical, 4)
         }
     }
 }

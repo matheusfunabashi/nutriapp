@@ -147,13 +147,13 @@ enum ScoringEngineV4 {
     // MARK: S1 — ingredient & additive risk
 
     private static func s1(_ p: Product, rs: RulesetV4) -> (Double, Bool) {
-        guard p.hasIngredientData else { return (0.20, false) }
+        guard p.additiveIngredientTextMissing != true, p.hasIngredientData else { return (0.20, false) }
 
         var penalties: [Double] = []
         var gumsCounted = 0
-        for code in p.additives.compactMap(\.code) {
-            guard let tier = rs.additiveTiers[code],
-                  let fraction = rs.tierFractions[tier] else { continue }
+        for additive in p.additives {
+            guard let code = additive.code else { continue }
+            guard let fraction = s1Fraction(for: additive, code: code, rs: rs) else { continue }
             if rs.gumCodes.contains(code) {
                 guard gumsCounted < 2 else { continue }   // gum cap
                 gumsCounted += 1
@@ -176,6 +176,25 @@ enum ScoringEngineV4 {
             total += i < rs.dampening.afterCount ? pen : pen * rs.dampening.factor
         }
         return (max(0, 1 - total), true)
+    }
+
+    /// S1 penalty fraction from detector tier, with ruleset code lookup as fallback.
+    private static func s1Fraction(for additive: ProductAdditive, code: String,
+                                   rs: RulesetV4) -> Double? {
+        if let tier = additive.tier {
+            switch tier {
+            case .major: return rs.tierFractions["A"]
+            case .moderate: return rs.tierFractions["B"]
+            case .mild: return rs.tierFractions["C"]
+            case .soft: return rs.tierFractions["D"]
+            case .exempt: return nil
+            case .unclassified: return rs.tierFractions["C"]
+            }
+        }
+        if let tier = rs.additiveTiers[code], let fraction = rs.tierFractions[tier] {
+            return fraction
+        }
+        return rs.tierFractions["C"]
     }
 
     // MARK: S2 — processing level

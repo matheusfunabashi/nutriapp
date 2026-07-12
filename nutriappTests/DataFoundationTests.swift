@@ -93,7 +93,29 @@ struct DataFoundationTests {
     @Test func minimumDataRequirement() {
         #expect(!bareProduct().hasMinimumData)                       // nothing → gate
         #expect(bareProduct(ingredientsText: "water, oats").hasMinimumData)
-        #expect(bareProduct(kcal: 45).hasMinimumData)                // nutrition only
+        #expect(!bareProduct(kcal: 45).hasMinimumData)               // one macro ≠ table
+        let proteinOnly = Product(
+            id: "p", name: "Hydro", brand: "", size: "", glyph: "🛒",
+            overallScore: 0, yourScore: 0, deltaReason: nil,
+            nutriGrade: "?", novaGroup: 0,
+            nutrients: Nutrients(sugar_g: nil, sodium_mg: nil, satFat_g: nil,
+                                 fiber_g: nil, protein_g: 80, calcium_mg: nil, kcal: nil),
+            bonuses: [], transFats: false, caffeine_mg: nil,
+            sweeteners: [], seedOils: false, additives: [], restrictions: [],
+            dietFlags: nil, allergenTags: nil, ingredientsText: nil, imageURL: nil
+        )
+        #expect(!proteinOnly.hasMinimumData)
+        let nutritionTable = Product(
+            id: "n", name: "N", brand: "", size: "", glyph: "🛒",
+            overallScore: 0, yourScore: 0, deltaReason: nil,
+            nutriGrade: "?", novaGroup: 0,
+            nutrients: Nutrients(sugar_g: 4, sodium_mg: 40, satFat_g: nil,
+                                 fiber_g: nil, protein_g: 1, calcium_mg: nil, kcal: 45),
+            bonuses: [], transFats: false, caffeine_mg: nil,
+            sweeteners: [], seedOils: false, additives: [], restrictions: [],
+            dietFlags: nil, allergenTags: nil, ingredientsText: nil, imageURL: nil
+        )
+        #expect(nutritionTable.hasMinimumData)                       // 3+ core fields
         #expect(bareProduct(shares: [IngredientShare(name: "water", percent: nil,
                                                      percentEstimate: 90)]).hasMinimumData)
         #expect(!bareProduct(ingredientsText: "").hasMinimumData)    // empty ≠ present

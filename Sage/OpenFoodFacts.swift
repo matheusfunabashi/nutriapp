@@ -34,13 +34,47 @@ enum AdditiveCatalog {
         return lower
     }
 
-    static func additive(for tag: String) -> Additive {
+    static func additive(for tag: String) -> ProductAdditive {
         let code = normalize(tag)
         if let info = entries[code] {
-            return Additive(name: info.name, risk: info.risk, note: info.note, code: code)
+            return ProductAdditive(name: info.name, risk: info.risk, note: info.note, code: code)
         }
         // Unknown additive: show the code, no risk judgment.
-        return Additive(name: code.uppercased(), risk: .unrated, code: code)
+        return ProductAdditive(name: code.uppercased(), risk: .unrated, code: code)
+    }
+
+    /// Maps an AdditiveDetector hit into the product model used by scoring + UI.
+    static func productAdditive(from detected: Additive) -> ProductAdditive {
+        let code = normalize(detected.eNumber)
+        let catalog = entries[code]
+        return ProductAdditive(
+            name: detected.commonName,
+            risk: risk(for: detected.tier),
+            note: catalog?.note,
+            code: code,
+            tier: detected.tier
+        )
+    }
+
+    /// Display/scoring risk from detector tier (major → high, etc.).
+    static func risk(for tier: AdditiveTier) -> RiskLevel {
+        switch tier {
+        case .major: return .high
+        case .moderate: return .moderate
+        case .mild, .soft: return .low
+        case .exempt: return .low
+        case .unclassified: return .unrated
+        }
+    }
+
+    /// v3 additive-penalty weight from detector tier.
+    static func penaltyWeight(for tier: AdditiveTier) -> Double {
+        switch tier {
+        case .major: return 1.5
+        case .moderate: return 0.75
+        case .mild, .soft, .unclassified: return 0.25
+        case .exempt: return 0
+        }
     }
 }
 
@@ -67,7 +101,7 @@ struct OpenFoodFactsService {
         "origins_tags", "manufacturing_places", "ingredients",
         "ecoscore_grade", "environmental_score_grade",
         "completeness", "states_tags", "last_modified_t",
-        "serving_size", "countries_tags"
+        "serving_size", "countries_tags", "unknown_ingredients_n"
     ].joined(separator: ",")
 
     func fetchProduct(barcode: String) async throws -> Product {
@@ -132,8 +166,10 @@ struct OpenFoodFactsService {
             addedSugar_g: n?.addedSugars
         )
 
-        let additives = (off.additivesTags ?? []).map { AdditiveCatalog.additive(for: $0) }
-        let sweeteners = detectSweeteners(off.additivesTags ?? [])
+        let additivesScan = scanAdditives(off)
+        let additives = additivesScan.additives.map { AdditiveCatalog.productAdditive(from: $0) }
+        let sweetenerCodes = additives.compactMap(\.code) + (off.additivesTags ?? []).map { AdditiveCatalog.normalize($0) }
+        let sweeteners = detectSweeteners(sweetenerCodes)
         let seedOils = detectSeedOils(off.ingredientsText)
         let transFats = (n?.transFat ?? 0) > 0
         let dietFlags = detectDietFlags(analysis: off.ingredientsAnalysisTags ?? [],
@@ -175,8 +211,25 @@ struct OpenFoodFactsService {
             completeness: off.completeness,
             lastModified: off.lastModifiedT.map { Date(timeIntervalSince1970: $0) },
             countries: normalizedTags(off.countriesTags),
-            categories: normalizedTags(off.categoriesTags)
+            categories: normalizedTags(off.categoriesTags),
+            additiveUndercountSuspected: additivesScan.undercountSuspected,
+            additiveIngredientTextMissing: additivesScan.ingredientTextMissing
         )
+    }
+
+    // MARK: Additive detection
+
+    private static func scanAdditives(_ off: OFFProduct) -> AdditiveScanResult {
+        AdditiveDetector.scan(
+            ingredientsText: off.ingredientsText,
+            offAdditiveTags: off.additivesTags ?? [],
+            hasUnrecognizedIngredients: hasUnrecognizedIngredients(off)
+        )
+    }
+
+    private static func hasUnrecognizedIngredients(_ off: OFFProduct) -> Bool {
+        if let n = off.unknownIngredientsN, n > 0 { return true }
+        return (off.ingredients ?? []).contains { $0.isInTaxonomy == 0 }
     }
 
     // MARK: Scoring-v4 field mapping
@@ -269,9 +322,9 @@ struct OpenFoodFactsService {
         "e960": "stevia"
     ]
 
-    static func detectSweeteners(_ tags: [String]) -> [String] {
+    static func detectSweeteners(_ codes: [String]) -> [String] {
         var seen: [String] = []
-        for tag in tags {
+        for tag in codes {
             let code = AdditiveCatalog.normalize(tag)
             if let key = sweetenerCodes[code], !seen.contains(key) {
                 seen.append(key)
@@ -367,6 +420,7 @@ struct OFFProduct: Decodable {
     let lastModifiedT: Double?
     let servingSize: String?
     let countriesTags: [String]?
+    let unknownIngredientsN: Int?
 
     enum CodingKeys: String, CodingKey {
         case productName = "product_name"
@@ -392,6 +446,7 @@ struct OFFProduct: Decodable {
         case lastModifiedT = "last_modified_t"
         case servingSize = "serving_size"
         case countriesTags = "countries_tags"
+        case unknownIngredientsN = "unknown_ingredients_n"
     }
 
     init(from decoder: Decoder) throws {
@@ -426,6 +481,13 @@ struct OFFProduct: Decodable {
         }
         servingSize = try? c.decodeIfPresent(String.self, forKey: .servingSize)
         countriesTags = try? c.decodeIfPresent([String].self, forKey: .countriesTags)
+        if let i = try? c.decodeIfPresent(Int.self, forKey: .unknownIngredientsN) {
+            unknownIngredientsN = i
+        } else if let d = try? c.decodeIfPresent(Double.self, forKey: .unknownIngredientsN) {
+            unknownIngredientsN = Int(d)
+        } else {
+            unknownIngredientsN = nil
+        }
         // nova_group may arrive as Int, Double, or String — decode flexibly.
         if let i = try? c.decodeIfPresent(Int.self, forKey: .novaGroup) {
             novaGroup = i
@@ -451,10 +513,12 @@ struct OFFIngredient: Decodable {
     let text: String?
     let percent: Double?
     let percentEstimate: Double?
+    let isInTaxonomy: Int?
 
     enum CodingKeys: String, CodingKey {
         case id, text, percent
         case percentEstimate = "percent_estimate"
+        case isInTaxonomy = "is_in_taxonomy"
     }
 
     init(from decoder: Decoder) throws {
@@ -468,6 +532,13 @@ struct OFFIngredient: Decodable {
         }
         percent = value(.percent)
         percentEstimate = value(.percentEstimate)
+        if let i = try? c.decodeIfPresent(Int.self, forKey: .isInTaxonomy) {
+            isInTaxonomy = i
+        } else if let b = try? c.decodeIfPresent(Bool.self, forKey: .isInTaxonomy) {
+            isInTaxonomy = b ? 1 : 0
+        } else {
+            isInTaxonomy = nil
+        }
     }
 }
 

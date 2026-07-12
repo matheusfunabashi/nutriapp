@@ -14,7 +14,7 @@ struct ScoringV4Tests {
         sugar: Double? = nil, addedSugar: Double? = nil, satFat: Double? = nil,
         sodium: Double? = nil, fvn: Double? = nil, nova: Int = 0,
         ingredientsText: String? = "some ingredients",
-        additives: [Additive] = [],
+        additives: [ProductAdditive] = [],
         categories: [String]? = nil,
         packaging: [String]? = nil,
         labels: [String]? = nil
@@ -46,8 +46,8 @@ struct ScoringV4Tests {
     private var coke: Product {
         product(kcal: 42, protein: 0, sugar: 10.6, sodium: 10, nova: 4,
                 ingredientsText: "carbonated water, sugar, caramel color, phosphoric acid",
-                additives: [Additive(name: "Caramel IV", risk: .moderate, code: "e150d"),
-                            Additive(name: "Phosphoric acid", risk: .moderate, code: "e338")],
+                additives: [ProductAdditive(name: "Caramel IV", risk: .moderate, code: "e150d"),
+                            ProductAdditive(name: "Phosphoric acid", risk: .moderate, code: "e338")],
                 categories: ["beverages", "carbonated-drinks", "sodas"])
     }
     private var cheetos: Product {
@@ -89,7 +89,7 @@ struct ScoringV4Tests {
         // Five Tier-C additives (−0.09): three full + two at 50% → −0.36.
         let codes = ["e466", "e471", "e338", "e339", "e340"]
         let p = product(kcal: 100,
-                        additives: codes.map { Additive(name: $0, risk: .moderate, code: $0) })
+                        additives: codes.map { ProductAdditive(name: $0, risk: .moderate, code: $0) })
         let r = ScoringEngineV4.score(p)!
         let s1 = r.rules.first { $0.rule == "S1" }!
         #expect(abs(s1.fraction - 0.64) < 0.001)
@@ -98,7 +98,7 @@ struct ScoringV4Tests {
     @Test func s1GumCapCountsOnlyTwo() {
         let gums = ["e410", "e412", "e415"]   // three gums, Tier D −0.045 each
         let p = product(kcal: 100,
-                        additives: gums.map { Additive(name: $0, risk: .low, code: $0) })
+                        additives: gums.map { ProductAdditive(name: $0, risk: .low, code: $0) })
         let s1 = ScoringEngineV4.score(p)!.rules.first { $0.rule == "S1" }!
         #expect(abs(s1.fraction - 0.91) < 0.001)   // only two counted
     }
@@ -124,11 +124,11 @@ struct ScoringV4Tests {
 
     @Test func s6ArtificialSweetenerSteps() {
         let one = product(kcal: 1, sugar: 0, nova: 4,
-                          additives: [Additive(name: "Sucralose", risk: .moderate, code: "e955")],
+                          additives: [ProductAdditive(name: "Sucralose", risk: .moderate, code: "e955")],
                           categories: ["beverages"])
         let two = product(kcal: 1, sugar: 0, nova: 4,
-                          additives: [Additive(name: "Sucralose", risk: .moderate, code: "e955"),
-                                      Additive(name: "Ace-K", risk: .moderate, code: "e950")],
+                          additives: [ProductAdditive(name: "Sucralose", risk: .moderate, code: "e955"),
+                                      ProductAdditive(name: "Ace-K", risk: .moderate, code: "e950")],
                           categories: ["beverages"])
         let s6 = { (p: Product) in
             ScoringEngineV4.score(p)!.rules.first { $0.rule == "S6" }!.fraction

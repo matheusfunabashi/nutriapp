@@ -26,7 +26,7 @@ struct ResultView: View {
                         }
                         EyebrowLabel(text: "Per 100g / 100ml", dark: dark)
                         nutrientsCard(dark: dark).padding(.horizontal, 16)
-                        EyebrowLabel(text: "Additives · \(product.additives.count)", dark: dark)
+                        EyebrowLabel(text: additivesEyebrow(dark: dark), dark: dark)
                         additivesCard(dark: dark).padding(.horizontal, 16)
                         detectedSection(dark: dark)
                         restrictionBanners(dark: dark)
@@ -305,25 +305,25 @@ struct ResultView: View {
         let n = product.nutrients
         return CardView(dark: dark) {
             VStack(spacing: 0) {
-                NutrientRow(label: "Sugar", value: "\(fmt(n.sugar_g ?? 0)) g",
-                            tag: tagFromValue(n.sugar_g ?? 0, t1: 5, t2: 12.5, higherIsBetter: false),
+                nutrientRow(label: "Sugar", value: n.sugar_g, unit: "g",
+                            t1: 5, t2: 12.5, higherIsBetter: false,
                             divider: false, dark: dark)
-                NutrientRow(label: "Sodium", value: "\(fmt(n.sodium_mg ?? 0)) mg",
-                            tag: tagFromValue(n.sodium_mg ?? 0, t1: 120, t2: 400, higherIsBetter: false),
+                nutrientRow(label: "Sodium", value: n.sodium_mg, unit: "mg",
+                            t1: 120, t2: 400, higherIsBetter: false,
                             divider: true, dark: dark)
-                NutrientRow(label: "Saturated fat", value: "\(fmt(n.satFat_g ?? 0)) g",
-                            tag: tagFromValue(n.satFat_g ?? 0, t1: 1.5, t2: 5, higherIsBetter: false),
+                nutrientRow(label: "Saturated fat", value: n.satFat_g, unit: "g",
+                            t1: 1.5, t2: 5, higherIsBetter: false,
                             divider: true, dark: dark)
-                NutrientRow(label: "Fiber", value: "\(fmt(n.fiber_g ?? 0)) g",
-                            tag: tagFromValue(n.fiber_g ?? 0, t1: 3, t2: 6, higherIsBetter: true),
+                nutrientRow(label: "Fiber", value: n.fiber_g, unit: "g",
+                            t1: 3, t2: 6, higherIsBetter: true,
                             bonus: product.bonuses.contains("fiber"),
                             divider: true, dark: dark)
-                NutrientRow(label: "Protein", value: "\(fmt(n.protein_g ?? 0)) g",
-                            tag: tagFromValue(n.protein_g ?? 0, t1: 5, t2: 12, higherIsBetter: true),
+                nutrientRow(label: "Protein", value: n.protein_g, unit: "g",
+                            t1: 5, t2: 12, higherIsBetter: true,
                             bonus: product.bonuses.contains("protein"),
                             divider: true, dark: dark)
-                NutrientRow(label: "Calcium", value: "\(fmt(n.calcium_mg ?? 0)) mg",
-                            tag: tagFromValue(n.calcium_mg ?? 0, t1: 60, t2: 120, higherIsBetter: true),
+                nutrientRow(label: "Calcium", value: n.calcium_mg, unit: "mg",
+                            t1: 60, t2: 120, higherIsBetter: true,
                             bonus: product.bonuses.contains("calcium"),
                             divider: true, dark: dark)
             }
@@ -331,10 +331,36 @@ struct ResultView: View {
         }
     }
 
+    private func nutrientRow(label: String, value: Double?, unit: String,
+                             t1: Double, t2: Double, higherIsBetter: Bool,
+                             bonus: Bool = false, divider: Bool, dark: Bool) -> some View {
+        let display = value.map { "\(fmt($0)) \(unit)" } ?? "—"
+        let tag = value.map { tagFromValue($0, t1: t1, t2: t2, higherIsBetter: higherIsBetter) }
+        return NutrientRow(label: label, value: display, tag: tag,
+                           bonus: bonus, divider: divider, dark: dark)
+    }
+
+    private func additivesEyebrow(dark: Bool) -> String {
+        if product.additiveIngredientTextMissing == true { return "Additives" }
+        let count = product.additives.count
+        if product.additiveUndercountSuspected == true {
+            return "Additives · \(count) (may be undercounted)"
+        }
+        return "Additives · \(count)"
+    }
+
     private func additivesCard(dark: Bool) -> some View {
         CardView(dark: dark) {
             VStack(spacing: 0) {
-                if product.additives.isEmpty {
+                if product.additiveIngredientTextMissing == true {
+                    HStack(spacing: 10) {
+                        RiskDot(risk: .unrated)
+                        Text("No ingredient data")
+                            .font(.sageSemiBold(14))
+                            .foregroundColor(Theme.textSecondary(dark))
+                    }
+                    .padding(.horizontal, 16).padding(.vertical, 14)
+                } else if product.additives.isEmpty {
                     HStack(spacing: 10) {
                         RiskDot(risk: .low)
                         Text("No additives detected")
@@ -681,7 +707,7 @@ struct NutrientRow: View {
 }
 
 struct AdditiveRow: View {
-    let additive: Additive
+    let additive: ProductAdditive
     let divider: Bool
     let dark: Bool
     var allowAlarmRed: Bool = true
@@ -725,7 +751,7 @@ struct AdditiveRow: View {
 }
 
 struct SeverityBar: View {
-    let additives: [Additive]
+    let additives: [ProductAdditive]
     var allowAlarmRed: Bool = true
 
     private func barColor(for risk: RiskLevel) -> Color {

@@ -15,7 +15,7 @@ const FIELDS = [
   "origins_tags", "manufacturing_places", "ingredients",
   "ecoscore_grade", "environmental_score_grade",
   "completeness", "states_tags", "last_modified_t",
-  "serving_size", "countries_tags",
+  "serving_size", "countries_tags", "unknown_ingredients_n",
 ].join(",");
 
 export type OFFProduct = Record<string, unknown>;

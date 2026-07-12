@@ -190,6 +190,31 @@ struct ScoringEngineTests {
         #expect(scored.restrictions.isEmpty)
     }
 
+    @Test func missingNutrientsExcludedFromScoring() {
+        // Missing sugar/sodium must not inflate the score as if they were zero.
+        let withZeros = product(kcal: 400, protein: 25, fiber: 0, sugar: 0, satFat: 5,
+                                sodium: 0, fvn: 0, nova: 3)
+        let withMissing = product(kcal: 400, protein: 25, fiber: 0, sugar: nil, satFat: 5,
+                                  sodium: nil, fvn: 0, nova: 3)
+        #expect(ScoringEngine.computeOverall(withMissing) == ScoringEngine.computeOverall(withZeros))
+    }
+
+    @Test func partialNutritionWithIngredientsStillScores() {
+        var p = product(kcal: 45, protein: 1, fiber: nil, sugar: 4, satFat: nil, sodium: nil,
+                        fvn: nil, nova: 4)
+        p = Product(
+            id: p.id, name: p.name, brand: p.brand, size: p.size, glyph: p.glyph,
+            overallScore: 0, yourScore: 0, deltaReason: nil,
+            nutriGrade: p.nutriGrade, novaGroup: p.novaGroup, nutrients: p.nutrients,
+            bonuses: [], transFats: false, caffeine_mg: nil,
+            sweeteners: [], seedOils: false, additives: [], restrictions: [],
+            dietFlags: nil, allergenTags: nil,
+            ingredientsText: "water, oats", imageURL: nil
+        )
+        #expect(p.hasMinimumData)
+        #expect(ScoringEngine.computeOverall(p) >= ScoringEngine.floorScore)
+    }
+
     // MARK: Toggles + bonuses
 
     @Test func personalizeOffMirrorsOverall() {
