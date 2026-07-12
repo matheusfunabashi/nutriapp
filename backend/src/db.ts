@@ -90,3 +90,40 @@ export async function markGoUpcSourced(db: D1Database, barcode: string): Promise
     .bind(barcode, now, now)
     .run();
 }
+
+/// Store an App Attest registration blob. Verification against Apple is deferred
+/// until DEVICE_CHECK_* secrets are configured on the Worker.
+export async function storeAppAttestRegistration(
+  db: D1Database,
+  keyId: string,
+  attestation: string,
+  challenge: string,
+  verified: boolean,
+): Promise<void> {
+  const now = new Date().toISOString();
+  await db
+    .prepare(
+      `INSERT INTO app_attest_devices (key_id, attestation, challenge, verified, created_at)
+       VALUES (?, ?, ?, ?, ?)
+       ON CONFLICT(key_id) DO UPDATE SET
+         attestation = excluded.attestation,
+         challenge = excluded.challenge,
+         verified = excluded.verified,
+         created_at = excluded.created_at`,
+    )
+    .bind(keyId, attestation, challenge, verified ? 1 : 0, now)
+    .run();
+}
+
+/// True when the DeviceCheck private key is present — attestation verification can run.
+export function deviceCheckConfigured(env: {
+  DEVICE_CHECK_TEAM_ID?: string;
+  DEVICE_CHECK_KEY_ID?: string;
+  DEVICE_CHECK_PRIVATE_KEY?: string;
+}): boolean {
+  return Boolean(
+    env.DEVICE_CHECK_TEAM_ID &&
+      env.DEVICE_CHECK_KEY_ID &&
+      env.DEVICE_CHECK_PRIVATE_KEY,
+  );
+}
