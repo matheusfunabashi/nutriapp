@@ -27,4 +27,23 @@ struct AdditiveDetectorTests {
         #expect(result.undercountSuspected == true)
         #expect(result.ingredientTextMissing == false)
     }
+
+    /// Acacia honey lists "acacia" as the floral source, not gum arabic (E414).
+    /// Bare "acacia" must never match — only gum/goma/gomma/gomme phrases do.
+    @Test func acaciaHoneyDoesNotFalsePositiveE414() {
+        let honeys = [
+            "Miel d'Acacia",
+            "Miele di Acacia",
+            "Mel de Acácia",
+        ]
+        for ingredients in honeys {
+            let result = AdditiveDetector.scan(
+                ingredientsText: ingredients,
+                offAdditiveTags: [],
+                hasUnrecognizedIngredients: false
+            )
+            #expect(result.additives.isEmpty,
+                    "E414 false positive for honey ingredients: \(ingredients)")
+        }
+    }
 }

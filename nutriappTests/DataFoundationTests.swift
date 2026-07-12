@@ -74,16 +74,18 @@ struct DataFoundationTests {
 
     private func bareProduct(ingredientsText: String? = nil,
                              kcal: Double? = nil,
+                             nova: Int = 0,
+                             additives: [ProductAdditive] = [],
                              shares: [IngredientShare]? = nil) -> Product {
         Product(
             id: "x", name: "T", brand: "B", size: "", glyph: "🛒",
             overallScore: 0, yourScore: 0, deltaReason: nil,
-            nutriGrade: "?", novaGroup: 0,
+            nutriGrade: "?", novaGroup: nova,
             nutrients: Nutrients(sugar_g: nil, sodium_mg: nil, satFat_g: nil,
                                  fiber_g: nil, protein_g: nil, calcium_mg: nil,
                                  kcal: kcal),
             bonuses: [], transFats: false, caffeine_mg: nil,
-            sweeteners: [], seedOils: false, additives: [], restrictions: [],
+            sweeteners: [], seedOils: false, additives: additives, restrictions: [],
             dietFlags: nil, allergenTags: nil,
             ingredientsText: ingredientsText, imageURL: nil,
             ingredientShares: shares
@@ -92,8 +94,12 @@ struct DataFoundationTests {
 
     @Test func minimumDataRequirement() {
         #expect(!bareProduct().hasMinimumData)                       // nothing → gate
-        #expect(bareProduct(ingredientsText: "water, oats").hasMinimumData)
+        #expect(!bareProduct(ingredientsText: "water, oats").hasMinimumData) // text alone
         #expect(!bareProduct(kcal: 45).hasMinimumData)               // one macro ≠ table
+        #expect(bareProduct(ingredientsText: "water", nova: 1).hasMinimumData) // known NOVA
+        #expect(bareProduct(ingredientsText: "water",
+                            additives: [ProductAdditive(name: "Aspartame", risk: .moderate,
+                                                         code: "e951")]).hasMinimumData)
         let proteinOnly = Product(
             id: "p", name: "Hydro", brand: "", size: "", glyph: "🛒",
             overallScore: 0, yourScore: 0, deltaReason: nil,
@@ -116,9 +122,14 @@ struct DataFoundationTests {
             dietFlags: nil, allergenTags: nil, ingredientsText: nil, imageURL: nil
         )
         #expect(nutritionTable.hasMinimumData)                       // 3+ core fields
-        #expect(bareProduct(shares: [IngredientShare(name: "water", percent: nil,
+        #expect(!bareProduct(shares: [IngredientShare(name: "water", percent: nil,
                                                      percentEstimate: 90)]).hasMinimumData)
         #expect(!bareProduct(ingredientsText: "").hasMinimumData)    // empty ≠ present
+
+        // Prata Água Mineral pattern: one-line ingredients, no nutrition, unknown NOVA.
+        let prata = bareProduct(ingredientsText: "água mineral natural")
+        #expect(!prata.hasMinimumData)
+        #expect(!prata.hasScoreableIngredientSignal)
     }
 
     // MARK: Data confidence (§3.2, provisional Phase-A checklist)

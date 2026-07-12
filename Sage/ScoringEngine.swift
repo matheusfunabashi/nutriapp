@@ -85,8 +85,8 @@ enum ScoringEngine {
         let sugarPen: Double?        // fvn discounts fruit/veg sugar
         let satPen: Double?
         let sodiumPen: Double?
-        let procPen: Double          // NOVA processing (0.5 when unknown)
-        let upfPen: Double           // ultra-processed share (NOVA 4 → 1)
+        let procPen: Double?         // NOVA processing; nil when nova unknown
+        let upfPen: Double?          // ultra-processed share; nil when nova unknown
         let novaKnown: Bool
         let additivesPen: Double?    // risk-weighted additive load
         let transPen: Double         // 1 when trans fats present
@@ -122,8 +122,14 @@ enum ScoringEngine {
             satPen = n.satFat_g.map { min(1, $0 / 10) }
             sodiumPen = n.sodium_mg.map { max(0, min(1, ($0 - 100) / 700)) }
             novaKnown = (1...4).contains(p.novaGroup)
-            procPen = Self.procPen(p.novaGroup)
-            upfPen = max(0, (procPen - 0.5) / 0.5)
+            if novaKnown {
+                let proc = Self.procPen(p.novaGroup)
+                procPen = proc
+                upfPen = max(0, (proc - 0.5) / 0.5)
+            } else {
+                procPen = nil
+                upfPen = nil
+            }
 
             if p.additiveIngredientTextMissing != true && p.hasIngredientData {
                 let riskLoad = p.additives.reduce(0.0) { acc, a in
@@ -149,7 +155,7 @@ enum ScoringEngine {
             case 2:  return 0.2
             case 3:  return 0.5
             case 4:  return 1.0
-            default: return 0.5   // unknown processing → mid penalty
+            default: return 0.5
             }
         }
     }
@@ -161,13 +167,15 @@ enum ScoringEngine {
         if let v = b.protDensScore { quality += 14 * v }
         if let v = b.fiberScore { quality += 12 * v }
         if let v = b.fvnScore { quality += 14 * v }
-        quality += 10 * (1 - b.procPen)
+        if b.novaKnown, let proc = b.procPen {
+            quality += 10 * (1 - proc)
+        }
 
         var penalty = 0.0
         if let v = b.sugarPen { penalty += 12 * v }
         if let v = b.satPen { penalty += 8 * v }
         if let v = b.sodiumPen { penalty += 8 * v }
-        penalty += 6 * b.upfPen
+        if b.novaKnown, let upf = b.upfPen { penalty += 6 * upf }
         if let v = b.additivesPen { penalty += 4 * v }
         penalty += 6 * b.transPen
 
@@ -236,8 +244,8 @@ enum ScoringEngine {
             if let fiber = b.fiberScore {
                 add(.fiber, 5 * fiber, "high fiber")
             }
-            if b.novaKnown {
-                let proc = 5 * ((1 - b.procPen) - b.upfPen)
+            if b.novaKnown, let procPen = b.procPen, let upfPen = b.upfPen {
+                let proc = 5 * ((1 - procPen) - upfPen)
                 add(.processing, proc, processingLabel(b))
             }
             if let ap = b.additivesPen {
@@ -266,8 +274,9 @@ enum ScoringEngine {
         if prefs.contains("high fiber"), let fiber = b.fiberScore {
             add(.fiber, 4 * fiber, "fiber-rich (your high-fiber preference)")
         }
-        if prefs.contains("minimally processed"), b.novaKnown {
-            let proc = 3 * ((1 - b.procPen) - b.upfPen)
+        if prefs.contains("minimally processed"), b.novaKnown,
+           let procPen = b.procPen, let upfPen = b.upfPen {
+            let proc = 3 * ((1 - procPen) - upfPen)
             add(.processing, proc, proc > 0 ? processingLabel(b)
                                             : "ultra-processed (you prefer whole foods)")
         }
@@ -292,8 +301,8 @@ enum ScoringEngine {
         if let fvn = b.fvnScore {
             add(.fvn, 14 * fvn, "mostly whole fruits, vegetables, or nuts")
         }
-        if b.novaKnown {
-            add(.processing, 10 * (1 - b.procPen) - 6 * b.upfPen, processingLabel(b))
+        if b.novaKnown, let procPen = b.procPen, let upfPen = b.upfPen {
+            add(.processing, 10 * (1 - procPen) - 6 * upfPen, processingLabel(b))
         }
         if let sp = b.sugarPen {
             add(.sugar, -12 * sp, "high sugar")
@@ -321,8 +330,9 @@ enum ScoringEngine {
     }
 
     private static func processingLabel(_ b: Blocks) -> String {
-        if b.procPen <= 0.2 { return "minimally processed" }
-        if b.procPen < 1 { return "moderately processed" }
+        guard let proc = b.procPen else { return "processing unknown" }
+        if proc <= 0.2 { return "minimally processed" }
+        if proc < 1 { return "moderately processed" }
         return "ultra-processed (NOVA 4)"
     }
 
@@ -443,3 +453,211 @@ enum ScoringEngine {
         Int(max(Double(floorScore), min(100, v)).rounded())
     }
 }
+
+// MARK: - Debug score breakdown (DEBUG builds only)
+
+#if DEBUG
+extension ScoringEngine {
+
+    struct DebugBreakdown {
+        let text: String
+    }
+
+    /// Full v3 score audit trail: inputs, normalized blocks, weighted terms,
+    /// overall math, and personalization steps.
+    static func debugBreakdown(_ product: Product, for profile: UserProfile) -> DebugBreakdown {
+        let b = Blocks(product)
+        let n = product.nutrients
+        var lines: [String] = []
+
+        func num(_ label: String, _ v: Double?) {
+            lines.append("  \(label): \(v.map { String(format: "%.2f", $0) } ?? "—")")
+        }
+        func block(_ label: String, _ v: Double?) {
+            lines.append("  \(label): \(v.map { String(format: "%.3f", $0) } ?? "— excluded")")
+        }
+        func term(_ label: String, weight: Double, value: Double, sign: String = "+") {
+            let pts = weight * value
+            lines.append("  \(sign) \(label): \(String(format: "%.0f", weight)) × \(String(format: "%.3f", value)) = \(sign)\(String(format: "%.2f", pts))")
+        }
+        func skip(_ label: String, weight: Double) {
+            lines.append("  · \(label): weight \(String(format: "%.0f", weight)) — skipped (no data)")
+        }
+
+        lines.append("SCORING DEBUG — v3 anchored modifier")
+        lines.append("Product: \(product.name) (\(product.id))")
+        lines.append("")
+
+        lines.append("INPUTS (per 100g)")
+        num("kcal", n.kcal)
+        num("protein_g", n.protein_g)
+        num("fiber_g", n.fiber_g)
+        num("sugar_g", n.sugar_g)
+        num("satFat_g", n.satFat_g)
+        num("sodium_mg", n.sodium_mg)
+        num("fvn", n.fvn)
+        lines.append("  nova_group: \(product.novaGroup)\(b.novaKnown ? "" : " (unknown — processing excluded)")")
+        lines.append("  transFats: \(product.transFats)")
+        lines.append("  hasMinimumData: \(product.hasMinimumData)")
+        lines.append("  hasNutritionData: \(product.hasNutritionData)")
+        lines.append("  hasScoreableIngredientSignal: \(product.hasScoreableIngredientSignal)")
+        lines.append("  hasIngredientData: \(product.hasIngredientData)")
+        lines.append("  additiveIngredientTextMissing: \(product.additiveIngredientTextMissing ?? false)")
+        if product.additives.isEmpty {
+            lines.append("  additives: none")
+        } else {
+            lines.append("  additives (\(product.additives.count)):")
+            for a in product.additives {
+                let tier = a.tier.map { String(describing: $0) } ?? "—"
+                let wt = a.tier.map { AdditiveCatalog.penaltyWeight(for: $0) }
+                let wtStr = wt.map { String(format: "%.2f", $0) } ?? "—"
+                lines.append("    · \(a.code ?? "?") \(a.name) tier=\(tier) wt=\(wtStr)")
+            }
+        }
+        lines.append("")
+
+        lines.append("NORMALIZED BLOCKS (0–1)")
+        block("protDensScore", b.protDensScore)
+        block("absProteinScore", b.absProteinScore)
+        block("lowEnergy", b.lowEnergy)
+        block("fiberScore", b.fiberScore)
+        block("fvnScore", b.fvnScore)
+        block("sugarPen", b.sugarPen)
+        block("satPen", b.satPen)
+        block("sodiumPen", b.sodiumPen)
+        if let proc = b.procPen {
+            lines.append("  procPen: \(String(format: "%.3f", proc))")
+        } else {
+            lines.append("  procPen: — excluded")
+        }
+        if let upf = b.upfPen {
+            lines.append("  upfPen: \(String(format: "%.3f", upf))")
+        } else {
+            lines.append("  upfPen: — excluded")
+        }
+        block("additivesPen", b.additivesPen)
+        lines.append("  transPen: \(String(format: "%.3f", b.transPen))")
+        lines.append("")
+
+        lines.append("OVERALL — quality (base 50)")
+        var quality = 0.0
+        if let v = b.protDensScore {
+            term("protein density", weight: 14, value: v)
+            quality += 14 * v
+        } else { skip("protein density", weight: 14) }
+        if let v = b.fiberScore {
+            term("fiber", weight: 12, value: v)
+            quality += 12 * v
+        } else { skip("fiber", weight: 12) }
+        if let v = b.fvnScore {
+            term("fruit/veg/nuts", weight: 14, value: v)
+            quality += 14 * v
+        } else { skip("fruit/veg/nuts", weight: 14) }
+        if b.novaKnown, let proc = b.procPen {
+            let procQuality = 1 - proc
+            term("low processing", weight: 10, value: procQuality)
+            quality += 10 * procQuality
+        } else {
+            skip("low processing", weight: 10)
+        }
+        lines.append("  ⇒ quality subtotal: +\(String(format: "%.2f", quality))")
+        lines.append("")
+
+        lines.append("OVERALL — penalties")
+        var penalty = 0.0
+        if let v = b.sugarPen {
+            term("sugar", weight: 12, value: v, sign: "−")
+            penalty += 12 * v
+        } else { skip("sugar", weight: 12) }
+        if let v = b.satPen {
+            term("saturated fat", weight: 8, value: v, sign: "−")
+            penalty += 8 * v
+        } else { skip("saturated fat", weight: 8) }
+        if let v = b.sodiumPen {
+            term("sodium", weight: 8, value: v, sign: "−")
+            penalty += 8 * v
+        } else { skip("sodium", weight: 8) }
+        if b.novaKnown, let upf = b.upfPen {
+            term("ultra-processing", weight: 6, value: upf, sign: "−")
+            penalty += 6 * upf
+        } else {
+            skip("ultra-processing", weight: 6)
+        }
+        if let v = b.additivesPen {
+            term("additives", weight: 4, value: v, sign: "−")
+            penalty += 4 * v
+        } else { skip("additives", weight: 4) }
+        if b.transPen > 0 {
+            term("trans fats", weight: 6, value: b.transPen, sign: "−")
+        } else {
+            lines.append("  − trans fats: 6 × 0.000 = −0.00")
+        }
+        penalty += 6 * b.transPen
+        lines.append("  ⇒ penalty subtotal: −\(String(format: "%.2f", penalty))")
+        lines.append("")
+
+        let rawOverall = 50 + quality - penalty
+        let overall = clampScore(rawOverall)
+        lines.append("OVERALL SCORE")
+        lines.append("  50 + \(String(format: "%.2f", quality)) − \(String(format: "%.2f", penalty)) = \(String(format: "%.2f", rawOverall))")
+        lines.append("  clamped [\(floorScore)…100] → \(overall)")
+        lines.append("  stored overallScore: \(product.overallScore)")
+        lines.append("")
+
+        lines.append("YOUR SCORE — profile")
+        lines.append("  objective: \(profile.objective)")
+        lines.append("  preferences: \(profile.preferences.isEmpty ? "none" : profile.preferences.joined(separator: ", "))")
+        lines.append("  personalizeScoring: \(profile.personalizeScoring)")
+        lines.append("  autoFlagRestrictions: \(profile.autoFlagRestrictions)")
+        lines.append("  restrictions: \(profile.restrictions.isEmpty ? "none" : profile.restrictions.joined(separator: ", "))")
+        lines.append("")
+
+        let restrictions: [Restriction] = {
+            guard profile.autoFlagRestrictions else { return [] }
+            return profile.restrictions.compactMap { r in
+                guard let hit = evalRestriction(r, product: product) else { return nil }
+                return Restriction(type: hit.type, trigger: hit.trigger)
+            }
+        }()
+
+        if !profile.personalizeScoring {
+            lines.append("  personalization OFF → yourScore = overall (\(overall))")
+        } else {
+            let adjs = adjustments(b, objective: profile.objective,
+                                   preferences: profile.preferences)
+            lines.append("PERSONAL ADJUSTMENTS (cap ±\(Int(maxAdjustment)))")
+            if adjs.isEmpty {
+                lines.append("  (none above noise threshold)")
+            } else {
+                for a in adjs {
+                    let sign = a.points >= 0 ? "+" : ""
+                    lines.append("  \(sign)\(String(format: "%.2f", a.points)) — \(a.label)")
+                }
+            }
+            let rawDelta = adjs.reduce(0) { $0 + $1.points }
+            let delta = max(-maxAdjustment, min(maxAdjustment, rawDelta))
+            if abs(rawDelta - delta) > 0.01 {
+                lines.append("  raw delta \(String(format: "%.2f", rawDelta)) → capped \(String(format: "%.2f", delta))")
+            } else {
+                lines.append("  delta: \(String(format: "%+.2f", delta))")
+            }
+            var your = clampScore(Double(overall) + delta)
+            lines.append("  \(overall) \(String(format: "%+.2f", delta)) = \(String(format: "%.2f", Double(overall) + delta)) → clamped \(your)")
+            if !restrictions.isEmpty {
+                let capped = min(your, restrictionCap)
+                lines.append("  restriction hard-cap ≤\(restrictionCap): \(your) → \(capped)")
+                your = capped
+            }
+            lines.append("  stored yourScore: \(product.yourScore) (computed \(your))")
+        }
+
+        if !restrictions.isEmpty && profile.personalizeScoring {
+            // already handled above
+        } else if !restrictions.isEmpty {
+            lines.append("  active restrictions: \(restrictions.map { "\($0.type) (\($0.trigger))" }.joined(separator: ", "))")
+        }
+
+        return DebugBreakdown(text: lines.joined(separator: "\n"))
+    }
+}
+#endif

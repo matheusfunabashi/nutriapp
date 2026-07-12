@@ -227,4 +227,49 @@ struct ScoringEngineTests {
         let s = ScoringEngine.score(chicken, for: profile())
         #expect(s.bonuses.contains("protein"))
     }
+
+    // MARK: Sufficiency gate + unknown NOVA
+
+    @Test func trivialIngredientTextDoesNotPassGate() {
+        let prata = Product(
+            id: "7897123881325", name: "Prata Água Mineral 370ml", brand: "Prata",
+            size: "370 ml", glyph: "💧", overallScore: 0, yourScore: 0, deltaReason: nil,
+            nutriGrade: "?", novaGroup: 0,
+            nutrients: Nutrients(sugar_g: nil, sodium_mg: nil, satFat_g: nil,
+                                 fiber_g: nil, protein_g: nil, calcium_mg: nil, kcal: nil),
+            bonuses: [], transFats: false, caffeine_mg: nil,
+            sweeteners: [], seedOils: false, additives: [], restrictions: [],
+            dietFlags: nil, allergenTags: nil,
+            ingredientsText: "água mineral natural", imageURL: nil,
+            additiveIngredientTextMissing: false
+        )
+        #expect(!prata.hasMinimumData)
+    }
+
+    @Test func unknownNovaExcludesProcessingCredit() {
+        let known = product(kcal: 100, protein: 5, fiber: 2, sugar: 1, satFat: 0.5,
+                            sodium: 50, fvn: 0, nova: 1)
+        let unknown = product(kcal: 100, protein: 5, fiber: 2, sugar: 1, satFat: 0.5,
+                              sodium: 50, fvn: 0, nova: 0)
+        #expect(ScoringEngine.computeOverall(unknown) == ScoringEngine.computeOverall(known) - 10)
+    }
+
+    @Test func detectedAdditivePassesGateWithoutNutrition() {
+        let p = Product(
+            id: "a", name: "Diet", brand: "", size: "", glyph: "🛒",
+            overallScore: 0, yourScore: 0, deltaReason: nil,
+            nutriGrade: "?", novaGroup: 0,
+            nutrients: Nutrients(sugar_g: nil, sodium_mg: nil, satFat_g: nil,
+                                 fiber_g: nil, protein_g: nil, calcium_mg: nil, kcal: nil),
+            bonuses: [], transFats: false, caffeine_mg: nil,
+            sweeteners: [], seedOils: false,
+            additives: [ProductAdditive(name: "Aspartame", risk: .moderate, code: "e951",
+                                        tier: .moderate)],
+            restrictions: [], dietFlags: nil, allergenTags: nil,
+            ingredientsText: "water, aspartame", imageURL: nil,
+            additiveIngredientTextMissing: false
+        )
+        #expect(p.hasMinimumData)
+        #expect(ScoringEngine.computeOverall(p) >= ScoringEngine.floorScore)
+    }
 }
