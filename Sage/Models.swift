@@ -4,7 +4,7 @@ import Foundation
 
 enum RiskLevel: String, Codable { case low, moderate, high, unrated }
 
-struct Additive: Identifiable, Hashable, Codable {
+struct ProductAdditive: Identifiable, Hashable, Codable {
     var id = UUID()
     let name: String
     let risk: RiskLevel
@@ -13,6 +13,8 @@ struct Additive: Identifiable, Hashable, Codable {
     /// Normalized E-number ("e150d") — scoring v4 looks tiers up by code.
     /// Optional for back-compat with snapshots saved before Phase B.
     var code: String? = nil
+    /// Tier from AdditiveDetector when available; drives S1 and v3 additive penalties.
+    var tier: AdditiveTier? = nil
 }
 
 struct Restriction: Identifiable, Hashable, Codable {
@@ -73,7 +75,7 @@ struct Product: Identifiable, Hashable, Codable {
     let caffeine_mg: Double?
     let sweeteners: [String]
     let seedOils: Bool
-    let additives: [Additive]
+    let additives: [ProductAdditive]
     var restrictions: [Restriction]
     /// Normalized dietary signals from Open Food Facts (e.g. "non-vegan", "gluten",
     /// "milk"), used by the ScoringEngine to flag profile restrictions. Optional for
@@ -115,6 +117,10 @@ struct Product: Identifiable, Hashable, Codable {
     /// Normalized category tags (e.g. "beverages", "salty-snacks") — drives
     /// the v4 category router. Optional for back-compat.
     var categories: [String]? = nil
+    /// True when AdditiveDetector suspects OFF under-counted additives.
+    var additiveUndercountSuspected: Bool? = nil
+    /// True when no ingredient text was available to verify additive detection.
+    var additiveIngredientTextMissing: Bool? = nil
 }
 
 // MARK: - Data confidence (SCORING_V4.md §3.2–3.3)
@@ -128,10 +134,12 @@ extension Product {
         (ingredientsText?.isEmpty == false) || !(ingredientShares ?? []).isEmpty
     }
 
+    /// A real nutrition table: at least three of the six core per-100g fields
+    /// present (not a single stray macro like protein alone).
     var hasNutritionData: Bool {
         let n = nutrients
-        return [n.kcal, n.sugar_g, n.satFat_g, n.sodium_mg, n.protein_g, n.fiber_g]
-            .contains { $0 != nil }
+        let core: [Double?] = [n.kcal, n.sugar_g, n.satFat_g, n.sodium_mg, n.protein_g, n.fiber_g]
+        return core.compactMap { $0 }.count >= 3
     }
 
     /// Minimum data requirement: never score a product that has neither an
@@ -154,11 +162,13 @@ extension Product {
         if !(packagingMaterials ?? []).isEmpty { score += 0.15 }
         if let g = ecoGrade, ("a"..."e").contains(g) { score += 0.05 }
         if !(origins ?? []).isEmpty { score += 0.05 }
-        return score
+        if additiveUndercountSuspected == true { score -= 0.20 }
+        return max(0, score)
     }
 
     var dataConfidence: DataConfidence {
         let s = dataConfidenceScore
+        if additiveUndercountSuspected == true { return s >= 0.8 ? .medium : .low }
         if s >= 0.8 { return .high }
         if s >= 0.5 { return .medium }
         return .low

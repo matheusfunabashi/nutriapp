@@ -16,6 +16,9 @@ import Foundation
 //     zero-calorie soda nudges up for weight loss). Conflicting dietary
 //     restrictions hard-cap it to ≤20 and raise a warning banner.
 //
+// Missing nutrient inputs are excluded from both numerator and denominator —
+// never treated as zero (healthy) or full credit.
+//
 // The same adjustment list drives the rule-based deltaReason placeholder and
 // the signed "+/-" factors sent to the backend /explain prompt, so the LLM can
 // never cite a factor the score didn't actually use.
@@ -71,61 +74,72 @@ enum ScoringEngine {
         return factors
     }
 
-    // MARK: Building blocks (each normalized 0–1)
+    // MARK: Building blocks (each normalized 0–1; nil = unknown, excluded)
 
     private struct Blocks {
-        let protDensScore: Double   // protein per 100 kcal
-        let absProteinScore: Double // absolute protein per 100g
-        let lowEnergy: Double       // calorie lightness
-        let fiberScore: Double
-        let fvnScore: Double        // fruit/veg/nuts fraction
-        let sugarPen: Double        // fvn discounts fruit/veg sugar
-        let satPen: Double
-        let sodiumPen: Double
-        let procPen: Double         // NOVA processing (0.5 when unknown)
-        let upfPen: Double          // ultra-processed share (NOVA 4 → 1)
+        let protDensScore: Double?   // protein per 100 kcal
+        let absProteinScore: Double? // absolute protein per 100g
+        let lowEnergy: Double?       // calorie lightness
+        let fiberScore: Double?
+        let fvnScore: Double?        // fruit/veg/nuts fraction
+        let sugarPen: Double?        // fvn discounts fruit/veg sugar
+        let satPen: Double?
+        let sodiumPen: Double?
+        let procPen: Double          // NOVA processing (0.5 when unknown)
+        let upfPen: Double           // ultra-processed share (NOVA 4 → 1)
         let novaKnown: Bool
-        let additivesPen: Double    // risk-weighted additive load
-        let transPen: Double        // 1 when trans fats present
+        let additivesPen: Double?    // risk-weighted additive load
+        let transPen: Double         // 1 when trans fats present
 
         init(_ p: Product) {
             let n = p.nutrients
-            let fvn = n.fvn ?? 0
 
             // Guard: near-zero energy (water, diet soda) — no protein density, treat as light.
             if let kcal = n.kcal, kcal < 5 {
                 protDensScore = 0
                 lowEnergy = 1
-            } else if let kcal = n.kcal, kcal > 0 {
-                let protDens = (n.protein_g ?? 0) / (kcal / 100)
+            } else if let kcal = n.kcal, kcal > 0, let protein = n.protein_g {
+                let protDens = protein / (kcal / 100)
                 protDensScore = min(1, protDens / 15)
                 lowEnergy = max(0, min(1, (500 - kcal) / 450))
+            } else if let kcal = n.kcal, kcal > 0 {
+                protDensScore = nil
+                lowEnergy = max(0, min(1, (500 - kcal) / 450))
             } else {
-                // kcal missing → neutral
-                protDensScore = 0
-                lowEnergy = 0.5
+                protDensScore = nil
+                lowEnergy = nil
             }
 
-            absProteinScore = min(1, (n.protein_g ?? 0) / 25)
-            fiberScore = min(1, (n.fiber_g ?? 0) / 8)
-            fvnScore = min(1, fvn / 100)
-            sugarPen = min(1, (n.sugar_g ?? 0) * (1 - fvn / 100) / 25)
-            satPen = min(1, (n.satFat_g ?? 0) / 10)
-            sodiumPen = max(0, min(1, ((n.sodium_mg ?? 0) - 100) / 700))
+            absProteinScore = n.protein_g.map { min(1, $0 / 25) }
+            fiberScore = n.fiber_g.map { min(1, $0 / 8) }
+            fvnScore = n.fvn.map { min(1, $0 / 100) }
+            if let sugar = n.sugar_g {
+                let fvn = n.fvn ?? 0
+                sugarPen = min(1, sugar * (1 - fvn / 100) / 25)
+            } else {
+                sugarPen = nil
+            }
+            satPen = n.satFat_g.map { min(1, $0 / 10) }
+            sodiumPen = n.sodium_mg.map { max(0, min(1, ($0 - 100) / 700)) }
             novaKnown = (1...4).contains(p.novaGroup)
             procPen = Self.procPen(p.novaGroup)
             upfPen = max(0, (procPen - 0.5) / 0.5)
 
-            // Risk-weighted additive load: a couple of high-risk additives is
-            // enough to max the penalty; benign ones barely register.
-            let riskLoad = p.additives.reduce(0.0) { acc, a in
-                switch a.risk {
-                case .high:     return acc + 1.5
-                case .moderate: return acc + 0.75
-                case .low, .unrated: return acc + 0.25
+            if p.additiveIngredientTextMissing != true && p.hasIngredientData {
+                let riskLoad = p.additives.reduce(0.0) { acc, a in
+                    if let tier = a.tier {
+                        return acc + AdditiveCatalog.penaltyWeight(for: tier)
+                    }
+                    switch a.risk {
+                    case .high:     return acc + 1.5
+                    case .moderate: return acc + 0.75
+                    case .low, .unrated: return acc + 0.25
+                    }
                 }
+                additivesPen = min(1, riskLoad / 5)
+            } else {
+                additivesPen = nil
             }
-            additivesPen = min(1, riskLoad / 5)
             transPen = p.transFats ? 1 : 0
         }
 
@@ -140,22 +154,23 @@ enum ScoringEngine {
         }
     }
 
-    // MARK: Overall (Score 1) — 50 ± points
+    // MARK: Overall (Score 1) — 50 ± points (unknown terms omitted, not zeroed)
 
     private static func overall(_ b: Blocks) -> Int {
-        // Quality: max +50 (→ 100 for a perfect food).
-        let quality = 14 * b.protDensScore
-                    + 12 * b.fiberScore
-                    + 14 * b.fvnScore
-                    + 10 * (1 - b.procPen)
-        // Penalty: enough to reach the floor (clamped at 10, "shouldn't eat it").
-        // Trans fats are the heaviest flat penalty — no safe intake level.
-        let penalty = 12 * b.sugarPen
-                    +  8 * b.satPen
-                    +  8 * b.sodiumPen
-                    +  6 * b.upfPen
-                    +  4 * b.additivesPen
-                    +  6 * b.transPen
+        var quality = 0.0
+        if let v = b.protDensScore { quality += 14 * v }
+        if let v = b.fiberScore { quality += 12 * v }
+        if let v = b.fvnScore { quality += 14 * v }
+        quality += 10 * (1 - b.procPen)
+
+        var penalty = 0.0
+        if let v = b.sugarPen { penalty += 12 * v }
+        if let v = b.satPen { penalty += 8 * v }
+        if let v = b.sodiumPen { penalty += 8 * v }
+        penalty += 6 * b.upfPen
+        if let v = b.additivesPen { penalty += 4 * v }
+        penalty += 6 * b.transPen
+
         return clampScore(50 + quality - penalty)
     }
 
@@ -186,31 +201,48 @@ enum ScoringEngine {
 
         switch objective.lowercased() {
         case "build muscle":
-            // Centered: protein-dense foods rise, protein-poor foods dip.
-            let dens = 12 * (b.protDensScore - 0.35)
-            add(.protein, dens, dens > 0 ? "high protein per calorie"
-                                         : "low protein per calorie for a muscle goal")
-            add(.absProtein, 4 * b.absProteinScore, "protein-rich per 100g")
-            add(.sugar, -4 * b.sugarPen, "high sugar")
+            if let dens = b.protDensScore {
+                let pts = 12 * (dens - 0.35)
+                add(.protein, pts, pts > 0 ? "high protein per calorie"
+                                           : "low protein per calorie for a muscle goal")
+            }
+            if let abs = b.absProteinScore {
+                add(.absProtein, 4 * abs, "protein-rich per 100g")
+            }
+            if let sp = b.sugarPen {
+                add(.sugar, -4 * sp, "high sugar")
+            }
 
         case "lose weight":
-            // Calorie lightness only counts when the calories aren't sugar —
-            // a sugary drink must not collect a "light" bonus.
-            let sugarGate = max(0, 1 - 2 * b.sugarPen)
-            let energy = 10 * (b.lowEnergy * sugarGate - 0.3)
-            add(.energy, energy, energy > 0 ? "low calorie density" : "calorie-dense")
-            add(.protein, 5 * b.protDensScore, "protein that keeps you full")
-            add(.fiber, 4 * b.fiberScore, "filling fiber")
-            add(.sugar, -8 * b.sugarPen, "high sugar")
+            if let low = b.lowEnergy, let sp = b.sugarPen {
+                let sugarGate = max(0, 1 - 2 * sp)
+                let energy = 10 * (low * sugarGate - 0.3)
+                add(.energy, energy, energy > 0 ? "low calorie density" : "calorie-dense")
+            }
+            if let dens = b.protDensScore {
+                add(.protein, 5 * dens, "protein that keeps you full")
+            }
+            if let fiber = b.fiberScore {
+                add(.fiber, 4 * fiber, "filling fiber")
+            }
+            if let sp = b.sugarPen {
+                add(.sugar, -8 * sp, "high sugar")
+            }
 
         case "eat healthier":
-            add(.fvn, 8 * b.fvnScore, "mostly whole fruits, vegetables, or nuts")
-            add(.fiber, 5 * b.fiberScore, "high fiber")
+            if let fvn = b.fvnScore {
+                add(.fvn, 8 * fvn, "mostly whole fruits, vegetables, or nuts")
+            }
+            if let fiber = b.fiberScore {
+                add(.fiber, 5 * fiber, "high fiber")
+            }
             if b.novaKnown {
                 let proc = 5 * ((1 - b.procPen) - b.upfPen)
                 add(.processing, proc, processingLabel(b))
             }
-            add(.additives, -4 * b.additivesPen, "contains riskier additives")
+            if let ap = b.additivesPen {
+                add(.additives, -4 * ap, "contains riskier additives")
+            }
 
         default: // maintain — goal-neutral, only preferences below apply
             break
@@ -219,20 +251,20 @@ enum ScoringEngine {
         // Preference nudges (smaller than goal drivers, all objectives).
         // "Organic" has no reliable signal in the data, so it never adjusts.
         let prefs = Set(preferences.map { $0.lowercased() })
-        if prefs.contains("low sugar") {
-            add(.sugar, -4 * b.sugarPen, "high sugar (you prefer low sugar)")
+        if prefs.contains("low sugar"), let sp = b.sugarPen {
+            add(.sugar, -4 * sp, "high sugar (you prefer low sugar)")
         }
-        if prefs.contains("low sodium") {
-            add(.sodium, -4 * b.sodiumPen, "high sodium (you prefer low sodium)")
+        if prefs.contains("low sodium"), let sp = b.sodiumPen {
+            add(.sodium, -4 * sp, "high sodium (you prefer low sodium)")
         }
-        if prefs.contains("low fat") {
-            add(.satFat, -4 * b.satPen, "high saturated fat (you prefer low fat)")
+        if prefs.contains("low fat"), let sp = b.satPen {
+            add(.satFat, -4 * sp, "high saturated fat (you prefer low fat)")
         }
-        if prefs.contains("high protein") {
-            add(.protein, 4 * b.protDensScore, "protein-dense (your high-protein preference)")
+        if prefs.contains("high protein"), let dens = b.protDensScore {
+            add(.protein, 4 * dens, "protein-dense (your high-protein preference)")
         }
-        if prefs.contains("high fiber") {
-            add(.fiber, 4 * b.fiberScore, "fiber-rich (your high-fiber preference)")
+        if prefs.contains("high fiber"), let fiber = b.fiberScore {
+            add(.fiber, 4 * fiber, "fiber-rich (your high-fiber preference)")
         }
         if prefs.contains("minimally processed"), b.novaKnown {
             let proc = 3 * ((1 - b.procPen) - b.upfPen)
@@ -251,17 +283,33 @@ enum ScoringEngine {
             guard abs(points) >= 0.5 else { return }
             out.append(Adjustment(key: key, points: points, label: label))
         }
-        add(.protein, 14 * b.protDensScore, "high protein per calorie")
-        add(.fiber, 12 * b.fiberScore, "high fiber")
-        add(.fvn, 14 * b.fvnScore, "mostly whole fruits, vegetables, or nuts")
+        if let dens = b.protDensScore {
+            add(.protein, 14 * dens, "high protein per calorie")
+        }
+        if let fiber = b.fiberScore {
+            add(.fiber, 12 * fiber, "high fiber")
+        }
+        if let fvn = b.fvnScore {
+            add(.fvn, 14 * fvn, "mostly whole fruits, vegetables, or nuts")
+        }
         if b.novaKnown {
             add(.processing, 10 * (1 - b.procPen) - 6 * b.upfPen, processingLabel(b))
         }
-        add(.sugar, -12 * b.sugarPen, "high sugar")
-        add(.satFat, -8 * b.satPen, "high saturated fat")
-        add(.sodium, -8 * b.sodiumPen, "high sodium")
-        add(.additives, -4 * b.additivesPen, "contains riskier additives")
-        add(.transFat, -6 * b.transPen, "contains trans fats")
+        if let sp = b.sugarPen {
+            add(.sugar, -12 * sp, "high sugar")
+        }
+        if let sat = b.satPen {
+            add(.satFat, -8 * sat, "high saturated fat")
+        }
+        if let sod = b.sodiumPen {
+            add(.sodium, -8 * sod, "high sodium")
+        }
+        if let ap = b.additivesPen {
+            add(.additives, -4 * ap, "contains riskier additives")
+        }
+        if b.transPen > 0 {
+            add(.transFat, -6 * b.transPen, "contains trans fats")
+        }
         return out
     }
 

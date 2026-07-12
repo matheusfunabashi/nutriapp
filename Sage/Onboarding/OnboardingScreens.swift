@@ -14,7 +14,7 @@ struct OnboardingWelcomeScreen: View {
                 HStack(spacing: 8) {
                     SageMark(size: 26, color: accent)
                     Text("Sage")
-                        .font(.system(size: 22, weight: .heavy)).tracking(-0.6)
+                        .font(.sageBold(22)).tracking(-0.6)
                         .foregroundColor(Theme.textPrimary(dark))
                 }
                 // 12pt above the safe-area inset — see OnboardingHeader.
@@ -32,7 +32,7 @@ struct OnboardingWelcomeScreen: View {
 
             StaggeredAppear(index: 2) {
                 Text("Know exactly\nwhat's inside.")
-                    .font(.system(size: 34, weight: .heavy)).tracking(-1)
+                    .font(.sageBold(34)).tracking(-1)
                     .foregroundColor(Theme.textPrimary(dark))
                     .multilineTextAlignment(.center)
                     .lineSpacing(2)
@@ -43,7 +43,7 @@ struct OnboardingWelcomeScreen: View {
             StaggeredAppear(index: 3) {
                 // Markdown bolds "your" without needing Text concatenation.
                 Text("Scan any label. We translate every additive into plain language and score it for **your** body.")
-                    .font(.system(size: 15))
+                    .font(.sageRegular(15))
                     .lineSpacing(3)
                     .multilineTextAlignment(.center)
                     .foregroundColor(Theme.textSecondary(dark))
@@ -65,7 +65,7 @@ struct OnboardingWelcomeScreen: View {
                         (Text("Already have an account? ")
                             .foregroundColor(Theme.textSecondary(dark))
                         + Text("Sign in").foregroundColor(Theme.textPrimary(dark)).fontWeight(.heavy))
-                            .font(.system(size: 14))
+                            .font(.sageRegular(14))
                             .padding(.vertical, 10) // bigger tap surface
                             .contentShape(Rectangle())
                     }
@@ -93,10 +93,10 @@ struct OnboardingWelcomeScreen: View {
             // Stat numbers benefit from tabular figures so the three columns
             // align even if the strings ever change (e.g. "500K+").
             Text(big)
-                .font(.system(size: 18, weight: .heavy)).tracking(-0.4).monospacedDigit()
+                .font(.sageBold(18)).tracking(-0.4).monospacedDigit()
                 .foregroundColor(Theme.textPrimary(dark))
             Text(small)
-                .font(.system(size: 12))
+                .font(.sageRegular(12))
                 .foregroundColor(Theme.textSecondary(dark))
         }
     }
@@ -153,7 +153,7 @@ struct OnboardingScoresScreen: View {
                     scoreCard(label: "OVERALL", score: 72, footnote: "The overall score",
                               highlighted: false)
                     Image(systemName: "arrow.right")
-                        .font(.system(size: 14, weight: .heavy))
+                        .font(.sageBold(14))
                         .foregroundColor(Theme.textSecondary(dark))
                     scoreCard(label: "YOUR SCORE", score: 58, footnote: "Tuned to you",
                               highlighted: true)
@@ -204,7 +204,7 @@ struct OnboardingScoresScreen: View {
 
         return VStack(spacing: 12) {
             Text(label)
-                .font(.system(size: 11, weight: .heavy)).tracking(1.4)
+                .font(.sageBold(11)).tracking(1.4)
                 .foregroundColor(highlighted ? accent : Theme.textSecondary(dark))
 
             ZStack {
@@ -216,13 +216,13 @@ struct OnboardingScoresScreen: View {
                     .stroke(ring, style: StrokeStyle(lineWidth: 8, lineCap: .round))
                     .rotationEffect(.degrees(-90))
                 Text("\(score)")
-                    .font(.system(size: 28, weight: .heavy)).monospacedDigit()
+                    .font(.sageBold(28)).monospacedDigit()
                     .foregroundColor(Theme.textPrimary(dark))
             }
             .frame(width: 86, height: 86)
 
             Text(footnote)
-                .font(.system(size: 11))
+                .font(.sageRegular(11))
                 .foregroundColor(Theme.textSecondary(dark))
         }
         .frame(maxWidth: .infinity)
@@ -245,17 +245,17 @@ struct OnboardingScoresScreen: View {
         let red = Color(hex: "C9442B")
         return HStack(alignment: .top, spacing: 12) {
             Text("\(delta)")
-                .font(.system(size: 13, weight: .heavy)).monospacedDigit()
+                .font(.sageBold(13)).monospacedDigit()
                 .foregroundColor(red)
                 .padding(.horizontal, 10).padding(.vertical, 4)
                 .background(Capsule().fill(red.opacity(0.12)))
 
             VStack(alignment: .leading, spacing: 6) {
                 Text(ingredient)
-                    .font(.system(size: 14, weight: .heavy)).tracking(-0.2)
+                    .font(.sageBold(14)).tracking(-0.2)
                     .foregroundColor(Theme.textPrimary(dark))
                 Text(reason)
-                    .font(.system(size: 11, weight: .semibold))
+                    .font(.sageSemiBold(11))
                     .foregroundColor(Theme.textSecondary(dark))
                     .padding(.horizontal, 8).padding(.vertical, 3)
                     .background(
@@ -330,7 +330,7 @@ struct OnboardingAlternativesScreen: View {
     private func alternativeCard(_ item: Alternative) -> some View {
         VStack(alignment: .leading, spacing: 6) {
             Text(item.title)
-                .font(.system(size: 15, weight: .heavy)).tracking(-0.3)
+                .font(.sageBold(15)).tracking(-0.3)
                 .foregroundColor(Theme.textPrimary(dark))
                 .lineLimit(2)
                 .multilineTextAlignment(.leading)
@@ -372,7 +372,7 @@ struct OnboardingAlternativesScreen: View {
                     .resizable()
                     .scaledToFit()
             } else {
-                Text(item.glyph).font(.system(size: 34))
+                Text(item.glyph).font(.sageRegular(34))
             }
         }
         .frame(width: 70, height: 70)
@@ -388,7 +388,7 @@ struct OnboardingAlternativesScreen: View {
                 .stroke(accent, style: StrokeStyle(lineWidth: 4, lineCap: .round))
                 .rotationEffect(.degrees(-90))
             Text("\(score)")
-                .font(.system(size: 14, weight: .heavy)).monospacedDigit()
+                .font(.sageBold(14)).monospacedDigit()
                 .foregroundColor(accent)
         }
         .frame(width: 46, height: 46)
@@ -416,7 +416,7 @@ struct OnboardingNameScreen: View {
 
             VStack(alignment: .leading, spacing: 10) {
                 Text("FIRST NAME")
-                    .font(.system(size: 11, weight: .heavy)).tracking(1.4)
+                    .font(.sageBold(11)).tracking(1.4)
                     .foregroundColor(Theme.textSecondary(dark))
 
                 TextField("", text: $firstName)
@@ -424,7 +424,7 @@ struct OnboardingNameScreen: View {
                     .textInputAutocapitalization(.words)
                     .autocorrectionDisabled(true)
                     .submitLabel(.done)
-                    .font(.system(size: 17, weight: .semibold))
+                    .font(.sageSemiBold(17))
                     .foregroundColor(Theme.textPrimary(dark))
                     .padding(.horizontal, 14).padding(.vertical, 14)
                     .background(
@@ -495,7 +495,7 @@ struct OnboardingBodyStatsScreen: View {
     private var unitsCard: some View {
         HStack {
             Text("Imperial units")
-                .font(.system(size: 15, weight: .heavy)).tracking(-0.2)
+                .font(.sageBold(15)).tracking(-0.2)
                 .foregroundColor(Theme.textPrimary(dark))
             Spacer()
             Toggle("", isOn: Binding(
@@ -547,7 +547,7 @@ struct OnboardingBodyStatsScreen: View {
                                        @ViewBuilder content: () -> C) -> some View {
         VStack(alignment: .leading, spacing: 8) {
             Text(label)
-                .font(.system(size: 11, weight: .heavy)).tracking(1.4)
+                .font(.sageBold(11)).tracking(1.4)
                 .foregroundColor(Theme.textSecondary(dark))
                 .padding(.leading, 4)
             content()
@@ -561,13 +561,13 @@ struct OnboardingBodyStatsScreen: View {
                                range: ClosedRange<Int>) -> some View {
         VStack(spacing: 0) {
             Text(label)
-                .font(.system(size: 10, weight: .heavy)).tracking(1.4)
+                .font(.sageBold(10)).tracking(1.4)
                 .foregroundColor(Theme.textSecondary(dark))
                 .padding(.top, 10)
             Picker(label, selection: selection) {
                 ForEach(range, id: \.self) { v in
                     Text("\(v)")
-                        .font(.system(size: 22, weight: .heavy))
+                        .font(.sageBold(22))
                         .monospacedDigit()
                         .tag(v)
                 }
@@ -663,7 +663,7 @@ struct OnboardingPersonalDetailsScreen: View {
     private var dobSection: some View {
         VStack(alignment: .leading, spacing: 10) {
             Text("DATE OF BIRTH")
-                .font(.system(size: 11, weight: .heavy)).tracking(1.4)
+                .font(.sageBold(11)).tracking(1.4)
                 .foregroundColor(Theme.textSecondary(dark))
 
             HStack(spacing: 10) {
@@ -686,10 +686,10 @@ struct OnboardingPersonalDetailsScreen: View {
         } label: {
             VStack(spacing: 4) {
                 Text(label)
-                    .font(.system(size: 11, weight: .heavy)).tracking(1.0)
+                    .font(.sageBold(11)).tracking(1.0)
                     .foregroundColor(Theme.textSecondary(dark))
                 Text(value)
-                    .font(.system(size: 22, weight: .heavy)).monospacedDigit()
+                    .font(.sageBold(22)).monospacedDigit()
                     .foregroundColor(Theme.textPrimary(dark))
                     .contentTransition(.numericText())
             }
@@ -713,7 +713,7 @@ struct OnboardingPersonalDetailsScreen: View {
             HStack {
                 Spacer()
                 Button("Done") { pickerField = nil }
-                    .font(.system(size: 16, weight: .heavy))
+                    .font(.sageBold(16))
                     .foregroundColor(OnboardingBrandGreen)
                     .padding(.horizontal, 20).padding(.vertical, 14)
             }
@@ -768,7 +768,7 @@ struct OnboardingPersonalDetailsScreen: View {
     private var genderSection: some View {
         VStack(alignment: .leading, spacing: 10) {
             Text("GENDER")
-                .font(.system(size: 11, weight: .heavy)).tracking(1.4)
+                .font(.sageBold(11)).tracking(1.4)
                 .foregroundColor(Theme.textSecondary(dark))
 
             HStack(spacing: 6) {
@@ -794,7 +794,7 @@ struct OnboardingPersonalDetailsScreen: View {
             }
         } label: {
             Text(option.label)
-                .font(.system(size: 14, weight: .heavy)).tracking(-0.2)
+                .font(.sageBold(14)).tracking(-0.2)
                 .foregroundColor(isSelected ? .white : Theme.textPrimary(dark))
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 10)
@@ -810,7 +810,7 @@ struct OnboardingPersonalDetailsScreen: View {
     private var lifeStageSection: some View {
         VStack(alignment: .leading, spacing: 10) {
             Text("LIFE STAGE")
-                .font(.system(size: 11, weight: .heavy)).tracking(1.4)
+                .font(.sageBold(11)).tracking(1.4)
                 .foregroundColor(Theme.textSecondary(dark))
 
             ChipFlowLayout(spacing: 8, runSpacing: 8) {
@@ -900,10 +900,10 @@ struct OnboardingDietaryRestrictionsScreen: View {
     ) -> some View {
         VStack(alignment: .leading, spacing: 10) {
             Text(title.uppercased())
-                .font(.system(size: 11, weight: .heavy)).tracking(1.4)
+                .font(.sageBold(11)).tracking(1.4)
                 .foregroundColor(Theme.textPrimary(dark))
             Text(description)
-                .font(.system(size: 12))
+                .font(.sageRegular(12))
                 .foregroundColor(Theme.textSecondary(dark))
                 .lineSpacing(2)
             content()
@@ -1002,17 +1002,17 @@ struct OnboardingAllergensScreen: View {
     private var addAllergyRow: some View {
         HStack(spacing: 10) {
             Image(systemName: "plus.square")
-                .font(.system(size: 16, weight: .medium))
+                .font(.sageMedium(16))
                 .foregroundColor(Theme.textSecondary(dark))
             TextField("Add another allergy", text: $customInput)
                 .focused($customFocused)
-                .font(.system(size: 14, weight: .medium))
+                .font(.sageMedium(14))
                 .foregroundColor(Theme.textPrimary(dark))
                 .submitLabel(.done)
                 .onSubmit { addCustomAllergy() }
             if !customInput.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
                 Button("Add", action: addCustomAllergy)
-                    .font(.system(size: 13, weight: .heavy))
+                    .font(.sageBold(13))
                     .foregroundColor(OnboardingBrandGreen)
             }
         }
@@ -1033,10 +1033,10 @@ struct OnboardingAllergensScreen: View {
         Button { removeAllergy(label) } label: {
             HStack(spacing: 5) {
                 Text(label)
-                    .font(.system(size: 12, weight: .heavy)).tracking(-0.1)
+                    .font(.sageBold(12)).tracking(-0.1)
                     .foregroundColor(OnboardingBrandGreen)
                 Image(systemName: "xmark")
-                    .font(.system(size: 9, weight: .bold))
+                    .font(.sageBold(9))
                     .foregroundColor(OnboardingBrandGreen)
             }
             .padding(.horizontal, 12).padding(.vertical, 8)
@@ -1049,9 +1049,9 @@ struct OnboardingAllergensScreen: View {
     private var disclaimer: some View {
         HStack(alignment: .top, spacing: 6) {
             Image(systemName: "exclamationmark.triangle.fill")
-                .font(.system(size: 11))
+                .font(.sageRegular(11))
             Text("Data may be incomplete — always check the packaging.")
-                .font(.system(size: 11))
+                .font(.sageRegular(11))
                 .lineSpacing(2)
                 .multilineTextAlignment(.center)
         }
@@ -1118,23 +1118,23 @@ struct OnboardingReviewsScreen: View {
             StaggeredAppear(index: 0) {
                 VStack(spacing: 12) {
                     Text("Loved by clean eaters")
-                        .font(.system(size: 28, weight: .heavy)).tracking(-0.7)
+                        .font(.sageBold(28)).tracking(-0.7)
                         .foregroundColor(Theme.textPrimary(dark))
                         .multilineTextAlignment(.center)
 
                     HStack(spacing: 8) {
                         Text("4.9")
-                            .font(.system(size: 30, weight: .heavy)).monospacedDigit()
+                            .font(.sageBold(30)).monospacedDigit()
                             .foregroundColor(Theme.textPrimary(dark))
                         HStack(spacing: 2) {
                             ForEach(0..<5, id: \.self) { _ in
                                 Image(systemName: "star.fill")
-                                    .font(.system(size: 14))
+                                    .font(.sageRegular(14))
                                     .foregroundColor(Color(hex: "D4A02D"))
                             }
                         }
                         Text("400,000+ ratings")
-                            .font(.system(size: 12)).monospacedDigit()
+                            .font(.sageRegular(12)).monospacedDigit()
                             .foregroundColor(Theme.textSecondary(dark))
                     }
                 }
@@ -1159,12 +1159,12 @@ struct OnboardingReviewsScreen: View {
             HStack(spacing: 2) {
                 ForEach(0..<5, id: \.self) { _ in
                     Image(systemName: "star.fill")
-                        .font(.system(size: 12))
+                        .font(.sageRegular(12))
                         .foregroundColor(Color(hex: "D4A02D"))
                 }
             }
             Text(r.body)
-                .font(.system(size: 14))
+                .font(.sageRegular(14))
                 .foregroundColor(Theme.textPrimary(dark))
                 .lineSpacing(2)
                 .fixedSize(horizontal: false, vertical: true)
@@ -1172,14 +1172,14 @@ struct OnboardingReviewsScreen: View {
                 ZStack {
                     Circle().fill(r.color).frame(width: 30, height: 30)
                     Text(r.initial)
-                        .font(.system(size: 13, weight: .heavy))
+                        .font(.sageBold(13))
                         .foregroundColor(.white)
                 }
                 Text(r.name)
-                    .font(.system(size: 13, weight: .heavy))
+                    .font(.sageBold(13))
                     .foregroundColor(Theme.textPrimary(dark))
                 Text("· \(r.location)")
-                    .font(.system(size: 12))
+                    .font(.sageRegular(12))
                     .foregroundColor(Theme.textSecondary(dark))
                 Spacer()
             }
@@ -1217,13 +1217,13 @@ struct OnboardingLoadingScreen: View {
 
             StaggeredAppear(index: 0) {
                 Text("\(percent)%")
-                    .font(.system(size: 88, weight: .heavy)).monospacedDigit()
+                    .font(.sageBold(88)).monospacedDigit()
                     .foregroundColor(Theme.textPrimary(dark))
             }
 
             StaggeredAppear(index: 1) {
                 Text("Building your Sage")
-                    .font(.system(size: 18, weight: .heavy)).tracking(-0.3)
+                    .font(.sageBold(18)).tracking(-0.3)
                     .foregroundColor(Theme.textPrimary(dark))
                     .padding(.top, 4)
             }
@@ -1271,7 +1271,7 @@ struct OnboardingLoadingScreen: View {
                 ZStack {
                     Circle().fill(accent).frame(width: 22, height: 22)
                     Image(systemName: "checkmark")
-                        .font(.system(size: 11, weight: .black))
+                        .font(.sageBold(11))
                         .foregroundColor(.white)
                 }
                 .opacity(isComplete ? 1 : 0)
@@ -1280,7 +1280,7 @@ struct OnboardingLoadingScreen: View {
             .animation(.spring(response: 0.35, dampingFraction: 0.7), value: isComplete)
 
             Text(line)
-                .font(.system(size: 15, weight: .semibold))
+                .font(.sageSemiBold(15))
                 .foregroundColor(isComplete
                                  ? Theme.textPrimary(dark)
                                  : Theme.textSecondary(dark))
@@ -1347,10 +1347,10 @@ struct OnboardingResultsScreen: View {
                     StaggeredAppear(index: 0) {
                         VStack(alignment: .leading, spacing: 10) {
                             Text("Here's where you stand")
-                                .font(.system(size: 28, weight: .heavy)).tracking(-0.6)
+                                .font(.sageBold(28)).tracking(-0.6)
                                 .foregroundColor(.white)
                             Text("Based on your goals, here's how your current pantry scores — and where Sage users land.")
-                                .font(.system(size: 15))
+                                .font(.sageRegular(15))
                                 .foregroundColor(Color.white.opacity(0.65))
                                 .lineSpacing(3)
                         }
@@ -1365,7 +1365,7 @@ struct OnboardingResultsScreen: View {
 
                     StaggeredAppear(index: 2) {
                         Text("WE'LL WATCH FOR")
-                            .font(.system(size: 11, weight: .heavy)).tracking(1.4)
+                            .font(.sageBold(11)).tracking(1.4)
                             .foregroundColor(Color.white.opacity(0.55))
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .padding(.horizontal, 24).padding(.top, 26).padding(.bottom, 8)
@@ -1392,7 +1392,7 @@ struct OnboardingResultsScreen: View {
                 Spacer()
                 Button(action: onStart) {
                     Text("Start scanning")
-                        .font(.system(size: 16, weight: .heavy)).tracking(-0.2)
+                        .font(.sageBold(16)).tracking(-0.2)
                         .foregroundColor(.white)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 18)
@@ -1422,15 +1422,15 @@ struct OnboardingResultsScreen: View {
         VStack(spacing: 8) {
             HStack {
                 Text(title)
-                    .font(.system(size: 14, weight: .heavy))
+                    .font(.sageBold(14))
                     .foregroundColor(.white)
                 Spacer()
                 HStack(spacing: 2) {
                     Text("\(score)")
-                        .font(.system(size: 18, weight: .heavy)).monospacedDigit()
+                        .font(.sageBold(18)).monospacedDigit()
                         .foregroundColor(color)
                     Text("/100")
-                        .font(.system(size: 12, weight: .heavy)).monospacedDigit()
+                        .font(.sageBold(12)).monospacedDigit()
                         .foregroundColor(color.opacity(0.6))
                 }
             }
@@ -1458,7 +1458,7 @@ struct OnboardingResultsScreen: View {
                 ZStack {
                     Circle().fill(accent).frame(width: 22, height: 22)
                     Image(systemName: "checkmark")
-                        .font(.system(size: 11, weight: .black))
+                        .font(.sageBold(11))
                         .foregroundColor(.white)
                 }
                 .opacity(isOn ? 1 : 0)
@@ -1467,12 +1467,12 @@ struct OnboardingResultsScreen: View {
             .animation(.spring(response: 0.32, dampingFraction: 0.7), value: isOn)
 
             Text(title)
-                .font(.system(size: 15, weight: isOn ? .heavy : .semibold))
+                .font(isOn ? .sageBold(15) : .sageSemiBold(15))
                 .foregroundColor(isOn ? .white : Color.white.opacity(0.55))
             Spacer()
             if isOn {
                 Text("ON")
-                    .font(.system(size: 11, weight: .heavy)).tracking(1.2)
+                    .font(.sageBold(11)).tracking(1.2)
                     .foregroundColor(accent)
                     .transition(.opacity.combined(with: .scale(scale: 0.8)))
             }

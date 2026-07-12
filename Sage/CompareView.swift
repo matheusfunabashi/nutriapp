@@ -38,7 +38,7 @@ struct CompareView: View {
             CircleIconButton(systemName: "chevron.left", dark: dark, action: onBack)
             Spacer()
             Text("COMPARE")
-                .font(.system(size: 13, weight: .heavy)).tracking(1.3)
+                .font(.sageBold(13)).tracking(1.3)
                 .foregroundColor(Theme.textSecondary(dark))
             Spacer()
             Color.clear.frame(width: 42, height: 42)
@@ -55,10 +55,10 @@ struct CompareView: View {
         }()
         return VStack(alignment: .leading, spacing: 4) {
             Text(tie ? "It's a tie" : "Better choice")
-                .font(.system(size: 26, weight: .bold)).tracking(-0.6)
+                .font(.sageBold(26)).tracking(-0.6)
                 .foregroundColor(Theme.textPrimary(dark))
             Text(summary)
-                .font(.system(size: 14))
+                .font(.sageRegular(14))
                 .foregroundColor(Theme.textSecondary(dark))
                 .lineSpacing(2)
         }
@@ -102,7 +102,7 @@ struct CompareView: View {
 
     private func disclaimer(dark: Bool) -> some View {
         Text("This is not professional advice. For specialized recommendation, seek a nutritionist.")
-            .font(.system(size: 11))
+            .font(.sageRegular(11))
             .multilineTextAlignment(.center)
             .foregroundColor(Theme.textSecondary(dark))
             .padding(.horizontal, 28).padding(.top, 24).padding(.bottom, 16)
@@ -121,10 +121,10 @@ struct CompareCol: View {
             if isWinner {
                 HStack(spacing: 4) {
                     Image(systemName: "checkmark")
-                        .font(.system(size: 9, weight: .heavy))
+                        .font(.sageBold(9))
                         .foregroundColor(.white)
                     Text("BETTER")
-                        .font(.system(size: 10, weight: .heavy)).tracking(1)
+                        .font(.sageBold(10)).tracking(1)
                         .foregroundColor(.white)
                 }
                 .padding(.horizontal, 10).padding(.vertical, 4)
@@ -135,24 +135,24 @@ struct CompareCol: View {
             ProductThumb(glyph: product.glyph, score: product.yourScore, size: 60,
                          imageURL: product.imageURL)
             Text(product.brand.uppercased())
-                .font(.system(size: 10, weight: .heavy)).tracking(1.2)
+                .font(.sageBold(10)).tracking(1.2)
                 .foregroundColor(Theme.textSecondary(dark))
             Text(product.name)
-                .font(.system(size: 14, weight: .heavy)).tracking(-0.2)
+                .font(.sageBold(14)).tracking(-0.2)
                 .lineLimit(2)
                 .foregroundColor(Theme.textPrimary(dark))
                 .frame(minHeight: 34, alignment: .top)
             Text(product.size)
-                .font(.system(size: 11))
+                .font(.sageRegular(11))
                 .foregroundColor(Theme.textSecondary(dark))
 
             if !product.restrictions.isEmpty {
                 VStack(alignment: .leading, spacing: 4) {
                     ForEach(product.restrictions) { r in
                         HStack(spacing: 5) {
-                            Text("⚠️").font(.system(size: 10))
+                            Text("⚠️").font(.sageRegular(10))
                             Text(r.trigger)
-                                .font(.system(size: 10, weight: .heavy))
+                                .font(.sageBold(10))
                                 .foregroundColor(Color(hex: "C9442B"))
                                 .lineLimit(1)
                         }
@@ -190,16 +190,16 @@ struct ScoreLine: View {
         let c = scoreColor(score)
         HStack {
             Text(label.uppercased())
-                .font(.system(size: 10, weight: .heavy)).tracking(1.2)
+                .font(.sageBold(10)).tracking(1.2)
                 .foregroundColor(Theme.textSecondary(dark))
             Spacer()
             HStack(alignment: .lastTextBaseline, spacing: 4) {
                 Text("\(score)")
-                    .font(.system(size: prominent ? 24 : 16, weight: .heavy))
+                    .font(.sageBold(prominent ? 24 : 16))
                     .monospacedDigit().tracking(-0.6)
                     .foregroundColor(c)
                 Text(scoreLabel(score).uppercased())
-                    .font(.system(size: 9, weight: .heavy)).tracking(0.4)
+                    .font(.sageBold(9)).tracking(0.4)
                     .foregroundColor(c)
             }
         }
@@ -224,7 +224,7 @@ struct CompareRow: View {
             ValueCell(value: av.map { "\(fmt($0)) \(unit)" } ?? ",", winner: aWins, align: .leading, dark: dark)
                 .frame(maxWidth: .infinity, alignment: .leading)
             Text(label.uppercased())
-                .font(.system(size: 11, weight: .heavy)).tracking(0.5)
+                .font(.sageBold(11)).tracking(0.5)
                 .foregroundColor(Theme.textSecondary(dark))
                 .frame(maxWidth: .infinity, alignment: .center)
             ValueCell(value: bv.map { "\(fmt($0)) \(unit)" } ?? ",", winner: bWins, align: .trailing, dark: dark)
@@ -246,7 +246,7 @@ struct ValueCell: View {
         HStack(spacing: 6) {
             if align == .leading && winner { winnerMark }
             Text(value)
-                .font(.system(size: 15, weight: .heavy))
+                .font(.sageBold(15))
                 .monospacedDigit().tracking(-0.3)
                 .foregroundColor(Theme.textPrimary(dark))
             if align == .trailing && winner { winnerMark }
@@ -256,7 +256,7 @@ struct ValueCell: View {
         ZStack {
             Circle().fill(Color(hex: "1F8A5B")).frame(width: 16, height: 16)
             Image(systemName: "checkmark")
-                .font(.system(size: 9, weight: .heavy))
+                .font(.sageBold(9))
                 .foregroundColor(.white)
         }
     }
@@ -272,7 +272,7 @@ struct AdditivesCol: View {
                 VStack(spacing: 6) {
                     Circle().fill(Color(hex: "1F8A5B")).frame(width: 8, height: 8)
                     Text("No additives")
-                        .font(.system(size: 11, weight: .heavy))
+                        .font(.sageBold(11))
                         .multilineTextAlignment(.center)
                         .foregroundColor(Theme.textPrimary(dark))
                 }
@@ -283,7 +283,7 @@ struct AdditivesCol: View {
                     HStack(spacing: 7) {
                         Circle().fill(RiskStyle.fg(a.risk)).frame(width: 7, height: 7)
                         Text(a.name)
-                            .font(.system(size: 11, weight: .semibold))
+                            .font(.sageSemiBold(11))
                             .lineLimit(1)
                             .foregroundColor(Theme.textPrimary(dark))
                         Spacer(minLength: 0)

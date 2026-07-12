@@ -25,12 +25,12 @@ struct ScoreRing: View {
                 .animation(.easeOut(duration: 1.1), value: animated)
             VStack(spacing: 2) {
                 Text("\(Int(animated.rounded()))")
-                    .font(.system(size: size * 0.34, weight: .heavy))
+                    .font(.sageBold(size * 0.34))
                     .monospacedDigit()
                     .foregroundColor(Theme.textPrimary(dark))
                 if let sub = sublabel {
                     Text(sub.uppercased())
-                        .font(.system(size: 10, weight: .heavy))
+                        .font(.sageBold(10))
                         .tracking(1)
                         .foregroundColor(color)
                 }
@@ -61,11 +61,11 @@ struct CompactScoreRing: View {
                 .rotationEffect(.degrees(-90))
             VStack(spacing: 1) {
                 Text("\(score)")
-                    .font(.system(size: 13, weight: .bold))
+                    .font(.sageBold(13))
                     .monospacedDigit()
                     .foregroundColor(Theme.textPrimary(dark))
                 Text(style.label)
-                    .font(.system(size: 9, weight: .medium))
+                    .font(.sageMedium(9))
                     .foregroundColor(Theme.textSecondary(dark))
             }
         }
@@ -142,7 +142,7 @@ struct ProductThumb: View {
     }
 
     private var glyphLabel: some View {
-        Text(glyph).font(.system(size: size * 0.5))
+        Text(glyph).font(.sageRegular(size * 0.5))
     }
 }
 
@@ -152,7 +152,7 @@ struct YourScorePill: View {
     let score: Int
     var body: some View {
         Text("\(score)")
-            .font(.system(size: 12, weight: .heavy))
+            .font(.sageBold(12))
             .monospacedDigit()
             .foregroundColor(.white)
             .padding(.horizontal, 8).padding(.vertical, 4)
@@ -168,7 +168,7 @@ struct EyebrowLabel: View {
     var horizontalPadding: CGFloat = 24
     var body: some View {
         Text(text.uppercased())
-            .font(.system(size: 10, weight: .heavy))
+            .font(.sageBold(10))
             .tracking(1.4)
             .foregroundColor(Theme.textSecondary(dark))
             .padding(.horizontal, horizontalPadding)
@@ -185,12 +185,12 @@ struct SectionTitle: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 2) {
             Text(title)
-                .font(.system(size: 18, weight: .bold))
+                .font(.sageBold(18))
                 .tracking(-0.4)
                 .foregroundColor(Theme.textPrimary(dark))
             if let sub = subtitle {
                 Text(sub)
-                    .font(.system(size: 12))
+                    .font(.sageRegular(12))
                     .foregroundColor(Theme.textSecondary(dark))
             }
         }
@@ -214,13 +214,14 @@ struct CircleIconButton: View {
             ZStack {
                 Circle().fill(dark ? Color.white.opacity(0.08) : Color.white)
                 Image(systemName: systemName)
-                    .font(.system(size: 16, weight: .semibold))
+                    .font(.sageSemiBold(16))
                     .foregroundColor(Theme.textPrimary(dark))
             }
             .frame(width: size, height: size)
+            .contentShape(Circle())
             .cardShadow(dark)
         }
-        .buttonStyle(.plain)
+        .buttonStyle(.borderless)
         .accessibilityLabel(accessibilityLabel ?? systemName)
     }
 }
@@ -324,7 +325,7 @@ struct TabBar: View {
                     .contentTransition(.symbolEffect(.replace))
                     .animation(.spring(response: 0.3, dampingFraction: 0.85), value: active)
                 Text(t.label)
-                    .font(.system(size: 11, weight: active ? .heavy : .semibold))
+                    .font(.sageMedium(11))
                     .tracking(-0.1)
                     .foregroundColor(c)
             }
@@ -354,14 +355,15 @@ struct TabBar: View {
                             Circle().stroke(Color.white.opacity(0.18), lineWidth: 1)
                         )
                     Image(systemName: "viewfinder")
-                        .font(.system(size: 16, weight: .heavy))
+                        .font(.sageBold(16))
                         .foregroundColor(.white)
                 }
                 .frame(width: 30, height: 30)
                 .shadow(color: store.accent.opacity(0.30), radius: 6, x: 0, y: 3)
 
                 Text("Scan")
-                    .font(.system(size: 11, weight: .heavy)).tracking(-0.1)
+                    .font(.sageMedium(11))
+                    .tracking(-0.1)
                     .foregroundColor(Theme.textPrimary(dark))
             }
             .frame(maxWidth: .infinity, minHeight: 44) // ≥44pt hit area
@@ -384,11 +386,11 @@ struct ChipView: View {
             HStack(spacing: 5) {
                 if active {
                     Image(systemName: "checkmark")
-                        .font(.system(size: 10, weight: .bold))
+                        .font(.sageBold(10))
                         .foregroundColor(accent)
                 }
                 Text(label)
-                    .font(.system(size: 12, weight: .heavy))
+                    .font(.sageBold(12))
                     .tracking(-0.1)
                     .foregroundColor(active ? accent : Theme.textPrimary(dark))
             }
@@ -527,7 +529,7 @@ struct PillButton: View {
                     Image(systemName: n).font(.system(size: 15, weight: .bold))
                 }
                 Text(title)
-                    .font(.system(size: 15, weight: .heavy))
+                    .font(.sageBold(15))
                     .tracking(-0.2)
             }
             .foregroundColor(fg)

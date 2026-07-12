@@ -100,8 +100,8 @@ struct OpenFoodFactsMappingTests {
         #expect(p.sweeteners.contains("sucralose"))
 
         let aspartame = p.additives.first { $0.name == "Aspartame" }
-        #expect(aspartame?.risk == .high)
-        #expect(aspartame?.note != nil)          // high-risk entries carry a source note
+        #expect(aspartame?.risk == .moderate)    // detector tier B
+        #expect(aspartame?.tier == .moderate)
         #expect(p.overallScore == 54)            // grade C placeholder
     }
 

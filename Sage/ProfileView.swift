@@ -15,7 +15,7 @@ struct ProfileView: View {
             VStack(alignment: .leading, spacing: 0) {
                 StaggeredAppear(index: 0) {
                     Text("Profile")
-                        .font(.system(size: 34, weight: .heavy)).tracking(-1)
+                        .font(.sageBold(34)).tracking(-1)
                         .foregroundColor(Theme.textPrimary(dark))
                         // 12pt above the system safe-area; ContentView's
                         // tabContent isn't ignoring it, so this is the only
@@ -69,7 +69,7 @@ struct ProfileView: View {
 
                 StaggeredAppear(index: 4) {
                     Text("Sage v1.0.3 · Database from Open Food Facts")
-                        .font(.system(size: 11))
+                        .font(.sageRegular(11))
                         .foregroundColor(Theme.textSecondary(dark))
                         .frame(maxWidth: .infinity, alignment: .center)
                         .padding(.horizontal, 24).padding(.top, 32).padding(.bottom, 24)
@@ -97,7 +97,7 @@ struct ProfileView: View {
                         colors: [store.accent, store.accent.opacity(0.6)],
                         startPoint: .topLeading, endPoint: .bottomTrailing))
                     Text(initials(store.user.name))
-                        .font(.system(size: 19, weight: .heavy)).tracking(-0.5)
+                        .font(.sageBold(19)).tracking(-0.5)
                         .foregroundColor(.white)
                 }
                 .frame(width: 56, height: 56)
@@ -107,21 +107,21 @@ struct ProfileView: View {
                         HStack(spacing: 5) {
                             Image(systemName: "crown.fill")
                                 .foregroundColor(Color(hex: "D4A437"))
-                                .font(.system(size: 11))
+                                .font(.sageRegular(11))
                             Text(subLabel)
-                                .font(.system(size: 11, weight: .heavy))
+                                .font(.sageBold(11))
                                 .monospacedDigit() // "5d" countdown stays aligned
                                 .foregroundColor(Theme.textSecondary(dark))
                         }
                     }
                     Text(store.user.name)
-                        .font(.system(size: 17, weight: .heavy)).tracking(-0.4)
+                        .font(.sageBold(17)).tracking(-0.4)
                         .foregroundColor(Theme.textPrimary(dark))
                 }
                 Spacer()
                 Image(systemName: "chevron.right")
                     .foregroundColor(Theme.textSecondary(dark))
-                    .font(.system(size: 12, weight: .bold))
+                    .font(.sageBold(12))
             }
             .padding(14)
             .background(
@@ -134,7 +134,7 @@ struct ProfileView: View {
 
     private func sectionLabel(_ text: String, dark: Bool) -> some View {
         Text(text)
-            .font(.system(size: 13, weight: .semibold))
+            .font(.sageSemiBold(13))
             .foregroundColor(Theme.textSecondary(dark))
             .padding(.horizontal, 24).padding(.top, 22).padding(.bottom, 8)
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -158,17 +158,17 @@ struct ProfileRow: View {
                         .frame(width: 22)
                 }
                 Text(label)
-                    .font(.system(size: 15, weight: .heavy)).tracking(-0.2)
+                    .font(.sageBold(15)).tracking(-0.2)
                     .foregroundColor(Theme.textPrimary(dark))
                 Spacer()
                 if let v = value {
                     Text(v)
-                        .font(.system(size: 13, weight: .semibold))
+                        .font(.sageSemiBold(13))
                         .foregroundColor(Theme.textSecondary(dark))
                 }
                 if onTap != nil {
                     Image(systemName: "chevron.right")
-                        .font(.system(size: 12, weight: .bold))
+                        .font(.sageBold(12))
                         .foregroundColor(Theme.textSecondary(dark))
                 }
             }

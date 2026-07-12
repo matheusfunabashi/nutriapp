@@ -8,11 +8,11 @@ struct SubHeader: View {
     var body: some View {
         ZStack {
             Text(title)
-                .font(.system(size: 16, weight: .bold)).tracking(-0.2)
+                .font(.sageBold(16)).tracking(-0.2)
             HStack {
                 Button(action: onBack) {
                     Image(systemName: "chevron.left")
-                        .font(.system(size: 15, weight: .semibold))
+                        .font(.sageSemiBold(15))
                         .frame(width: 40, height: 40)
                         .background(Circle().fill(Color.black.opacity(0.06)))
                 }
@@ -68,16 +68,16 @@ struct PersonalDetailsView: View {
     private func editableNameRow(dark: Bool) -> some View {
         HStack(spacing: 12) {
             Text("Name")
-                .font(.system(size: 15, weight: .semibold)).tracking(-0.2)
+                .font(.sageSemiBold(15)).tracking(-0.2)
                 .foregroundColor(Theme.textPrimary(dark))
             TextField("", text: $name)
                 .focused($nameFocused)
                 .multilineTextAlignment(.trailing)
-                .font(.system(size: 15, weight: .heavy)).tracking(-0.2)
+                .font(.sageBold(15)).tracking(-0.2)
                 .foregroundColor(Theme.textPrimary(dark))
                 .onSubmit { store.user.name = name }
             Image(systemName: "pencil")
-                .font(.system(size: 12))
+                .font(.sageRegular(12))
                 .foregroundColor(Theme.textSecondary(dark))
         }
         .padding(.horizontal, 18).padding(.vertical, 14)
@@ -86,14 +86,14 @@ struct PersonalDetailsView: View {
     private func editableRow(label: String, value: String, divider: Bool, dark: Bool) -> some View {
         HStack(spacing: 12) {
             Text(label)
-                .font(.system(size: 15, weight: .semibold))
+                .font(.sageSemiBold(15))
                 .foregroundColor(Theme.textPrimary(dark))
             Spacer()
             Text(value)
-                .font(.system(size: 15, weight: .heavy)).monospacedDigit()
+                .font(.sageBold(15)).monospacedDigit()
                 .foregroundColor(Theme.textPrimary(dark))
             Image(systemName: "pencil")
-                .font(.system(size: 12))
+                .font(.sageRegular(12))
                 .foregroundColor(Theme.textSecondary(dark))
         }
         .padding(.horizontal, 18).padding(.vertical, 14)
@@ -133,10 +133,10 @@ struct PreferencesView: View {
     private func appearanceCard(dark: Bool) -> some View {
         VStack(alignment: .leading, spacing: 14) {
             Text("Appearance")
-                .font(.system(size: 17, weight: .heavy)).tracking(-0.4)
+                .font(.sageBold(17)).tracking(-0.4)
                 .foregroundColor(Theme.textPrimary(dark))
             Text("Choose light, dark, or system appearance")
-                .font(.system(size: 12))
+                .font(.sageRegular(12))
                 .foregroundColor(Theme.textSecondary(dark))
             HStack(spacing: 10) {
                 AppearanceTile(id: "system", label: "System",
@@ -211,10 +211,10 @@ struct ToggleRowView: View {
         HStack(alignment: .top, spacing: 14) {
             VStack(alignment: .leading, spacing: 3) {
                 Text(title)
-                    .font(.system(size: 15, weight: .heavy)).tracking(-0.2)
+                    .font(.sageBold(15)).tracking(-0.2)
                     .foregroundColor(Theme.textPrimary(dark))
                 Text(desc)
-                    .font(.system(size: 12))
+                    .font(.sageRegular(12))
                     .foregroundColor(Theme.textSecondary(dark))
                     .lineSpacing(2)
             }
@@ -241,9 +241,9 @@ struct AppearanceTile: View {
                     .aspectRatio(1, contentMode: .fit)
                 HStack(spacing: 5) {
                     Image(systemName: icon)
-                        .font(.system(size: 11, weight: .semibold))
+                        .font(.sageSemiBold(11))
                     Text(label)
-                        .font(.system(size: 13, weight: .heavy)).tracking(-0.2)
+                        .font(.sageBold(13)).tracking(-0.2)
                 }
                 .foregroundColor(Color(hex: "111111"))
             }
@@ -321,7 +321,7 @@ struct NutritionGoalsView: View {
                 SubHeader(title: "Objective", onBack: onBack)
                     .foregroundColor(Theme.textPrimary(dark))
                 Text("Pick the goal Sage should weigh against when scoring scans. You can change this anytime, your scores will recalculate.")
-                    .font(.system(size: 13))
+                    .font(.sageRegular(13))
                     .foregroundColor(Theme.textSecondary(dark))
                     .lineSpacing(2)
                     .padding(.horizontal, 24)
@@ -331,7 +331,7 @@ struct NutritionGoalsView: View {
                         Button { store.user.objective = o.id } label: {
                             HStack(spacing: 14) {
                                 Image(systemName: o.systemImage)
-                                    .font(.system(size: 18, weight: .semibold))
+                                    .font(.sageSemiBold(18))
                                     .foregroundColor(o.color)
                                     .frame(width: 44, height: 44)
                                     .background(
@@ -340,10 +340,10 @@ struct NutritionGoalsView: View {
                                     )
                                 VStack(alignment: .leading, spacing: 2) {
                                     Text(o.title)
-                                        .font(.system(size: 15, weight: .heavy)).tracking(-0.2)
+                                        .font(.sageBold(15)).tracking(-0.2)
                                         .foregroundColor(Theme.textPrimary(dark))
                                     Text(o.desc)
-                                        .font(.system(size: 12))
+                                        .font(.sageRegular(12))
                                         .foregroundColor(Theme.textSecondary(dark))
                                         .lineSpacing(2)
                                         .multilineTextAlignment(.leading)
@@ -429,10 +429,10 @@ struct DietaryView: View {
                                @ViewBuilder content: () -> C) -> some View {
         VStack(alignment: .leading, spacing: 14) {
             Text(title)
-                .font(.system(size: 17, weight: .heavy)).tracking(-0.4)
+                .font(.sageBold(17)).tracking(-0.4)
                 .foregroundColor(Theme.textPrimary(dark))
             Text(desc)
-                .font(.system(size: 12))
+                .font(.sageRegular(12))
                 .foregroundColor(Theme.textSecondary(dark))
                 .lineSpacing(2)
             content()
@@ -483,17 +483,17 @@ struct DietaryView: View {
 
                 HStack(spacing: 8) {
                     Image(systemName: "plus.circle")
-                        .font(.system(size: 15))
+                        .font(.sageRegular(15))
                         .foregroundColor(Theme.textSecondary(dark))
                     TextField("Add another allergy", text: $customAllergy)
                         .focused($allergyFocused)
-                        .font(.system(size: 14, weight: .medium))
+                        .font(.sageMedium(14))
                         .foregroundColor(Theme.textPrimary(dark))
                         .submitLabel(.done)
                         .onSubmit { addCustomAllergy() }
                     if !customAllergy.trimmingCharacters(in: .whitespaces).isEmpty {
                         Button("Add", action: addCustomAllergy)
-                            .font(.system(size: 13, weight: .heavy))
+                            .font(.sageBold(13))
                             .foregroundColor(store.accent)
                     }
                 }
@@ -518,10 +518,10 @@ struct DietaryView: View {
         Button { removeAllergy(label) } label: {
             HStack(spacing: 5) {
                 Text(label.capitalized)
-                    .font(.system(size: 12, weight: .heavy)).tracking(-0.1)
+                    .font(.sageBold(12)).tracking(-0.1)
                     .foregroundColor(store.accent)
                 Image(systemName: "xmark")
-                    .font(.system(size: 9, weight: .bold))
+                    .font(.sageBold(9))
                     .foregroundColor(store.accent)
             }
             .padding(.horizontal, 12).padding(.vertical, 8)
