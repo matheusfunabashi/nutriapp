@@ -205,7 +205,7 @@ struct ScannerHomeView: View {
                 VStack(spacing: 8) {
                     ForEach(recent) { h in
                         if let p = store.products[h.productId] {
-                            RecentRow(product: p, dark: dark) {
+                            RecentRow(product: p, scannedAt: h.scannedAt, dark: dark) {
                                 onOpenProduct(p.id)
                             }
                         }
@@ -228,6 +228,7 @@ struct ScannerHomeView: View {
 
 private struct RecentRow: View {
     let product: Product
+    let scannedAt: Date
     let dark: Bool
     let onTap: () -> Void
 
@@ -236,10 +237,15 @@ private struct RecentRow: View {
             HStack(spacing: 12) {
                 ProductThumb(glyph: product.glyph, score: product.yourScore, size: 48,
                              imageURL: product.imageURL)
-                Text(product.name)
-                    .font(.sageSemiBold(14))
-                    .foregroundColor(Theme.textPrimary(dark))
-                    .lineLimit(1)
+                VStack(alignment: .leading, spacing: 1) {
+                    Text(product.name)
+                        .font(.sageSemiBold(14))
+                        .foregroundColor(Theme.textPrimary(dark))
+                        .lineLimit(1)
+                    Text(HistoryEntry.scannedAgoLabel(since: scannedAt))
+                        .font(.sageRegular(11))
+                        .foregroundColor(Theme.textSecondary(dark))
+                }
                 Spacer(minLength: 8)
                 CompactScoreRing(score: product.yourScore, dark: dark)
                 Image(systemName: "chevron.right")

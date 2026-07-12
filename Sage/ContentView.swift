@@ -70,10 +70,10 @@ struct ContentView: View {
 
     private var mainContent: some View {
         ZStack {
-            if stack.isEmpty {
-                tabContent
-                    .ignoresSafeArea(.keyboard)
-            }
+            // Keep tab content alive under overlays so Search (and other tabs)
+            // retain their state when the user taps back from a product page.
+            tabContent
+                .ignoresSafeArea(.keyboard)
 
             if !stack.isEmpty {
                 Theme.bg(store.darkMode).ignoresSafeArea()

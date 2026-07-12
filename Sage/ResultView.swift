@@ -31,6 +31,9 @@ struct ResultView: View {
                         detectedSection(dark: dark)
                         restrictionBanners(dark: dark)
                         disclaimer(dark: dark)
+#if DEBUG
+                        scoreDebugSection(dark: dark)
+#endif
                         Spacer().frame(height: 140)
                     }
                     .frame(minWidth: geo.size.width, maxWidth: geo.size.width,
@@ -451,6 +454,36 @@ struct ResultView: View {
             .lineSpacing(2)
             .padding(.horizontal, 28).padding(.top, 24).padding(.bottom, 16)
     }
+
+#if DEBUG
+    private func scoreDebugSection(dark: Bool) -> some View {
+        let breakdown = ScoringEngine.debugBreakdown(product, for: store.user)
+        return VStack(alignment: .leading, spacing: 8) {
+            Text("SCORE DEBUG")
+                .font(.sageBold(11)).tracking(1.2)
+                .foregroundColor(Color(hex: "D4A02D"))
+            Text(breakdown.text)
+                .font(.sageRegular(10))
+                .monospacedDigit()
+                .foregroundColor(Theme.textSecondary(dark))
+                .lineSpacing(2)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .textSelection(.enabled)
+        }
+        .padding(14)
+        .background(
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .fill(dark ? Color.white.opacity(0.04) : Color.black.opacity(0.03))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 14, style: .continuous)
+                        .stroke(Color(hex: "D4A02D").opacity(0.35), lineWidth: 1)
+                )
+        )
+        .padding(.horizontal, 16)
+        .padding(.top, 8)
+        .padding(.bottom, 16)
+    }
+#endif
 }
 
 // MARK: - Sub-components
