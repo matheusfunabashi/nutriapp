@@ -329,11 +329,13 @@ enum ScoringEngine {
         return adjustments + drivers.filter { !covered.contains($0.key) }
     }
 
+    // "NOVA" never reaches users (US/UK audiences don't know the term) —
+    // the signal is described plainly. Decision 2026-07-11.
     private static func processingLabel(_ b: Blocks) -> String {
         guard let proc = b.procPen else { return "processing unknown" }
         if proc <= 0.2 { return "minimally processed" }
         if proc < 1 { return "moderately processed" }
-        return "ultra-processed (NOVA 4)"
+        return "ultra-processed"
     }
 
     // MARK: Personalized (Your Score)

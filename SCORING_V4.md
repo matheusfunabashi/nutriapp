@@ -23,6 +23,7 @@ ROADMAP.md and the "Sage Scoring System v1.0" proposal once approved.
 | 5 | Where scoring runs | Unspecified | **[DECIDED]** **On-device Swift engine + versioned JSON rulesets** (bundled default, background-refreshed from the Worker, never blocking launch or scans, fully offline-capable). Ruleset version joins the explanation cache key (§10) |
 | 6 | PT-BR / INS additive parsing layer | Required (Brazilian market) | **[DECIDED]** Descoped — target market is English-speaking countries, where OFF's parser is at its strongest. Idea preserved in the roadmap for a LATAM expansion (§15) |
 | 7 | Band cutoffs | Fixed up front | **[DECIDED]** Provisional until the Phase-B calibration run over the OFF dump; locked afterwards as part of the ruleset version (§12) |
+| 8 | The word "NOVA" | Used throughout UI | **[DECIDED 2026-07-11]** The processing *signal* stays in the score at full calibrated weight (removing it was measured: UPF below-50 collapses 81.8% → 40.7%), but the **NOVA brand name never reaches users** — US/UK audiences don't know it. UI says "Processing · Level n of 4 · Ultra-processed"; factor labels say "ultra-processed". Internal docs/code keep the term |
 
 Everything else from the v1.0 proposal — category router, shared rule library,
 two-tier unknown policy, Data Confidence, hard gates, ODbL obligations, the
@@ -290,6 +291,11 @@ is also the primary lever for the build-muscle / lose-weight objectives (§7).
 
 Weights shown per rule; score = Σ(w·f)/Σw regardless of totals.
 
+> **Status:** all twelve profiles below are implemented in ruleset
+> `2026.07-c1` (Phase C). general/snacks/drinks carry the b2-calibrated
+> weights; the nine category profiles carry the spec's provisional weights
+> pending their own calibration pass (first distribution snapshot in §12.8).
+
 | Profile | Weights |
 |---|---|
 | **General packaged food** (fallback) — **calibrated, ruleset 2026.07-b2** | S1 28 · **S2 26** · S3 12 · S4 6 · S5 6 · **S12 18** · S7 5 · S8 3 |
@@ -527,6 +533,36 @@ explanations always match the math that produced them.
 - Reference implementation: `scratchpad/calibrate.py` mirror of the Swift
   engine, driven by the identical RulesetV4.json; Swift anchor tests updated
   to the b2 numbers (`ScoringV4Tests`).
+
+### 12.8 Phase-C distribution snapshot — 2026-07-11 (ruleset 2026.07-c1)
+
+Method upgrade: the corpus (6,649 EN-market products, fresh sample; 5,902
+scored, 747 RMP-gated) now runs through the **actual Swift engine** compiled
+as a macOS CLI — no Python mirror, no divergence risk. Global b2 targets
+hold: NOVA-4 median 40 with 80.5% below 50; NOVA-1/2 median 76.5, 84.5% ≥60.
+14 anchor products runtime-verified, including the §8 oat-milk worked
+example reproducing its documented Base 54 exactly.
+
+Per-profile medians (n): general 38 (4,504) · snacks 40 (543) · drinks 50
+(216) · breads 62 (131) · meat 46 (119) · ice_cream 24 (119) · yogurt_cheese
+46 (106) · dairy_milk 49 (45) · water 28 (39) · sweeteners 61 (35) ·
+tea_coffee 40 (34) · plant_milk 45 (11).
+
+**Review items for the category-profile calibration pass [OPEN]:**
+1. **Water: median 28, 100% below 50.** Real OFF water records rarely carry a
+   source subcategory or packaging data, so the Tier-1 unknown-source zero
+   dominates. Options: treat unknown source as Tier-2 (~0.4 + confidence
+   hit), or route sources-unknown waters to a softer default. As-is, plain
+   water scores below soda — defensible on label-transparency grounds,
+   indefensible nutritionally.
+2. **Conventional dairy lands mid-40s** (dairyLabels is Tier-1 at weight
+   18/12): plain Greek yogurt anchors at 61 vs the §12.4 hope of 75+. Either
+   accept (harsh scale: labels are earnable) or shrink the label rule.
+3. **Breads skew soft** (median 62; whole-grain keywords generous) and
+   **ice cream skews very hard** (median 24). Opposite-direction weight
+   reviews.
+4. plant_milk n=11 — sample too thin to conclude anything; revisit with a
+   category-targeted pull.
 
 ---
 
