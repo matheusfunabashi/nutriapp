@@ -16,6 +16,8 @@ daily scan limit.
 | Method | Path | Body | Notes |
 |---|---|---|---|
 | GET | `/health` | — | liveness |
+| GET | `/ruleset/version` | — | scoring-v4 ruleset version probe (edge-cached 5 min; keyed) |
+| GET | `/ruleset` | — | full scoring-v4 ruleset JSON (keyed). **Sync before deploy:** `cp Sage/RulesetV4.json backend/src/ruleset.json` |
 | POST | `/lookup` | `{ barcode, deviceId?, isPremium?, clientTag? }` | OFF lookup + KV cache; enforces free limit; tracks popularity; Go-UPC premium fallback (calls logged to `fetch_log` with `fallback:<clientTag>` for per-device attribution) |
 | POST | `/search` | `{ query }` | free-text OFF name/brand search (typeahead); KV-cached 24h; not metered against the free-tier limit |
 | POST | `/explain` | `{ barcode, classHash, overall, your, objective?, productName?, factors? }` | bucketed LLM explanation of how the product fits the user's goal; cache-first; skips when `factors` is empty |

@@ -20,6 +20,18 @@ struct RulesetV4: Codable {
     struct ProfileRule: Codable { let rule: String; let w: Double; let variant: String? }
     struct RouterEntry: Codable { let match: String; let profile: String }
 
+    struct SourceCredit: Codable { let match: String; let credit: Double }
+    struct KwCredit: Codable { let kw: String; let credit: Double }
+    struct PointsRule: Codable {
+        let points: [String: Double]
+        let denominator: Double
+        let plantNeutral: Double?
+    }
+    struct CropRisk: Codable {
+        let lowRisk: [String]; let highRisk: [String]
+        let lowCredit: Double; let highCredit: Double; let riceCap: Double
+    }
+
     let version: String
     let bands: Bands
     let tierFractions: [String: Double]
@@ -30,11 +42,30 @@ struct RulesetV4: Codable {
     let textSignals: [String: String]
     let s3Thresholds: [String: [Double]]
     let s4Thresholds: [Double]
-    let s5Thresholds: [Double]
+    let s5Thresholds: [String: [Double]]
     let s7Materials: [String: Double]
     let certLabels: [String]
     let profiles: [String: [ProfileRule]]
     let router: [RouterEntry]
+
+    // Phase C category rules — optional so an older downloaded ruleset can't
+    // crash decoding; evaluators fall back to unknown credit when absent.
+    let waterSource: [SourceCredit]?
+    let cropRisk: CropRisk?
+    let dairyLabels: PointsRule?
+    let dairyProcessing: [SourceCredit]?
+    let dairyProcessingDefault: Double?
+    let brewMaterial: [KwCredit]?
+    let brewMaterialDefault: Double?
+    let sweetenerType: [KwCredit]?
+    let sweetenerTypeDefault: Double?
+    let authenticityBad: [String]?
+    let sweetenerProcessing: [KwCredit]?
+    let sweetenerProcessingDefault: Double?
+    let wholeGrainKw: [String]?
+    let stabilizerPenalties: [String: Double]?
+    let welfare: PointsRule?
+    let heroCredit: [[Double]]?
 
     /// Band label for a score under this ruleset (single source for all UI).
     func bandLabel(_ score: Int) -> String {
@@ -134,14 +165,147 @@ enum ScoringEngineV4 {
         case "S3":  return s3(p, variant: variant ?? "foods", rs: rs)
         case "S4":  return stepped(p.nutrients.sodium_mg, thresholds: rs.s4Thresholds,
                                    unknownCredit: 0.30)
-        case "S5":  return stepped(p.nutrients.satFat_g, thresholds: rs.s5Thresholds,
+        case "S5":  return stepped(p.nutrients.satFat_g,
+                                   thresholds: rs.s5Thresholds[variant ?? "standard"]
+                                       ?? rs.s5Thresholds["standard"] ?? [3, 8, 15],
                                    unknownCredit: 0.40)
         case "S6":  return s6(p, rs: rs)
         case "S7":  return s7(p, rs: rs)
         case "S8":  return s8(p, rs: rs)
+        case "S9":  return s9(p, rs: rs)
+        case "S10": return s10(p, rs: rs)
+        case "S11": return (!(p.origins ?? []).isEmpty ? 1.0 : 0.0, true)   // Tier-1
         case "S12": return s12(p)
+        case "waterSource":        return waterSource(p, rs: rs)
+        case "mineralDisclosure":  return (p.nutrients.calcium_mg != nil ? 1.0 : 0.0, true)
+        case "cropRisk":           return cropRisk(p, rs: rs)
+        case "dairyLabels":        return pointsRule(p, rs.dairyLabels, plantAware: false)
+        case "dairyQuality":       return pointsRule(p, rs.dairyLabels, plantAware: true)
+        case "dairyProcessing":    return dairyProcessing(p, rs: rs)
+        case "brewMaterial":       return brewMaterial(p, rs: rs)
+        case "sweetenerType":      return kwLookup(haystack(p), rs.sweetenerType,
+                                                   fallback: rs.sweetenerTypeDefault ?? 0.3)
+        case "authenticity":       return authenticity(p, rs: rs)
+        case "sweetenerProcessing": return kwLookup(haystack(p), rs.sweetenerProcessing,
+                                                    fallback: rs.sweetenerProcessingDefault ?? 0.6)
+        case "wholeGrain":         return wholeGrain(p, rs: rs)
+        case "flourOxidizers":     return flourOxidizers(p)
+        case "stabilizers":        return stabilizers(p, rs: rs)
+        case "welfare":            return pointsRule(p, rs.welfare, plantAware: true)
         default:    return (0, false)   // unknown rule id in ruleset → earns nothing
         }
+    }
+
+    // MARK: Phase C category rules
+
+    /// Searchable text for keyword rules: name + categories + labels + ingredients.
+    private static func haystack(_ p: Product) -> String {
+        ([p.name.lowercased(), p.ingredientsText?.lowercased() ?? ""]
+         + (p.categories ?? []) + (p.labels ?? [])).joined(separator: " ")
+    }
+
+    private static let organicLabels: Set<String> = ["organic", "eu-organic", "usda-organic"]
+
+    private static func s9(_ p: Product, rs: RulesetV4) -> (Double, Bool) {
+        (Set(p.labels ?? []).isDisjoint(with: organicLabels) ? 0.0 : 1.0, true)   // Tier-1
+    }
+
+    private static func s10(_ p: Product, rs: RulesetV4) -> (Double, Bool) {
+        guard let crops = rs.cropRisk.map({ $0.lowRisk + $0.highRisk }),
+              let hero = (p.ingredientShares ?? []).first(where: { share in
+                  crops.contains { share.name.contains($0) }
+              })
+        else { return (0.20, false) }
+        // Declared percent wins; OFF's estimate is trusted at 75%.
+        guard let pct = hero.percent ?? hero.percentEstimate.map({ $0 * 0.75 })
+        else { return (0.20, false) }
+        for step in rs.heroCredit ?? [[15, 1.0], [10, 0.8], [5, 0.5], [2, 0.2]]
+        where step.count == 2 && pct >= step[0] {   // 10% is inside the 10–15 band
+            return (step[1], true)
+        }
+        return (0.0, true)
+    }
+
+    private static func waterSource(_ p: Product, rs: RulesetV4) -> (Double, Bool) {
+        let tags = Set(p.categories ?? [])
+        for entry in rs.waterSource ?? [] where tags.contains(entry.match) {
+            return (entry.credit, true)
+        }
+        return (0.0, true)   // Tier-1: a premium source is always printed
+    }
+
+    private static func cropRisk(_ p: Product, rs: RulesetV4) -> (Double, Bool) {
+        guard let cfg = rs.cropRisk else { return (0.4, false) }
+        if !Set(p.labels ?? []).isDisjoint(with: organicLabels) { return (1.0, true) }
+        let hay = haystack(p)
+        var credit = 0.4   // crop not identifiable → mid, Tier-1-ish
+        if cfg.highRisk.contains(where: { hay.contains($0) }) { credit = cfg.highCredit }
+        else if cfg.lowRisk.contains(where: { hay.contains($0) }) { credit = cfg.lowCredit }
+        if hay.contains("rice") { credit = min(credit, cfg.riceCap) }
+        return (credit, true)
+    }
+
+    /// Additive label credits capped at a denominator (dairy quality, welfare).
+    private static func pointsRule(_ p: Product, _ cfg: RulesetV4.PointsRule?,
+                                   plantAware: Bool) -> (Double, Bool) {
+        guard let cfg else { return (0.4, false) }
+        if plantAware, let neutral = cfg.plantNeutral,
+           (p.dietFlags ?? []).contains("vegan") || haystack(p).contains("plant-based") {
+            return (neutral, true)   // never penalized for not being dairy/meat
+        }
+        let labels = Set(p.labels ?? [])
+        let pts = cfg.points.reduce(0.0) { labels.contains($1.key) ? $0 + $1.value : $0 }
+        return (min(1.0, pts / cfg.denominator), true)   // Tier-1
+    }
+
+    private static func dairyProcessing(_ p: Product, rs: RulesetV4) -> (Double, Bool) {
+        let tags = Set((p.categories ?? []) + (p.labels ?? []))
+        for entry in rs.dairyProcessing ?? [] where tags.contains(entry.match) {
+            return (entry.credit, true)
+        }
+        return (rs.dairyProcessingDefault ?? 0.85, true)   // fresh pasteurized default
+    }
+
+    private static func brewMaterial(_ p: Product, rs: RulesetV4) -> (Double, Bool) {
+        let hay = haystack(p) + " " + (p.packagingMaterials ?? []).joined(separator: " ")
+        for entry in rs.brewMaterial ?? [] where hay.contains(entry.kw) {
+            return (entry.credit, true)
+        }
+        return (rs.brewMaterialDefault ?? 0.40, false)   // unknown bag material
+    }
+
+    private static func kwLookup(_ hay: String, _ table: [RulesetV4.KwCredit]?,
+                                 fallback: Double) -> (Double, Bool) {
+        for entry in table ?? [] where hay.contains(entry.kw) {
+            return (entry.credit, true)
+        }
+        return (fallback, true)   // Tier-1: type is derivable from the label
+    }
+
+    private static func authenticity(_ p: Product, rs: RulesetV4) -> (Double, Bool) {
+        let hay = haystack(p)
+        if (rs.authenticityBad ?? []).contains(where: { hay.contains($0) }) {
+            return (0.0, true)
+        }
+        if let shares = p.ingredientShares, shares.count == 1 { return (1.0, true) }
+        return (0.6, true)
+    }
+
+    private static func wholeGrain(_ p: Product, rs: RulesetV4) -> (Double, Bool) {
+        ((rs.wholeGrainKw ?? []).contains { haystack(p).contains($0) } ? 1.0 : 0.0, true)
+    }
+
+    private static func flourOxidizers(_ p: Product) -> (Double, Bool) {
+        guard p.hasIngredientData else { return (0.30, false) }
+        let codes = Set(p.additives.compactMap(\.code))
+        return (codes.contains("e924") || codes.contains("e927a") ? 0.0 : 1.0, true)
+    }
+
+    private static func stabilizers(_ p: Product, rs: RulesetV4) -> (Double, Bool) {
+        guard p.hasIngredientData else { return (0.30, false) }
+        let pens = rs.stabilizerPenalties ?? [:]
+        let total = p.additives.compactMap(\.code).reduce(0.0) { $0 + (pens[$1] ?? 0) }
+        return (max(0, 1 - total), true)
     }
 
     // MARK: S1 — ingredient & additive risk
