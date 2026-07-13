@@ -39,6 +39,36 @@ struct BackendIntegrationTests {
         }
     }
 
+    // MARK: Badge ↔ factor consistency (the LLM must agree with the UI)
+
+    @Test func lowSugarIsNeverCalledHigh() {
+        // 4g sugar shows a LOW badge — no factor may claim "high sugar", even
+        // though the sugar penalty technically nudges the lose-weight score.
+        let p = product(kcal: 400, sugar: 4, nova: 4)
+        let scored = ScoringEngine.score(p, for: profile("lose weight"))
+        let f = ScoringEngine.signedFactors(scored, profile: profile("lose weight"))
+        #expect(!f.contains { $0.contains("high sugar") })
+    }
+
+    @Test func moderateSugarSaysModerate() {
+        // 9g sugar = MOD badge → the factor says "moderate", matching the UI.
+        let p = product(kcal: 400, sugar: 9, nova: 4)
+        let scored = ScoringEngine.score(p, for: profile("lose weight"))
+        let f = ScoringEngine.signedFactors(scored, profile: profile("lose weight"))
+        #expect(f.contains { $0.contains("moderate sugar") })
+        #expect(!f.contains { $0.contains("high sugar") })
+    }
+
+    @Test func promptLinesMatchBadgeThresholds() {
+        let n = Nutrients(sugar_g: 4, sodium_mg: 800, satFat_g: nil,
+                          fiber_g: 7, protein_g: nil, calcium_mg: nil)
+        let lines = NutrientLevels.promptLines(n)
+        #expect(lines.contains("sugar: low (4g)"))
+        #expect(lines.contains("sodium: high (800mg)"))
+        #expect(lines.contains("fiber: high (7g)"))
+        #expect(lines.count == 3)   // absent nutrients are never mentioned
+    }
+
     // MARK: /search response
 
     @Test func searchResponseDecodes() throws {

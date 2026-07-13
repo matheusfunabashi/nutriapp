@@ -308,25 +308,31 @@ struct ResultView: View {
         let n = product.nutrients
         return CardView(dark: dark) {
             VStack(spacing: 0) {
+                // Levels come from NutrientLevels — the same source the
+                // scoring factor labels and the LLM prompt read, so badge
+                // and sentence can never disagree.
                 nutrientRow(label: "Sugar", value: n.sugar_g, unit: "g",
-                            t1: 5, t2: 12.5, higherIsBetter: false,
-                            divider: false, dark: dark)
+                            level: n.sugar_g.map(NutrientLevels.sugar),
+                            higherIsBetter: false, divider: false, dark: dark)
                 nutrientRow(label: "Sodium", value: n.sodium_mg, unit: "mg",
-                            t1: 120, t2: 400, higherIsBetter: false,
-                            divider: true, dark: dark)
+                            level: n.sodium_mg.map(NutrientLevels.sodium),
+                            higherIsBetter: false, divider: true, dark: dark)
                 nutrientRow(label: "Saturated fat", value: n.satFat_g, unit: "g",
-                            t1: 1.5, t2: 5, higherIsBetter: false,
-                            divider: true, dark: dark)
+                            level: n.satFat_g.map(NutrientLevels.satFat),
+                            higherIsBetter: false, divider: true, dark: dark)
                 nutrientRow(label: "Fiber", value: n.fiber_g, unit: "g",
-                            t1: 3, t2: 6, higherIsBetter: true,
+                            level: n.fiber_g.map(NutrientLevels.fiber),
+                            higherIsBetter: true,
                             bonus: product.bonuses.contains("fiber"),
                             divider: true, dark: dark)
                 nutrientRow(label: "Protein", value: n.protein_g, unit: "g",
-                            t1: 5, t2: 12, higherIsBetter: true,
+                            level: n.protein_g.map(NutrientLevels.protein),
+                            higherIsBetter: true,
                             bonus: product.bonuses.contains("protein"),
                             divider: true, dark: dark)
                 nutrientRow(label: "Calcium", value: n.calcium_mg, unit: "mg",
-                            t1: 60, t2: 120, higherIsBetter: true,
+                            level: n.calcium_mg.map(NutrientLevels.calcium),
+                            higherIsBetter: true,
                             bonus: product.bonuses.contains("calcium"),
                             divider: true, dark: dark)
             }
@@ -335,10 +341,10 @@ struct ResultView: View {
     }
 
     private func nutrientRow(label: String, value: Double?, unit: String,
-                             t1: Double, t2: Double, higherIsBetter: Bool,
+                             level: NutrientLevel?, higherIsBetter: Bool,
                              bonus: Bool = false, divider: Bool, dark: Bool) -> some View {
         let display = value.map { "\(fmt($0)) \(unit)" } ?? "—"
-        let tag = value.map { tagFromValue($0, t1: t1, t2: t2, higherIsBetter: higherIsBetter) }
+        let tag = level.map { nutrientTag($0, higherIsBetter: higherIsBetter) }
         return NutrientRow(label: label, value: display, tag: tag,
                            bonus: bonus, divider: divider, dark: dark)
     }
@@ -1075,17 +1081,21 @@ func fmt(_ v: Double) -> String {
     v == v.rounded() ? String(format: "%.0f", v) : String(format: "%.1f", v)
 }
 
-func tagFromValue(_ v: Double, t1: Double, t2: Double, higherIsBetter: Bool) -> NutrientRow.Tag {
+/// Maps a shared NutrientLevel to the badge. Plenty of a beneficial nutrient
+/// is good news; little of it is merely unremarkable (neutral), not an alarm.
+func nutrientTag(_ level: NutrientLevel, higherIsBetter: Bool) -> NutrientRow.Tag {
     if higherIsBetter {
-        // Plenty of a beneficial nutrient is good news; little of it is
-        // merely unremarkable (neutral), not an alarm.
-        if v >= t2 { return .init(word: "High", tone: .good) }
-        if v >= t1 { return .init(word: "Mod", tone: .mid) }
-        return .init(word: "Low", tone: .neutral)
+        switch level {
+        case .high:     return .init(word: "High", tone: .good)
+        case .moderate: return .init(word: "Mod", tone: .mid)
+        case .low:      return .init(word: "Low", tone: .neutral)
+        }
     } else {
-        if v <= t1 { return .init(word: "Low", tone: .good) }
-        if v <= t2 { return .init(word: "Mod", tone: .mid) }
-        return .init(word: "High", tone: .bad)
+        switch level {
+        case .low:      return .init(word: "Low", tone: .good)
+        case .moderate: return .init(word: "Mod", tone: .mid)
+        case .high:     return .init(word: "High", tone: .bad)
+        }
     }
 }
 

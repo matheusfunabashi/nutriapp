@@ -329,7 +329,8 @@ struct ContentView: View {
             objective: store.user.objective,
             overall: product.overallScore,
             your: product.yourScore,
-            factors: ScoringEngine.signedFactors(product, profile: store.user)
+            factors: ScoringEngine.signedFactors(product, profile: store.user),
+            nutrientLevels: NutrientLevels.promptLines(product.nutrients)
         )
         guard !payload.factors.isEmpty else { return }   // data-poor product
         Task { @MainActor in
@@ -354,7 +355,6 @@ struct ContentView: View {
         }
         switch e {
         case .notFound: return "No match for barcode \(barcode). It may not be in the database yet — try manual entry."
-        case .dailyLimitReached: return "You've used today's free scan. Upgrade to Premium for unlimited scans."
         case .unauthorized: return "Couldn't authenticate with the Sage server. Please update the app."
         case .network:  return "Network error. Check your connection and try again."
         case .decoding: return "We found the product but couldn't read its data."

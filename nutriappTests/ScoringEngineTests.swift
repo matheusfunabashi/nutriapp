@@ -72,16 +72,19 @@ struct ScoringEngineTests {
         #expect(your(cheetos, "build muscle") == 32)
     }
 
+    // Badge-consistency rule (2026-07-12): a nutrient whose badge reads LOW
+    // neither moves the score nor appears in factors — apple's 2.4g fiber
+    // (LOW) no longer earns lose-weight/eat-healthier nudges.
     @Test func loseWeightColumn() {
         #expect(your(chicken, "lose weight") == 82)
-        #expect(your(apple, "lose weight") == 86)
+        #expect(your(apple, "lose weight") == 85)
         #expect(your(cheetos, "lose weight") == 31)
     }
 
     @Test func eatHealthierColumn() {
-        #expect(your(apple, "eat healthier") == 93)
+        #expect(your(apple, "eat healthier") == 91)
         #expect(your(chicken, "eat healthier") == 78)
-        #expect(your(cheetos, "eat healthier") == 30)
+        #expect(your(cheetos, "eat healthier") == 29)
     }
 
     // MARK: Anchored scale invariants
