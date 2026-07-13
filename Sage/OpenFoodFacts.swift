@@ -213,7 +213,8 @@ struct OpenFoodFactsService {
             countries: normalizedTags(off.countriesTags),
             categories: normalizedTags(off.categoriesTags),
             additiveUndercountSuspected: additivesScan.undercountSuspected,
-            additiveIngredientTextMissing: additivesScan.ingredientTextMissing
+            additiveIngredientTextMissing: additivesScan.ingredientTextMissing,
+            dataSource: off.source
         )
     }
 
@@ -421,6 +422,7 @@ struct OFFProduct: Decodable {
     let servingSize: String?
     let countriesTags: [String]?
     let unknownIngredientsN: Int?
+    let source: String?   // Worker-injected `_source`: "usda" | "off+usda" (nil = pure OFF)
 
     enum CodingKeys: String, CodingKey {
         case productName = "product_name"
@@ -447,6 +449,7 @@ struct OFFProduct: Decodable {
         case servingSize = "serving_size"
         case countriesTags = "countries_tags"
         case unknownIngredientsN = "unknown_ingredients_n"
+        case source = "_source"
     }
 
     init(from decoder: Decoder) throws {
@@ -488,6 +491,7 @@ struct OFFProduct: Decodable {
         } else {
             unknownIngredientsN = nil
         }
+        source = try? c.decodeIfPresent(String.self, forKey: .source)
         // nova_group may arrive as Int, Double, or String — decode flexibly.
         if let i = try? c.decodeIfPresent(Int.self, forKey: .novaGroup) {
             novaGroup = i

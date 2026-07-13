@@ -462,12 +462,25 @@ struct ResultView: View {
     }
 
 #if DEBUG
+    /// Human-readable provenance for the DEBUG caption (product.dataSource is
+    /// the Worker's `_source`). nil = pure Open Food Facts.
+    private var nutritionSourceLabel: String {
+        switch product.dataSource {
+        case "usda":     return "USDA (Open Food Facts had no record)"
+        case "off+usda": return "USDA nutrition + Open Food Facts data"
+        default:         return "Open Food Facts"
+        }
+    }
+
     private func scoreDebugSection(dark: Bool) -> some View {
         let breakdown = ScoringEngine.debugBreakdown(product, for: store.user)
         return VStack(alignment: .leading, spacing: 8) {
             Text("SCORE DEBUG")
                 .font(.sageBold(11)).tracking(1.2)
                 .foregroundColor(Color(hex: "D4A02D"))
+            Text("Nutrition source: \(nutritionSourceLabel)")
+                .font(.sageBold(11))
+                .foregroundColor(Theme.textPrimary(dark))
             Text(breakdown.text)
                 .font(.sageRegular(10))
                 .monospacedDigit()
