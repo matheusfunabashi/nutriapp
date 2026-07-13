@@ -12,11 +12,7 @@ struct ScanCameraView: View {
     let onHistory: () -> Void
     let onScanComplete: (String) -> Void
 
-    enum Mode { case barcode, label }
-    @State private var mode: Mode = .barcode
     @State private var isTorchOn = false
-    @State private var showToast = false
-    @State private var toastTimer: Timer? = nil
     @State private var didEmit = false
 
     var body: some View {
@@ -33,34 +29,17 @@ struct ScanCameraView: View {
             .ignoresSafeArea()
             .allowsHitTesting(false)
 
-            CornerBrackets(mode: mode)
+            CornerBrackets()
 
             VStack {
                 topBar
-                modeSegments
-                    .padding(.top, 12)
                 Spacer()
                 hintArea
                 Spacer().frame(height: 30)
                 bottomButtonsRow.padding(.bottom, 40)
             }
-
-            if showToast {
-                VStack {
-                    Spacer()
-                    Text("Database coming soon")
-                        .font(.sageBold(14)).tracking(-0.2)
-                        .foregroundColor(.white)
-                        .padding(.horizontal, 18).padding(.vertical, 11)
-                        .background(Capsule().fill(Color.black.opacity(0.78)))
-                        .padding(.bottom, 180)
-                }
-                .transition(.opacity)
-            }
         }
-        .animation(.easeOut(duration: 0.2), value: showToast)
         .onDisappear {
-            toastTimer?.invalidate()
             isTorchOn = false
         }
     }
@@ -69,12 +48,9 @@ struct ScanCameraView: View {
         HStack {
             CameraCircleBtn(systemName: "xmark", action: onClose)
             Spacer()
-            // Cross-fade title when the mode flips so it doesn't snap.
-            Text(mode == .barcode ? "Scan barcode" : "Scan label")
+            Text("Scan barcode")
                 .font(.sageSemiBold(14)).tracking(-0.2)
                 .foregroundColor(.white)
-                .contentTransition(.opacity)
-                .animation(.easeInOut(duration: 0.2), value: mode)
             Spacer()
             CameraCircleBtn(systemName: "list.bullet", action: onHistory)
         }
@@ -83,7 +59,7 @@ struct ScanCameraView: View {
 
     private var hintArea: some View {
         VStack(spacing: 6) {
-            Text(mode == .barcode ? "Align the barcode" : "Align the label")
+            Text("Align the barcode")
                 .font(.sageRegular(20)).tracking(-0.4)
                 .foregroundColor(.white)
             Text("Hold steady — we'll detect it automatically")
@@ -91,34 +67,6 @@ struct ScanCameraView: View {
                 .foregroundColor(.white.opacity(0.7))
         }
         .offset(y: -80)
-    }
-
-    private var modeSegments: some View {
-        HStack(spacing: 8) {
-            ForEach([(Mode.barcode, "Barcode"), (Mode.label, "Manual entry")], id: \.1) { (m, label) in
-                let active = mode == m
-                Button {
-                    // Interruptible transition: clicking the other side
-                    // mid-animation retargets smoothly (skill: prefer
-                    // value-driven animations over fire-and-forget).
-                    withAnimation(.spring(response: 0.35, dampingFraction: 0.85)) {
-                        mode = m
-                    }
-                } label: {
-                    Text(label)
-                        .font(.sageBold(13)).tracking(-0.1)
-                        .foregroundColor(active ? Color(hex: "111111") : .white.opacity(0.95))
-                        .padding(.vertical, 11)
-                        .frame(maxWidth: .infinity)
-                        .background(
-                            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                                .fill(active ? Color.white : Color.black.opacity(0.5))
-                        )
-                }
-                .buttonStyle(.pressable)
-            }
-        }
-        .padding(.horizontal, 16)
     }
 
     private var bottomButtonsRow: some View {
@@ -133,8 +81,7 @@ struct ScanCameraView: View {
     }
 
     private func handleBarcode(_ code: String) {
-        // Only act in barcode mode, and only fire once per camera session.
-        guard mode == .barcode, !didEmit else { return }
+        guard !didEmit else { return }
         didEmit = true
         onScanComplete(code)
     }
@@ -159,12 +106,10 @@ private struct CameraCircleBtn: View {
 }
 
 private struct CornerBrackets: View {
-    let mode: ScanCameraView.Mode
     var body: some View {
         GeometryReader { geo in
             let w = geo.size.width, h = geo.size.height
-            let dims: (CGFloat, CGFloat) = mode == .barcode ? (290, 180) : (280, 320)
-            let rectW = dims.0, rectH = dims.1
+            let rectW: CGFloat = 290, rectH: CGFloat = 180
             let topY = h * 0.46
             let cx = w / 2
             let left = cx - rectW / 2, right = cx + rectW / 2
