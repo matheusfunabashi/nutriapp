@@ -10,14 +10,14 @@
 
 import { Hono, type MiddlewareHandler } from "hono";
 import type { Env, LookupRequest, ExplainRequest, SearchRequest } from "./types";
-import { fetchOFF, searchOFF, hasImage, hasNutrition } from "./off";
+import { fetchOFF, searchOFF, hasImage } from "./off";
 import {
   getProduct, putProduct,
   getSearch, putSearch,
   explanationKey, getExplanation, putExplanation,
 } from "./cache";
 import { bumpScanCount, logFetch } from "./db";
-import { fetchUSDA, mergeUSDA } from "./usda";
+import { fetchUSDA, mergeUSDA, plausiblyUS } from "./usda";
 import { generateExplanation } from "./explanation";
 // Scoring-v4 ruleset served to clients (SCORING_V4.md §10). Keep in sync:
 // `cp Sage/RulesetV4.json backend/src/ruleset.json` before deploying — the
@@ -70,15 +70,17 @@ app.post("/lookup", async (c) => {
     return c.json({ source: "cache", product: cached });
   }
 
-  // Open Food Facts is the primary source.
+  // Open Food Facts is the primary source (global; owns the classification
+  // layer: NOVA, additives, categories, Nutri-Score).
   const off = await fetchOFF(barcode).catch(() => null);
 
-  // USDA backfill (field-priority table): only when OFF is absent or has no
-  // nutrition table — conserves the api.data.gov budget and means USDA never
-  // overrides good OFF data. Free + public-domain, so it runs for everyone.
+  // USDA (US Branded Foods) supplies the nutrition table, which is
+  // manufacturer-label-accurate and preferred over OFF's transcribed values.
+  // Queried whenever the product is plausibly US-market — the KV cache
+  // amortizes the api.data.gov budget to ~one call per unique product.
   let product = off;
   let source = off ? "off" : null;
-  if ((!off || !hasNutrition(off)) && c.env.USDA_API_KEY) {
+  if (c.env.USDA_API_KEY && plausiblyUS(off)) {
     const usda = await fetchUSDA(barcode, c.env.USDA_API_KEY).catch(() => null);
     if (usda) {
       product = mergeUSDA(off, usda);

@@ -107,18 +107,31 @@ export async function fetchUSDA(barcode: string, apiKey: string): Promise<OFFPro
   } as OFFProduct;
 }
 
-/// Gap-fill merge. We only reach here when OFF was absent or nutrition-less,
-/// so USDA never overwrites good OFF data. OFF keeps its identity + the
-/// classification fields it uniquely provides; USDA fills nutrition and any
-/// missing ingredient text.
+/// Worth a USDA call? USDA only carries US products, so we skip the request
+/// for anything OFF marks as sold outside the US — it could never match. OFF
+/// absent or with no country info stays eligible (could be a US product).
+export function plausiblyUS(off: OFFProduct | null): boolean {
+  if (!off) return true;
+  const countries = off["countries_tags"];
+  if (!Array.isArray(countries) || countries.length === 0) return true;
+  return countries.some((t) => typeof t === "string" && t.includes("united-states"));
+}
+
+/// Field-level merge that PREFERS USDA nutrition (manufacturer label data is
+/// more complete/accurate than OFF's transcribed photos for US products).
+/// OFF keeps everything USDA doesn't have — the classification layer (NOVA,
+/// additives, categories, Nutri-Score), the image, and OFF-only nutriment
+/// fields like the fruit/veg/nuts estimate. Ingredient text stays OFF's (it's
+/// what NOVA + additives were derived from); USDA fills it only when OFF lacks it.
 export function mergeUSDA(off: OFFProduct | null, usda: OFFProduct): OFFProduct {
   if (!off) return usda;
   const merged: OFFProduct = { ...off };
 
-  // Nutrition: OFF was sparse (that's why USDA was called). Per-field, any
-  // value OFF *did* have wins; USDA fills the rest.
   const offNutr = (off["nutriments"] as Record<string, unknown>) ?? {};
-  merged["nutriments"] = { ...(usda["nutriments"] as object), ...offNutr };
+  const usdaNutr = (usda["nutriments"] as Record<string, unknown>) ?? {};
+  // USDA wins on overlapping nutrients; OFF-only fields (e.g. the fvn estimate,
+  // which USDA has no equivalent for) survive.
+  merged["nutriments"] = { ...offNutr, ...usdaNutr };
 
   if (!off["ingredients_text"] && usda["ingredients_text"]) {
     merged["ingredients_text"] = usda["ingredients_text"];
