@@ -61,9 +61,9 @@ enum ScoringEngine {
     static func signedFactors(_ product: Product, profile: UserProfile) -> [String] {
         let b = Blocks(product)
         let adjs = profile.personalizeScoring
-            ? adjustments(b, objective: profile.objective, preferences: profile.preferences)
+            ? adjustments(b, nutrients: product.nutrients, objective: profile.objective, preferences: profile.preferences)
             : []
-        var factors = merge(adjs, overallDrivers(b))
+        var factors = merge(adjs, overallDrivers(b, nutrients: product.nutrients))
             .filter { abs($0.points) >= 1 }
             .sorted { abs($0.points) > abs($1.points) }
             .prefix(4)
@@ -199,26 +199,50 @@ enum ScoringEngine {
         let label: String
     }
 
-    private static func adjustments(_ b: Blocks, objective: String,
+    /// A nutrient claim in a factor label must agree with the badge the user
+    /// sees: HIGH badge → "high …", MOD → "moderate …", LOW → no claim at all
+    /// (the points still count; we just don't *say* something the Breakdown
+    /// card contradicts). nil label ⇒ the factor is dropped from labels.
+    private static func levelled(_ level: NutrientLevel?,
+                                 high: String, moderate: String) -> String? {
+        switch level {
+        case .high: return high
+        case .moderate: return moderate
+        default: return nil
+        }
+    }
+
+    private static func adjustments(_ b: Blocks, nutrients n: Nutrients,
+                                    objective: String,
                                     preferences: [String]) -> [Adjustment] {
         var out: [Adjustment] = []
-        func add(_ key: FactorKey, _ points: Double, _ label: String) {
-            guard abs(points) >= 0.5 else { return }   // drop noise
+        func add(_ key: FactorKey, _ points: Double, _ label: String?) {
+            guard let label, abs(points) >= 0.5 else { return }   // drop noise
             out.append(Adjustment(key: key, points: points, label: label))
         }
+        let sugarLv = n.sugar_g.map(NutrientLevels.sugar)
+        let sodiumLv = n.sodium_mg.map(NutrientLevels.sodium)
+        let satLv = n.satFat_g.map(NutrientLevels.satFat)
+        let fiberLv = n.fiber_g.map(NutrientLevels.fiber)
+        let proteinLv = n.protein_g.map(NutrientLevels.protein)
 
         switch objective.lowercased() {
         case "build muscle":
             if let dens = b.protDensScore {
                 let pts = 12 * (dens - 0.35)
-                add(.protein, pts, pts > 0 ? "high protein per calorie"
-                                           : "low protein per calorie for a muscle goal")
+                // "high protein per calorie" is a density claim, but never
+                // make it when the protein badge the user sees says LOW.
+                add(.protein, pts, pts > 0
+                    ? (proteinLv == .low ? nil : "high protein per calorie")
+                    : "low protein per calorie for a muscle goal")
             }
             if let abs = b.absProteinScore {
-                add(.absProtein, 4 * abs, "protein-rich per 100g")
+                add(.absProtein, 4 * abs,
+                    levelled(proteinLv, high: "protein-rich", moderate: "moderate protein"))
             }
             if let sp = b.sugarPen {
-                add(.sugar, -4 * sp, "high sugar")
+                add(.sugar, -4 * sp,
+                    levelled(sugarLv, high: "high sugar", moderate: "moderate sugar"))
             }
 
         case "lose weight":
@@ -228,13 +252,16 @@ enum ScoringEngine {
                 add(.energy, energy, energy > 0 ? "low calorie density" : "calorie-dense")
             }
             if let dens = b.protDensScore {
-                add(.protein, 5 * dens, "protein that keeps you full")
+                add(.protein, 5 * dens,
+                    proteinLv == .low ? nil : "protein that keeps you full")
             }
             if let fiber = b.fiberScore {
-                add(.fiber, 4 * fiber, "filling fiber")
+                add(.fiber, 4 * fiber,
+                    levelled(fiberLv, high: "filling fiber", moderate: "some filling fiber"))
             }
             if let sp = b.sugarPen {
-                add(.sugar, -8 * sp, "high sugar")
+                add(.sugar, -8 * sp,
+                    levelled(sugarLv, high: "high sugar", moderate: "moderate sugar"))
             }
 
         case "eat healthier":
@@ -242,7 +269,8 @@ enum ScoringEngine {
                 add(.fvn, 8 * fvn, "mostly whole fruits, vegetables, or nuts")
             }
             if let fiber = b.fiberScore {
-                add(.fiber, 5 * fiber, "high fiber")
+                add(.fiber, 5 * fiber,
+                    levelled(fiberLv, high: "high fiber", moderate: "moderate fiber"))
             }
             if b.novaKnown, let procPen = b.procPen, let upfPen = b.upfPen {
                 let proc = 5 * ((1 - procPen) - upfPen)
@@ -260,19 +288,28 @@ enum ScoringEngine {
         // "Organic" has no reliable signal in the data, so it never adjusts.
         let prefs = Set(preferences.map { $0.lowercased() })
         if prefs.contains("low sugar"), let sp = b.sugarPen {
-            add(.sugar, -4 * sp, "high sugar (you prefer low sugar)")
+            add(.sugar, -4 * sp,
+                levelled(sugarLv, high: "high sugar (you prefer low sugar)",
+                         moderate: "moderate sugar (you prefer low sugar)"))
         }
         if prefs.contains("low sodium"), let sp = b.sodiumPen {
-            add(.sodium, -4 * sp, "high sodium (you prefer low sodium)")
+            add(.sodium, -4 * sp,
+                levelled(sodiumLv, high: "high sodium (you prefer low sodium)",
+                         moderate: "moderate sodium (you prefer low sodium)"))
         }
         if prefs.contains("low fat"), let sp = b.satPen {
-            add(.satFat, -4 * sp, "high saturated fat (you prefer low fat)")
+            add(.satFat, -4 * sp,
+                levelled(satLv, high: "high saturated fat (you prefer low fat)",
+                         moderate: "moderate saturated fat (you prefer low fat)"))
         }
         if prefs.contains("high protein"), let dens = b.protDensScore {
-            add(.protein, 4 * dens, "protein-dense (your high-protein preference)")
+            add(.protein, 4 * dens,
+                proteinLv == .low ? nil : "protein-dense (your high-protein preference)")
         }
         if prefs.contains("high fiber"), let fiber = b.fiberScore {
-            add(.fiber, 4 * fiber, "fiber-rich (your high-fiber preference)")
+            add(.fiber, 4 * fiber,
+                levelled(fiberLv, high: "fiber-rich (your high-fiber preference)",
+                         moderate: "some fiber (your high-fiber preference)"))
         }
         if prefs.contains("minimally processed"), b.novaKnown,
            let procPen = b.procPen, let upfPen = b.upfPen {
@@ -286,17 +323,21 @@ enum ScoringEngine {
     /// The main goal-neutral score drivers, labeled for the /explain prompt.
     /// Points mirror the overall formula's weights so sorting by magnitude
     /// surfaces what actually moved the number.
-    private static func overallDrivers(_ b: Blocks) -> [Adjustment] {
+    private static func overallDrivers(_ b: Blocks, nutrients n: Nutrients) -> [Adjustment] {
         var out: [Adjustment] = []
-        func add(_ key: FactorKey, _ points: Double, _ label: String) {
-            guard abs(points) >= 0.5 else { return }
+        func add(_ key: FactorKey, _ points: Double, _ label: String?) {
+            guard let label, abs(points) >= 0.5 else { return }
             out.append(Adjustment(key: key, points: points, label: label))
         }
         if let dens = b.protDensScore {
-            add(.protein, 14 * dens, "high protein per calorie")
+            add(.protein, 14 * dens,
+                n.protein_g.map(NutrientLevels.protein) == .low
+                    ? nil : "high protein per calorie")
         }
         if let fiber = b.fiberScore {
-            add(.fiber, 12 * fiber, "high fiber")
+            add(.fiber, 12 * fiber,
+                levelled(n.fiber_g.map(NutrientLevels.fiber),
+                         high: "high fiber", moderate: "moderate fiber"))
         }
         if let fvn = b.fvnScore {
             add(.fvn, 14 * fvn, "mostly whole fruits, vegetables, or nuts")
@@ -305,13 +346,19 @@ enum ScoringEngine {
             add(.processing, 10 * (1 - procPen) - 6 * upfPen, processingLabel(b))
         }
         if let sp = b.sugarPen {
-            add(.sugar, -12 * sp, "high sugar")
+            add(.sugar, -12 * sp,
+                levelled(n.sugar_g.map(NutrientLevels.sugar),
+                         high: "high sugar", moderate: "moderate sugar"))
         }
         if let sat = b.satPen {
-            add(.satFat, -8 * sat, "high saturated fat")
+            add(.satFat, -8 * sat,
+                levelled(n.satFat_g.map(NutrientLevels.satFat),
+                         high: "high saturated fat", moderate: "moderate saturated fat"))
         }
         if let sod = b.sodiumPen {
-            add(.sodium, -8 * sod, "high sodium")
+            add(.sodium, -8 * sod,
+                levelled(n.sodium_mg.map(NutrientLevels.sodium),
+                         high: "high sodium", moderate: "moderate sodium"))
         }
         if let ap = b.additivesPen {
             add(.additives, -4 * ap, "contains riskier additives")
@@ -367,7 +414,7 @@ enum ScoringEngine {
                                   restrictions: restrictions, reason: nil)
         }
 
-        let adjs = adjustments(b, objective: profile.objective,
+        let adjs = adjustments(b, nutrients: product.nutrients, objective: profile.objective,
                                preferences: profile.preferences)
         let delta = max(-maxAdjustment, min(maxAdjustment,
                                             adjs.reduce(0) { $0 + $1.points }))
@@ -376,7 +423,7 @@ enum ScoringEngine {
         let hardCapped = !restrictions.isEmpty
         if hardCapped { your = min(your, restrictionCap) }
 
-        let reason = deltaReason(adjustments: adjs, drivers: overallDrivers(b),
+        let reason = deltaReason(adjustments: adjs, drivers: overallDrivers(b, nutrients: product.nutrients),
                                  your: your, overall: overall,
                                  restriction: restrictions.first, hardCapped: hardCapped)
 
@@ -625,7 +672,8 @@ extension ScoringEngine {
         if !profile.personalizeScoring {
             lines.append("  personalization OFF → yourScore = overall (\(overall))")
         } else {
-            let adjs = adjustments(b, objective: profile.objective,
+            let adjs = adjustments(b, nutrients: product.nutrients,
+                                   objective: profile.objective,
                                    preferences: profile.preferences)
             lines.append("PERSONAL ADJUSTMENTS (cap ±\(Int(maxAdjustment)))")
             if adjs.isEmpty {

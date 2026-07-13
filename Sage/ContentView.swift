@@ -328,7 +328,8 @@ struct ContentView: View {
             objective: store.user.objective,
             overall: product.overallScore,
             your: product.yourScore,
-            factors: ScoringEngine.signedFactors(product, profile: store.user)
+            factors: ScoringEngine.signedFactors(product, profile: store.user),
+            nutrientLevels: NutrientLevels.promptLines(product.nutrients)
         )
         guard !payload.factors.isEmpty else { return }   // data-poor product
         Task { @MainActor in

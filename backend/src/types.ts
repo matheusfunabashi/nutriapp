@@ -49,4 +49,8 @@ export interface ExplainRequest {
   // "+ " if it raised the personalized score or "- " if it held it back, e.g.
   //   ["+ very low calorie density helps weight loss", "- high sugar"]
   factors?: string[];
+  // The LOW/MOD/HIGH badge levels the user sees in the Breakdown card, e.g.
+  // ["sugar: low (4g)", "sodium: high (800mg)"]. Ground truth the model must
+  // never contradict — keeps the sentence consistent with the UI.
+  nutrientLevels?: string[];
 }
