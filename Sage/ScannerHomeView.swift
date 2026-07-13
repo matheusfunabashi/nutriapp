@@ -4,6 +4,7 @@ struct ScannerHomeView: View {
     @EnvironmentObject var store: AppStore
     let onTapScan: () -> Void
     let onTapHistory: () -> Void
+    let onTapSearch: () -> Void
     let onOpenProduct: (String) -> Void
 
     var body: some View {
@@ -11,21 +12,17 @@ struct ScannerHomeView: View {
         ScrollView(showsIndicators: false) {
             VStack(spacing: 0) {
                 header(dark: dark)
-                // Split + stagger: greeting → hero → quick action → recent → tip.
-                // Each chunk fades, blurs, and lifts independently, matching
-                // the skill's "don't animate one big container" rule.
+                // Split + stagger: greeting → search → scan → recent.
                 StaggeredAppear(index: 0) { greeting(dark: dark) }
                 StaggeredAppear(index: 1) {
-                    heroCard(dark: dark)
-                        .padding(.horizontal, 16)
-                        .padding(.top, 12).padding(.bottom, 6)
+                    searchEntry(dark: dark)
+                        .padding(.horizontal, 16).padding(.top, 4).padding(.bottom, 8)
                 }
                 StaggeredAppear(index: 2) {
-                    quickAction(dark: dark)
-                        .padding(.horizontal, 16).padding(.vertical, 12)
+                    heroCard(dark: dark)
+                        .padding(.horizontal, 16).padding(.bottom, 6)
                 }
                 StaggeredAppear(index: 3) { recentSection(dark: dark) }
-                StaggeredAppear(index: 4) { tip(dark: dark) }
                 Spacer().frame(height: 120)
             }
         }
@@ -55,116 +52,132 @@ struct ScannerHomeView: View {
                 .minHitArea(44) // visible 38pt; tap target lifts to 44 (WCAG)
             }
             .buttonStyle(.pressable)
+            .accessibilityLabel("Scan history")
         }
-        // Top padding = 12pt above the system safe-area inset. The parent
-        // ZStack in ContentView does NOT ignoreSafeArea for its content,
-        // so the inset already accounts for the status bar / Dynamic Island.
         .padding(.horizontal, 20).padding(.top, 12).padding(.bottom, 4)
     }
 
     private func greeting(dark: Bool) -> some View {
-        VStack(alignment: .leading, spacing: 2) {
-            Text("Good morning, \(store.user.name)")
-                .font(.sageMedium(13))
-                .foregroundColor(Theme.textSecondary(dark))
-            Text("What are you eating?")
-                .font(.sageBold(26))
-                .tracking(-0.6)
-                .foregroundColor(Theme.textPrimary(dark))
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(.horizontal, 24).padding(.top, 16).padding(.bottom, 8)
+        Text("\(timeGreeting), \(store.user.name)")
+            .font(.sageMedium(15))
+            .foregroundColor(Theme.textSecondary(dark))
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.horizontal, 24).padding(.top, 16).padding(.bottom, 4)
     }
 
-    private func heroCard(dark: Bool) -> some View {
-        Button(action: onTapScan) {
-            ZStack(alignment: .topTrailing) {
-                ZStack(alignment: .topLeading) {
-                    LinearGradient(
-                        colors: [store.accent, Color(hex: "0C5A3B")],
-                        startPoint: .topLeading, endPoint: .bottomTrailing
-                    )
-                    VStack(alignment: .leading, spacing: 0) {
-                        HStack(spacing: 6) {
-                            Circle().fill(Color.white).frame(width: 6, height: 6)
-                            Text("READY")
-                                .font(.sageMedium(10))
-                                .tracking(1.4)
-                                .foregroundColor(.white)
-                        }
-                        .padding(.horizontal, 10).padding(.vertical, 4)
-                        .background(Capsule().fill(Color.white.opacity(0.18)))
-
-                        Text("Tap to scan")
-                            .font(.sageBold(32))
-                            .tracking(-1)
-                            .foregroundColor(.white)
-                            .padding(.top, 16)
-                        Text("Point your camera at any food barcode for an instant rating.")
-                            .font(.sageRegular(14))
-                            .foregroundColor(.white.opacity(0.8))
-                            .lineSpacing(2)
-                            .padding(.top, 6)
-                            .frame(maxWidth: 230, alignment: .leading)
-
-                        HStack(spacing: 10) {
-                            ZStack {
-                                Circle().fill(store.accent)
-                                Image(systemName: "viewfinder")
-                                    .font(.sageBold(12))
-                                    .foregroundColor(.white)
-                            }
-                            .frame(width: 24, height: 24)
-                            Text("Open scanner")
-                                .font(.sageSemiBold(14))
-                                .tracking(-0.2)
-                                .foregroundColor(.black)
-                        }
-                        .padding(.leading, 4).padding(.trailing, 18)
-                        .padding(.vertical, 11)
-                        .background(Capsule().fill(Color.white))
-                        .padding(.top, 22)
-                    }
-                    .padding(24)
-                }
-                ScanBrackets(color: Color.white.opacity(0.4))
-                    .frame(width: 64, height: 64).padding(18)
-            }
-            .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
-            .shadow(color: store.accent.opacity(0.25), radius: 24, x: 0, y: 14)
+    /// Device-local hour: 5–11 morning, 12–17 afternoon, else evening.
+    private var timeGreeting: String {
+        let hour = Calendar.current.component(.hour, from: Date())
+        switch hour {
+        case 5...11:  return "Good morning"
+        case 12...17: return "Good afternoon"
+        default:      return "Good evening"
         }
-        .buttonStyle(.pressable)
     }
 
-    private func quickAction(dark: Bool) -> some View {
-        Button(action: onTapScan) {
-            HStack(spacing: 12) {
-                Text("✏️").font(.sageRegular(22))
-                VStack(alignment: .leading, spacing: 1) {
-                    Text("Manual entry")
-                        .font(.sageSemiBold(13))
-                        .tracking(-0.2)
-                        .foregroundColor(Theme.textPrimary(dark))
-                    Text("Can't find it? Enter it yourself")
-                        .font(.sageRegular(11))
-                        .foregroundColor(Theme.textSecondary(dark))
-                }
-                Spacer()
-                Image(systemName: "chevron.right")
-                    .font(.sageBold(12))
+    private func searchEntry(dark: Bool) -> some View {
+        Button(action: onTapSearch) {
+            HStack(spacing: 10) {
+                Image(systemName: "magnifyingglass")
                     .foregroundColor(Theme.textSecondary(dark))
+                Text("Search a product or brand")
+                    .font(.sageMedium(15))
+                    .foregroundColor(Theme.textSecondary(dark))
+                Spacer(minLength: 0)
             }
-            .padding(14)
+            .padding(.horizontal, 14).padding(.vertical, 12)
             .background(
-                RoundedRectangle(cornerRadius: 18, style: .continuous).fill(Theme.surface(dark))
+                RoundedRectangle(cornerRadius: 14, style: .continuous).fill(Theme.surface(dark))
             )
             .cardShadow(dark)
         }
         .buttonStyle(.pressable)
+        .accessibilityLabel("Search a product or brand")
+    }
+
+    private func heroCard(dark: Bool) -> some View {
+        Button(action: onTapScan) {
+            HStack(spacing: 14) {
+                VStack(alignment: .leading, spacing: 3) {
+                    Text("Scan a barcode")
+                        .font(.sageBold(17))
+                        .tracking(-0.4)
+                        .foregroundColor(.white)
+                    Text("Point your camera at any food barcode.")
+                        .font(.sageRegular(13))
+                        .foregroundColor(.white.opacity(0.8))
+                        .lineLimit(1)
+                }
+                Spacer(minLength: 8)
+                ZStack {
+                    Circle().fill(Color.white.opacity(0.2))
+                    Image(systemName: "viewfinder")
+                        .font(.sageBold(18))
+                        .foregroundColor(.white)
+                }
+                .frame(width: 44, height: 44)
+            }
+            .padding(.horizontal, 18).padding(.vertical, 16)
+            .background(
+                LinearGradient(
+                    colors: [store.accent, Color(hex: "0C5A3B")],
+                    startPoint: .topLeading, endPoint: .bottomTrailing
+                )
+            )
+            .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+            .shadow(color: store.accent.opacity(0.25), radius: 16, x: 0, y: 8)
+        }
+        .buttonStyle(.pressable)
+        .accessibilityLabel("Scan a barcode")
+    }
+
+    // MARK: Recent scans (display-time grouping)
+
+    /// Collapses consecutive same-product history entries into one Home row.
+    private struct HomeRecentGroup: Identifiable {
+        var id: String { productId }
+        let productId: String
+        let latestScannedAt: Date
+        let weekScanCount: Int
+    }
+
+    private func homeGroupedRecent(limit: Int = 5) -> [HomeRecentGroup] {
+        let history = store.history
+        guard !history.isEmpty else { return [] }
+        var groups: [HomeRecentGroup] = []
+        var idx = 0
+        while idx < history.count && groups.count < limit {
+            let pid = history[idx].productId
+            let latest = history[idx].scannedAt
+            idx += 1
+            while idx < history.count && history[idx].productId == pid {
+                idx += 1
+            }
+            groups.append(HomeRecentGroup(
+                productId: pid,
+                latestScannedAt: latest,
+                weekScanCount: weekScanCount(for: pid, in: history)
+            ))
+        }
+        return groups
+    }
+
+    private func weekScanCount(for productId: String, in history: [HistoryEntry]) -> Int {
+        history.filter {
+            $0.productId == productId &&
+                Calendar.current.isDate($0.scannedAt, equalTo: .now, toGranularity: .weekOfYear)
+        }.count
+    }
+
+    private func recentSubtitle(for group: HomeRecentGroup) -> String {
+        if group.weekScanCount > 1 {
+            return "Scanned \(group.weekScanCount)× this week"
+        }
+        return HistoryEntry.scannedAgoLabel(since: group.latestScannedAt)
     }
 
     private func recentSection(dark: Bool) -> some View {
-        let recent = Array(store.history.prefix(5))
+        let recent = homeGroupedRecent()
         return VStack(spacing: 8) {
             HStack(alignment: .firstTextBaseline) {
                 Text("Recent scans")
@@ -177,9 +190,10 @@ struct ScannerHomeView: View {
                         Text("See all")
                             .font(.sageMedium(13))
                             .foregroundColor(Theme.textSecondary(dark))
-                            .padding(.vertical, 8).padding(.leading, 12) // larger hit area
+                            .padding(.vertical, 8).padding(.leading, 12)
                     }
                     .buttonStyle(.pressable)
+                    .accessibilityLabel("See all recent scans")
                 }
             }
             .padding(.horizontal, 24).padding(.top, 20).padding(.bottom, 10)
@@ -203,9 +217,9 @@ struct ScannerHomeView: View {
                 .padding(.horizontal, 16)
             } else {
                 VStack(spacing: 8) {
-                    ForEach(recent) { h in
-                        if let p = store.products[h.productId] {
-                            RecentRow(product: p, scannedAt: h.scannedAt, dark: dark) {
+                    ForEach(recent) { group in
+                        if let p = store.products[group.productId] {
+                            RecentRow(product: p, subtitle: recentSubtitle(for: group), dark: dark) {
                                 onOpenProduct(p.id)
                             }
                         }
@@ -215,20 +229,11 @@ struct ScannerHomeView: View {
             }
         }
     }
-
-    private func tip(dark: Bool) -> some View {
-        Text("Sage looks up the same barcode in our public database, then re-scores it for your profile.")
-            .font(.sageRegular(12))
-            .foregroundColor(Theme.textSecondary(dark))
-            .lineSpacing(2)
-            .padding(.horizontal, 24).padding(.top, 24)
-            .frame(maxWidth: .infinity, alignment: .leading)
-    }
 }
 
 private struct RecentRow: View {
     let product: Product
-    let scannedAt: Date
+    let subtitle: String
     let dark: Bool
     let onTap: () -> Void
 
@@ -242,7 +247,7 @@ private struct RecentRow: View {
                         .font(.sageSemiBold(14))
                         .foregroundColor(Theme.textPrimary(dark))
                         .lineLimit(1)
-                    Text(HistoryEntry.scannedAgoLabel(since: scannedAt))
+                    Text(subtitle)
                         .font(.sageRegular(11))
                         .foregroundColor(Theme.textSecondary(dark))
                 }
@@ -259,6 +264,7 @@ private struct RecentRow: View {
             .cardShadow(dark)
         }
         .buttonStyle(.pressable)
+        .accessibilityLabel("\(product.name), \(subtitle)")
     }
 }
 
