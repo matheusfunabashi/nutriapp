@@ -145,6 +145,7 @@ struct ContentView: View {
             ScannerHomeView(
                 onTapScan: { startScan() },
                 onTapHistory: { tab = .pantry },
+                onTapSearch: { tab = .search },
                 onOpenProduct: { id in openProduct(id) }
             )
         case .pantry:
