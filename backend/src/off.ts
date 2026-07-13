@@ -44,17 +44,6 @@ export function hasImage(p: OFFProduct | null): boolean {
   return !!(p && (p["image_front_url"] || p["image_url"]));
 }
 
-/// True when OFF carries a usable nutrition table. When false, the product is
-/// a candidate for USDA backfill (index.ts) — this is the gate that keeps the
-/// USDA budget spent only on genuine gaps.
-export function hasNutrition(p: OFFProduct | null): boolean {
-  const n = p?.["nutriments"] as Record<string, unknown> | undefined;
-  if (!n) return false;
-  return ["energy-kcal_100g", "proteins_100g", "sugars_100g",
-          "fat_100g", "carbohydrates_100g"]
-    .some((k) => typeof n[k] === "number");
-}
-
 // --- Free-text name search -------------------------------------------------
 // OFF's search endpoint does the "contains the typed words" matching
 // server-side (full-text over name/brand). NOTE: it is rate-limited harder

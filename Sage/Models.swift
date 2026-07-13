@@ -121,6 +121,10 @@ struct Product: Identifiable, Hashable, Codable {
     var additiveUndercountSuspected: Bool? = nil
     /// True when no ingredient text was available to verify additive detection.
     var additiveIngredientTextMissing: Bool? = nil
+    /// Backend data provenance from the Worker's `_source` field: "usda" or
+    /// "off+usda" when USDA supplied the nutrition table, nil for pure OFF.
+    /// Dev/observability only — surfaced in the DEBUG score breakdown.
+    var dataSource: String? = nil
 }
 
 // MARK: - Data confidence (SCORING_V4.md §3.2–3.3)
