@@ -54,46 +54,62 @@ interface FdcFood {
   foodNutrients?: FdcNutrient[];
 }
 
-/// Barcode lookup against FDC Branded Foods. Search is fuzzy, so we require an
-/// exact GTIN match (GTINs are often zero-padded to 14 digits).
+/// Barcode lookup against FDC Branded Foods. FDC stores GTINs zero-padded to
+/// 14 digits and its search only matches that form — a raw 12-digit UPC finds
+/// nothing — so we query the padded GTIN-14. We still exact-match the result's
+/// gtinUpc (leading zeros stripped) as a guard against fuzzy hits.
 export async function fetchUSDA(barcode: string, apiKey: string): Promise<OFFProduct | null> {
-  const url =
-    `${SEARCH}?query=${encodeURIComponent(barcode)}` +
-    `&dataType=Branded&pageSize=10&api_key=${encodeURIComponent(apiKey)}`;
+  const digits = barcode.replace(/\D/g, "");
+  const strip = (s: string) => s.replace(/^0+/, "") || "0";
 
-  const res = await fetch(url, {
-    headers: { "User-Agent": "Sage/1.0 (backend proxy; contact@sage.app)" },
-  });
-  if (res.status === 404) return null;
-  if (!res.ok) throw new Error(`USDA ${res.status}`);
-
-  const data = (await res.json()) as { foods?: FdcFood[] };
-  const strip = (s: string) => s.replace(/^0+/, "");
-  const food = (data.foods ?? []).find(
-    (f) => f.gtinUpc && strip(f.gtinUpc) === strip(barcode),
-  );
+  // USDA stores GTINs inconsistently — some as the raw 12-digit UPC, some
+  // zero-padded to 14 — and its search only matches the exact stored string,
+  // so try the raw digits first, then the 14-padded form.
+  const forms = [...new Set([digits, digits.padStart(14, "0")])];
+  let food: FdcFood | undefined;
+  for (const q of forms) {
+    const url =
+      `${SEARCH}?query=${encodeURIComponent(q)}` +
+      `&dataType=Branded&pageSize=10&api_key=${encodeURIComponent(apiKey)}`;
+    const res = await fetch(url, {
+      headers: { "User-Agent": "Sage/1.0 (backend proxy; contact@sage.app)" },
+    });
+    if (res.status === 404) continue;
+    if (!res.ok) throw new Error(`USDA ${res.status}`);
+    const data = (await res.json()) as { foods?: FdcFood[] };
+    food = (data.foods ?? []).find(
+      (f) => f.gtinUpc && strip(f.gtinUpc) === strip(digits),
+    );
+    if (food?.description) break;
+    food = undefined;
+  }
   if (!food?.description) return null;
 
-  // Prefer per-100g values; keep per-serving only as a fallback for nutrients
-  // that lack a per-100g entry.
-  const per100: Record<string, number> = {};
-  const perServing: Record<string, number> = {};
+  // FDC Branded `foodNutrients` values are per-100g (the derivation text just
+  // says how they were computed). A nutrient can have two entries — one "given
+  // per 100" and one "calculated per serving" — that occasionally disagree, so
+  // we prefer the explicit per-100 entry when both exist.
+  const chosen: Record<string, { value: number; per100: boolean }> = {};
   for (const n of food.foodNutrients ?? []) {
     const m = n.nutrientNumber ? NUTRIENT_MAP[n.nutrientNumber] : undefined;
     if (!m || typeof n.value !== "number") continue;
-    const is100 = (n.derivationDescription ?? "").includes("100");
-    (is100 ? per100 : perServing)[m.key] = n.value * m.scale;
+    const per100 = (n.derivationDescription ?? "").includes("100");
+    const prev = chosen[m.key];
+    if (!prev || (per100 && !prev.per100)) {
+      chosen[m.key] = { value: n.value * m.scale, per100 };
+    }
   }
+  const nutriments: Record<string, number> = {};
+  for (const [k, v] of Object.entries(chosen)) nutriments[k] = v.value;
 
-  const nutriments: Record<string, number> = { ...per100 };
-  // Convert any per-serving-only nutrient to per-100g when the serving is a
-  // mass/volume we can scale by (grams or millilitres).
+  // Defensive: a few records slip through per-serving. Energy per 100g can't
+  // exceed ~900 kcal (pure fat) — if it does, rescale everything by the serving.
+  const kcal = nutriments["energy-kcal_100g"];
   const ss = food.servingSize;
   const unit = (food.servingSizeUnit ?? "").toLowerCase();
-  if (ss && ss > 0 && ["g", "grm", "ml", "mlt"].includes(unit)) {
-    for (const [k, v] of Object.entries(perServing)) {
-      if (!(k in nutriments)) nutriments[k] = v * (100 / ss);
-    }
+  if (kcal && kcal > 900 && ss && ss > 0 && ["g", "grm", "ml", "mlt"].includes(unit)) {
+    const factor = ss / 100;
+    for (const k of Object.keys(nutriments)) nutriments[k] = nutriments[k] / factor;
   }
 
   // OFF-shaped so the iOS mapper consumes it unchanged; `_source` marks provenance.
