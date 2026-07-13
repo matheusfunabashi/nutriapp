@@ -1,6 +1,7 @@
 // Open Food Facts lookup. Returns the raw OFF `product` object so the iOS app's
 // existing mapper stays the single source of truth for parsing. The Worker is a
-// thin caching proxy over OFF (with Go-UPC as a premium fallback — TODO).
+// thin caching proxy over OFF, with USDA FoodData Central as a gap-fill backfill
+// (see usda.ts) when OFF is absent or has no nutrition table.
 
 // Scoring v4 (SCORING_V4.md §2) widened this list: labels/certifications,
 // packaging, origins, per-ingredient percents, eco grade, data-completeness
@@ -41,6 +42,17 @@ export async function fetchOFF(barcode: string): Promise<OFFProduct | null> {
 
 export function hasImage(p: OFFProduct | null): boolean {
   return !!(p && (p["image_front_url"] || p["image_url"]));
+}
+
+/// True when OFF carries a usable nutrition table. When false, the product is
+/// a candidate for USDA backfill (index.ts) — this is the gate that keeps the
+/// USDA budget spent only on genuine gaps.
+export function hasNutrition(p: OFFProduct | null): boolean {
+  const n = p?.["nutriments"] as Record<string, unknown> | undefined;
+  if (!n) return false;
+  return ["energy-kcal_100g", "proteins_100g", "sugars_100g",
+          "fat_100g", "carbohydrates_100g"]
+    .some((k) => typeof n[k] === "number");
 }
 
 // --- Free-text name search -------------------------------------------------

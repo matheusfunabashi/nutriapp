@@ -1,7 +1,7 @@
 // Sage backend proxy (Cloudflare Worker).
 //
-//   POST /lookup   → product data (OFF, KV-cached; Go-UPC premium fallback TODO),
-//                    enforces the free-tier daily limit, tracks popularity.
+//   POST /lookup   → product data (OFF primary, KV-cached; USDA FoodData
+//                    Central gap-fill backfill), tracks popularity.
 //   POST /explain  → bucketed LLM explanation (KV-cached by version+barcode+class).
 //   GET  /health   → liveness.
 //
@@ -9,19 +9,15 @@
 // truth); the app sends them + the drivers to /explain.
 
 import { Hono, type MiddlewareHandler } from "hono";
-import type { Env, LookupRequest, ExplainRequest, SearchRequest, AttestRegisterRequest } from "./types";
-import { fetchOFF, searchOFF, hasImage } from "./off";
+import type { Env, LookupRequest, ExplainRequest, SearchRequest } from "./types";
+import { fetchOFF, searchOFF, hasImage, hasNutrition } from "./off";
 import {
   getProduct, putProduct,
   getSearch, putSearch,
   explanationKey, getExplanation, putExplanation,
 } from "./cache";
-import {
-  checkAndIncrementUsage, bumpScanCount, logFetch,
-  goUpcCallsThisMonth, markGoUpcSourced,
-  storeAppAttestRegistration,
-} from "./db";
-import { fetchGoUPC } from "./goupc";
+import { bumpScanCount, logFetch } from "./db";
+import { fetchUSDA, mergeUSDA } from "./usda";
 import { generateExplanation } from "./explanation";
 // Scoring-v4 ruleset served to clients (SCORING_V4.md §10). Keep in sync:
 // `cp Sage/RulesetV4.json backend/src/ruleset.json` before deploying — the
@@ -42,33 +38,8 @@ const requireKey: MiddlewareHandler<{ Bindings: Env }> = async (c, next) => {
 app.use("/lookup", requireKey);
 app.use("/explain", requireKey);
 app.use("/search", requireKey);
-app.use("/attest/challenge", requireKey);
-app.use("/attest/register", requireKey);
 
 app.get("/health", (c) => c.json({ ok: true, service: "sage-backend" }));
-
-// --- App Attest -----------------------------------------------------------
-app.post("/attest/challenge", (c) => {
-  const bytes = crypto.getRandomValues(new Uint8Array(32));
-  const challenge = btoa(String.fromCharCode(...bytes));
-  return c.json({ challenge });
-});
-
-app.post("/attest/register", async (c) => {
-  const body = await c.req.json<AttestRegisterRequest>().catch(() => null);
-  if (!body?.keyId || !body.attestation || !body.challenge) {
-    return c.json({ error: "missing_attest_fields" }, 400);
-  }
-  const verified = false; // TODO: verify attestation with Apple when DEVICE_CHECK_* is set
-  await storeAppAttestRegistration(
-    c.env.DB,
-    body.keyId,
-    body.attestation,
-    body.challenge,
-    verified,
-  );
-  return c.json({ ok: true, verified });
-});
 
 // --- Scoring ruleset (v4) --------------------------------------------------
 // Version probe is tiny and edge-cached hard; the full document is fetched
@@ -92,13 +63,6 @@ app.post("/lookup", async (c) => {
   if (!body?.barcode) return c.json({ error: "missing_barcode" }, 400);
   const barcode = body.barcode.trim();
 
-  // Free-tier daily limit (premium skips it).
-  if (!body.isPremium) {
-    const limit = Number(c.env.FREE_DAILY_LIMIT ?? "1");
-    const allowed = await checkAndIncrementUsage(c.env.DB, body.deviceId, limit);
-    if (!allowed) return c.json({ error: "daily_limit_reached" }, 429);
-  }
-
   // L2 cache hit.
   const cached = await getProduct(c.env.CACHE, barcode);
   if (cached) {
@@ -106,23 +70,21 @@ app.post("/lookup", async (c) => {
     return c.json({ source: "cache", product: cached });
   }
 
-  // Miss → Open Food Facts.
-  let product = await fetchOFF(barcode).catch(() => null);
-  let source = "off";
+  // Open Food Facts is the primary source.
+  const off = await fetchOFF(barcode).catch(() => null);
 
-  // Premium fallback → Go-UPC. Gated on: premium user, key configured, and under
-  // the monthly spend cap (shared with image backfill) to avoid overage charges.
-  if (!product && body.isPremium && c.env.GOUPC_API_KEY) {
-    const cap = Number(c.env.GOUPC_MONTHLY_CAP ?? "0");
-    const used = await goUpcCallsThisMonth(c.env.DB);
-    if (cap > 0 && used < cap) {
-      product = await fetchGoUPC(barcode, c.env.GOUPC_API_KEY).catch(() => null);
-      if (product) {
-        source = "go_upc";
-        const reason = body.clientTag ? `fallback:${body.clientTag}` : "fallback";
-        c.executionCtx.waitUntil(logFetch(c.env.DB, "go_upc", barcode, reason));
-        c.executionCtx.waitUntil(markGoUpcSourced(c.env.DB, barcode));
-      }
+  // USDA backfill (field-priority table): only when OFF is absent or has no
+  // nutrition table — conserves the api.data.gov budget and means USDA never
+  // overrides good OFF data. Free + public-domain, so it runs for everyone.
+  let product = off;
+  let source = off ? "off" : null;
+  if ((!off || !hasNutrition(off)) && c.env.USDA_API_KEY) {
+    const usda = await fetchUSDA(barcode, c.env.USDA_API_KEY).catch(() => null);
+    if (usda) {
+      product = mergeUSDA(off, usda);
+      source = off ? "off+usda" : "usda";
+      const reason = body.clientTag ? `backfill:${body.clientTag}` : "backfill";
+      c.executionCtx.waitUntil(logFetch(c.env.DB, "usda", barcode, reason));
     }
   }
 
@@ -130,9 +92,10 @@ app.post("/lookup", async (c) => {
     return c.json({ error: "not_found" }, 404);
   }
 
+  const finalSource = source ?? "off";
   c.executionCtx.waitUntil(putProduct(c.env.CACHE, barcode, product));
-  c.executionCtx.waitUntil(bumpScanCount(c.env.DB, barcode, hasImage(product)));
-  return c.json({ source, product });
+  c.executionCtx.waitUntil(bumpScanCount(c.env.DB, barcode, hasImage(product), finalSource));
+  return c.json({ source: finalSource, product });
 });
 
 // --- Free-text name search -------------------------------------------------
