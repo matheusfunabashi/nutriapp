@@ -6,10 +6,11 @@ const PRODUCT_TTL_SECONDS = 60 * 60 * 24 * 30; // 30 days
 // --- Product snapshots ---
 
 export function productKey(barcode: string): string {
-  // v3: snapshots now prefer USDA nutrition for US products. New prefix so
-  // OFF-nutrition v2 snapshots get re-fetched with the better USDA numbers.
-  // (v2 added the widened scoring-v4 field set; v1 was the original shape.)
-  return `product:v3:${barcode}`;
+  // v4: flush every snapshot cached during the USDA-integration fixes (GTIN
+  // matching + per-100g energy). New prefix re-fetches everything with the
+  // corrected pipeline. (v3 added USDA-preferred nutrition; v2 the widened
+  // scoring-v4 field set; v1 was the original shape.)
+  return `product:v4:${barcode}`;
 }
 
 export async function getProduct(kv: KVNamespace, barcode: string): Promise<OFFProduct | null> {
