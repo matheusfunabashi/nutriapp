@@ -13,15 +13,27 @@ struct ScoreClass: Equatable {
     let objective: String
     let preferences: [String]     // canonicalized: lowercased, deduped, sorted
     let restrictions: [String]    // scoring-relevant only, canonicalized
+    let goals: [String]           // v4 health goals, canonicalized
+    let dietPattern: String       // v4 single diet pattern ("" when none)
+    let avoidList: [String]       // v4 avoid-list, canonicalized
+    let sliders: String           // v4 priority sliders as a compact signature
     let personalized: Bool
     let autoFlag: Bool
 
     init(_ p: UserProfile) {
         objective = p.objective.lowercased()
         preferences = Self.canon(p.preferences)
-        restrictions = Self.canon(p.restrictions.filter {
+        restrictions = Self.canon((p.restrictions).filter {
             Self.scoringRestrictions.contains($0.lowercased())
         })
+        goals = Self.canon(p.healthGoals ?? [])
+        dietPattern = (p.dietPattern ?? "").lowercased()
+        avoidList = Self.canon(p.avoidList ?? [])
+        // Only non-default (≠ balanced/1) sliders change the score → the bucket.
+        sliders = [("c", p.sliderCleanIngredients), ("n", p.sliderNutrition),
+                   ("e", p.sliderEnvironment), ("w", p.sliderAnimalWelfare)]
+            .compactMap { key, v in (v != nil && v != 1) ? "\(key)\(v!)" : nil }
+            .joined(separator: "")
         personalized = p.personalizeScoring
         autoFlag = p.autoFlagRestrictions
     }
@@ -42,6 +54,10 @@ struct ScoreClass: Equatable {
         "o=\(objective)" +
         "|p=\(preferences.joined(separator: ","))" +
         "|r=\(restrictions.joined(separator: ","))" +
+        "|g=\(goals.joined(separator: ","))" +
+        "|d=\(dietPattern)" +
+        "|av=\(avoidList.joined(separator: ","))" +
+        "|s=\(sliders)" +
         "|pz=\(personalized ? 1 : 0)|af=\(autoFlag ? 1 : 0)"
     }
 
