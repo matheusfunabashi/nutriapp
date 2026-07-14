@@ -139,7 +139,9 @@ enum ScoringEngine {
                     switch a.risk {
                     case .high:     return acc + 1.5
                     case .moderate: return acc + 0.75
-                    case .low, .unrated: return acc + 0.25
+                    case .low:      return acc + 0.25
+                    // Unknown additive — no basis to penalize (see penaltyWeight).
+                    case .unrated:  return acc + 0
                     }
                 }
                 additivesPen = min(1, riskLoad / 5)

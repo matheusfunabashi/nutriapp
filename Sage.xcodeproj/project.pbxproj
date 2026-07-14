@@ -399,7 +399,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_ASSET_PATHS = "\"Sage/Preview Content\"";
-				DEVELOPMENT_TEAM = ZBZKP9T3S5;
+				DEVELOPMENT_TEAM = 5QWZWVHSUG;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Info.plist;
@@ -421,6 +421,7 @@
 				MACOSX_DEPLOYMENT_TARGET = 15.2;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.fmx.sage;
+				"PRODUCT_BUNDLE_IDENTIFIER[sdk=iphoneos*]" = enrico.com.sage;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = auto;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx xros xrsimulator";
@@ -443,7 +444,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_ASSET_PATHS = "\"Sage/Preview Content\"";
-				DEVELOPMENT_TEAM = ZBZKP9T3S5;
+				DEVELOPMENT_TEAM = 5QWZWVHSUG;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Info.plist;
@@ -465,6 +466,7 @@
 				MACOSX_DEPLOYMENT_TARGET = 15.2;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.fmx.sage;
+				"PRODUCT_BUNDLE_IDENTIFIER[sdk=iphoneos*]" = enrico.com.sage;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = auto;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx xros xrsimulator";

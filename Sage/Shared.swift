@@ -414,10 +414,10 @@ struct ChipView: View {
 enum RiskStyle {
     static func fg(_ r: RiskLevel) -> Color {
         switch r {
-        case .low:      return Color.scoreGood
-        case .moderate: return Color.cautionMuted
-        case .high:     return Color.scoreBad
-        case .unrated:  return Color.neutralMuted
+        case .low:      return Color.scoreGood      // green — same as nutrient "Good"
+        case .moderate: return Color.scoreOk        // amber — same as nutrient "OK"
+        case .high:     return Color.scoreBad       // red   — same as nutrient "High"
+        case .unrated:  return Color.neutralMuted   // gray  — neutral / not rated
         }
     }
     static func bg(_ r: RiskLevel) -> Color {

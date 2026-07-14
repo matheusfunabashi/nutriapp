@@ -72,7 +72,10 @@ enum AdditiveCatalog {
         switch tier {
         case .major: return 1.5
         case .moderate: return 0.75
-        case .mild, .soft, .unclassified: return 0.25
+        case .mild, .soft: return 0.25
+        // Detected but not classified — we have no evidence to flag it, so it
+        // costs nothing (matches the neutral "UNRATED" the UI shows).
+        case .unclassified: return 0
         case .exempt: return 0
         }
     }
