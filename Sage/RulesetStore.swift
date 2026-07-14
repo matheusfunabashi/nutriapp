@@ -27,12 +27,15 @@ enum RulesetStore {
     }()
 
     /// Detached background refresh: cheap version probe first, full download
-    /// only on mismatch. Safe to call on every launch.
+    /// only when the server has a *strictly newer* ruleset. The "newer" guard
+    /// matters — versions sort lexically ("…-d1" > "…-c1") — so a server that
+    /// is briefly behind the bundled ruleset (e.g. between an app update and a
+    /// backend deploy) can never downgrade the app to a stale table.
     static func refreshInBackground(backend: BackendService) {
         let activeVersion = current.version
         Task.detached(priority: .utility) {
             guard let remote = await backend.rulesetVersion(),
-                  remote != activeVersion,
+                  remote > activeVersion,
                   let (data, rs) = await backend.fetchRuleset()
             else { return }
             try? data.write(to: rulesetFileURL(), options: .atomic)
