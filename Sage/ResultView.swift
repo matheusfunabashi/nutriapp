@@ -19,8 +19,10 @@ struct ResultView: View {
                     VStack(spacing: 0) {
                         scrollableHeader(dark: dark)
                         allergenSection(dark: dark)
-                        SectionTitle(title: "Breakdown", dark: dark)
-                        gradesRow(dark: dark)
+                        if showNutriCard || showNovaCard {
+                            SectionTitle(title: "Breakdown", dark: dark)
+                            gradesRow(dark: dark)
+                        }
                         if product.transFats {
                             SeriousFlag().padding(.horizontal, 16).padding(.top, 8)
                         }
@@ -28,6 +30,7 @@ struct ResultView: View {
                         nutrientsCard(dark: dark).padding(.horizontal, 16)
                         EyebrowLabel(text: additivesEyebrow(dark: dark), dark: dark)
                         additivesCard(dark: dark).padding(.horizontal, 16)
+                        nutrientLegend(dark: dark)
                         detectedSection(dark: dark)
                         restrictionBanners(dark: dark)
                         disclaimer(dark: dark)
@@ -296,12 +299,62 @@ struct ResultView: View {
         .accessibilityLabel("Compare with another product")
     }
 
+    /// Grades only render when the product actually carries them — a missing
+    /// Nutri-Score or NOVA rating drops that card entirely rather than showing
+    /// an "unknown" placeholder.
+    private var showNutriCard: Bool {
+        ["A", "B", "C", "D", "E"].contains(product.nutriGrade.uppercased())
+    }
+    private var showNovaCard: Bool { product.hasKnownNova }
+
     private func gradesRow(dark: Bool) -> some View {
         HStack(alignment: .top, spacing: 8) {
-            NutriScoreCard(grade: product.nutriGrade, dark: dark)
-            NovaCard(group: product.novaGroup, dark: dark)
+            if showNutriCard {
+                NutriScoreCard(grade: product.nutriGrade, dark: dark)
+            }
+            if showNovaCard {
+                NovaCard(group: product.novaGroup, dark: dark)
+            }
         }
         .padding(.horizontal, 16).padding(.bottom, 8)
+    }
+
+    /// Explains the verdict badges under Per 100g: colour + word always agree,
+    /// so users never wonder why "Low" is green on sugar but grey on fibre.
+    private func nutrientLegend(dark: Bool) -> some View {
+        let items: [(word: String, fg: Color, meaning: String)] = [
+            ("Good", Color.scoreGood,    "a healthy amount"),
+            ("OK",   Color.scoreOk,      "middling"),
+            ("High", Color.scoreBad,     "too much of something to limit"),
+            ("Low",  Color.neutralMuted, "a beneficial nutrient is low"),
+        ]
+        return VStack(alignment: .leading, spacing: 9) {
+            Text("WHAT THE LABELS MEAN")
+                .font(.sageBold(10)).tracking(1.2)
+                .foregroundColor(Theme.textSecondary(dark))
+            ForEach(items, id: \.word) { item in
+                HStack(spacing: 10) {
+                    Text(item.word.uppercased())
+                        .font(.sageBold(10)).tracking(0.4)
+                        .foregroundColor(item.fg)
+                        .padding(.horizontal, 9).padding(.vertical, 3)
+                        .background(Capsule().fill(item.fg.opacity(0.12)))
+                        .frame(width: 58, alignment: .leading)
+                    Text(item.meaning)
+                        .font(.sageRegular(12))
+                        .foregroundColor(Theme.textSecondary(dark))
+                    Spacer(minLength: 0)
+                }
+                .accessibilityElement(children: .combine)
+                .accessibilityLabel("\(item.word): \(item.meaning)")
+            }
+        }
+        .padding(14)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(
+            RoundedRectangle(cornerRadius: 18, style: .continuous).fill(Theme.surface(dark))
+        )
+        .padding(.horizontal, 16).padding(.top, 8)
     }
 
     private func nutrientsCard(dark: Bool) -> some View {
@@ -1096,17 +1149,21 @@ func fmt(_ v: Double) -> String {
 
 /// Maps a shared NutrientLevel to the badge. Plenty of a beneficial nutrient
 /// is good news; little of it is merely unremarkable (neutral), not an alarm.
+// Verdict words: the label states the *judgement*, not the raw amount (the
+// amount is already the number next to it). This keeps word and colour in sync
+// — green is always "Good", red always "High" (too much), grey always "Low"
+// (a beneficial nutrient that's lacking) — so no word ever shows in two colours.
 func nutrientTag(_ level: NutrientLevel, higherIsBetter: Bool) -> NutrientRow.Tag {
     if higherIsBetter {
         switch level {
-        case .high:     return .init(word: "High", tone: .good)
-        case .moderate: return .init(word: "Mod", tone: .mid)
-        case .low:      return .init(word: "Low", tone: .neutral)
+        case .high:     return .init(word: "Good", tone: .good)
+        case .moderate: return .init(word: "OK",   tone: .mid)
+        case .low:      return .init(word: "Low",  tone: .neutral)
         }
     } else {
         switch level {
-        case .low:      return .init(word: "Low", tone: .good)
-        case .moderate: return .init(word: "Mod", tone: .mid)
+        case .low:      return .init(word: "Good", tone: .good)
+        case .moderate: return .init(word: "OK",   tone: .mid)
         case .high:     return .init(word: "High", tone: .bad)
         }
     }

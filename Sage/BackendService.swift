@@ -92,23 +92,46 @@ struct BackendService {
 
     /// Free-text name/brand search against OFF via the Worker (KV-cached).
     /// Empty array = genuinely no matches ("Product not available.").
+    ///
+    /// OFF's text search is occasionally slow enough that the Worker returns a
+    /// transient 5xx (502/503/504) or the request errors outright. Those blips
+    /// almost always clear on a second try, so we retry once — quietly, before
+    /// the UI ever shows "Search failed". A 401 (bad key) or other 4xx won't fix
+    /// itself, so those fail fast without a retry.
     func search(_ query: String) async throws -> [SearchHit] {
-        let data: Data
-        let status: Int
-        do {
-            (data, status) = try await post(path: "search", body: SearchBody(query: query))
-        } catch {
-            throw SearchError.network
-        }
-        switch status {
-        case 200:
-            guard let decoded = try? JSONDecoder().decode(SearchResponse.self, from: data) else {
+        let maxAttempts = 2
+        for attempt in 1...maxAttempts {
+            // Brief backoff before the retry (skip the wait on the first try).
+            if attempt > 1 {
+                try? await Task.sleep(nanoseconds: 400_000_000)
+                if Task.isCancelled { throw SearchError.network }
+            }
+
+            let data: Data
+            let status: Int
+            do {
+                (data, status) = try await post(path: "search", body: SearchBody(query: query))
+            } catch {
+                if attempt < maxAttempts { continue }   // transient network blip — retry
                 throw SearchError.network
             }
-            return decoded.results
-        case 401: throw SearchError.unauthorized
-        default:  throw SearchError.network
+
+            switch status {
+            case 200:
+                guard let decoded = try? JSONDecoder().decode(SearchResponse.self, from: data) else {
+                    throw SearchError.network
+                }
+                return decoded.results
+            case 401:
+                throw SearchError.unauthorized
+            case 502, 503, 504:
+                if attempt < maxAttempts { continue }   // transient upstream error — retry
+                throw SearchError.network
+            default:
+                throw SearchError.network
+            }
         }
+        throw SearchError.network
     }
 
     // MARK: /explain
