@@ -5,6 +5,8 @@ enum Overlay: Identifiable, Hashable {
     /// Product exists but fails the minimum-data requirement (no ingredient
     /// list AND no nutrition table) — never show a made-up score.
     case insufficientData(productId: String)
+    /// A category Sage deliberately doesn't rate (water, alcoholic drinks).
+    case unsupported(productId: String)
     case compare(aId: String, bId: String)
     case paywall
     case manual
@@ -18,6 +20,7 @@ enum Overlay: Identifiable, Hashable {
         switch self {
         case .result(let id, _):        return "result_\(id)"
         case .insufficientData(let id): return "insufficient_\(id)"
+        case .unsupported(let id):      return "unsupported_\(id)"
         case .compare(let a, let b):    return "compare_\(a)_\(b)"
         case .paywall:               return "paywall"
         case .manual:                return "manual"
@@ -192,6 +195,16 @@ struct ContentView: View {
                     onBack: dismissOverlay
                 )
             }
+        case .unsupported(let id):
+            if let p = store.products[id] {
+                UnsupportedView(product: p, onBack: dismissOverlay)
+            } else {
+                OverlayFallbackView(
+                    title: "Product unavailable",
+                    message: "This product couldn't be loaded.",
+                    onBack: dismissOverlay
+                )
+            }
         case .compare(let aId, let bId):
             if let a = store.products[aId], let b = store.products[bId] {
                 CompareView(a: a, b: b, onBack: dismissOverlay)
@@ -262,11 +275,7 @@ struct ContentView: View {
             do {
                 let raw = try await backend.lookup(barcode: barcode)
                 isLookingUp = false
-                guard raw.hasMinimumData else {
-                    presentInsufficientData(raw)
-                    return
-                }
-                let product = ScoringEngine.score(raw, for: store.user)
+                guard let product = scoreForDisplay(raw) else { return }
                 if let a = compareWith {
                     store.saveProduct(product)
                     push(.compare(aId: a.id, bId: product.id))
@@ -282,13 +291,33 @@ struct ContentView: View {
         }
     }
 
+    /// Scores a freshly fetched product with the v4 engine and routes the
+    /// non-scorable outcomes to their own screens. Returns the scored product
+    /// for the caller to record/push, or nil when handled here.
+    @MainActor private func scoreForDisplay(_ raw: Product) -> Product? {
+        switch ScoringEngineV4.scoreProduct(raw, for: store.user, ruleset: RulesetStore.current) {
+        case .scored(let p):
+            return p
+        case .insufficientData:
+            presentInsufficientData(raw); return nil
+        case .unsupported:
+            presentUnsupported(raw); return nil
+        }
+    }
+
     /// Minimum-data requirement (SCORING_V4.md §3.3): the product exists but
     /// has neither an ingredient list nor a nutrition table, so no score can
-    /// honestly be computed. Snapshot it (unscored) and show the data-gap
-    /// state instead of a result page.
+    /// honestly be computed. Snapshot it (unscored) and show the data-gap state.
     private func presentInsufficientData(_ product: Product) {
         store.saveProduct(product)
         push(.insufficientData(productId: product.id))
+    }
+
+    /// Categories Sage deliberately doesn't rate (water, alcohol) — show the
+    /// unsupported state rather than a misleading number.
+    private func presentUnsupported(_ product: Product) {
+        store.saveProduct(product)
+        push(.unsupported(productId: product.id))
     }
 
     /// A search selection runs the same pipeline as a scan (/lookup → score →
@@ -300,11 +329,7 @@ struct ContentView: View {
             do {
                 let raw = try await backend.lookup(barcode: barcode)
                 isLookingUp = false
-                guard raw.hasMinimumData else {
-                    presentInsufficientData(raw)
-                    return
-                }
-                let product = ScoringEngine.score(raw, for: store.user)
+                guard let product = scoreForDisplay(raw) else { return }
                 store.saveProduct(product)
                 push(.result(productId: product.id, fromScan: false))
                 fetchExplanation(for: product)
@@ -329,7 +354,8 @@ struct ContentView: View {
             objective: store.user.objective,
             overall: product.overallScore,
             your: product.yourScore,
-            factors: ScoringEngine.signedFactors(product, profile: store.user),
+            factors: ScoringEngineV4.signedFactors(product, profile: store.user,
+                                                   ruleset: RulesetStore.current),
             nutrientLevels: NutrientLevels.promptLines(product.nutrients)
         )
         guard !payload.factors.isEmpty else { return }   // data-poor product
@@ -524,6 +550,82 @@ struct InsufficientDataView: View {
                 }
             }
             .padding(.vertical, 4)
+        }
+    }
+}
+
+// MARK: - Unsupported category (SCORING_V4.md §7 launch decision)
+
+/// Shown for categories Sage deliberately doesn't rate — bottled water and
+/// alcoholic drinks. Honest "we don't score this" rather than a misleading
+/// number for a category the model can't judge well.
+struct UnsupportedView: View {
+    let product: Product
+    let onBack: () -> Void
+    @EnvironmentObject var store: AppStore
+
+    private var reason: String {
+        let cats = Set(product.categories ?? [])
+        let alcohol: Set = ["alcoholic-beverages", "beers", "wines", "spirits", "ciders"]
+        if !cats.isDisjoint(with: alcohol) {
+            return "Sage doesn't rate alcoholic drinks — their health impact isn't something a nutrition score can capture responsibly."
+        }
+        return "Sage doesn't rate bottled water. Without lab data we can't judge it fairly, so we'd rather show nothing than a misleading number."
+    }
+
+    var body: some View {
+        let dark = store.darkMode
+        ZStack {
+            Theme.bg(dark).ignoresSafeArea()
+            VStack(spacing: 0) {
+                HStack {
+                    CircleIconButton(systemName: "chevron.left", dark: dark,
+                                     accessibilityLabel: "Back", action: onBack)
+                    Spacer()
+                    Text("Sage")
+                        .font(.sageBold(18)).tracking(-0.4)
+                        .foregroundColor(Theme.textPrimary(dark))
+                    Spacer()
+                    Color.clear.frame(width: 42, height: 42)
+                }
+                .padding(.horizontal, 16).padding(.top, 8)
+
+                Spacer()
+
+                VStack(spacing: 14) {
+                    ProductThumb(glyph: product.glyph, score: 0, size: 84,
+                                 neutral: true, imageURL: product.imageURL)
+                    VStack(spacing: 2) {
+                        if !product.brand.isEmpty {
+                            Text(product.brand.uppercased())
+                                .font(.sageBold(11)).tracking(1.2)
+                                .foregroundColor(store.accent)
+                        }
+                        Text(product.name)
+                            .font(.sageBold(22)).tracking(-0.5)
+                            .foregroundColor(Theme.textPrimary(dark))
+                            .multilineTextAlignment(.center)
+                            .lineLimit(3)
+                    }
+                    .padding(.horizontal, 32)
+
+                    VStack(spacing: 8) {
+                        Text("Not rated")
+                            .font(.sageBold(16))
+                            .foregroundColor(Theme.textPrimary(dark))
+                        Text(reason)
+                            .font(.sageRegular(13))
+                            .foregroundColor(Theme.textSecondary(dark))
+                            .multilineTextAlignment(.center)
+                            .lineSpacing(2)
+                            .padding(.horizontal, 36)
+                    }
+                    .padding(.top, 8)
+                }
+
+                Spacer()
+                Spacer()
+            }
         }
     }
 }

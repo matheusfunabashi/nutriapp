@@ -526,7 +526,8 @@ struct ResultView: View {
     }
 
     private func scoreDebugSection(dark: Bool) -> some View {
-        let breakdown = ScoringEngine.debugBreakdown(product, for: store.user)
+        let breakdown = ScoringEngineV4.debugText(product, for: store.user,
+                                                  ruleset: RulesetStore.current)
         return VStack(alignment: .leading, spacing: 8) {
             Text("SCORE DEBUG")
                 .font(.sageBold(11)).tracking(1.2)
@@ -534,7 +535,7 @@ struct ResultView: View {
             Text("Nutrition source: \(nutritionSourceLabel)")
                 .font(.sageBold(11))
                 .foregroundColor(Theme.textPrimary(dark))
-            Text(breakdown.text)
+            Text(breakdown)
                 .font(.sageRegular(10))
                 .monospacedDigit()
                 .foregroundColor(Theme.textSecondary(dark))

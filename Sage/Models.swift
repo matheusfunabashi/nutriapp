@@ -245,4 +245,21 @@ struct UserProfile: Codable {
     var saveScansToHistory: Bool
     var personalizeScoring: Bool
     var appleHealth: Bool
+
+    // MARK: Scoring-v4 personalization inputs (SCORING_V4.md §7.1)
+    // All discrete + optional so ScoreClass cardinality stays small and older
+    // profiles decode unchanged. nil is treated as the neutral default.
+
+    /// Multi-select health goals: "blood sugar", "heart", "gut health",
+    /// "pregnancy", "young child".
+    var healthGoals: [String]? = nil
+    /// Single diet pattern: "vegan", "vegetarian", "low-sodium", "keto", "none".
+    var dietPattern: String? = nil
+    /// Fixed-vocabulary ingredients to avoid (caps Your Score when present).
+    var avoidList: [String]? = nil
+    /// Priority sliders, 0 = de-emphasize · 1 = balanced (default) · 2 = emphasize.
+    var sliderCleanIngredients: Int? = nil
+    var sliderNutrition: Int? = nil
+    var sliderEnvironment: Int? = nil
+    var sliderAnimalWelfare: Int? = nil
 }

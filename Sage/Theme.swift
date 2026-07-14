@@ -208,10 +208,15 @@ final class AppStore: ObservableObject {
 
     /// Recompute every stored product's scores against the current profile.
     /// Scoring is idempotent — re-running it overwrites the score fields cleanly.
+    /// Products whose category is unsupported (water/alcohol) or that lack the
+    /// minimum data keep their stored snapshot untouched (they were never a
+    /// scored result page to begin with).
     func rescoreAll() {
         guard !products.isEmpty else { return }
         for (id, p) in products {
-            let scored = ScoringEngine.score(p, for: user)
+            guard case .scored(let scored) = ScoringEngineV4.scoreProduct(p, for: user,
+                                                                          ruleset: RulesetStore.current)
+            else { continue }
             products[id] = scored
             guard let data = try? encoder.encode(scored) else { continue }
             if let rec = try? context.fetch(

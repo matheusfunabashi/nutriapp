@@ -394,14 +394,29 @@ struct DietaryView: View {
         "Low sugar", "Low sodium", "Low fat",
         "High protein", "High fiber", "Organic", "Minimally processed",
     ]
+    let goals = ["Blood sugar", "Heart", "Gut health", "Pregnancy", "Young child"]
+    let avoids = ["Carrageenan", "Aspartame", "Sucralose", "Seed oils", "Palm oil",
+                  "Caffeine", "Artificial colors", "Added phosphates", "HFCS", "Titanium dioxide"]
+    let priorities: [(String, WritableKeyPath<UserProfile, Int?>)] = [
+        ("Clean ingredients", \.sliderCleanIngredients),
+        ("Nutrition", \.sliderNutrition),
+        ("Environment", \.sliderEnvironment),
+        ("Animal welfare", \.sliderAnimalWelfare),
+    ]
 
     var body: some View {
         let dark = store.darkMode
         ScrollView(showsIndicators: false) {
             VStack(spacing: 14) {
-                SubHeader(title: "Dietary preferences", onBack: onBack)
+                SubHeader(title: "Personalize", onBack: onBack)
                     .foregroundColor(Theme.textPrimary(dark))
 
+                card(title: "Health goals",
+                     desc: "Emphasizes the parts of Your Score that matter for each goal.",
+                     dark: dark) {
+                    chipFlow(items: goals, active: store.user.healthGoals ?? [],
+                             dark: dark) { v in toggleOptional(\.healthGoals, v) }
+                }
                 card(title: "Restrictions",
                      desc: "Hard rules. Sage flags these as warnings on every scan.",
                      dark: dark) {
@@ -409,12 +424,27 @@ struct DietaryView: View {
                              active: store.user.restrictions,
                              dark: dark) { v in toggle(\.restrictions, v) }
                 }
+                card(title: "Avoid list",
+                     desc: "Products containing any of these are capped and flagged for you.",
+                     dark: dark) {
+                    chipFlow(items: avoids, active: store.user.avoidList ?? [],
+                             dark: dark) { v in toggleOptional(\.avoidList, v) }
+                }
                 card(title: "Preferences",
                      desc: "Soft signals. They nudge Your Score, no warnings.",
                      dark: dark) {
                     chipFlow(items: preferences,
                              active: store.user.preferences,
                              dark: dark) { v in toggle(\.preferences, v) }
+                }
+                card(title: "Priorities",
+                     desc: "What Your Score should weigh most.",
+                     dark: dark) {
+                    VStack(spacing: 16) {
+                        ForEach(priorities, id: \.0) { label, kp in
+                            sliderRow(label: label, keyPath: kp, dark: dark)
+                        }
+                    }
                 }
                 allergensCard(dark: dark)
                 Spacer().frame(height: 60)
@@ -461,6 +491,42 @@ struct DietaryView: View {
         var arr = store.user[keyPath: keyPath]
         if let i = arr.firstIndex(of: value) { arr.remove(at: i) } else { arr.append(value) }
         store.user[keyPath: keyPath] = arr
+    }
+
+    private func toggleOptional(_ keyPath: WritableKeyPath<UserProfile, [String]?>, _ value: String) {
+        var arr = store.user[keyPath: keyPath] ?? []
+        if let i = arr.firstIndex(of: value) { arr.remove(at: i) } else { arr.append(value) }
+        store.user[keyPath: keyPath] = arr.isEmpty ? nil : arr
+    }
+
+    /// A 3-way Low · Balanced · High segmented control per priority slider.
+    private func sliderRow(label: String, keyPath: WritableKeyPath<UserProfile, Int?>,
+                           dark: Bool) -> some View {
+        let current = store.user[keyPath: keyPath] ?? 1
+        let options = ["Low", "Balanced", "High"]
+        return VStack(alignment: .leading, spacing: 8) {
+            Text(label).font(.sageSemiBold(14))
+                .foregroundColor(Theme.textPrimary(dark))
+            HStack(spacing: 6) {
+                ForEach(Array(options.enumerated()), id: \.offset) { level, opt in
+                    Button {
+                        store.user[keyPath: keyPath] = (level == 1) ? nil : level
+                    } label: {
+                        Text(opt)
+                            .font(.sageBold(12))
+                            .foregroundColor(level == current ? .white : Theme.textSecondary(dark))
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 9)
+                            .background(
+                                RoundedRectangle(cornerRadius: 10, style: .continuous)
+                                    .fill(level == current ? store.accent
+                                          : (dark ? Color.white.opacity(0.05) : Theme.bgLight))
+                            )
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+        }
     }
 
     // MARK: Allergens

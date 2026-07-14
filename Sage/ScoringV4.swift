@@ -67,6 +67,19 @@ struct RulesetV4: Codable {
     let welfare: PointsRule?
     let heroCredit: [[Double]]?
 
+    // Phase D personalization (SCORING_V4.md §7) — optional for back-compat.
+    struct Multipliers: Codable {
+        let objective: [String: [String: Double]]
+        let goal: [String: [String: Double]]
+        let slider: [String: [String: [String: Double]]]   // key → level → {rule: factor}
+    }
+    struct AvoidEntry: Codable { let codes: [String]?; let text: [String]?; let labels: [String]? }
+    struct HardGates: Codable { let dietConflictCap: Int; let avoidListCap: Int }
+
+    let multipliers: Multipliers?
+    let avoidList: [String: AvoidEntry]?
+    let hardGates: HardGates?
+
     /// Band label for a score under this ruleset (single source for all UI).
     func bandLabel(_ score: Int) -> String {
         if score >= bands.excellent { return "Excellent" }
@@ -143,6 +156,254 @@ enum ScoringEngineV4 {
                         base: max(floorScore, Int(raw.rounded())),
                         confidence: backed / totalW,
                         rules: results)
+    }
+
+    // MARK: Full scored product (Phase D — SCORING_V4.md §7)
+
+    /// Outcome of the app-facing scoring path.
+    enum Outcome {
+        case scored(Product)      // Overall + Your Score filled in
+        case unsupported          // water / alcohol → Sage doesn't rate these
+        case insufficientData     // fails the minimum-data requirement
+    }
+
+    /// Drop-in replacement for the v3 `ScoringEngine.score`: returns the product
+    /// with overallScore, yourScore, deltaReason, bonuses, and restrictions
+    /// filled from the v4 rule engine + multiplier personalization + hard gates.
+    static func scoreProduct(_ p: Product, for profile: UserProfile,
+                             ruleset rs: RulesetV4 = .bundled) -> Outcome {
+        guard p.hasMinimumData else { return .insufficientData }
+        let profileId = route(p, ruleset: rs)
+        if profileId == "unsupported" { return .unsupported }
+        guard let ruleList = rs.profiles[profileId] else { return .insufficientData }
+
+        // Evaluate every rule once; reuse for Overall and Your Score.
+        let results = ruleList.map { pr -> V4RuleResult in
+            let (f, had) = evaluate(pr.rule, variant: pr.variant, product: p, rs: rs)
+            return V4RuleResult(rule: pr.rule, weight: pr.w, fraction: f, hadData: had)
+        }
+        let totalW = results.reduce(0) { $0 + $1.weight }
+        guard totalW > 0 else { return .insufficientData }
+        let overall = max(floorScore,
+                          Int((results.reduce(0) { $0 + $1.weight * $1.fraction } / totalW * 100).rounded()))
+
+        var out = p
+        out.overallScore = overall
+        out.bonuses = nutrientBonuses(p.nutrients)
+
+        // Hard-gate: restriction / diet-pattern conflicts.
+        out.restrictions = profile.autoFlagRestrictions
+            ? restrictionInputs(profile).compactMap { name in
+                evalRestriction(name, product: p).map { Restriction(type: $0.type, trigger: $0.trigger) }
+              }
+            : []
+
+        guard profile.personalizeScoring else {
+            out.yourScore = overall
+            out.deltaReason = nil
+            return .scored(out)
+        }
+
+        // Your Score = Σ(w·m·f) / Σ(w·m) — rule multipliers from objective,
+        // health goals, and priority sliders (§7.2).
+        let mult = ruleMultipliers(profile, rs: rs)
+        var yEarned = 0.0, yTotal = 0.0
+        for r in results {
+            let m = mult[r.rule] ?? 1.0
+            yEarned += r.weight * m * r.fraction
+            yTotal += r.weight * m
+        }
+        var your = yTotal > 0 ? max(floorScore, Int((yEarned / yTotal * 100).rounded())) : overall
+
+        // Reward-direction nutrient nudges: goals that reward a nutrient buried
+        // inside a blended rule (build muscle → protein density; lose weight →
+        // calorie lightness) can't be expressed as a rule multiplier, so apply
+        // a small bounded Your-Score nudge (§7.2 "protein component" note).
+        your = max(floorScore, min(100, your + nutrientNudge(profile.objective, p.nutrients)))
+
+        // Hard-gate caps (§7.3, strongest wins): restriction conflict < avoid-list.
+        let avoidHit = avoidListHit(p, profile: profile, rs: rs)
+        if !out.restrictions.isEmpty { your = min(your, rs.hardGates?.dietConflictCap ?? 20) }
+        if avoidHit != nil { your = min(your, rs.hardGates?.avoidListCap ?? 49) }
+
+        out.yourScore = your
+        out.deltaReason = deltaReasonV4(overall: overall, your: your,
+                                        restriction: out.restrictions.first, avoid: avoidHit,
+                                        results: results, mult: mult)
+        return .scored(out)
+    }
+
+    /// Signed drivers for the backend /explain prompt (§7.5). Restriction /
+    /// avoid conflicts lead; then the rules the user's profile most emphasized.
+    static func signedFactors(_ p: Product, profile: UserProfile,
+                              ruleset rs: RulesetV4 = .bundled) -> [String] {
+        var factors: [String] = []
+        if let r = p.restrictions.first {
+            factors.append("- conflicts with your \(r.type) restriction (\(r.trigger))")
+        }
+        if let a = avoidListHit(p, profile: profile, rs: rs) {
+            factors.append("- contains \(a), which you chose to avoid")
+        }
+        let profileId = route(p, ruleset: rs)
+        guard let ruleList = rs.profiles[profileId] else { return factors }
+        let mult = ruleMultipliers(profile, rs: rs)
+        let scored = ruleList.map { pr -> (rule: String, f: Double, m: Double) in
+            let (f, _) = evaluate(pr.rule, variant: pr.variant, product: p, rs: rs)
+            return (pr.rule, f, mult[pr.rule] ?? 1.0)
+        }
+        // Emphasized rules first (biggest |m−1|·weight), then plain strong drivers.
+        let ranked = scored.sorted {
+            abs($0.m - 1) != abs($1.m - 1) ? abs($0.m - 1) > abs($1.m - 1) : $0.f < $1.f
+        }
+        for r in ranked.prefix(4) {
+            guard let (label, positive) = ruleFactor(r.rule, fraction: r.f, product: p) else { continue }
+            factors.append((positive ? "+ " : "- ") + label)
+        }
+        return Array(factors.prefix(5))
+    }
+
+    // MARK: Personalization helpers
+
+    /// Per-rule multiplier from objective + health goals + priority sliders.
+    private static func ruleMultipliers(_ profile: UserProfile, rs: RulesetV4) -> [String: Double] {
+        guard let m = rs.multipliers else { return [:] }
+        var out: [String: Double] = [:]
+        func apply(_ table: [String: Double]?) {
+            for (rule, factor) in table ?? [:] { out[rule, default: 1.0] *= factor }
+        }
+        apply(m.objective[profile.objective.lowercased()])
+        for g in profile.healthGoals ?? [] { apply(m.goal[g.lowercased()]) }
+        let sliders: [(String, Int?)] = [
+            ("clean", profile.sliderCleanIngredients),
+            ("nutrition", profile.sliderNutrition),
+            ("environment", profile.sliderEnvironment),
+            ("welfare", profile.sliderAnimalWelfare),
+        ]
+        for (key, level) in sliders where level != nil && level != 1 {
+            apply(m.slider[key]?[String(level!)])
+        }
+        return out
+    }
+
+    /// Bounded Your-Score nudge for goals that reward a specific nutrient the
+    /// blended rules dilute. Muscle: protein per 100 kcal. Weight loss: calorie
+    /// lightness, gated so sugary drinks earn no lightness credit.
+    private static func nutrientNudge(_ objective: String, _ n: Nutrients) -> Int {
+        switch objective.lowercased() {
+        case "build muscle":
+            guard let kcal = n.kcal, kcal > 5, let prot = n.protein_g else { return 0 }
+            let dens = min(1.0, (prot / (kcal / 100)) / 15)
+            return Int(((dens - 0.35) * 16).rounded())      // ≈ −6 … +10
+        case "lose weight":
+            guard let kcal = n.kcal else { return 0 }
+            let light = max(0, min(1, (500 - kcal) / 450))
+            let sugarGate = 1 - min(1, (n.sugar_g ?? 0) / 25)
+            return Int(((light * sugarGate - 0.3) * 12).rounded())   // ≈ −4 … +8
+        default: return 0
+        }
+    }
+
+    /// The product contains an item the user chose to avoid → item name, else nil.
+    private static func avoidListHit(_ p: Product, profile: UserProfile, rs: RulesetV4) -> String? {
+        guard let avoid = rs.avoidList, let chosen = profile.avoidList, !chosen.isEmpty else { return nil }
+        let codes = Set(p.additives.compactMap(\.code))
+        let text = (p.ingredientsText ?? "").lowercased()
+        let labels = Set(p.labels ?? [])
+        for item in chosen {
+            guard let e = avoid[item.lowercased()] else { continue }
+            if let c = e.codes, !codes.isDisjoint(with: Set(c)) { return item }
+            if let t = e.text, t.contains(where: { text.contains($0) }) { return item }
+            if let l = e.labels, !labels.isDisjoint(with: Set(l)) { return item }
+        }
+        return nil
+    }
+
+    /// Existing scoring restrictions plus the new single diet pattern (§7.1).
+    private static func restrictionInputs(_ profile: UserProfile) -> [String] {
+        var out = profile.restrictions
+        if let d = profile.dietPattern, d.lowercased() != "none" { out.append(d) }
+        return out
+    }
+
+    /// Deterministic restriction conflict check (ported from v3). keto is a
+    /// no-op until carbohydrate data is carried on Nutrients.
+    private static func evalRestriction(_ name: String, product p: Product) -> (type: String, trigger: String)? {
+        let flags = Set(p.dietFlags ?? [])
+        let n = p.nutrients
+        switch name.lowercased() {
+        case "vegan":       return flags.contains("non-vegan") ? ("vegan", "animal-derived ingredients") : nil
+        case "vegetarian":  return flags.contains("non-vegetarian") ? ("vegetarian", "meat or fish") : nil
+        case "low-sugar diet", "low sugar":
+            if let s = n.sugar_g, s > 12.5 { return ("low-sugar diet", "high sugar") }; return nil
+        case "low-sodium diet", "low-sodium", "low sodium":
+            if let s = n.sodium_mg, s > 400 { return ("low-sodium diet", "high sodium") }; return nil
+        case "gluten-free": return flags.contains("gluten") ? ("gluten-free", "gluten") : nil
+        case "dairy-free":  return flags.contains("milk") ? ("dairy-free", "milk") : nil
+        default:            return nil
+        }
+    }
+
+    private static func nutrientBonuses(_ n: Nutrients) -> [String] {
+        var b: [String] = []
+        if let f = n.fiber_g, f >= 6 { b.append("fiber") }
+        if let p = n.protein_g, p >= 12 { b.append("protein") }
+        if let c = n.calcium_mg, c >= 120 { b.append("calcium") }
+        return b
+    }
+
+    private static func deltaReasonV4(overall: Int, your: Int, restriction: Restriction?,
+                                      avoid: String?, results: [V4RuleResult],
+                                      mult: [String: Double]) -> DeltaReason? {
+        if let r = restriction {
+            return DeltaReason(tone: .negative,
+                text: "Capped — contains \(r.trigger), which conflicts with your \(r.type) restriction.")
+        }
+        if let a = avoid {
+            return DeltaReason(tone: .negative,
+                text: "Capped — contains \(a), which you chose to avoid.")
+        }
+        let delta = your - overall
+        guard abs(delta) >= 3 else { return nil }
+        // Name the most emphasized rule as the driver.
+        let driver = results.max {
+            abs((mult[$0.rule] ?? 1) - 1) * $0.weight < abs((mult[$1.rule] ?? 1) - 1) * $1.weight
+        }
+        let label = driver.flatMap { ruleFactor($0.rule, fraction: $0.fraction, product: nil)?.0 } ?? "your goals"
+        let positive = delta > 0
+        return DeltaReason(tone: positive ? .positive : .negative,
+            text: positive ? "Scores higher for you — \(label)." : "Scores lower for you — \(label).")
+    }
+
+    /// Human phrase + polarity for a rule at a given fraction, for factors and
+    /// the deltaReason placeholder. Nutrient claims defer to the badge levels
+    /// (NutrientLevels) so wording never contradicts the Breakdown card.
+    private static func ruleFactor(_ rule: String, fraction f: Double,
+                                   product p: Product?) -> (String, Bool)? {
+        switch rule {
+        case "S12": return f >= 0.4 ? ("good nutritional quality", true)
+                                    : ("limited nutritional quality", false)
+        case "S2":  return f >= 0.7 ? ("minimally processed", true) : ("highly processed", false)
+        case "S1":  return f >= 0.85 ? ("clean ingredient list", true) : ("riskier additives", false)
+        case "S3":
+            if let n = p?.nutrients.sugar_g.map(NutrientLevels.sugar) {
+                switch n { case .high: return ("high sugar", false)
+                           case .moderate: return ("moderate sugar", false)
+                           case .low: return ("low sugar", true) }
+            }
+            return f >= 0.6 ? ("low sugar", true) : ("high sugar", false)
+        case "S4":
+            if let n = p?.nutrients.sodium_mg.map(NutrientLevels.sodium), n == .high {
+                return ("high sodium", false)
+            }
+            return f >= 0.6 ? nil : ("high sodium", false)
+        case "S5":
+            if let n = p?.nutrients.satFat_g.map(NutrientLevels.satFat), n == .high {
+                return ("high saturated fat", false)
+            }
+            return f >= 0.6 ? nil : ("high saturated fat", false)
+        case "S6":  return f >= 0.9 ? nil : ("artificial sweeteners", false)
+        default:    return nil
+        }
     }
 
     /// Most-specific-first router over normalized category tags. OFF category

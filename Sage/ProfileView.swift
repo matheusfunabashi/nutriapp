@@ -38,7 +38,7 @@ struct ProfileView: View {
                                 ProfileRow(systemImage: "target", label: "Objective",
                                            value: store.user.objective.capitalized,
                                            divider: true, dark: dark, onTap: onOpenNutritionGoals)
-                                ProfileRow(systemImage: "flag", label: "Dietary preferences",
+                                ProfileRow(systemImage: "wand.and.stars", label: "Personalize",
                                            divider: true, dark: dark, onTap: onOpenDietary)
                                 ProfileRow(systemImage: "character.book.closed", label: "Language",
                                            value: "English", divider: true, dark: dark)
