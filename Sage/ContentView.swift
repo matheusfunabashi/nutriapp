@@ -15,6 +15,7 @@ enum Overlay: Identifiable, Hashable {
     case preferences
     case nutritionGoals
     case dietary
+    case personalize
 
     var id: String {
         switch self {
@@ -29,6 +30,7 @@ enum Overlay: Identifiable, Hashable {
         case .preferences:           return "preferences"
         case .nutritionGoals:        return "nutritionGoals"
         case .dietary:               return "dietary"
+        case .personalize:           return "personalize"
         }
     }
 }
@@ -161,6 +163,7 @@ struct ContentView: View {
                 onOpenPreferences: { push(.preferences) },
                 onOpenNutritionGoals: { push(.nutritionGoals) },
                 onOpenDietary: { push(.dietary) },
+                onOpenPersonalize: { push(.personalize) },
                 onOpenMethodology: { push(.methodology) },
                 onOpenDisclaimer: { showFirstLaunch = true }
             )
@@ -222,6 +225,7 @@ struct ContentView: View {
         case .preferences:    PreferencesView(onBack: dismissOverlay)
         case .nutritionGoals: NutritionGoalsView(onBack: dismissOverlay)
         case .dietary:        DietaryView(onBack: dismissOverlay)
+        case .personalize:    PersonalizeView(onBack: dismissOverlay)
         }
     }
 

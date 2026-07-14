@@ -588,3 +588,130 @@ struct FlowLayout: Layout {
         }
     }
 }
+
+// MARK: - Personalize (scoring-v4 §7 inputs)
+
+/// Settings screen for the Phase D personalization inputs: health goals,
+/// diet pattern, avoid-list, and priority sliders. These tune Your Score;
+/// Overall stays goal-neutral.
+struct PersonalizeView: View {
+    @EnvironmentObject var store: AppStore
+    let onBack: () -> Void
+
+    private let goals = ["Blood sugar", "Heart", "Gut health", "Pregnancy", "Young child"]
+    private let diets = ["Vegan", "Vegetarian", "Low-sodium", "Keto", "None"]
+    private let avoids = ["Carrageenan", "Aspartame", "Sucralose", "Seed oils", "Palm oil",
+                          "Caffeine", "Artificial colors", "Added phosphates", "HFCS", "Titanium dioxide"]
+    private let sliders: [(String, WritableKeyPath<UserProfile, Int?>)] = [
+        ("Clean ingredients", \.sliderCleanIngredients),
+        ("Nutrition", \.sliderNutrition),
+        ("Environment", \.sliderEnvironment),
+        ("Animal welfare", \.sliderAnimalWelfare),
+    ]
+
+    var body: some View {
+        let dark = store.darkMode
+        ScrollView(showsIndicators: false) {
+            VStack(spacing: 14) {
+                SubHeader(title: "Personalize", onBack: onBack)
+                    .foregroundColor(Theme.textPrimary(dark))
+
+                card(title: "Health goals",
+                     desc: "Multi-select. Emphasizes the parts of the score that matter for each goal.",
+                     dark: dark) {
+                    chipFlow(items: goals, active: store.user.healthGoals ?? [], dark: dark) {
+                        toggleOptional(\.healthGoals, $0)
+                    }
+                }
+                card(title: "Diet pattern",
+                     desc: "Pick one. A conflicting product is capped and flagged.",
+                     dark: dark) {
+                    chipFlow(items: diets, active: [store.user.dietPattern].compactMap { $0 }, dark: dark) {
+                        store.user.dietPattern = (store.user.dietPattern == $0) ? nil : $0
+                    }
+                }
+                card(title: "Avoid list",
+                     desc: "Products containing any of these are capped and flagged for you.",
+                     dark: dark) {
+                    chipFlow(items: avoids, active: store.user.avoidList ?? [], dark: dark) {
+                        toggleOptional(\.avoidList, $0)
+                    }
+                }
+                card(title: "Priorities",
+                     desc: "What Your Score should weigh most.",
+                     dark: dark) {
+                    VStack(spacing: 16) {
+                        ForEach(sliders, id: \.0) { label, kp in
+                            sliderRow(label: label, keyPath: kp, dark: dark)
+                        }
+                    }
+                }
+                Spacer().frame(height: 60)
+            }
+            .padding(.horizontal, 16)
+        }
+        .background(Theme.bg(dark).ignoresSafeArea())
+    }
+
+    @ViewBuilder
+    private func card<C: View>(title: String, desc: String, dark: Bool,
+                               @ViewBuilder content: () -> C) -> some View {
+        VStack(alignment: .leading, spacing: 14) {
+            Text(title).font(.sageBold(17)).tracking(-0.4)
+                .foregroundColor(Theme.textPrimary(dark))
+            Text(desc).font(.sageRegular(12))
+                .foregroundColor(Theme.textSecondary(dark)).lineSpacing(2)
+            content()
+        }
+        .padding(18)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(RoundedRectangle(cornerRadius: 22, style: .continuous).fill(Theme.surface(dark)))
+        .cardShadow(dark)
+    }
+
+    private func chipFlow(items: [String], active: [String], dark: Bool,
+                          tap: @escaping (String) -> Void) -> some View {
+        FlowLayout(spacing: 6) {
+            ForEach(items, id: \.self) { item in
+                ChipView(label: item, active: active.contains(item),
+                         dark: dark, accent: store.accent) { tap(item) }
+            }
+        }
+    }
+
+    /// A 3-way Low · Balanced · High segmented control per priority slider.
+    private func sliderRow(label: String, keyPath: WritableKeyPath<UserProfile, Int?>,
+                           dark: Bool) -> some View {
+        let current = store.user[keyPath: keyPath] ?? 1
+        let options = ["Low", "Balanced", "High"]
+        return VStack(alignment: .leading, spacing: 8) {
+            Text(label).font(.sageSemiBold(14))
+                .foregroundColor(Theme.textPrimary(dark))
+            HStack(spacing: 6) {
+                ForEach(Array(options.enumerated()), id: \.offset) { level, opt in
+                    Button {
+                        store.user[keyPath: keyPath] = (level == 1) ? nil : level
+                    } label: {
+                        Text(opt)
+                            .font(.sageBold(12))
+                            .foregroundColor(level == current ? .white : Theme.textSecondary(dark))
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 9)
+                            .background(
+                                RoundedRectangle(cornerRadius: 10, style: .continuous)
+                                    .fill(level == current ? store.accent
+                                          : (dark ? Color.white.opacity(0.05) : Theme.bgLight))
+                            )
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+        }
+    }
+
+    private func toggleOptional(_ keyPath: WritableKeyPath<UserProfile, [String]?>, _ value: String) {
+        var arr = store.user[keyPath: keyPath] ?? []
+        if let i = arr.firstIndex(of: value) { arr.remove(at: i) } else { arr.append(value) }
+        store.user[keyPath: keyPath] = arr.isEmpty ? nil : arr
+    }
+}

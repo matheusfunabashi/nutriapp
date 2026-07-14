@@ -6,6 +6,7 @@ struct ProfileView: View {
     let onOpenPreferences: () -> Void
     let onOpenNutritionGoals: () -> Void
     let onOpenDietary: () -> Void
+    let onOpenPersonalize: () -> Void
     let onOpenMethodology: () -> Void
     let onOpenDisclaimer: () -> Void
 
@@ -40,6 +41,8 @@ struct ProfileView: View {
                                            divider: true, dark: dark, onTap: onOpenNutritionGoals)
                                 ProfileRow(systemImage: "flag", label: "Dietary preferences",
                                            divider: true, dark: dark, onTap: onOpenDietary)
+                                ProfileRow(systemImage: "wand.and.stars", label: "Personalize",
+                                           divider: true, dark: dark, onTap: onOpenPersonalize)
                                 ProfileRow(systemImage: "character.book.closed", label: "Language",
                                            value: "English", divider: true, dark: dark)
                                 ProfileRow(systemImage: "slider.horizontal.3", label: "Preferences",
