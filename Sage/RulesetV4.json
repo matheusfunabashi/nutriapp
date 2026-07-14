@@ -1,5 +1,5 @@
 {
-  "version": "2026.07-c1",
+  "version": "2026.07-d1",
   "bands": {
     "excellent": 75,
     "good": 50,
@@ -559,7 +559,39 @@
   "router": [
     {
       "match": "waters",
-      "profile": "water"
+      "profile": "unsupported"
+    },
+    {
+      "match": "mineral-waters",
+      "profile": "unsupported"
+    },
+    {
+      "match": "spring-waters",
+      "profile": "unsupported"
+    },
+    {
+      "match": "flavored-waters",
+      "profile": "unsupported"
+    },
+    {
+      "match": "alcoholic-beverages",
+      "profile": "unsupported"
+    },
+    {
+      "match": "beers",
+      "profile": "unsupported"
+    },
+    {
+      "match": "wines",
+      "profile": "unsupported"
+    },
+    {
+      "match": "spirits",
+      "profile": "unsupported"
+    },
+    {
+      "match": "ciders",
+      "profile": "unsupported"
     },
     {
       "match": "iced-teas",
@@ -578,95 +610,31 @@
       "profile": "drinks"
     },
     {
-      "match": "teas",
-      "profile": "tea_coffee"
+      "match": "juices",
+      "profile": "drinks"
     },
     {
-      "match": "herbal-teas",
-      "profile": "tea_coffee"
-    },
-    {
-      "match": "coffees",
-      "profile": "tea_coffee"
-    },
-    {
-      "match": "plant-based-milk-alternatives",
-      "profile": "plant_milk"
-    },
-    {
-      "match": "plant-milks",
-      "profile": "plant_milk"
-    },
-    {
-      "match": "ice-creams",
-      "profile": "ice_cream"
-    },
-    {
-      "match": "frozen-desserts",
-      "profile": "ice_cream"
-    },
-    {
-      "match": "yogurts",
-      "profile": "yogurt_cheese"
-    },
-    {
-      "match": "cheeses",
-      "profile": "yogurt_cheese"
-    },
-    {
-      "match": "milks",
-      "profile": "dairy_milk"
-    },
-    {
-      "match": "dairies",
-      "profile": "dairy_milk"
-    },
-    {
-      "match": "honeys",
-      "profile": "sweeteners"
-    },
-    {
-      "match": "sweeteners",
-      "profile": "sweeteners"
-    },
-    {
-      "match": "syrups",
-      "profile": "sweeteners"
-    },
-    {
-      "match": "sugars",
-      "profile": "sweeteners"
-    },
-    {
-      "match": "breads",
-      "profile": "breads"
-    },
-    {
-      "match": "breakfast-cereals",
-      "profile": "breads"
-    },
-    {
-      "match": "pastas",
-      "profile": "breads"
-    },
-    {
-      "match": "flours",
-      "profile": "breads"
-    },
-    {
-      "match": "meats",
-      "profile": "meat"
-    },
-    {
-      "match": "seafood",
-      "profile": "meat"
-    },
-    {
-      "match": "fishes",
-      "profile": "meat"
+      "match": "soft-drinks",
+      "profile": "drinks"
     },
     {
       "match": "snacks",
+      "profile": "snacks"
+    },
+    {
+      "match": "salty-snacks",
+      "profile": "snacks"
+    },
+    {
+      "match": "sweet-snacks",
+      "profile": "snacks"
+    },
+    {
+      "match": "chips-and-fries",
+      "profile": "snacks"
+    },
+    {
+      "match": "crisps",
       "profile": "snacks"
     },
     {
@@ -952,5 +920,156 @@
       2,
       0.2
     ]
-  ]
+  ],
+  "multipliers": {
+    "objective": {
+      "build muscle": {
+        "S3": 1.2
+      },
+      "lose weight": {
+        "S3": 2.0,
+        "S6": 0.5
+      },
+      "eat healthier": {
+        "S2": 1.5,
+        "S1": 1.3,
+        "S12": 1.2
+      }
+    },
+    "goal": {
+      "blood sugar": {
+        "S3": 2.0,
+        "S2": 1.3
+      },
+      "heart": {
+        "S4": 2.0,
+        "S5": 2.0
+      },
+      "gut health": {
+        "S6": 2.0,
+        "S1": 1.3
+      },
+      "young child": {
+        "S3": 2.0,
+        "S1": 1.3
+      }
+    },
+    "slider": {
+      "clean": {
+        "2": {
+          "S1": 1.5
+        },
+        "0": {
+          "S1": 0.6
+        }
+      },
+      "nutrition": {
+        "2": {
+          "S12": 1.5
+        },
+        "0": {
+          "S12": 0.6
+        }
+      },
+      "environment": {
+        "2": {
+          "S8": 1.5
+        },
+        "0": {
+          "S8": 0.6
+        }
+      },
+      "welfare": {
+        "2": {
+          "welfare": 2.0,
+          "dairyLabels": 2.0
+        },
+        "0": {
+          "welfare": 0.6
+        }
+      }
+    }
+  },
+  "avoidList": {
+    "carrageenan": {
+      "codes": [
+        "e407"
+      ]
+    },
+    "aspartame": {
+      "codes": [
+        "e951"
+      ]
+    },
+    "sucralose": {
+      "codes": [
+        "e955"
+      ]
+    },
+    "seed oils": {
+      "text": [
+        "canola oil",
+        "sunflower oil",
+        "soybean oil",
+        "rapeseed oil",
+        "corn oil",
+        "cottonseed oil",
+        "soya oil"
+      ]
+    },
+    "palm oil": {
+      "text": [
+        "palm oil"
+      ],
+      "labels": [
+        "palm-oil"
+      ]
+    },
+    "caffeine": {
+      "text": [
+        "caffeine"
+      ]
+    },
+    "artificial colors": {
+      "codes": [
+        "e102",
+        "e104",
+        "e110",
+        "e122",
+        "e124",
+        "e127",
+        "e129",
+        "e131",
+        "e132",
+        "e133"
+      ]
+    },
+    "added phosphates": {
+      "codes": [
+        "e338",
+        "e339",
+        "e340",
+        "e341",
+        "e343",
+        "e450",
+        "e451",
+        "e452"
+      ]
+    },
+    "hfcs": {
+      "text": [
+        "high fructose corn syrup",
+        "high-fructose corn syrup"
+      ]
+    },
+    "titanium dioxide": {
+      "codes": [
+        "e171"
+      ]
+    }
+  },
+  "hardGates": {
+    "dietConflictCap": 20,
+    "avoidListCap": 49
+  }
 }
