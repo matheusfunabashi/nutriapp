@@ -465,14 +465,21 @@ struct ResultView: View {
     }
 
     private func detectedSection(dark: Bool) -> some View {
-        let show = product.caffeine_mg != nil || !product.sweeteners.isEmpty || product.seedOils
+        // A present caffeine field of 0 (common in OFF, e.g. Nutella) is not
+        // "contains caffeine" — require a positive amount.
+        let hasCaffeine = (product.caffeine_mg ?? 0) > 0
+        let show = hasCaffeine || !product.sweeteners.isEmpty || product.seedOils
+        // Solids are measured per 100 g, beverages per 100 ml.
+        let isBeverage = (product.categories ?? []).contains {
+            $0.contains("beverage") || $0.contains("drink")
+        }
         return Group {
             if show {
                 EyebrowLabel(text: "Detected", dark: dark)
                 VStack(spacing: 6) {
-                    if let mg = product.caffeine_mg {
+                    if hasCaffeine, let mg = product.caffeine_mg {
                         InfoRow(emoji: "☕", label: "Contains caffeine",
-                                detail: "\(fmt(mg)) mg per 100ml", dark: dark)
+                                detail: "\(fmt(mg)) mg per \(isBeverage ? "100 ml" : "100 g")", dark: dark)
                     }
                     ForEach(product.sweeteners, id: \.self) { s in
                         InfoRow(emoji: "◈",
