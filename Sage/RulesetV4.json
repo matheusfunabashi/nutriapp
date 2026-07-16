@@ -169,6 +169,19 @@
     "responsible-aquaculture-asc",
     "best-aquaculture-practices"
   ],
+  "micronutrients": {
+    "dv": {
+      "iron_mg": 18,
+      "potassium_mg": 4700,
+      "calcium_mg": 1300,
+      "magnesium_mg": 420,
+      "zinc_mg": 11,
+      "vitaminC_mg": 90
+    },
+    "capPerNutrient": 0.5,
+    "target": 1.2,
+    "unknownCredit": 0.35
+  },
   "profiles": {
     "general": [
       {
@@ -195,6 +208,10 @@
       {
         "rule": "S12",
         "w": 18
+      },
+      {
+        "rule": "S13",
+        "w": 5
       },
       {
         "rule": "S7",
@@ -230,6 +247,10 @@
       {
         "rule": "S12",
         "w": 12
+      },
+      {
+        "rule": "S13",
+        "w": 5
       },
       {
         "rule": "S7",
@@ -351,6 +372,10 @@
         "w": 12
       },
       {
+        "rule": "S13",
+        "w": 5
+      },
+      {
         "rule": "S7",
         "w": 10
       },
@@ -380,6 +405,10 @@
       {
         "rule": "S12",
         "w": 12
+      },
+      {
+        "rule": "S13",
+        "w": 5
       },
       {
         "rule": "S7",
@@ -477,6 +506,10 @@
         "w": 12
       },
       {
+        "rule": "S13",
+        "w": 5
+      },
+      {
         "rule": "S7",
         "w": 4
       },
@@ -545,6 +578,10 @@
       {
         "rule": "S12",
         "w": 12
+      },
+      {
+        "rule": "S13",
+        "w": 5
       },
       {
         "rule": "S7",

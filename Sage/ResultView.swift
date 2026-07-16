@@ -383,11 +383,29 @@ struct ResultView: View {
                             higherIsBetter: true,
                             bonus: product.bonuses.contains("protein"),
                             divider: true, dark: dark)
-                nutrientRow(label: "Calcium", value: n.calcium_mg, unit: "mg",
-                            level: n.calcium_mg.map(NutrientLevels.calcium),
-                            higherIsBetter: true,
-                            bonus: product.bonuses.contains("calcium"),
-                            divider: true, dark: dark)
+                // Micronutrient rows appear only when reported (most products
+                // lack them); a dash-only row would just be noise.
+                if n.calcium_mg != nil {
+                    nutrientRow(label: "Calcium", value: n.calcium_mg, unit: "mg",
+                                level: n.calcium_mg.map(NutrientLevels.calcium),
+                                higherIsBetter: true,
+                                bonus: product.bonuses.contains("calcium"),
+                                divider: true, dark: dark)
+                }
+                if n.iron_mg != nil {
+                    nutrientRow(label: "Iron", value: n.iron_mg, unit: "mg",
+                                level: n.iron_mg.map(NutrientLevels.iron),
+                                higherIsBetter: true,
+                                bonus: product.bonuses.contains("iron"),
+                                divider: true, dark: dark)
+                }
+                if n.potassium_mg != nil {
+                    nutrientRow(label: "Potassium", value: n.potassium_mg, unit: "mg",
+                                level: n.potassium_mg.map(NutrientLevels.potassium),
+                                higherIsBetter: true,
+                                bonus: product.bonuses.contains("potassium"),
+                                divider: true, dark: dark)
+                }
             }
             .padding(.vertical, 4)
         }
