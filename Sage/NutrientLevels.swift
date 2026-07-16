@@ -20,6 +20,10 @@ enum NutrientLevels {
     static func fiber(_ g: Double) -> NutrientLevel { level(g, 3, 6) }
     static func protein(_ g: Double) -> NutrientLevel { level(g, 5, 12) }
     static func calcium(_ mg: Double) -> NutrientLevel { level(mg, 60, 120) }
+    // Beneficial micronutrients (per 100g). MOD ≈ 10% DV, HIGH ≈ 25% DV —
+    // the "good source" / "excellent source" convention.
+    static func iron(_ mg: Double) -> NutrientLevel { level(mg, 2, 4.5) }
+    static func potassium(_ mg: Double) -> NutrientLevel { level(mg, 300, 700) }
 
     private static func level(_ v: Double, _ t1: Double, _ t2: Double) -> NutrientLevel {
         if v <= t1 { return .low }
@@ -37,6 +41,8 @@ enum NutrientLevels {
         if let v = n.satFat_g { lines.append("saturated fat: \(satFat(v).word) (\(fmtNum(v))g)") }
         if let v = n.fiber_g { lines.append("fiber: \(fiber(v).word) (\(fmtNum(v))g)") }
         if let v = n.protein_g { lines.append("protein: \(protein(v).word) (\(fmtNum(v))g)") }
+        if let v = n.iron_mg { lines.append("iron: \(iron(v).word) (\(fmtNum(v))mg)") }
+        if let v = n.potassium_mg { lines.append("potassium: \(potassium(v).word) (\(fmtNum(v))mg)") }
         return lines
     }
 

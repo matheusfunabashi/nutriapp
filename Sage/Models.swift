@@ -38,6 +38,14 @@ struct Nutrients: Hashable, Codable {
     /// Added sugars per 100g — mostly US labels; scoring v4's S3 prefers it and
     /// falls back to fvn-discounted total sugars. Optional for back-compat.
     var addedSugar_g: Double? = nil
+    // Beneficial micronutrients per 100g (mg) — drive scoring v4's S13 credit
+    // and the Iron/Potassium breakdown rows. Optional for back-compat; most
+    // products report none, in which case S13 falls back to a neutral credit.
+    var iron_mg: Double? = nil
+    var potassium_mg: Double? = nil
+    var magnesium_mg: Double? = nil
+    var zinc_mg: Double? = nil
+    var vitaminC_mg: Double? = nil
 }
 
 /// One parsed ingredient with its declared or estimated recipe share.

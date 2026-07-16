@@ -13,6 +13,8 @@ struct ScoringV4Tests {
         kcal: Double? = nil, protein: Double? = nil, fiber: Double? = nil,
         sugar: Double? = nil, addedSugar: Double? = nil, satFat: Double? = nil,
         sodium: Double? = nil, calcium: Double? = nil, fvn: Double? = nil, nova: Int = 0,
+        iron: Double? = nil, potassium: Double? = nil, magnesium: Double? = nil,
+        zinc: Double? = nil, vitaminC: Double? = nil,
         name: String = "T",
         ingredientsText: String? = "some ingredients",
         additives: [ProductAdditive] = [],
@@ -28,7 +30,9 @@ struct ScoringV4Tests {
             nutriGrade: "?", novaGroup: nova,
             nutrients: Nutrients(sugar_g: sugar, sodium_mg: sodium, satFat_g: satFat,
                                  fiber_g: fiber, protein_g: protein, calcium_mg: calcium,
-                                 kcal: kcal, fvn: fvn, addedSugar_g: addedSugar),
+                                 kcal: kcal, fvn: fvn, addedSugar_g: addedSugar,
+                                 iron_mg: iron, potassium_mg: potassium, magnesium_mg: magnesium,
+                                 zinc_mg: zinc, vitaminC_mg: vitaminC),
             bonuses: [], transFats: false, caffeine_mg: nil,
             sweeteners: [], seedOils: false, additives: additives, restrictions: [],
             dietFlags: nil, allergenTags: nil,
@@ -97,8 +101,9 @@ struct ScoringV4Tests {
         #expect(ScoringEngineV4.route(chicken) == "general")   // no categories → fallback
         #expect(ScoringEngineV4.route(mineralWater) == "unsupported")
         #expect(ScoringEngineV4.route(product(categories: ["beverages", "beers"])) == "unsupported")
-        // Uncalibrated categories fall back to general until they're calibrated.
-        #expect(ScoringEngineV4.route(oatMilk) == "general")
+        // Plant milk is a beverage → drinks. Other uncalibrated categories still
+        // fall back to general until they're calibrated.
+        #expect(ScoringEngineV4.route(oatMilk) == "drinks")
         #expect(ScoringEngineV4.route(product(categories: ["dairies", "milks"])) == "general")
         #expect(ScoringEngineV4.route(product(categories: ["teas", "green-teas"])) == "general")
         // Bottled iced tea is still a drink.
@@ -178,6 +183,34 @@ struct ScoringV4Tests {
         #expect(s8(none).hadData)   // Tier-1: absence is information, not a gap
     }
 
+    // MARK: S13 — micronutrient credit
+
+    @Test func s13RewardsMicronutrientDensity() {
+        // Iron 9mg (0.5 cap of 18 DV) + potassium 400 (0.085) + zinc 3 (0.273)
+        // → capped sum 0.858 / target 1.2 = 0.715.
+        let rich = product(kcal: 350, protein: 10, sugar: 5, sodium: 100,
+                           iron: 9, potassium: 400, zinc: 3)
+        let s13 = ScoringEngineV4.score(rich)!.rules.first { $0.rule == "S13" }!
+        #expect(abs(s13.fraction - 0.715) < 0.01)
+        #expect(s13.hadData)
+    }
+
+    @Test func s13NeutralWhenNoMicrosReported() {
+        // No micronutrients → neutral unknown credit, flagged as not data-backed.
+        let plain = product(kcal: 200, protein: 5, sugar: 5, sodium: 100)
+        let s13 = ScoringEngineV4.score(plain)!.rules.first { $0.rule == "S13" }!
+        #expect(s13.fraction == 0.35)
+        #expect(!s13.hadData)
+    }
+
+    @Test func s13CapsSingleMegadose() {
+        // 500mg vitamin C is 5.5× DV but one nutrient can't exceed the 0.5 cap.
+        let single = product(kcal: 100, sugar: 5, sodium: 50, vitaminC: 500)
+        let s13 = ScoringEngineV4.score(single)!.rules.first { $0.rule == "S13" }!
+        #expect(abs(s13.fraction - (0.5 / 1.2)) < 0.01)   // 0.417
+        #expect(s13.hadData)
+    }
+
     // MARK: Minimum data + confidence
 
     @Test func engineRefusesInsufficientData() {
@@ -188,19 +221,23 @@ struct ScoringV4Tests {
     }
 
     @Test func confidenceIsWeightBacked() {
-        // Chicken: every rule has data except packaging (w 5 of Σ104).
+        // Chicken: every rule has data except packaging (w 5) and the S13
+        // micronutrient credit (w 5, no micros reported) → 99 of Σ109.
         let r = ScoringEngineV4.score(chicken)!
-        #expect(abs(r.confidence - 99.0 / 104.0) < 0.001)
+        #expect(abs(r.confidence - 99.0 / 109.0) < 0.001)
     }
 
     // MARK: Anchor products (ruleset 2026.07-b2 — weights locked by the
     // §12 calibration run over 7,250 EN-market OFF products, 2026-07-11)
 
     @Test func anchorsWholeFoodsScoreExcellent() {
+        // Base dropped 83→81 when the S13 micronutrient credit was added: these
+        // whole foods report no micros, so S13's neutral 0.35 at w:5 nudges them
+        // down slightly. Still comfortably "Excellent".
         let c = ScoringEngineV4.score(chicken)!
         let a = ScoringEngineV4.score(apple)!
-        #expect(c.base == 83)
-        #expect(a.base == 83)
+        #expect(c.base == 81)
+        #expect(a.base == 81)
         #expect(RulesetV4.bundled.bandLabel(c.base) == "Excellent")
         #expect(RulesetV4.bundled.bandLabel(a.base) == "Excellent")
     }
@@ -233,7 +270,8 @@ struct ScoringV4Tests {
         let r = ScoringEngineV4.score(milk)!
         #expect(r.profileId == "general")
         #expect(r.base >= 10)
-        #expect(ScoringEngineV4.score(oatMilk)!.profileId == "general")
+        // Plant milk is a beverage, so it scores through the drinks profile.
+        #expect(ScoringEngineV4.score(oatMilk)!.profileId == "drinks")
     }
 
     @Test func anchorOrderingHolds() {

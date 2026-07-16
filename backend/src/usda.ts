@@ -33,6 +33,13 @@ const NUTRIENT_MAP: Record<string, { key: string; scale: number }> = {
   "539": { key: "added-sugars_100g", scale: 1 },
   "307": { key: "sodium_100g", scale: 0.001 }, // mg → g
   "301": { key: "calcium_100g", scale: 0.001 }, // mg → g
+  // Beneficial micronutrients — FDC gives mg, OFF stores grams, so scale mg → g.
+  // The Swift decoder reads these OFF keys and scales back to mg for scoring S13.
+  "303": { key: "iron_100g", scale: 0.001 }, // mg → g
+  "306": { key: "potassium_100g", scale: 0.001 }, // mg → g
+  "304": { key: "magnesium_100g", scale: 0.001 }, // mg → g
+  "309": { key: "zinc_100g", scale: 0.001 }, // mg → g
+  "401": { key: "vitamin-c_100g", scale: 0.001 }, // mg → g
 };
 
 interface FdcNutrient {

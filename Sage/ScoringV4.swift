@@ -67,6 +67,17 @@ struct RulesetV4: Codable {
     let welfare: PointsRule?
     let heroCredit: [[Double]]?
 
+    // S13 — beneficial micronutrient credit (positive-only). NRF-style: each
+    // present nutrient contributes min(cap, %DV per 100g); the capped sum is
+    // normalized by `target`. Optional so an older ruleset falls back to unknown.
+    struct Micronutrients: Codable {
+        let dv: [String: Double]        // nutrient key → daily reference value (mg)
+        let capPerNutrient: Double      // one nutrient's max contribution (fraction of DV)
+        let target: Double              // capped-sum that earns full credit
+        let unknownCredit: Double       // neutral fraction when no micros reported
+    }
+    let micronutrients: Micronutrients?
+
     // Phase D personalization (SCORING_V4.md §7) — optional for back-compat.
     struct Multipliers: Codable {
         let objective: [String: [String: Double]]
@@ -348,6 +359,8 @@ enum ScoringEngineV4 {
         if let f = n.fiber_g, f >= 6 { b.append("fiber") }
         if let p = n.protein_g, p >= 12 { b.append("protein") }
         if let c = n.calcium_mg, c >= 120 { b.append("calcium") }
+        if let i = n.iron_mg, i >= 4.5 { b.append("iron") }               // ≥25% DV
+        if let k = n.potassium_mg, k >= 700 { b.append("potassium") }     // ≥15% DV
         return b
     }
 
@@ -402,6 +415,7 @@ enum ScoringEngineV4 {
             }
             return f >= 0.6 ? nil : ("high saturated fat", false)
         case "S6":  return f >= 0.9 ? nil : ("artificial sweeteners", false)
+        case "S13": return f >= 0.5 ? ("rich in vitamins & minerals", true) : nil
         default:    return nil
         }
     }
@@ -437,6 +451,7 @@ enum ScoringEngineV4 {
         case "S10": return s10(p, rs: rs)
         case "S11": return (!(p.origins ?? []).isEmpty ? 1.0 : 0.0, true)   // Tier-1
         case "S12": return s12(p)
+        case "S13": return s13(p, rs: rs)
         case "waterSource":        return waterSource(p, rs: rs)
         case "mineralDisclosure":  return (p.nutrients.calcium_mg != nil ? 1.0 : 0.0, true)
         case "cropRisk":           return cropRisk(p, rs: rs)
@@ -713,6 +728,28 @@ enum ScoringEngineV4 {
         return (f, n.kcal != nil || n.fiber_g != nil || n.fvn != nil)
     }
 
+    // MARK: S13 — beneficial micronutrient credit (positive-only)
+
+    private static func s13(_ p: Product, rs: RulesetV4) -> (Double, Bool) {
+        guard let cfg = rs.micronutrients else { return (0.35, false) }
+        let n = p.nutrients
+        let present: [String: Double?] = [
+            "iron_mg": n.iron_mg, "potassium_mg": n.potassium_mg,
+            "magnesium_mg": n.magnesium_mg, "zinc_mg": n.zinc_mg,
+            "vitaminC_mg": n.vitaminC_mg, "calcium_mg": n.calcium_mg,
+        ]
+        var sum = 0.0
+        var had = false
+        for (key, dv) in cfg.dv {
+            guard dv > 0, let v = present[key] ?? nil, v > 0 else { continue }
+            had = true
+            sum += min(cfg.capPerNutrient, v / dv)   // %DV per 100g, capped
+        }
+        // No micros reported → neutral, not a penalty; lowers Data Confidence.
+        guard had else { return (cfg.unknownCredit, false) }
+        return (min(1.0, sum / cfg.target), true)
+    }
+
     // MARK: Shared helpers
 
     /// ≤t1 → 1.0 · ≤t2 → 0.60 · ≤t3 → 0.30 · above → 0. nil → unknown tier.
@@ -725,4 +762,57 @@ enum ScoringEngineV4 {
         if v <= t[2] { return (0.30, true) }
         return (0.0, true)
     }
+
+    // MARK: - Debug breakdown (DEBUG builds only)
+
+    #if DEBUG
+    /// Per-rule breakdown for the in-app SCORE DEBUG panel. Re-evaluates the
+    /// live scoring path so the printed table always matches the rings above it.
+    static func debugText(_ p: Product, for profile: UserProfile,
+                          ruleset rs: RulesetV4 = .bundled) -> String {
+        guard p.hasMinimumData else { return "insufficient data — no score" }
+        let profileId = route(p, ruleset: rs)
+        if profileId == "unsupported" { return "unsupported category — Sage doesn't rate this" }
+        guard let ruleList = rs.profiles[profileId] else { return "no profile '\(profileId)'" }
+
+        let results = ruleList.map { pr -> (rule: String, w: Double, f: Double, had: Bool) in
+            let (f, had) = evaluate(pr.rule, variant: pr.variant, product: p, rs: rs)
+            return (pr.rule, pr.w, f, had)
+        }
+        let totalW = results.reduce(0) { $0 + $1.w }
+        let earned = results.reduce(0) { $0 + $1.w * $1.f }
+        let backed = results.filter(\.had).reduce(0) { $0 + $1.w }
+
+        let mult = profile.personalizeScoring ? ruleMultipliers(profile, rs: rs) : [:]
+        let personalized = !mult.isEmpty
+
+        func pad(_ s: String, _ n: Int) -> String {
+            s.count >= n ? s : s + String(repeating: " ", count: n - s.count)
+        }
+        func f2(_ v: Double) -> String { String(format: "%.2f", v) }
+
+        var lines: [String] = ["profile \(profileId) · ruleset \(rs.version)"]
+        var header = pad("rule", 6) + pad("w", 5) + pad("f", 6) + pad("w·f", 7)
+        if personalized { header += pad("m", 5) }
+        header += "data"
+        lines.append(header)
+        for r in results {
+            var row = pad(r.rule, 6) + pad(String(Int(r.w)), 5) + pad(f2(r.f), 6) + pad(f2(r.w * r.f), 7)
+            if personalized { row += pad(f2(mult[r.rule] ?? 1.0), 5) }
+            row += r.had ? "✓" : "—"
+            lines.append(row)
+        }
+        lines.append("Σw \(Int(totalW)) · earned \(f2(earned)) · conf \(Int((backed / totalW * 100).rounded()))%")
+
+        // Headline numbers straight from the live path so the table can't drift.
+        if case .scored(let sp) = scoreProduct(p, for: profile, ruleset: rs) {
+            lines.append("OVERALL \(sp.overallScore)   YOUR \(sp.yourScore)")
+            if let d = sp.deltaReason { lines.append("Δ: \(d.text)") }
+            if !sp.restrictions.isEmpty {
+                lines.append("gates: " + sp.restrictions.map { "\($0.type)(\($0.trigger))" }.joined(separator: ", "))
+            }
+        }
+        return lines.joined(separator: "\n")
+    }
+    #endif
 }

@@ -166,7 +166,13 @@ struct OpenFoodFactsService {
             calcium_mg: n?.calcium.map { $0 * 1000 },
             kcal: n?.energyKcal ?? n?.energyKj.map { $0 / 4.184 },  // kJ→kcal fallback
             fvn: n?.fvn,
-            addedSugar_g: n?.addedSugars
+            addedSugar_g: n?.addedSugars,
+            // OFF stores minerals & vitamin C in grams/100g → scale to mg.
+            iron_mg: n?.iron.map { $0 * 1000 },
+            potassium_mg: n?.potassium.map { $0 * 1000 },
+            magnesium_mg: n?.magnesium.map { $0 * 1000 },
+            zinc_mg: n?.zinc.map { $0 * 1000 },
+            vitaminC_mg: n?.vitaminC.map { $0 * 1000 }
         )
 
         let additivesScan = scanAdditives(off)
@@ -563,6 +569,13 @@ struct OFFNutriments: Decodable {
     let energyKj: Double?   // fallback when kcal is absent (common for EU products)
     let fvn: Double?        // fruit/veg/nuts estimate 0–100
     let addedSugars: Double? // mostly US labels; v4 S3 prefers it over total sugars
+    // Beneficial micronutrients — OFF reports minerals in grams/100g (scaled to
+    // mg at the mapping site, like calcium). Feed scoring v4's S13 credit.
+    let iron: Double?
+    let potassium: Double?
+    let magnesium: Double?
+    let zinc: Double?
+    let vitaminC: Double?
 
     enum CodingKeys: String, CodingKey {
         case sugars = "sugars_100g"
@@ -579,6 +592,11 @@ struct OFFNutriments: Decodable {
         case fvnNuts = "fruits-vegetables-nuts-estimate-from-ingredients_100g"
         case fvnLegumes = "fruits-vegetables-legumes-estimate-from-ingredients_100g"
         case addedSugars = "added-sugars_100g"
+        case iron = "iron_100g"
+        case potassium = "potassium_100g"
+        case magnesium = "magnesium_100g"
+        case zinc = "zinc_100g"
+        case vitaminC = "vitamin-c_100g"
     }
 
     init(from decoder: Decoder) throws {
@@ -603,5 +621,10 @@ struct OFFNutriments: Decodable {
         // OFF populates the "nuts" or the newer "legumes" variant depending on version.
         fvn = value(.fvnNuts) ?? value(.fvnLegumes)
         addedSugars = value(.addedSugars)
+        iron = value(.iron)
+        potassium = value(.potassium)
+        magnesium = value(.magnesium)
+        zinc = value(.zinc)
+        vitaminC = value(.vitaminC)
     }
 }
