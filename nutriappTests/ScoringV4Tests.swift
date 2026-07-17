@@ -79,11 +79,64 @@ struct ScoringV4Tests {
                 packaging: ["tetra-pak"])
     }
 
+    // Category-profile anchors (ruleset 2026.08-e1 — §12.9 activation calibration
+    // over 11,057 EN-market OFF products). Values below are the engine's exact
+    // base scores, verified in the macOS calibration harness.
+    private var wholeMilk: Product {
+        product(kcal: 64, protein: 3.3, fiber: 0, sugar: 4.8, satFat: 1.9, sodium: 44,
+                calcium: 120, nova: 1, name: "whole milk", ingredientsText: "milk",
+                categories: ["dairies", "milks"])
+    }
+    private var greekYogurt: Product {
+        product(kcal: 59, protein: 10, fiber: 0, sugar: 3.6, satFat: 0.4, sodium: 36,
+                calcium: 110, nova: 1, name: "plain greek yogurt",
+                ingredientsText: "milk, live active cultures",
+                categories: ["dairies", "yogurts", "greek-yogurts"])
+    }
+    private var cheddar: Product {
+        product(kcal: 402, protein: 25, fiber: 0, sugar: 0.5, satFat: 21, sodium: 621,
+                calcium: 721, nova: 1, name: "cheddar cheese",
+                ingredientsText: "milk, salt, cultures, enzymes",
+                categories: ["dairies", "cheeses", "cheddar-cheese"])
+    }
+    private var whiteBread: Product {
+        product(kcal: 265, protein: 9, fiber: 2.7, sugar: 5, satFat: 0.9, sodium: 490,
+                nova: 4, name: "white bread",
+                ingredientsText: "wheat flour, water, yeast, salt, emulsifier",
+                additives: [ProductAdditive(name: "e471", risk: .low, code: "e471", tier: .mild)],
+                categories: ["breads", "white-breads"])
+    }
+    private var wholeGrainBread: Product {
+        product(kcal: 247, protein: 13, fiber: 7, sugar: 4, satFat: 0.9, sodium: 450,
+                nova: 3, name: "whole grain bread",
+                ingredientsText: "whole wheat flour, water, yeast, salt",
+                categories: ["breads", "whole-wheat-breads"])
+    }
+    private var blackTea: Product {
+        product(kcal: 1, sugar: 0, nova: 1, name: "black tea", ingredientsText: "black tea",
+                categories: ["teas", "black-teas"])
+    }
+    private var honey: Product {
+        product(kcal: 304, sugar: 82, nova: 1, name: "raw honey",
+                ingredientsText: "honey", categories: ["sweeteners", "honeys"])
+    }
+    private var bacon: Product {
+        product(kcal: 400, protein: 14, sugar: 0, satFat: 12, sodium: 1300, nova: 4,
+                name: "bacon", ingredientsText: "pork, salt, sodium nitrite",
+                additives: [ProductAdditive(name: "e250", risk: .high, code: "e250", tier: .major)],
+                categories: ["meats", "prepared-meats", "bacons"])
+    }
+    private var meatChicken: Product {
+        product(kcal: 165, protein: 31, fiber: 0, sugar: 0, satFat: 1, sodium: 74,
+                nova: 1, iron: 1, potassium: 256, zinc: 1, name: "chicken breast",
+                ingredientsText: "chicken breast", categories: ["meats"])
+    }
+
     // MARK: Ruleset + router
 
     @Test func bundledRulesetLoads() {
         let rs = RulesetV4.bundled
-        #expect(rs.version == "2026.07-d2")
+        #expect(rs.version == "2026.08-e1")
         #expect(rs.bands.excellent == 75)
         #expect(rs.profiles.count == 12)
         #expect(rs.bandLabel(80) == "Excellent")
@@ -92,21 +145,26 @@ struct ScoringV4Tests {
         #expect(rs.bandLabel(12) == "Bad")
     }
 
-    // Ruleset d1 (Phase D launch routing): only the calibrated profiles are
-    // active. Water + alcohol → unsupported; the uncalibrated category profiles
-    // are dormant, so their products route to the calibrated general profile.
-    @Test func routerReflectsLaunchDecision() {
+    // Ruleset e1 (§12.9): the eight category profiles are activated. Water +
+    // alcohol stay unsupported; ready-to-drink beverages still beat dry
+    // tea/coffee; every other category routes to its own calibrated profile.
+    @Test func routerActivatesCategoryProfiles() {
         #expect(ScoringEngineV4.route(coke) == "drinks")
         #expect(ScoringEngineV4.route(cheetos) == "snacks")
         #expect(ScoringEngineV4.route(chicken) == "general")   // no categories → fallback
         #expect(ScoringEngineV4.route(mineralWater) == "unsupported")
         #expect(ScoringEngineV4.route(product(categories: ["beverages", "beers"])) == "unsupported")
-        // Plant milk is a beverage → drinks. Other uncalibrated categories still
-        // fall back to general until they're calibrated.
-        #expect(ScoringEngineV4.route(oatMilk) == "drinks")
-        #expect(ScoringEngineV4.route(product(categories: ["dairies", "milks"])) == "general")
-        #expect(ScoringEngineV4.route(product(categories: ["teas", "green-teas"])) == "general")
-        // Bottled iced tea is still a drink.
+        // Activated categories route to their own profiles.
+        #expect(ScoringEngineV4.route(oatMilk) == "plant_milk")
+        #expect(ScoringEngineV4.route(wholeMilk) == "dairy_milk")
+        #expect(ScoringEngineV4.route(greekYogurt) == "yogurt_cheese")
+        #expect(ScoringEngineV4.route(blackTea) == "tea_coffee")
+        #expect(ScoringEngineV4.route(honey) == "sweeteners")
+        #expect(ScoringEngineV4.route(whiteBread) == "breads")
+        #expect(ScoringEngineV4.route(bacon) == "meat")
+        #expect(ScoringEngineV4.route(product(categories: ["frozen-desserts", "ice-creams"])) == "ice_cream")
+        // Plant "milk-substitutes" beat dairy; bottled iced tea beats dry tea.
+        #expect(ScoringEngineV4.route(product(categories: ["milk-substitutes"])) == "plant_milk")
         #expect(ScoringEngineV4.route(product(categories: ["beverages", "teas", "iced-teas"])) == "drinks")
     }
 
@@ -249,6 +307,50 @@ struct ScoringV4Tests {
         #expect(RulesetV4.bundled.bandLabel(r.base) == "Mediocre")
     }
 
+    // MARK: Category-profile anchors (ruleset 2026.08-e1 — §12.9 calibration over
+    // 11,057 EN-market OFF products). Exact engine base scores, harness-verified.
+    // Theme: clean whole foods reach high Good/Excellent, mainstream UPF lands
+    // in the bottom half. The S12 nutrient-quality rule caps at 0.40 for
+    // high-protein/no-fibre foods, so plain milk/yogurt/chicken top out in high
+    // Good rather than Excellent unless they also carry organic/welfare labels.
+
+    @Test func anchorDairyProfiles() {
+        let milk = ScoringEngineV4.score(wholeMilk)!
+        #expect(milk.profileId == "dairy_milk")
+        #expect(milk.base == 61)             // clean NOVA-1 milk → high Good
+        let yog = ScoringEngineV4.score(greekYogurt)!
+        #expect(yog.profileId == "yogurt_cheese")
+        #expect(yog.base == 67)              // high-protein plain yogurt → high Good
+        #expect(ScoringEngineV4.score(cheddar)!.base == 65)
+    }
+
+    @Test func anchorBreadsProfile() {
+        let white = ScoringEngineV4.score(whiteBread)!
+        #expect(white.profileId == "breads")
+        #expect(white.base == 44)            // UPF white bread → Mediocre
+        #expect(RulesetV4.bundled.bandLabel(white.base) == "Mediocre")
+        #expect(ScoringEngineV4.score(wholeGrainBread)!.base == 65)   // whole grain → Good
+    }
+
+    @Test func anchorTeaCoffeeAndSweeteners() {
+        let tea = ScoringEngineV4.score(blackTea)!
+        #expect(tea.profileId == "tea_coffee")
+        #expect(tea.base == 69)              // clean whole-leaf tea → Good
+        let h = ScoringEngineV4.score(honey)!
+        #expect(h.profileId == "sweeteners")
+        #expect(h.base == 75)               // raw honey → Excellent
+        #expect(RulesetV4.bundled.bandLabel(h.base) == "Excellent")
+    }
+
+    @Test func anchorMeatProfile() {
+        let b = ScoringEngineV4.score(bacon)!
+        #expect(b.profileId == "meat")
+        #expect(b.base == 34)                // nitrite-cured bacon (Tier-A) → Mediocre
+        let c = ScoringEngineV4.score(meatChicken)!
+        #expect(c.profileId == "meat")
+        #expect(c.base == 74)                // clean chicken breast → high Good (S12 0.40 cap)
+    }
+
     // MARK: Phase D routing (water/alcohol unsupported; categories → general)
 
     @Test func waterAndAlcoholAreUnsupported() {
@@ -261,17 +363,12 @@ struct ScoringV4Tests {
         #expect(ScoringEngineV4.route(beer) == "unsupported")
     }
 
-    @Test func dormantCategoriesScoreViaGeneral() {
-        // The category profiles remain in the ruleset but aren't routed to yet;
-        // their products score through the calibrated general profile.
-        let milk = product(kcal: 64, protein: 3.3, sugar: 4.8, nova: 1,
-                           name: "whole milk", ingredientsText: "organic milk",
-                           categories: ["dairies", "milks"])
-        let r = ScoringEngineV4.score(milk)!
-        #expect(r.profileId == "general")
-        #expect(r.base >= 10)
-        // Plant milk is a beverage, so it scores through the drinks profile.
-        #expect(ScoringEngineV4.score(oatMilk)!.profileId == "drinks")
+    @Test func activatedCategoriesScoreViaOwnProfile() {
+        // The category profiles are now routed to and score with their own weights
+        // (§12.9), no longer falling back to general/drinks.
+        #expect(ScoringEngineV4.score(wholeMilk)!.profileId == "dairy_milk")
+        #expect(ScoringEngineV4.score(oatMilk)!.profileId == "plant_milk")
+        #expect(ScoringEngineV4.score(greekYogurt)!.base >= 10)
     }
 
     @Test func anchorOrderingHolds() {

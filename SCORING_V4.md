@@ -291,10 +291,14 @@ is also the primary lever for the build-muscle / lose-weight objectives (§7).
 
 Weights shown per rule; score = Σ(w·f)/Σw regardless of totals.
 
-> **Status:** all twelve profiles below are implemented in ruleset
-> `2026.07-c1` (Phase C). general/snacks/drinks carry the b2-calibrated
-> weights; the nine category profiles carry the spec's provisional weights
-> pending their own calibration pass (first distribution snapshot in §12.8).
+> **Status:** all twelve profiles are implemented and — as of ruleset
+> `2026.08-e1` — the eight category profiles (plant_milk, dairy_milk,
+> yogurt_cheese, tea_coffee, sweeteners, breads, ice_cream, meat) are
+> **calibrated and activated** in the router (§12.9). general/snacks/drinks
+> carry the b2-calibrated weights. Water remains **`unsupported`** (launch
+> decision) — its profile stays dormant with no router entry. The weight
+> tables below show the spec's *provisional* values; the live weights are in
+> `RulesetV4.json` (see §12.9 for the deltas).
 
 | Profile | Weights |
 |---|---|
@@ -563,6 +567,89 @@ tea_coffee 40 (34) · plant_milk 45 (11).
    reviews.
 4. plant_milk n=11 — sample too thin to conclude anything; revisit with a
    category-targeted pull.
+
+### 12.9 Category-profile activation calibration — 2026-08 (ruleset 2026.08-e1)
+
+The eight dormant category profiles are calibrated and **activated** in the
+router (water stays `unsupported` — the launch decision, §0/§14 — so alcohol +
+water are the only non-scored categories). Same method as §12.8: the corpus is
+scored through the **actual Swift engine** compiled as a macOS CLI, driven by
+the candidate `RulesetV4.json`.
+
+- **Corpus:** 11,057 unique EN-market products (US/UK/CA/AU/IE/NZ), fresh sample
+  from the official OFF dataset via the HF rows API (dump channel, not the
+  product API); 9,481 scored, 1,576 RMP-gated (14.3% — the RMP gate holds).
+  Products flow through the real `OpenFoodFactsService.makeProduct` mapper, so
+  additive tiers, NOVA, fvn, packaging, and micronutrients are mapped exactly as
+  in the app.
+- **Root cause found:** the category profiles carried large **Tier-1
+  voluntary-claim** weights (dairyLabels 18, welfare 15, S9 organic 20, S11
+  origin 10) that earn **zero** for the majority of products that don't print
+  those labels — burying clean whole foods below the top bands (meat 1% ≥75;
+  tea/coffee 47% in the Bad band; plain Greek yogurt 61, plain chicken ~63). Fix
+  (matching the §12.8 review): shrink the voluntary-claim weights to bonus-sized
+  and reallocate to the rules that measure the actual product (S1, S2/NOVA, S12,
+  category quality). UPF stays harsh via S1/S2; clean whole foods rise.
+- **Result — per-profile median (spec-provisional → final, routed, n=11,057):**
+
+  | Profile | n | prov | final | Note |
+  |---|---|---|---|---|
+  | plant_milk | 163 | 52 | 51 | light NOVA bump pushes mainstream UPF into bottom half |
+  | dairy_milk | 42 | 51 | **60** | de-weighted dairyLabels; clean milk rises |
+  | yogurt_cheese | 218 | 51 | **58** | same; plain Greek yogurt 61→67 |
+  | tea_coffee | 34 | 36 | **42** | S9/S11 Tier-1 drags cut, NOVA raised; well-described tea 30s→69 |
+  | sweeteners | 58 | 54 | 54 | on-target at provisional — **unchanged** |
+  | breads | 291 | 56 | **49** | NOVA up, wholeGrain/flourOxidizers trimmed; into bottom half |
+  | ice_cream | 65 | 35 | 35 | provisional on-target on the full corpus — **unchanged** (§12.8's "24" was small-sample noise) |
+  | meat | 298 | 38 | **44** | welfare/S8 de-weighted; Bad-band 29%→14% |
+
+- **NOVA sanity (final):** NOVA-4 median 39, 80.2% below 50; NOVA-1/2 median 73,
+  82.7% ≥60 — the b2 harshness holds, and whole-food scores actually **rose**
+  (category whole foods no longer buried by Tier-1 zeros).
+- **Anchors (final ruleset, harness-verified — golden values in `ScoringV4Tests`):**
+
+  | Product | Profile | Base | Band |
+  |---|---|---|---|
+  | rolled oats | breads | 87 | Excellent |
+  | whole-grain bread | breads | 65 | Good |
+  | white bread | breads | 44 | Mediocre |
+  | whole milk | dairy_milk | 61 | Good |
+  | plain Greek yogurt | yogurt_cheese | 67 | Good |
+  | cheddar cheese | yogurt_cheese | 65 | Good |
+  | black tea / ground coffee | tea_coffee | 69 | Good |
+  | raw honey | sweeteners | 75 | Excellent |
+  | maple syrup | sweeteners | 79 | Excellent |
+  | chicken breast (plain, NOVA-1) | meat | 74 | Good |
+  | bacon (nitrite-cured, Tier-A) | meat | 34 | Mediocre |
+
+- **Two documented residuals (defensible, not bugs):**
+  1. **S12 caps at 0.40 for high-protein/no-fibre foods** (`0.40·protDens`), so
+     plain milk/yogurt/chicken top out in **high Good** (61/67/74), not
+     Excellent, unless they also carry organic/welfare/cert labels. Lifting them
+     into Excellent would require an engine change to S12, out of scope for a
+     weight-only calibration.
+  2. **tea_coffee's Bad-band tail is data-sparsity, not scoring.** 15/15 of the
+     10–24 teas have confidence <0.50 (mean 0.24) — dry teas with no nutrition
+     table and unknown NOVA. They render as provisional ("~42") with the
+     photograph-the-label prompt (§3.2); well-described tea/coffee score 69.
+- **Weight changes (spec-provisional → final):**
+  - plant_milk: S1 30→28, S2 8→12.
+  - dairy_milk: S1 25→30, dairyLabels 18→8, dairyProcessing 12→15, S12 12→18,
+    S7 10→5, S8 5→3.
+  - yogurt_cheese: S1 25→30, dairyLabels 18→8, dairyProcessing 12→14, S12 12→18,
+    S7 10→5, S8 5→3.
+  - tea_coffee: S1 32→42, S9 20→6, brewMaterial 20→12, S11 10→4, S2 8→22, S12 5→9.
+  - breads: S1 35→28, wholeGrain 12→10, flourOxidizers 10→5, S3 10→12, S2 8→16.
+  - meat: S1 40→46, welfare 15→6, S4 8→9, S12 12→18, S8 8→3.
+  - sweeteners, ice_cream: unchanged (verified on-target).
+- **Bands unchanged at 75/50/25** — the harsh distribution came from weights.
+- **Router:** 22 → 163 entries; exact-tag, most-specific-first (RTD drinks divert
+  before dry tea/coffee; plant-milk before dairy; `milk-substitutes` → plant_milk
+  so it can't fall to dairy). Tags mined from the corpus so they match real OFF
+  category vocabulary. Water/alcohol remain `unsupported`.
+- **[OPEN] thin samples:** dairy_milk (42), tea_coffee (34), ice_cream (65),
+  sweeteners (58) are still modest; revisit with a category-targeted pull if the
+  live distributions drift. Water reactivation remains a separate team decision.
 
 ---
 

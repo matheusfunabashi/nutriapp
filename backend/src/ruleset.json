@@ -1,5 +1,5 @@
 {
-  "version": "2026.07-d2",
+  "version": "2026.08-e1",
   "bands": {
     "excellent": 75,
     "good": 50,
@@ -317,7 +317,7 @@
     "plant_milk": [
       {
         "rule": "S1",
-        "w": 30
+        "w": 28
       },
       {
         "rule": "S10",
@@ -338,7 +338,7 @@
       },
       {
         "rule": "S2",
-        "w": 8
+        "w": 12
       },
       {
         "rule": "S7",
@@ -352,15 +352,15 @@
     "dairy_milk": [
       {
         "rule": "S1",
-        "w": 25
+        "w": 30
       },
       {
         "rule": "dairyLabels",
-        "w": 18
+        "w": 8
       },
       {
         "rule": "dairyProcessing",
-        "w": 12
+        "w": 15
       },
       {
         "rule": "S3",
@@ -369,7 +369,7 @@
       },
       {
         "rule": "S12",
-        "w": 12
+        "w": 18
       },
       {
         "rule": "S13",
@@ -377,25 +377,25 @@
       },
       {
         "rule": "S7",
-        "w": 10
+        "w": 5
       },
       {
         "rule": "S8",
-        "w": 5
+        "w": 3
       }
     ],
     "yogurt_cheese": [
       {
         "rule": "S1",
-        "w": 25
+        "w": 30
       },
       {
         "rule": "dairyLabels",
-        "w": 18
+        "w": 8
       },
       {
         "rule": "dairyProcessing",
-        "w": 12
+        "w": 14
       },
       {
         "rule": "S3",
@@ -404,7 +404,7 @@
       },
       {
         "rule": "S12",
-        "w": 12
+        "w": 18
       },
       {
         "rule": "S13",
@@ -412,37 +412,37 @@
       },
       {
         "rule": "S7",
-        "w": 10
+        "w": 5
       },
       {
         "rule": "S8",
-        "w": 5
+        "w": 3
       }
     ],
     "tea_coffee": [
       {
         "rule": "S1",
-        "w": 32
+        "w": 42
       },
       {
         "rule": "S9",
-        "w": 20
+        "w": 6
       },
       {
         "rule": "brewMaterial",
-        "w": 20
+        "w": 12
       },
       {
         "rule": "S11",
-        "w": 10
+        "w": 4
       },
       {
         "rule": "S2",
-        "w": 8
+        "w": 22
       },
       {
         "rule": "S12",
-        "w": 5
+        "w": 9
       },
       {
         "rule": "S8",
@@ -478,19 +478,19 @@
     "breads": [
       {
         "rule": "S1",
-        "w": 35
+        "w": 28
       },
       {
         "rule": "wholeGrain",
-        "w": 12
-      },
-      {
-        "rule": "flourOxidizers",
         "w": 10
       },
       {
+        "rule": "flourOxidizers",
+        "w": 5
+      },
+      {
         "rule": "S3",
-        "w": 10,
+        "w": 12,
         "variant": "bread"
       },
       {
@@ -499,7 +499,7 @@
       },
       {
         "rule": "S2",
-        "w": 8
+        "w": 16
       },
       {
         "rule": "S12",
@@ -561,11 +561,11 @@
     "meat": [
       {
         "rule": "S1",
-        "w": 40
+        "w": 46
       },
       {
         "rule": "welfare",
-        "w": 15
+        "w": 6
       },
       {
         "rule": "S2",
@@ -573,11 +573,11 @@
       },
       {
         "rule": "S4",
-        "w": 8
+        "w": 9
       },
       {
         "rule": "S12",
-        "w": 12
+        "w": 18
       },
       {
         "rule": "S13",
@@ -589,7 +589,7 @@
       },
       {
         "rule": "S8",
-        "w": 8
+        "w": 3
       }
     ]
   },
@@ -635,6 +635,14 @@
       "profile": "drinks"
     },
     {
+      "match": "iced-coffees",
+      "profile": "drinks"
+    },
+    {
+      "match": "coffee-drinks",
+      "profile": "drinks"
+    },
+    {
       "match": "energy-drinks",
       "profile": "drinks"
     },
@@ -643,16 +651,568 @@
       "profile": "drinks"
     },
     {
-      "match": "fruit-juices",
-      "profile": "drinks"
-    },
-    {
-      "match": "juices",
-      "profile": "drinks"
-    },
-    {
       "match": "soft-drinks",
       "profile": "drinks"
+    },
+    {
+      "match": "sports-drinks",
+      "profile": "drinks"
+    },
+    {
+      "match": "kombucha",
+      "profile": "drinks"
+    },
+    {
+      "match": "teas",
+      "profile": "tea_coffee"
+    },
+    {
+      "match": "green-teas",
+      "profile": "tea_coffee"
+    },
+    {
+      "match": "black-teas",
+      "profile": "tea_coffee"
+    },
+    {
+      "match": "white-teas",
+      "profile": "tea_coffee"
+    },
+    {
+      "match": "oolong-teas",
+      "profile": "tea_coffee"
+    },
+    {
+      "match": "herbal-teas",
+      "profile": "tea_coffee"
+    },
+    {
+      "match": "flavored-teas",
+      "profile": "tea_coffee"
+    },
+    {
+      "match": "fruit-teas",
+      "profile": "tea_coffee"
+    },
+    {
+      "match": "rooibos-teas",
+      "profile": "tea_coffee"
+    },
+    {
+      "match": "coffees",
+      "profile": "tea_coffee"
+    },
+    {
+      "match": "ground-coffees",
+      "profile": "tea_coffee"
+    },
+    {
+      "match": "coffee-beans",
+      "profile": "tea_coffee"
+    },
+    {
+      "match": "instant-coffees",
+      "profile": "tea_coffee"
+    },
+    {
+      "match": "arabica-coffees",
+      "profile": "tea_coffee"
+    },
+    {
+      "match": "robusta-coffees",
+      "profile": "tea_coffee"
+    },
+    {
+      "match": "roasted-coffees",
+      "profile": "tea_coffee"
+    },
+    {
+      "match": "plant-based-beverages",
+      "profile": "plant_milk"
+    },
+    {
+      "match": "plant-based-milk-alternatives",
+      "profile": "plant_milk"
+    },
+    {
+      "match": "milk-substitutes",
+      "profile": "plant_milk"
+    },
+    {
+      "match": "oat-milks",
+      "profile": "plant_milk"
+    },
+    {
+      "match": "almond-milks",
+      "profile": "plant_milk"
+    },
+    {
+      "match": "soy-milks",
+      "profile": "plant_milk"
+    },
+    {
+      "match": "soya-milks",
+      "profile": "plant_milk"
+    },
+    {
+      "match": "rice-milks",
+      "profile": "plant_milk"
+    },
+    {
+      "match": "coconut-milks-and-creams",
+      "profile": "plant_milk"
+    },
+    {
+      "match": "cashew-milks",
+      "profile": "plant_milk"
+    },
+    {
+      "match": "hazelnut-milks",
+      "profile": "plant_milk"
+    },
+    {
+      "match": "hemp-milks",
+      "profile": "plant_milk"
+    },
+    {
+      "match": "pea-milks",
+      "profile": "plant_milk"
+    },
+    {
+      "match": "nut-milks",
+      "profile": "plant_milk"
+    },
+    {
+      "match": "milks",
+      "profile": "dairy_milk"
+    },
+    {
+      "match": "whole-milks",
+      "profile": "dairy_milk"
+    },
+    {
+      "match": "semi-skimmed-milks",
+      "profile": "dairy_milk"
+    },
+    {
+      "match": "skimmed-milks",
+      "profile": "dairy_milk"
+    },
+    {
+      "match": "uht-milks",
+      "profile": "dairy_milk"
+    },
+    {
+      "match": "pasteurised-milks",
+      "profile": "dairy_milk"
+    },
+    {
+      "match": "fresh-milks",
+      "profile": "dairy_milk"
+    },
+    {
+      "match": "raw-milks",
+      "profile": "dairy_milk"
+    },
+    {
+      "match": "lactose-free-milks",
+      "profile": "dairy_milk"
+    },
+    {
+      "match": "goat-milks",
+      "profile": "dairy_milk"
+    },
+    {
+      "match": "milks-liquid-and-powder",
+      "profile": "dairy_milk"
+    },
+    {
+      "match": "buttermilks",
+      "profile": "dairy_milk"
+    },
+    {
+      "match": "fermented-milk-products",
+      "profile": "yogurt_cheese"
+    },
+    {
+      "match": "fermented-milk-drinks",
+      "profile": "yogurt_cheese"
+    },
+    {
+      "match": "yogurts",
+      "profile": "yogurt_cheese"
+    },
+    {
+      "match": "yoghurts",
+      "profile": "yogurt_cheese"
+    },
+    {
+      "match": "greek-yogurts",
+      "profile": "yogurt_cheese"
+    },
+    {
+      "match": "drinkable-yogurts",
+      "profile": "yogurt_cheese"
+    },
+    {
+      "match": "cheeses",
+      "profile": "yogurt_cheese"
+    },
+    {
+      "match": "cow-cheeses",
+      "profile": "yogurt_cheese"
+    },
+    {
+      "match": "goat-cheeses",
+      "profile": "yogurt_cheese"
+    },
+    {
+      "match": "sheep-cheeses",
+      "profile": "yogurt_cheese"
+    },
+    {
+      "match": "cheddar-cheese",
+      "profile": "yogurt_cheese"
+    },
+    {
+      "match": "cream-cheeses",
+      "profile": "yogurt_cheese"
+    },
+    {
+      "match": "cottage-cheeses",
+      "profile": "yogurt_cheese"
+    },
+    {
+      "match": "sliced-cheeses",
+      "profile": "yogurt_cheese"
+    },
+    {
+      "match": "grated-cheese",
+      "profile": "yogurt_cheese"
+    },
+    {
+      "match": "soft-cheeses",
+      "profile": "yogurt_cheese"
+    },
+    {
+      "match": "hard-cheeses",
+      "profile": "yogurt_cheese"
+    },
+    {
+      "match": "kefir",
+      "profile": "yogurt_cheese"
+    },
+    {
+      "match": "quark",
+      "profile": "yogurt_cheese"
+    },
+    {
+      "match": "fromage-blanc",
+      "profile": "yogurt_cheese"
+    },
+    {
+      "match": "fromages-blancs",
+      "profile": "yogurt_cheese"
+    },
+    {
+      "match": "curds",
+      "profile": "yogurt_cheese"
+    },
+    {
+      "match": "sugars",
+      "profile": "sweeteners"
+    },
+    {
+      "match": "cane-sugar",
+      "profile": "sweeteners"
+    },
+    {
+      "match": "granulated-sugars",
+      "profile": "sweeteners"
+    },
+    {
+      "match": "brown-sugars",
+      "profile": "sweeteners"
+    },
+    {
+      "match": "icing-sugars",
+      "profile": "sweeteners"
+    },
+    {
+      "match": "honeys",
+      "profile": "sweeteners"
+    },
+    {
+      "match": "maple-syrups",
+      "profile": "sweeteners"
+    },
+    {
+      "match": "agave-syrups",
+      "profile": "sweeteners"
+    },
+    {
+      "match": "syrups",
+      "profile": "sweeteners"
+    },
+    {
+      "match": "simple-syrups",
+      "profile": "sweeteners"
+    },
+    {
+      "match": "molasses",
+      "profile": "sweeteners"
+    },
+    {
+      "match": "table-sweeteners",
+      "profile": "sweeteners"
+    },
+    {
+      "match": "sweeteners",
+      "profile": "sweeteners"
+    },
+    {
+      "match": "golden-syrups",
+      "profile": "sweeteners"
+    },
+    {
+      "match": "breads",
+      "profile": "breads"
+    },
+    {
+      "match": "white-breads",
+      "profile": "breads"
+    },
+    {
+      "match": "wheat-breads",
+      "profile": "breads"
+    },
+    {
+      "match": "whole-wheat-breads",
+      "profile": "breads"
+    },
+    {
+      "match": "whole-grain-breads",
+      "profile": "breads"
+    },
+    {
+      "match": "sliced-breads",
+      "profile": "breads"
+    },
+    {
+      "match": "special-breads",
+      "profile": "breads"
+    },
+    {
+      "match": "flatbreads",
+      "profile": "breads"
+    },
+    {
+      "match": "baguettes",
+      "profile": "breads"
+    },
+    {
+      "match": "sandwich-breads",
+      "profile": "breads"
+    },
+    {
+      "match": "buns",
+      "profile": "breads"
+    },
+    {
+      "match": "hamburger-buns",
+      "profile": "breads"
+    },
+    {
+      "match": "bagels",
+      "profile": "breads"
+    },
+    {
+      "match": "toasts",
+      "profile": "breads"
+    },
+    {
+      "match": "breakfast-cereals",
+      "profile": "breads"
+    },
+    {
+      "match": "mueslis",
+      "profile": "breads"
+    },
+    {
+      "match": "oatmeals",
+      "profile": "breads"
+    },
+    {
+      "match": "pastas",
+      "profile": "breads"
+    },
+    {
+      "match": "stuffed-pastas",
+      "profile": "breads"
+    },
+    {
+      "match": "fresh-pastas",
+      "profile": "breads"
+    },
+    {
+      "match": "rices",
+      "profile": "breads"
+    },
+    {
+      "match": "cereal-grains",
+      "profile": "breads"
+    },
+    {
+      "match": "flours",
+      "profile": "breads"
+    },
+    {
+      "match": "oats",
+      "profile": "breads"
+    },
+    {
+      "match": "frozen-desserts",
+      "profile": "ice_cream"
+    },
+    {
+      "match": "ice-creams-and-sorbets",
+      "profile": "ice_cream"
+    },
+    {
+      "match": "ice-creams",
+      "profile": "ice_cream"
+    },
+    {
+      "match": "ice-cream-tubs",
+      "profile": "ice_cream"
+    },
+    {
+      "match": "ice-cream-bars",
+      "profile": "ice_cream"
+    },
+    {
+      "match": "ice-cream-cones",
+      "profile": "ice_cream"
+    },
+    {
+      "match": "sorbets",
+      "profile": "ice_cream"
+    },
+    {
+      "match": "gelatos",
+      "profile": "ice_cream"
+    },
+    {
+      "match": "frozen-yogurts",
+      "profile": "ice_cream"
+    },
+    {
+      "match": "mochi-ice-cream",
+      "profile": "ice_cream"
+    },
+    {
+      "match": "vanilla-ice-cream-tubs",
+      "profile": "ice_cream"
+    },
+    {
+      "match": "meats-and-their-products",
+      "profile": "meat"
+    },
+    {
+      "match": "meats",
+      "profile": "meat"
+    },
+    {
+      "match": "prepared-meats",
+      "profile": "meat"
+    },
+    {
+      "match": "poultry",
+      "profile": "meat"
+    },
+    {
+      "match": "poultries",
+      "profile": "meat"
+    },
+    {
+      "match": "beef",
+      "profile": "meat"
+    },
+    {
+      "match": "pork",
+      "profile": "meat"
+    },
+    {
+      "match": "chicken",
+      "profile": "meat"
+    },
+    {
+      "match": "chickens",
+      "profile": "meat"
+    },
+    {
+      "match": "turkeys",
+      "profile": "meat"
+    },
+    {
+      "match": "turkey-breasts",
+      "profile": "meat"
+    },
+    {
+      "match": "hams",
+      "profile": "meat"
+    },
+    {
+      "match": "sausages",
+      "profile": "meat"
+    },
+    {
+      "match": "bacons",
+      "profile": "meat"
+    },
+    {
+      "match": "salami",
+      "profile": "meat"
+    },
+    {
+      "match": "cured-meats",
+      "profile": "meat"
+    },
+    {
+      "match": "fishes-and-their-products",
+      "profile": "meat"
+    },
+    {
+      "match": "fishes",
+      "profile": "meat"
+    },
+    {
+      "match": "seafood",
+      "profile": "meat"
+    },
+    {
+      "match": "fatty-fishes",
+      "profile": "meat"
+    },
+    {
+      "match": "hamburgers",
+      "profile": "meat"
+    },
+    {
+      "match": "frozen-meats",
+      "profile": "meat"
+    },
+    {
+      "match": "fresh-meats",
+      "profile": "meat"
+    },
+    {
+      "match": "meat-alternatives",
+      "profile": "meat"
+    },
+    {
+      "match": "meat-analogues",
+      "profile": "meat"
     },
     {
       "match": "snacks",
@@ -673,6 +1233,14 @@
     {
       "match": "crisps",
       "profile": "snacks"
+    },
+    {
+      "match": "fruit-juices",
+      "profile": "drinks"
+    },
+    {
+      "match": "juices",
+      "profile": "drinks"
     },
     {
       "match": "beverages",
