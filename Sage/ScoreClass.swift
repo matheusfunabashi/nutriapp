@@ -30,8 +30,7 @@ struct ScoreClass: Equatable {
         dietPattern = (p.dietPattern ?? "").lowercased()
         avoidList = Self.canon(p.avoidList ?? [])
         // Only non-default (≠ balanced/1) sliders change the score → the bucket.
-        sliders = [("c", p.sliderCleanIngredients), ("n", p.sliderNutrition),
-                   ("e", p.sliderEnvironment), ("w", p.sliderAnimalWelfare)]
+        sliders = [("c", p.sliderCleanIngredients), ("n", p.sliderNutrition)]
             .compactMap { key, v in (v != nil && v != 1) ? "\(key)\(v!)" : nil }
             .joined(separator: "")
         personalized = p.personalizeScoring

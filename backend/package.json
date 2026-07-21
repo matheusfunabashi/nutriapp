@@ -8,6 +8,7 @@
     "dev": "wrangler dev",
     "deploy": "wrangler deploy",
     "typecheck": "tsc --noEmit",
+    "test": "node --experimental-strip-types --test src/explanation.test.ts",
     "migrate:local": "wrangler d1 migrations apply sage --local",
     "migrate:remote": "wrangler d1 migrations apply sage --remote"
   },

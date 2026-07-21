@@ -1,0 +1,89 @@
+{
+  "categories": {
+    "soda": [
+      {
+        "barcode": "111",
+        "off_name": "Test Cola",
+        "off_brands": "TestBrand",
+        "ingredients_text": "Water, sugar, sunflower oil, caffeine",
+        "additives_tags": ["en:e150d", "en:e338"],
+        "nutriments": {
+          "sugars_100g": 10.6,
+          "salt_100g": 0.05,
+          "saturated-fat_100g": 0.0,
+          "proteins_100g": 0.0
+        },
+        "nutriscore_grade": "e",
+        "nova_group": 4,
+        "image_url": "https://example.com/cola.png",
+        "categories_tags": ["en:beverages", "en:sodas"],
+        "labels_tags": [],
+        "data_problems": []
+      },
+      {
+        "barcode": "112",
+        "off_name": "Test Cola 12 fl oz",
+        "off_brands": "TestBrand",
+        "ingredients_text": "Water, sugar, caramel color",
+        "additives_tags": ["en:e150d"],
+        "nutriments": {
+          "sugars_100g": 9.0,
+          "salt_100g": 0.04,
+          "proteins_100g": 0.0
+        },
+        "nutriscore_grade": "d",
+        "nova_group": 4,
+        "image_url": null,
+        "categories_tags": ["en:sodas"],
+        "labels_tags": [],
+        "data_problems": ["no image"]
+      },
+      {
+        "barcode": "113",
+        "off_name": "Bad Data Soda",
+        "off_brands": "Other",
+        "ingredients_text": "water",
+        "additives_tags": [],
+        "nutriments": { "sugars_100g": 5 },
+        "nutriscore_grade": "c",
+        "nova_group": 3,
+        "image_url": null,
+        "categories_tags": ["en:sodas"],
+        "labels_tags": [],
+        "data_problems": ["missing ingredients"]
+      }
+    ],
+    "coffee": [
+      {
+        "barcode": "999",
+        "off_name": "Ignored Coffee",
+        "off_brands": "Roaster",
+        "ingredients_text": "coffee",
+        "additives_tags": [],
+        "nutriments": { "proteins_100g": 1 },
+        "nutriscore_grade": "a",
+        "nova_group": 1,
+        "image_url": null,
+        "categories_tags": ["en:coffee"],
+        "labels_tags": [],
+        "data_problems": []
+      }
+    ],
+    "water": [
+      {
+        "barcode": "201",
+        "off_name": "Spring Water",
+        "off_brands": "Pure",
+        "ingredients_text": "water",
+        "additives_tags": [],
+        "nutriments": {},
+        "nutriscore_grade": "a",
+        "nova_group": 1,
+        "image_url": null,
+        "categories_tags": ["en:waters"],
+        "labels_tags": [],
+        "data_problems": []
+      }
+    ]
+  }
+}

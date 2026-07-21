@@ -2,8 +2,8 @@ import Foundation
 
 // MARK: - Additive catalog
 
-/// Looks up Open Food Facts additive tags (e.g. "en:e150d") against a bundled
-/// table of names + risk ratings. Unknown additives fall back to `.unrated`.
+/// Looks up additive codes against the bundled knowledge base (+ legacy Additives.json
+/// as a fallback for older notes). Unknown additives fall back to `.unrated`.
 enum AdditiveCatalog {
     struct Info: Codable {
         let name: String
@@ -13,9 +13,8 @@ enum AdditiveCatalog {
 
     private final class BundleToken {}
 
+    /// Legacy flat table (kept for TopRatedBuilder / older snapshots).
     static let entries: [String: Info] = {
-        // Resolve via the bundle that owns this code so it also works under a
-        // hosted test target (where Bundle.main is the test runner).
         let bundle = Bundle(for: BundleToken.self)
         guard let url = bundle.url(forResource: "Additives", withExtension: "json")
                 ?? Bundle.main.url(forResource: "Additives", withExtension: "json"),
@@ -36,24 +35,58 @@ enum AdditiveCatalog {
 
     static func additive(for tag: String) -> ProductAdditive {
         let code = normalize(tag)
+        if let kb = AdditiveKnowledgeBase.entry(for: code) {
+            return ProductAdditive(
+                name: kb.displayName,
+                risk: kb.risk,
+                note: kb.summary.resolved(),
+                code: code,
+                tier: tier(from: kb.risk)
+            )
+        }
         if let info = entries[code] {
             return ProductAdditive(name: info.name, risk: info.risk, note: info.note, code: code)
         }
-        // Unknown additive: show the code, no risk judgment.
         return ProductAdditive(name: code.uppercased(), risk: .unrated, code: code)
     }
 
     /// Maps an AdditiveDetector hit into the product model used by scoring + UI.
+    /// Display risk derives from the SCORING tier (A→High, B→Moderate, C/D→Low)
+    /// unless a knowledge-base override exists.
     static func productAdditive(from detected: Additive) -> ProductAdditive {
         let code = normalize(detected.eNumber)
-        let catalog = entries[code]
+        let kb = AdditiveKnowledgeBase.entry(for: code)
+        let scoredTier = kb.map { tier(from: $0.risk) } ?? detected.tier
+        let resolvedRisk: RiskLevel = {
+            if let kb { return kb.risk }
+            return risk(for: scoredTier)
+        }()
+        let name: String = {
+            if let kb { return kb.displayName }
+            if detected.commonName.uppercased() == detected.eNumber.uppercased() {
+                return detected.eNumber
+            }
+            return "\(detected.commonName) (\(detected.eNumber))"
+        }()
+        let summary = kb?.summary.resolved() ?? entries[code]?.note
+        let detectedAs = detected.detectedAs.isEmpty ? nil : detected.detectedAs
         return ProductAdditive(
-            name: detected.commonName,
-            risk: risk(for: detected.tier),
-            note: catalog?.note,
+            name: name,
+            risk: resolvedRisk,
+            note: summary,
             code: code,
-            tier: detected.tier
+            tier: scoredTier,
+            detectedAs: detectedAs
         )
+    }
+
+    static func tier(from risk: RiskLevel) -> AdditiveTier {
+        switch risk {
+        case .high: return .major
+        case .moderate: return .moderate
+        case .low: return .mild
+        case .unrated: return .unclassified
+        }
     }
 
     /// Display/scoring risk from detector tier (major → high, etc.).
@@ -73,8 +106,6 @@ enum AdditiveCatalog {
         case .major: return 1.5
         case .moderate: return 0.75
         case .mild, .soft: return 0.25
-        // Detected but not classified — we have no evidence to flag it, so it
-        // costs nothing (matches the neutral "UNRATED" the UI shows).
         case .unclassified: return 0
         case .exempt: return 0
         }
@@ -147,6 +178,34 @@ struct OpenFoodFactsService {
 
     // MARK: Mapping
 
+    /// Maps a pre-fetched candidate record through the same pipeline as a live
+    /// `/lookup` response — no duplicate field logic outside `map(_:barcode:)`.
+    static func mapCandidate(barcode: String,
+                             name: String?,
+                             brands: String?,
+                             ingredientsText: String?,
+                             additivesTags: [String]?,
+                             nutriments: OFFNutriments?,
+                             nutriscoreGrade: String?,
+                             novaGroup: Int?,
+                             imageURL: String?,
+                             categoriesTags: [String]?,
+                             labelsTags: [String]?) -> Product {
+        let off = OFFProduct(
+            productName: name,
+            brands: brands,
+            nutriscoreGrade: nutriscoreGrade,
+            novaGroup: novaGroup,
+            nutriments: nutriments,
+            additivesTags: additivesTags,
+            ingredientsText: ingredientsText,
+            categoriesTags: categoriesTags,
+            imageUrl: imageURL,
+            labelsTags: labelsTags
+        )
+        return map(off, barcode: barcode)
+    }
+
     static func map(_ off: OFFProduct, barcode: String) -> Product {
         let n = off.nutriments
 
@@ -167,6 +226,7 @@ struct OpenFoodFactsService {
             kcal: n?.energyKcal ?? n?.energyKj.map { $0 / 4.184 },  // kJ→kcal fallback
             fvn: n?.fvn,
             addedSugar_g: n?.addedSugars,
+            transFat_g: n?.transFat,
             // OFF stores minerals & vitamin C in grams/100g → scale to mg.
             iron_mg: n?.iron.map { $0 * 1000 },
             potassium_mg: n?.potassium.map { $0 * 1000 },
@@ -179,7 +239,9 @@ struct OpenFoodFactsService {
         let additives = additivesScan.additives.map { AdditiveCatalog.productAdditive(from: $0) }
         let sweetenerCodes = additives.compactMap(\.code) + (off.additivesTags ?? []).map { AdditiveCatalog.normalize($0) }
         let sweeteners = detectSweeteners(sweetenerCodes)
-        let seedOils = detectSeedOils(off.ingredientsText)
+        let shares = ingredientShares(off.ingredients)
+        let seedOils = detectSeedOils(off.ingredientsText, shares: shares)
+        // Strict > 0 only — nil or 0 g must not raise the trans-fat card.
         let transFats = (n?.transFat ?? 0) > 0
         let dietFlags = detectDietFlags(analysis: off.ingredientsAnalysisTags ?? [],
                                         allergens: off.allergensTags ?? [])
@@ -196,13 +258,13 @@ struct OpenFoodFactsService {
             glyph: glyph(for: off.categoriesTags ?? []),
             overallScore: overall,
             yourScore: overall,          // personalized later (Phase 3)
-            deltaReason: nil,            // AI explanation later (Phase 4)
+            overview: nil,
             nutriGrade: (grade?.isEmpty == false) ? grade! : "?",
             novaGroup: off.novaGroup ?? 0,
             nutrients: nutrients,
             bonuses: [],                 // computed by scoring engine (Phase 3)
             transFats: transFats,
-            caffeine_mg: n?.caffeine,
+            caffeine_mg: n?.caffeine.map { $0 * 1000 },
             sweeteners: sweeteners,
             seedOils: seedOils,
             additives: additives,
@@ -214,7 +276,7 @@ struct OpenFoodFactsService {
             labels: normalizedTags(off.labelsTags),
             packagingMaterials: packagingMaterials(off),
             origins: normalizedTags(off.originsTags),
-            ingredientShares: ingredientShares(off.ingredients),
+            ingredientShares: shares,
             ecoGrade: ecoGrade(off),
             servingSize: off.servingSize?.isEmpty == false ? off.servingSize : nil,
             completeness: off.completeness,
@@ -343,14 +405,12 @@ struct OpenFoodFactsService {
         return seen
     }
 
-    private static let seedOilKeywords = [
-        "sunflower oil", "rapeseed oil", "canola oil", "soybean oil", "soya oil",
-        "corn oil", "cottonseed oil", "safflower oil", "grapeseed oil", "rice bran oil"
-    ]
-
-    static func detectSeedOils(_ ingredients: String?) -> Bool {
-        guard let text = ingredients?.lowercased() else { return false }
-        return seedOilKeywords.contains { text.contains($0) }
+    static func detectSeedOils(_ ingredients: String?,
+                               shares: [IngredientShare]? = nil) -> Bool {
+        AvoidListMatcher.containsSeedOils(
+            ingredientsText: ingredients,
+            ingredientShares: shares
+        )
     }
 
     static func primaryBrand(_ brands: String?) -> String {
@@ -511,6 +571,61 @@ struct OFFProduct: Decodable {
         } else {
             novaGroup = nil
         }
+    }
+
+    /// Memberwise initializer for offline candidate records (TopRatedBuilder, tests).
+    init(productName: String? = nil,
+         brands: String? = nil,
+         quantity: String? = nil,
+         nutriscoreGrade: String? = nil,
+         novaGroup: Int? = nil,
+         nutriments: OFFNutriments? = nil,
+         additivesTags: [String]? = nil,
+         ingredientsAnalysisTags: [String]? = nil,
+         allergensTags: [String]? = nil,
+         ingredientsText: String? = nil,
+         categoriesTags: [String]? = nil,
+         imageFrontUrl: String? = nil,
+         imageUrl: String? = nil,
+         labelsTags: [String]? = nil,
+         packagings: [OFFPackaging]? = nil,
+         packagingMaterialsTags: [String]? = nil,
+         originsTags: [String]? = nil,
+         ingredients: [OFFIngredient]? = nil,
+         ecoscoreGrade: String? = nil,
+         environmentalScoreGrade: String? = nil,
+         completeness: Double? = nil,
+         lastModifiedT: Double? = nil,
+         servingSize: String? = nil,
+         countriesTags: [String]? = nil,
+         unknownIngredientsN: Int? = nil,
+         source: String? = nil) {
+        self.productName = productName
+        self.brands = brands
+        self.quantity = quantity
+        self.nutriscoreGrade = nutriscoreGrade
+        self.novaGroup = novaGroup
+        self.nutriments = nutriments
+        self.additivesTags = additivesTags
+        self.ingredientsAnalysisTags = ingredientsAnalysisTags
+        self.allergensTags = allergensTags
+        self.ingredientsText = ingredientsText
+        self.categoriesTags = categoriesTags
+        self.imageFrontUrl = imageFrontUrl
+        self.imageUrl = imageUrl
+        self.labelsTags = labelsTags
+        self.packagings = packagings
+        self.packagingMaterialsTags = packagingMaterialsTags
+        self.originsTags = originsTags
+        self.ingredients = ingredients
+        self.ecoscoreGrade = ecoscoreGrade
+        self.environmentalScoreGrade = environmentalScoreGrade
+        self.completeness = completeness
+        self.lastModifiedT = lastModifiedT
+        self.servingSize = servingSize
+        self.countriesTags = countriesTags
+        self.unknownIngredientsN = unknownIngredientsN
+        self.source = source
     }
 }
 

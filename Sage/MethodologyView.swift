@@ -4,6 +4,8 @@ struct MethodologyView: View {
     @EnvironmentObject var store: AppStore
     let onBack: () -> Void
 
+    private var bands: RulesetV4.Bands { RulesetV4.bundled.bands }
+
     var body: some View {
         let dark = store.darkMode
         ScrollView(showsIndicators: false) {
@@ -12,10 +14,10 @@ struct MethodologyView: View {
                     .foregroundColor(Theme.textPrimary(dark))
 
                 VStack(alignment: .leading, spacing: 12) {
-                    Text("Two scores, one product")
+                    Text("A health score, not an ethics score")
                         .font(.sageBold(26)).tracking(-0.6)
                         .foregroundColor(Theme.textPrimary(dark))
-                    Text("Every product gets an Overall score (10-100) from public nutrition data, plus a Your Score tuned to your profile.")
+                    Text("Sage measures health only. Packaging, certifications, animal welfare, and origin claims are out of the score unless they have a direct health pathway (for example brew-bag microplastics or arsenic risk in rice drinks).")
                         .font(.sageRegular(14))
                         .foregroundColor(Theme.textSecondary(dark))
                         .lineSpacing(2)
@@ -23,20 +25,28 @@ struct MethodologyView: View {
                 .padding(.horizontal, 24).padding(.bottom, 20)
 
                 methodCard(
-                    title: "Overall score",
-                    body: "Starts every food at a neutral 50, adds points for protein density, fiber, and whole-food content (per 100g/ml), and subtracts for sugar, saturated fat, sodium, ultra-processing, and risky additives. 100 = perfect food, 70 = good, 50 = neither good nor bad, 30 = bad for you, 10 = best avoided.",
+                    title: "How the number is built",
+                    body: "Each product is routed to a category profile. Rules return a fraction from 0 to 1; the score is Σ(weight × fraction) / Σ(weight), floored at 10. Weights always sum to 100 for mental math and confidence. Your Score reweights rules for your goals, then may apply preference caps.",
                     dark: dark)
                 methodCard(
-                    title: "Your Score",
-                    body: "Starts from Overall, then tunes it to your objective and preferences — e.g. protein-dense foods rise if you're building muscle; zero-calorie drinks rise a little if you're losing weight. Restriction conflicts cap it hard.",
+                    title: "Bands",
+                    body: "\(bands.excellent)–100 Excellent · \(bands.good)–\(bands.excellent - 1) Good · \(bands.ok)–\(bands.good - 1) OK · 10–\(bands.ok - 1) Bad. The same cut points drive dials, badges, and Overview labels.",
                     dark: dark)
                 methodCard(
-                    title: "Tiers",
-                    body: "80-100 Excellent · 60-79 Good · 40-59 OK · 10-39 Bad",
+                    title: "Caps",
+                    body: "Industrial trans fat (NOVA 4 or partially hydrogenated oil) caps Overall at 35. Free-sugar ceiling (35) still applies to foods with concentrated added sugar — candy in snacks, sugary drinks — but intrinsic dried-fruit sugar is exempt. Pure table sweeteners are not scored at all (see below), so the old NNS table-sweetener ceiling no longer applies to them. Your Score can be further limited by diet conflicts and avoid-list items; when several fire, the lowest wins.",
                     dark: dark)
                 methodCard(
-                    title: "Trans fats",
-                    body: "Industrial trans fats have no safe intake level, so any amount triggers our heaviest flat penalty and a dedicated red flag.",
+                    title: "Why sweeteners aren’t scored",
+                    body: "This is essentially pure sugar, and no concentrated sugar is a health food. Sage doesn't score sweeteners, so a number here would only mislead.",
+                    dark: dark)
+                methodCard(
+                    title: "Whole foods",
+                    body: "Minimally processed produce (NOVA 1–2, no additives) gets a clean additive score even when the ingredient list is missing — single-ingredient foods often lack one. Fruits, vegetables, eggs, legumes, nuts, berries, and salads use a produce-focused nutrition blend.",
+                    dark: dark)
+                methodCard(
+                    title: "Provisional scores",
+                    body: "When too much of the weighted profile rests on missing evidence, we mark the score provisional. Missing data lowers confidence; it does not invent numbers.",
                     dark: dark)
 
                 Spacer().frame(height: 60)
@@ -48,23 +58,23 @@ struct MethodologyView: View {
     private func methodCard(title: String, body: String, dark: Bool) -> some View {
         VStack(alignment: .leading, spacing: 6) {
             Text(title)
-                .font(.sageBold(16)).tracking(-0.3)
+                .font(.sageBold(15)).tracking(-0.2)
                 .foregroundColor(Theme.textPrimary(dark))
             Text(body)
                 .font(.sageRegular(13))
                 .foregroundColor(Theme.textSecondary(dark))
-                .lineSpacing(3)
+                .lineSpacing(2)
         }
-        .padding(18)
+        .padding(16)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(
-            RoundedRectangle(cornerRadius: 20, style: .continuous).fill(Theme.surface(dark))
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .fill(Theme.surface(dark))
         )
-        .cardShadow(dark)
-        .padding(.horizontal, 16).padding(.bottom, 10)
+        .padding(.horizontal, 16)
+        .padding(.bottom, 10)
     }
 }
-
 // MARK: - Methodology modal
 
 struct MethodologyModal: View {

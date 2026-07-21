@@ -1,9 +1,9 @@
 {
-  "version": "2026.08-e1",
+  "version": "2026.07-v5.0.7",
   "bands": {
     "excellent": 75,
-    "good": 50,
-    "mediocre": 25
+    "good": 55,
+    "ok": 35
   },
   "tierFractions": {
     "A": 0.33,
@@ -55,7 +55,11 @@
     "e410": "D",
     "e412": "D",
     "e415": "D",
-    "e418": "D"
+    "e418": "D",
+    "e961": "C",
+    "e962": "C",
+    "e969": "C",
+    "e960": "C"
   },
   "gumCodes": [
     "e410",
@@ -93,9 +97,9 @@
       22.5
     ],
     "drinks": [
-      1,
-      4,
-      8
+      0.5,
+      2,
+      4
     ],
     "yogurt": [
       4,
@@ -128,47 +132,13 @@
       4,
       8,
       14
+    ],
+    "fats": [
+      8,
+      20,
+      40
     ]
   },
-  "s7Materials": {
-    "glass": 1.0,
-    "paper": 0.9,
-    "cardboard": 0.9,
-    "pulp": 0.9,
-    "tetra-pak": 0.7,
-    "carton": 0.7,
-    "aluminium": 0.55,
-    "aluminum": 0.55,
-    "steel": 0.55,
-    "hdpe": 0.4,
-    "polypropylene": 0.4,
-    "pet": 0.25,
-    "polystyrene": 0.0,
-    "pvc": 0.0,
-    "plastic": 0.3
-  },
-  "certLabels": [
-    "organic",
-    "eu-organic",
-    "usda-organic",
-    "organic-certification",
-    "non-gmo-project",
-    "no-gmos",
-    "fair-trade",
-    "fairtrade",
-    "fairtrade-international",
-    "fair-trade-usa",
-    "certified-humane",
-    "regenerative-organic-certified",
-    "demeter",
-    "glyphosate-residue-free",
-    "rainforest-alliance",
-    "sustainable-seafood-msc",
-    "msc",
-    "asc",
-    "responsible-aquaculture-asc",
-    "best-aquaculture-practices"
-  ],
   "micronutrients": {
     "dv": {
       "iron_mg": 18,
@@ -186,50 +156,11 @@
     "general": [
       {
         "rule": "S1",
-        "w": 28
-      },
-      {
-        "rule": "S2",
-        "w": 26
-      },
-      {
-        "rule": "S3",
-        "w": 12,
-        "variant": "foods"
-      },
-      {
-        "rule": "S4",
-        "w": 6
-      },
-      {
-        "rule": "S5",
-        "w": 6
-      },
-      {
-        "rule": "S12",
-        "w": 18
-      },
-      {
-        "rule": "S13",
-        "w": 5
-      },
-      {
-        "rule": "S7",
-        "w": 5
-      },
-      {
-        "rule": "S8",
-        "w": 3
-      }
-    ],
-    "snacks": [
-      {
-        "rule": "S1",
         "w": 24
       },
       {
         "rule": "S2",
-        "w": 26
+        "w": 28
       },
       {
         "rule": "S3",
@@ -238,358 +169,337 @@
       },
       {
         "rule": "S4",
-        "w": 10
+        "w": 8
       },
       {
         "rule": "S5",
-        "w": 9
+        "w": 8
       },
       {
         "rule": "S12",
-        "w": 12
+        "w": 13
       },
       {
         "rule": "S13",
         "w": 5
+      }
+    ],
+    "snacks": [
+      {
+        "rule": "S1",
+        "w": 26
       },
       {
-        "rule": "S7",
+        "rule": "S2",
+        "w": 28
+      },
+      {
+        "rule": "S3",
+        "w": 12,
+        "variant": "foods"
+      },
+      {
+        "rule": "S4",
+        "w": 16
+      },
+      {
+        "rule": "S5",
+        "w": 10
+      },
+      {
+        "rule": "S12",
         "w": 5
       },
       {
-        "rule": "S8",
+        "rule": "S13",
         "w": 3
       }
     ],
     "drinks": [
       {
         "rule": "S1",
-        "w": 28
-      },
-      {
-        "rule": "S3",
-        "w": 22,
-        "variant": "drinks"
-      },
-      {
-        "rule": "S6",
-        "w": 12
-      },
-      {
-        "rule": "S2",
-        "w": 24
-      },
-      {
-        "rule": "S12",
-        "w": 5
-      },
-      {
-        "rule": "S7",
-        "w": 8
-      },
-      {
-        "rule": "S8",
-        "w": 5
-      }
-    ],
-    "water": [
-      {
-        "rule": "waterSource",
-        "w": 30
-      },
-      {
-        "rule": "S7",
-        "w": 30
-      },
-      {
-        "rule": "S1",
         "w": 20
-      },
-      {
-        "rule": "mineralDisclosure",
-        "w": 10
-      },
-      {
-        "rule": "S8",
-        "w": 10
-      }
-    ],
-    "plant_milk": [
-      {
-        "rule": "S1",
-        "w": 28
-      },
-      {
-        "rule": "S10",
-        "w": 15
-      },
-      {
-        "rule": "cropRisk",
-        "w": 12
-      },
-      {
-        "rule": "S3",
-        "w": 12,
-        "variant": "drinks"
-      },
-      {
-        "rule": "S12",
-        "w": 8
-      },
-      {
-        "rule": "S2",
-        "w": 12
-      },
-      {
-        "rule": "S7",
-        "w": 8
-      },
-      {
-        "rule": "S8",
-        "w": 5
-      }
-    ],
-    "dairy_milk": [
-      {
-        "rule": "S1",
-        "w": 30
-      },
-      {
-        "rule": "dairyLabels",
-        "w": 8
-      },
-      {
-        "rule": "dairyProcessing",
-        "w": 15
-      },
-      {
-        "rule": "S3",
-        "w": 10,
-        "variant": "foods"
-      },
-      {
-        "rule": "S12",
-        "w": 18
-      },
-      {
-        "rule": "S13",
-        "w": 5
-      },
-      {
-        "rule": "S7",
-        "w": 5
-      },
-      {
-        "rule": "S8",
-        "w": 3
-      }
-    ],
-    "yogurt_cheese": [
-      {
-        "rule": "S1",
-        "w": 30
-      },
-      {
-        "rule": "dairyLabels",
-        "w": 8
-      },
-      {
-        "rule": "dairyProcessing",
-        "w": 14
-      },
-      {
-        "rule": "S3",
-        "w": 15,
-        "variant": "yogurt"
-      },
-      {
-        "rule": "S12",
-        "w": 18
-      },
-      {
-        "rule": "S13",
-        "w": 5
-      },
-      {
-        "rule": "S7",
-        "w": 5
-      },
-      {
-        "rule": "S8",
-        "w": 3
-      }
-    ],
-    "tea_coffee": [
-      {
-        "rule": "S1",
-        "w": 42
-      },
-      {
-        "rule": "S9",
-        "w": 6
-      },
-      {
-        "rule": "brewMaterial",
-        "w": 12
-      },
-      {
-        "rule": "S11",
-        "w": 4
-      },
-      {
-        "rule": "S2",
-        "w": 22
-      },
-      {
-        "rule": "S12",
-        "w": 9
-      },
-      {
-        "rule": "S8",
-        "w": 5
-      }
-    ],
-    "sweeteners": [
-      {
-        "rule": "sweetenerType",
-        "w": 25
-      },
-      {
-        "rule": "authenticity",
-        "w": 20
-      },
-      {
-        "rule": "S1",
-        "w": 25
-      },
-      {
-        "rule": "sweetenerProcessing",
-        "w": 10
-      },
-      {
-        "rule": "S7",
-        "w": 10
-      },
-      {
-        "rule": "S8",
-        "w": 10
-      }
-    ],
-    "breads": [
-      {
-        "rule": "S1",
-        "w": 28
-      },
-      {
-        "rule": "wholeGrain",
-        "w": 10
-      },
-      {
-        "rule": "flourOxidizers",
-        "w": 5
-      },
-      {
-        "rule": "S3",
-        "w": 12,
-        "variant": "bread"
-      },
-      {
-        "rule": "S4",
-        "w": 8
       },
       {
         "rule": "S2",
         "w": 16
       },
       {
+        "rule": "S3",
+        "w": 42,
+        "variant": "drinks"
+      },
+      {
+        "rule": "S4",
+        "w": 6
+      },
+      {
+        "rule": "S5",
+        "w": 4
+      },
+      {
         "rule": "S12",
-        "w": 12
+        "w": 8
       },
       {
         "rule": "S13",
-        "w": 5
+        "w": 4
+      }
+    ],
+    "tea_coffee": [
+      {
+        "rule": "S1",
+        "w": 34
       },
       {
-        "rule": "S7",
-        "w": 4
+        "rule": "S2",
+        "w": 28
       },
       {
-        "rule": "S8",
-        "w": 4
+        "rule": "brewMaterial",
+        "w": 12
+      },
+      {
+        "rule": "S3",
+        "w": 12,
+        "variant": "foods"
+      },
+      {
+        "rule": "S12",
+        "w": 14
+      }
+    ],
+    "plant_milk": [
+      {
+        "rule": "S1",
+        "w": 26
+      },
+      {
+        "rule": "S10",
+        "w": 18
+      },
+      {
+        "rule": "contaminantRisk",
+        "w": 8
+      },
+      {
+        "rule": "S3",
+        "w": 16,
+        "variant": "drinks"
+      },
+      {
+        "rule": "S5",
+        "w": 6
+      },
+      {
+        "rule": "S12",
+        "w": 14
+      },
+      {
+        "rule": "S2",
+        "w": 12
+      }
+    ],
+    "dairy_milk": [
+      {
+        "rule": "S1",
+        "w": 28
+      },
+      {
+        "rule": "dairyProcessing",
+        "w": 12
+      },
+      {
+        "rule": "S3",
+        "w": 12,
+        "variant": "foods"
+      },
+      {
+        "rule": "S5",
+        "w": 10
+      },
+      {
+        "rule": "S2",
+        "w": 6
+      },
+      {
+        "rule": "S12",
+        "w": 22
+      },
+      {
+        "rule": "S13",
+        "w": 10
+      }
+    ],
+    "yogurt_cheese": [
+      {
+        "rule": "S1",
+        "w": 28
+      },
+      {
+        "rule": "dairyProcessing",
+        "w": 10
+      },
+      {
+        "rule": "S3",
+        "w": 16,
+        "variant": "yogurt"
+      },
+      {
+        "rule": "S4",
+        "w": 10
+      },
+      {
+        "rule": "S5",
+        "w": 12
+      },
+      {
+        "rule": "S12",
+        "w": 16
+      },
+      {
+        "rule": "S13",
+        "w": 8
+      }
+    ],
+    "breads": [
+      {
+        "rule": "S1",
+        "w": 24
+      },
+      {
+        "rule": "wholeGrain",
+        "w": 12
+      },
+      {
+        "rule": "S3",
+        "w": 14,
+        "variant": "bread"
+      },
+      {
+        "rule": "S4",
+        "w": 10
+      },
+      {
+        "rule": "S2",
+        "w": 20
+      },
+      {
+        "rule": "S12",
+        "w": 14
+      },
+      {
+        "rule": "S13",
+        "w": 6
       }
     ],
     "ice_cream": [
       {
         "rule": "S1",
-        "w": 35
-      },
-      {
-        "rule": "stabilizers",
-        "w": 10
+        "w": 28
       },
       {
         "rule": "S3",
-        "w": 15,
+        "w": 26,
         "variant": "icecream"
       },
       {
         "rule": "S5",
-        "w": 5,
+        "w": 16,
         "variant": "soft"
       },
       {
-        "rule": "dairyQuality",
-        "w": 8
-      },
-      {
         "rule": "S2",
-        "w": 8
+        "w": 14
       },
       {
         "rule": "S12",
-        "w": 7
+        "w": 10
       },
       {
-        "rule": "S7",
-        "w": 5
-      },
-      {
-        "rule": "S8",
-        "w": 5
+        "rule": "S13",
+        "w": 6
       }
     ],
     "meat": [
       {
         "rule": "S1",
-        "w": 46
-      },
-      {
-        "rule": "welfare",
-        "w": 6
+        "w": 40
       },
       {
         "rule": "S2",
+        "w": 16
+      },
+      {
+        "rule": "S4",
+        "w": 14
+      },
+      {
+        "rule": "S5",
+        "w": 10
+      },
+      {
+        "rule": "S12",
+        "w": 16
+      },
+      {
+        "rule": "S13",
+        "w": 4
+      }
+    ],
+    "whole_foods": [
+      {
+        "rule": "S2",
+        "w": 24
+      },
+      {
+        "rule": "S12",
+        "w": 24,
+        "variant": "produce"
+      },
+      {
+        "rule": "S3",
+        "w": 18,
+        "variant": "foods"
+      },
+      {
+        "rule": "S1",
+        "w": 10
+      },
+      {
+        "rule": "S4",
+        "w": 8
+      },
+      {
+        "rule": "S5",
+        "w": 10
+      },
+      {
+        "rule": "S13",
+        "w": 6
+      }
+    ],
+    "fats": [
+      {
+        "rule": "S5",
+        "w": 54,
+        "variant": "fats"
+      },
+      {
+        "rule": "S2",
+        "w": 16
+      },
+      {
+        "rule": "S1",
         "w": 12
       },
       {
         "rule": "S4",
-        "w": 9
-      },
-      {
-        "rule": "S12",
-        "w": 18
+        "w": 10
       },
       {
         "rule": "S13",
-        "w": 5
-      },
-      {
-        "rule": "S7",
-        "w": 4
-      },
-      {
-        "rule": "S8",
-        "w": 3
+        "w": 8
       }
     ]
   },
@@ -783,6 +693,38 @@
       "profile": "plant_milk"
     },
     {
+      "match": "butters",
+      "profile": "fats"
+    },
+    {
+      "match": "vegetable-oils",
+      "profile": "fats"
+    },
+    {
+      "match": "olive-oils",
+      "profile": "fats"
+    },
+    {
+      "match": "sunflower-oils",
+      "profile": "fats"
+    },
+    {
+      "match": "margarines",
+      "profile": "fats"
+    },
+    {
+      "match": "lards",
+      "profile": "fats"
+    },
+    {
+      "match": "creams",
+      "profile": "fats"
+    },
+    {
+      "match": "coconut-oils",
+      "profile": "fats"
+    },
+    {
       "match": "milks",
       "profile": "dairy_milk"
     },
@@ -920,59 +862,59 @@
     },
     {
       "match": "sugars",
-      "profile": "sweeteners"
+      "profile": "unscored_sweetener"
     },
     {
       "match": "cane-sugar",
-      "profile": "sweeteners"
+      "profile": "unscored_sweetener"
     },
     {
       "match": "granulated-sugars",
-      "profile": "sweeteners"
+      "profile": "unscored_sweetener"
     },
     {
       "match": "brown-sugars",
-      "profile": "sweeteners"
+      "profile": "unscored_sweetener"
     },
     {
       "match": "icing-sugars",
-      "profile": "sweeteners"
+      "profile": "unscored_sweetener"
     },
     {
       "match": "honeys",
-      "profile": "sweeteners"
+      "profile": "unscored_sweetener"
     },
     {
       "match": "maple-syrups",
-      "profile": "sweeteners"
+      "profile": "unscored_sweetener"
     },
     {
       "match": "agave-syrups",
-      "profile": "sweeteners"
+      "profile": "unscored_sweetener"
     },
     {
       "match": "syrups",
-      "profile": "sweeteners"
+      "profile": "unscored_sweetener"
     },
     {
       "match": "simple-syrups",
-      "profile": "sweeteners"
+      "profile": "unscored_sweetener"
     },
     {
       "match": "molasses",
-      "profile": "sweeteners"
+      "profile": "unscored_sweetener"
     },
     {
       "match": "table-sweeteners",
-      "profile": "sweeteners"
+      "profile": "unscored_sweetener"
     },
     {
       "match": "sweeteners",
-      "profile": "sweeteners"
+      "profile": "unscored_sweetener"
     },
     {
       "match": "golden-syrups",
-      "profile": "sweeteners"
+      "profile": "unscored_sweetener"
     },
     {
       "match": "breads",
@@ -1041,6 +983,14 @@
     {
       "match": "oatmeals",
       "profile": "breads"
+    },
+    {
+      "match": "instant-noodles",
+      "profile": "snacks"
+    },
+    {
+      "match": "noodles",
+      "profile": "snacks"
     },
     {
       "match": "pastas",
@@ -1215,6 +1165,42 @@
       "profile": "meat"
     },
     {
+      "match": "fruits",
+      "profile": "whole_foods"
+    },
+    {
+      "match": "fresh-fruits",
+      "profile": "whole_foods"
+    },
+    {
+      "match": "vegetables",
+      "profile": "whole_foods"
+    },
+    {
+      "match": "fresh-vegetables",
+      "profile": "whole_foods"
+    },
+    {
+      "match": "eggs",
+      "profile": "whole_foods"
+    },
+    {
+      "match": "legumes",
+      "profile": "whole_foods"
+    },
+    {
+      "match": "nuts",
+      "profile": "whole_foods"
+    },
+    {
+      "match": "berries",
+      "profile": "whole_foods"
+    },
+    {
+      "match": "salads",
+      "profile": "whole_foods"
+    },
+    {
       "match": "snacks",
       "profile": "snacks"
     },
@@ -1247,62 +1233,6 @@
       "profile": "drinks"
     }
   ],
-  "waterSource": [
-    {
-      "match": "mineral-waters",
-      "credit": 1.0
-    },
-    {
-      "match": "spring-waters",
-      "credit": 0.8
-    },
-    {
-      "match": "artesian-waters",
-      "credit": 0.7
-    },
-    {
-      "match": "purified-waters",
-      "credit": 0.4
-    },
-    {
-      "match": "distilled-waters",
-      "credit": 0.4
-    }
-  ],
-  "cropRisk": {
-    "lowRisk": [
-      "coconut",
-      "almond",
-      "hemp",
-      "cashew",
-      "macadamia",
-      "pea"
-    ],
-    "highRisk": [
-      "oat",
-      "soy",
-      "soya",
-      "rice",
-      "wheat",
-      "corn"
-    ],
-    "lowCredit": 0.6,
-    "highCredit": 0.2,
-    "riceCap": 0.4
-  },
-  "dairyLabels": {
-    "points": {
-      "organic": 5,
-      "eu-organic": 5,
-      "usda-organic": 5,
-      "grass-fed": 5,
-      "pasture-raised": 5,
-      "no-added-hormones": 3,
-      "rbst-free": 3,
-      "certified-humane": 2
-    },
-    "denominator": 20
-  },
   "dairyProcessing": [
     {
       "match": "raw-milk",
@@ -1480,34 +1410,6 @@
     "einkorn",
     "oat"
   ],
-  "stabilizerPenalties": {
-    "e407": 0.4,
-    "e433": 0.4,
-    "e471": 0.2,
-    "e466": 0.2,
-    "e412": 0.2,
-    "e410": 0.1,
-    "e415": 0.1
-  },
-  "welfare": {
-    "points": {
-      "grass-fed": 5,
-      "pasture-raised": 5,
-      "organic": 4,
-      "eu-organic": 4,
-      "usda-organic": 4,
-      "no-antibiotics": 4,
-      "antibiotic-free": 4,
-      "certified-humane": 2,
-      "wild-caught": 5,
-      "msc": 5,
-      "sustainable-seafood-msc": 5,
-      "asc": 5,
-      "best-aquaculture-practices": 5
-    },
-    "denominator": 15,
-    "plantNeutral": 0.47
-  },
   "heroCredit": [
     [
       15,
@@ -1532,13 +1434,15 @@
         "S3": 1.2
       },
       "lose weight": {
-        "S3": 2.0,
-        "S6": 0.5
+        "S3": 2.0
       },
       "eat healthier": {
         "S2": 1.5,
         "S1": 1.3,
-        "S12": 1.2
+        "S12": 1.2,
+        "S3": 1.2,
+        "S4": 1.2,
+        "S5": 1.2
       }
     },
     "goal": {
@@ -1551,7 +1455,6 @@
         "S5": 2.0
       },
       "gut health": {
-        "S6": 2.0,
         "S1": 1.3
       },
       "young child": {
@@ -1575,23 +1478,26 @@
         "0": {
           "S12": 0.6
         }
+      }
+    },
+    "preference": {
+      "high protein": {
+        "S12": 1.25
       },
-      "environment": {
-        "2": {
-          "S8": 1.5
-        },
-        "0": {
-          "S8": 0.6
-        }
+      "high fiber": {
+        "S12": 1.25
       },
-      "welfare": {
-        "2": {
-          "welfare": 2.0,
-          "dairyLabels": 2.0
-        },
-        "0": {
-          "welfare": 0.6
-        }
+      "low sugar": {
+        "S3": 1.3
+      },
+      "low sodium": {
+        "S4": 1.3
+      },
+      "low fat": {
+        "S5": 1.3
+      },
+      "minimally processed": {
+        "S2": 1.25
       }
     }
   },
@@ -1619,7 +1525,24 @@
         "rapeseed oil",
         "corn oil",
         "cottonseed oil",
-        "soya oil"
+        "soya oil",
+        "grapeseed oil",
+        "safflower oil",
+        "rice bran oil",
+        "rice-bran oil",
+        "rapeseed and soybean",
+        "rapeseed & soybean",
+        "soybean and rapeseed",
+        "óleo de soja",
+        "oleo de soja",
+        "óleo de canola",
+        "oleo de canola",
+        "óleo de girassol",
+        "oleo de girassol",
+        "óleo de milho",
+        "oleo de milho",
+        "óleo de algodão",
+        "oleo de algodao"
       ]
     },
     "palm oil": {
@@ -1674,7 +1597,96 @@
     }
   },
   "hardGates": {
+    "avoidListCap": 49,
     "dietConflictCap": 20,
-    "avoidListCap": 49
+    "dietConflictTapers": {
+      "low-sugar diet": {
+        "metric": "sugar_g",
+        "taperStart": 15,
+        "taperEnd": 25,
+        "minCap": 20
+      },
+      "low-sodium diet": {
+        "metric": "sodium_mg",
+        "taperStart": 400,
+        "taperEnd": 800,
+        "minCap": 20
+      }
+    },
+    "transFat": {
+      "threshold": 0.2,
+      "cap": 35
+    },
+    "freeSugarCeiling": {
+      "cap": 35
+    },
+    "nnsCeiling": {
+      "cap": 58
+    }
+  },
+  "ruleMeta": {
+    "S1": {
+      "displayName": "additives",
+      "driverKind": "merit"
+    },
+    "S2": {
+      "displayName": "degree of processing",
+      "driverKind": "merit"
+    },
+    "S3": {
+      "displayName": "sugar",
+      "driverKind": "merit"
+    },
+    "S4": {
+      "displayName": "sodium",
+      "driverKind": "merit"
+    },
+    "S5": {
+      "displayName": "saturated fat",
+      "driverKind": "merit"
+    },
+    "S10": {
+      "displayName": "hero ingredients",
+      "driverKind": "merit"
+    },
+    "S12": {
+      "displayName": "protein and fiber",
+      "driverKind": "merit"
+    },
+    "S13": {
+      "displayName": "micronutrients",
+      "driverKind": "merit"
+    },
+    "authenticity": {
+      "displayName": "authenticity",
+      "driverKind": "merit"
+    },
+    "brewMaterial": {
+      "displayName": "brew material",
+      "driverKind": "hygiene"
+    },
+    "contaminantRisk": {
+      "displayName": "contaminant risk",
+      "driverKind": "hygiene"
+    },
+    "dairyProcessing": {
+      "displayName": "processing",
+      "driverKind": "hygiene"
+    },
+    "sweetenerProcessing": {
+      "displayName": "sweetener processing",
+      "driverKind": "hygiene"
+    },
+    "sweetenerType": {
+      "displayName": "sweetener type",
+      "driverKind": "hygiene"
+    },
+    "wholeGrain": {
+      "displayName": "whole grain content",
+      "driverKind": "merit"
+    }
+  },
+  "contaminantRisk": {
+    "riceCap": 0.4
   }
 }

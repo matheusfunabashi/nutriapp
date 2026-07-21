@@ -880,7 +880,7 @@ struct OnboardingDietaryRestrictionsScreen: View {
                     StaggeredAppear(index: 2) {
                         section(
                             title: "Preferences",
-                            description: "Soft signals — nudge your score, no warnings."
+                            description: "Soft signals. Most nudge Your Score; Organic shows a label check."
                         ) {
                             pillWrap(items: DietaryOptions.preferences, selection: $preferences)
                         }

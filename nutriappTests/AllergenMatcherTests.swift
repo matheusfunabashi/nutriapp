@@ -7,7 +7,7 @@ struct AllergenMatcherTests {
     private func product(allergenTags: [String] = [], ingredients: String? = nil) -> Product {
         Product(
             id: "x", name: "Test", brand: "B", size: "", glyph: "🛒",
-            overallScore: 50, yourScore: 50, deltaReason: nil,
+            overallScore: 50, yourScore: 50, overview: nil,
             nutriGrade: "C", novaGroup: 4,
             nutrients: Nutrients(sugar_g: nil, sodium_mg: nil, satFat_g: nil,
                                  fiber_g: nil, protein_g: nil, calcium_mg: nil),

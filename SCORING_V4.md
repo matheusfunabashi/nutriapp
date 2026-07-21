@@ -1,5 +1,8 @@
 # Sage Scoring System — v4 (reconciled spec)
 
+> **Superseded by [SCORING_V5.md](SCORING_V5.md)** (ruleset `2026.07-v5`,
+> health-only). Kept for historical design notes; do not implement from this file.
+
 **Category-aware product scoring built on Open Food Facts (OFF)**
 Draft for team review · July 2026 · supersedes both the v3 engine notes in
 ROADMAP.md and the "Sage Scoring System v1.0" proposal once approved.

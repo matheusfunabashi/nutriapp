@@ -91,15 +91,9 @@ enum ScoreTier: String {
     }
 }
 
-/// Bands follow the v3 anchored scale (100 perfect · 70 good · 50 neutral ·
-/// 30 bad · 10 avoid); scores are floored at 10, never 0.
+/// Bands follow the live bundled ruleset (Excellent ≥75 · Good ≥55 · OK ≥35 · Bad).
 func scoreTier(_ score: Int) -> ScoreTier {
-    switch score {
-    case 80...: return .excellent
-    case 60...: return .good
-    case 40...: return .poor
-    default:    return .bad
-    }
+    RulesetV4.bundled.scoreTier(for: score)
 }
 func scoreColor(_ s: Int) -> Color { scoreTier(s).fg }
 func scoreLabel(_ s: Int) -> String { scoreTier(s).label }
@@ -135,8 +129,12 @@ final class AppStore: ObservableObject {
     /// Read-only to the UI; mutated through recordScan/saveProduct.
     @Published private(set) var history: [HistoryEntry] = []
     @Published private(set) var products: [String: Product] = [:]
+    /// Product ids currently awaiting an overview from `/explain`.
+    @Published private(set) var overviewGenerating: Set<String> = []
 
     private let container: ModelContainer
+    private let backend = BackendService()
+    private var overviewInFlight: Set<String> = []
     private var context: ModelContext { container.mainContext }
     private let encoder = JSONEncoder()
     private let decoder = JSONDecoder()
@@ -178,8 +176,55 @@ final class AppStore: ObservableObject {
     private func loadProducts() {
         let recs = (try? context.fetch(FetchDescriptor<ProductRecord>())) ?? []
         products = recs.reduce(into: [:]) { dict, r in
-            if let p = try? decoder.decode(Product.self, from: r.data) { dict[p.id] = p }
+            if let p = decodeProduct(from: r.data) { dict[p.id] = p }
         }
+        invalidateAndRescoreForV506IfNeeded()
+        invalidateAndRescoreForV507IfNeeded()
+    }
+
+    /// Decode a stored snapshot, migrating legacy `deltaReason` → `overview`.
+    private func decodeProduct(from data: Data) -> Product? {
+        if let p = try? decoder.decode(Product.self, from: data) {
+            return migrateOverviewIfNeeded(p)
+        }
+        guard var dict = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else {
+            return nil
+        }
+        if dict["overview"] == nil, let legacy = dict["deltaReason"] {
+            dict["overview"] = legacy
+            dict.removeValue(forKey: "deltaReason")
+        }
+        guard let migrated = try? JSONSerialization.data(withJSONObject: dict),
+              let p = try? decoder.decode(Product.self, from: migrated) else { return nil }
+        return migrateOverviewIfNeeded(p)
+    }
+
+    /// Stale cached overviews that may hallucinate additive presence.
+    private func migrateOverviewIfNeeded(_ product: Product) -> Product {
+        var out = product
+        if !out.hasScoreableIngredientSignal, out.overview != nil {
+            out.overviewStale = true
+        }
+        return out
+    }
+
+    /// One-shot V5.0.6 migration: whole_foods/fats weight touch-ups + overview
+    /// truthfulness; mark overviews stale so they regenerate under exp-v8.
+    private func invalidateAndRescoreForV506IfNeeded() {
+        let key = "rulesetV506Rescored"
+        guard !UserDefaults.standard.bool(forKey: key) else { return }
+        rescoreAll()
+        UserDefaults.standard.set(true, forKey: key)
+        UserDefaults.standard.set(true, forKey: "overviewExpV8Invalidated")
+    }
+
+    /// One-shot V5.0.7 migration: pure sweeteners become unscored (no dials,
+    /// no overview); other products rescore with expected Δ0.
+    private func invalidateAndRescoreForV507IfNeeded() {
+        let key = "rulesetV507Rescored"
+        guard !UserDefaults.standard.bool(forKey: key) else { return }
+        rescoreAll()
+        UserDefaults.standard.set(true, forKey: key)
     }
 
     private func loadHistory() {
@@ -208,17 +253,34 @@ final class AppStore: ObservableObject {
 
     /// Recompute every stored product's scores against the current profile.
     /// Scoring is idempotent — re-running it overwrites the score fields cleanly.
-    /// Products whose category is unsupported (water/alcohol) or that lack the
-    /// minimum data keep their stored snapshot untouched (they were never a
-    /// scored result page to begin with).
+    /// Persists both `.scored` and `.unscored` outcomes. Unsupported / insufficient
+    /// products keep their stored snapshot untouched.
     func rescoreAll() {
         guard !products.isEmpty else { return }
         for (id, p) in products {
-            guard case .scored(let scored) = ScoringEngineV4.scoreProduct(p, for: user,
-                                                                          ruleset: RulesetStore.current)
-            else { continue }
-            products[id] = scored
-            guard let data = try? encoder.encode(scored) else { continue }
+            let updated: Product
+            switch ScoringEngineV4.scoreProduct(p, for: user, ruleset: RulesetStore.current) {
+            case .scored(var scored):
+                scored.overview = nil
+                scored.overviewStale = true
+                updated = scored
+            case .unscored(var unscored, _):
+                // Clear any legacy dials / LLM overview from pre-V5.0.7 saves.
+                unscored.overallScore = nil
+                unscored.yourScore = nil
+                unscored.overview = nil
+                unscored.overviewStale = false
+                unscored.firedCaps = nil
+                unscored.bindingCap = nil
+                unscored.overallFiredCaps = nil
+                unscored.overallBindingCap = nil
+                unscored.bonuses = []
+                updated = unscored
+            case .unsupported, .insufficientData:
+                continue
+            }
+            products[id] = updated
+            guard let data = try? encoder.encode(updated) else { continue }
             if let rec = try? context.fetch(
                 FetchDescriptor<ProductRecord>(predicate: #Predicate { $0.id == id })
             ).first {
@@ -227,6 +289,55 @@ final class AppStore: ObservableObject {
             }
         }
         try? context.save()
+    }
+
+    /// Lazy overview regeneration — one product at a time, on open or after scan.
+    /// Unscored products never call `/explain`.
+    func requestOverview(for productId: String) {
+        guard let product = products[productId], !product.isUnscored else { return }
+        let needsRefresh = product.overviewStale == true || product.overview == nil
+        guard needsRefresh else { return }
+        guard !overviewInFlight.contains(productId) else { return }
+        overviewInFlight.insert(productId)
+        overviewGenerating.insert(productId)
+        Task { await fetchOverview(productId: productId) }
+    }
+
+    private func fetchOverview(productId: String) async {
+        defer {
+            overviewInFlight.remove(productId)
+            overviewGenerating.remove(productId)
+        }
+        guard var product = products[productId], !product.isUnscored,
+              let ctx = ScoringEngineV4.overviewContext(for: product, profile: user,
+                                                        ruleset: RulesetStore.current)
+        else { return }
+
+        let classHash = ScoreClass(user).hash
+        let payload = BackendService.ExplainPayload(
+            barcode: product.id, classHash: classHash, context: ctx)
+
+        let llmText = await backend.explain(payload)
+        let text: String
+        if let llmText, OverviewValidator.isValid(llmText, ctx: ctx) {
+            text = llmText
+        } else {
+            text = OverviewTemplate.generate(ctx)
+        }
+
+        guard ScoreClass(user).hash == classHash,
+              var current = products[productId],
+              !current.isUnscored,
+              current.overallScore == product.overallScore,
+              current.yourScore == product.yourScore,
+              let overall = current.overallScore,
+              let your = current.yourScore else { return }
+
+        let delta = your - overall
+        let tone: DeltaReason.Tone = delta > 0 ? .positive : delta < 0 ? .negative : .positive
+        current.overview = ProductOverview(tone: tone, text: text)
+        current.overviewStale = false
+        saveProduct(current)
     }
 
     /// Upsert a product snapshot (used by scan + search lookups).

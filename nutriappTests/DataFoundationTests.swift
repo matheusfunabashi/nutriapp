@@ -79,7 +79,7 @@ struct DataFoundationTests {
                              shares: [IngredientShare]? = nil) -> Product {
         Product(
             id: "x", name: "T", brand: "B", size: "", glyph: "🛒",
-            overallScore: 0, yourScore: 0, deltaReason: nil,
+            overallScore: 0, yourScore: 0, overview: nil,
             nutriGrade: "?", novaGroup: nova,
             nutrients: Nutrients(sugar_g: nil, sodium_mg: nil, satFat_g: nil,
                                  fiber_g: nil, protein_g: nil, calcium_mg: nil,
@@ -102,7 +102,7 @@ struct DataFoundationTests {
                                                          code: "e951")]).hasMinimumData)
         let proteinOnly = Product(
             id: "p", name: "Hydro", brand: "", size: "", glyph: "🛒",
-            overallScore: 0, yourScore: 0, deltaReason: nil,
+            overallScore: 0, yourScore: 0, overview: nil,
             nutriGrade: "?", novaGroup: 0,
             nutrients: Nutrients(sugar_g: nil, sodium_mg: nil, satFat_g: nil,
                                  fiber_g: nil, protein_g: 80, calcium_mg: nil, kcal: nil),
@@ -113,7 +113,7 @@ struct DataFoundationTests {
         #expect(!proteinOnly.hasMinimumData)
         let nutritionTable = Product(
             id: "n", name: "N", brand: "", size: "", glyph: "🛒",
-            overallScore: 0, yourScore: 0, deltaReason: nil,
+            overallScore: 0, yourScore: 0, overview: nil,
             nutriGrade: "?", novaGroup: 0,
             nutrients: Nutrients(sugar_g: 4, sodium_mg: 40, satFat_g: nil,
                                  fiber_g: nil, protein_g: 1, calcium_mg: nil, kcal: 45),
@@ -139,7 +139,7 @@ struct DataFoundationTests {
         var rich = bareProduct(ingredientsText: "water, oats")
         rich = Product(
             id: rich.id, name: rich.name, brand: rich.brand, size: rich.size,
-            glyph: rich.glyph, overallScore: 0, yourScore: 0, deltaReason: nil,
+            glyph: rich.glyph, overallScore: 0, yourScore: 0, overview: nil,
             nutriGrade: "?", novaGroup: 4,
             nutrients: Nutrients(sugar_g: 4, sodium_mg: 40, satFat_g: 0.5,
                                  fiber_g: 0.8, protein_g: 1, calcium_mg: nil,
@@ -159,7 +159,7 @@ struct DataFoundationTests {
         // (0.30 + 0.15 + 3/6·0.30 = 0.60).
         let mid = Product(
             id: "m", name: "M", brand: "", size: "", glyph: "🛒",
-            overallScore: 0, yourScore: 0, deltaReason: nil,
+            overallScore: 0, yourScore: 0, overview: nil,
             nutriGrade: "?", novaGroup: 4,
             nutrients: Nutrients(sugar_g: 4, sodium_mg: nil, satFat_g: nil,
                                  fiber_g: nil, protein_g: 1, calcium_mg: nil,

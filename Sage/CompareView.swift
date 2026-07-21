@@ -8,17 +8,25 @@ struct CompareView: View {
 
     var body: some View {
         let dark = store.darkMode
-        let delta = b.yourScore - a.yourScore
-        let tie = abs(delta) <= 3
-        let winner: String? = tie ? nil : (delta > 0 ? "b" : "a")
+        let bothScored = !a.isUnscored && !b.isUnscored
+            && a.yourScore != nil && b.yourScore != nil
+        let delta: Int = {
+            guard bothScored, let ay = a.yourScore, let by = b.yourScore else { return 0 }
+            return by - ay
+        }()
+        let tie = bothScored && abs(delta) <= 3
+        let winner: String? = {
+            guard bothScored, !tie else { return nil }
+            return delta > 0 ? "b" : "a"
+        }()
 
         ScrollView(showsIndicators: false) {
             VStack(alignment: .leading, spacing: 0) {
                 topBar(dark: dark)
-                title(dark: dark, tie: tie, winner: winner, delta: delta)
+                title(dark: dark, bothScored: bothScored, tie: tie, winner: winner, delta: delta)
                 HStack(spacing: 8) {
-                    CompareCol(product: a, isWinner: winner == "a", tie: tie, dark: dark)
-                    CompareCol(product: b, isWinner: winner == "b", tie: tie, dark: dark)
+                    CompareCol(product: a, isWinner: winner == "a", tie: tie || !bothScored, dark: dark)
+                    CompareCol(product: b, isWinner: winner == "b", tie: tie || !bothScored, dark: dark)
                 }
                 .padding(.horizontal, 16).padding(.top, 12)
                 SectionTitle(title: "Nutrients", subtitle: "Per 100g / 100ml", dark: dark)
@@ -46,15 +54,22 @@ struct CompareView: View {
         .padding(.horizontal, 16).padding(.top, 60).padding(.bottom, 12)
     }
 
-    private func title(dark: Bool, tie: Bool, winner: String?, delta: Int) -> some View {
-        let summary: String = {
-            if tie { return "These are roughly equivalent for your profile." }
+    private func title(dark: Bool, bothScored: Bool, tie: Bool, winner: String?, delta: Int) -> some View {
+        let headline: String
+        let summary: String
+        if !bothScored {
+            headline = String(localized: "Score not available")
+            summary = String(localized: "These can’t be ranked by score — at least one product isn’t scored.")
+        } else if tie {
+            headline = "It's a tie"
+            summary = "These are roughly equivalent for your profile."
+        } else {
+            headline = "Better choice"
             let winName = (winner == "a" ? a : b).name
-            let diff = abs(delta)
-            return "\(winName) is +\(diff) better for you."
-        }()
+            summary = "\(winName) is +\(abs(delta)) better for you."
+        }
         return VStack(alignment: .leading, spacing: 4) {
-            Text(tie ? "It's a tie" : "Better choice")
+            Text(headline)
                 .font(.sageBold(26)).tracking(-0.6)
                 .foregroundColor(Theme.textPrimary(dark))
             Text(summary)
@@ -116,7 +131,7 @@ struct CompareCol: View {
     let tie: Bool
     let dark: Bool
     var body: some View {
-        let c = scoreColor(product.yourScore)
+        let c = product.yourScore.map(scoreColor) ?? Theme.textSecondary(dark)
         VStack(alignment: .leading, spacing: 10) {
             if isWinner {
                 HStack(spacing: 4) {
@@ -165,8 +180,15 @@ struct CompareCol: View {
 
             Divider().background(Theme.divider(dark)).padding(.top, 4)
 
-            ScoreLine(label: "Your", score: product.yourScore, prominent: true, dark: dark)
-            ScoreLine(label: "Overall", score: product.overallScore, prominent: false, dark: dark)
+            if product.isUnscored {
+                Text("Not scored — sweetener")
+                    .font(.sageSemiBold(13))
+                    .foregroundColor(Theme.textSecondary(dark))
+                    .padding(.top, 4)
+            } else {
+                ScoreLine(label: "Your", score: product.yourScore ?? 0, prominent: true, dark: dark)
+                ScoreLine(label: "Overall", score: product.overallScore ?? 0, prominent: false, dark: dark)
+            }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(14)

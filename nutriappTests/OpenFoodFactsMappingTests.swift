@@ -61,7 +61,7 @@ struct OpenFoodFactsMappingTests {
         // salt 0.05 g → sodium 0.05/2.5*1000 = 20 mg
         #expect(p.nutrients.sodium_mg == 20)
         #expect(p.nutrients.sugar_g == 10.6)
-        #expect(p.caffeine_mg == 0.012)
+        #expect(p.caffeine_mg == 12)  // OFF stores grams; map ×1000 → mg
     }
 
     @Test func mapsAdditivesWithRiskAndUnratedFallback() throws {
@@ -99,9 +99,12 @@ struct OpenFoodFactsMappingTests {
         #expect(p.sweeteners.contains("aspartame"))
         #expect(p.sweeteners.contains("sucralose"))
 
-        let aspartame = p.additives.first { $0.name == "Aspartame" }
-        #expect(aspartame?.risk == .moderate)    // detector tier B
+        let aspartame = p.additives.first {
+            $0.code == "e951" || $0.name.localizedCaseInsensitiveContains("aspartame")
+        }
+        #expect(aspartame?.risk == .moderate)    // KB tier for E951
         #expect(aspartame?.tier == .moderate)
+        #expect(aspartame?.note != nil)
         #expect(p.overallScore == 54)            // grade C placeholder
     }
 

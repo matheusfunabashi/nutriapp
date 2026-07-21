@@ -143,19 +143,149 @@ struct BackendService {
         let objective: String
         let overall: Int
         let your: Int
-        let factors: [String]
-        /// Ground truth for the LLM: the exact LOW/MOD/HIGH levels the user
-        /// sees on the Breakdown badges (e.g. "sugar: low (4g)"). The prompt
-        /// instructs the model to never contradict these.
+        let band: String
+        let confidence: Double
+        let hasScoreableIngredientSignal: Bool
+        let hasNutritionData: Bool
+        let hasIngredientData: Bool
+        let rules: [RulePayload]
+        let topPositive: [ContributorPayload]
+        let topNegative: [ContributorPayload]
         let nutrientLevels: [String]
+        let deltaValue: Int
+        let deltaDrivers: [DeltaDriverPayload]
+        let avoidMatches: [String]
+        let detectedAdditives: [String]
+        let novaGroup: Int?
+        let hardGate: HardGatePayload?
+        let bindingCap: CapPayload?
+        let firedCaps: [CapPayload]
+        let overallBindingCap: CapPayload?
+        let overallFiredCaps: [CapPayload]
+        let knownRuleIds: [String]
+        let nutrientNudge: Int?
+        let nutrientNudgeDriver: String?
+
+        struct RulePayload: Encodable {
+            let rule: String
+            let topic: String
+            let weight: Double
+            let fraction: Double
+            let contribution: Double
+            let multiplier: Double?
+            let multiplierSources: [MultiplierSourcePayload]?
+            let evidenceTier: String
+            let driverKind: String
+
+            struct MultiplierSourcePayload: Encodable {
+                let source: String
+                let selection: String
+                let factor: Double
+            }
+        }
+
+        struct ContributorPayload: Encodable {
+            let topic: String
+            let contribution: Double
+            let evidenceTier: String
+            let potentialLoss: Double?
+        }
+
+        struct DeltaDriverPayload: Encodable {
+            let topic: String
+            let direction: String
+        }
+
+        struct HardGatePayload: Encodable {
+            let kind: String
+            let detail: String
+            let cappedTo: Int
+            let intensity: String
+            let bindingCapId: String
+            let shortLabel: String
+        }
+
+        struct CapPayload: Encodable {
+            let id: String
+            let value: Int
+            let shortLabel: String
+            let kind: String
+            let intensity: String?
+        }
+
+        init(barcode: String, classHash: String, context: ScoringEngineV4.OverviewContext) {
+            self.barcode = barcode
+            self.classHash = classHash
+            self.productName = context.productName
+            self.objective = context.objective
+            self.overall = context.overall
+            self.your = context.your
+            self.band = context.band
+            self.confidence = context.confidence
+            self.hasScoreableIngredientSignal = context.hasScoreableIngredientSignal
+            self.hasNutritionData = context.hasNutritionData
+            self.hasIngredientData = context.hasIngredientData
+            self.rules = context.rules.map {
+                RulePayload(rule: $0.rule, topic: $0.topic, weight: $0.weight,
+                            fraction: $0.fraction, contribution: $0.contribution,
+                            multiplier: $0.multiplier,
+                            multiplierSources: $0.multiplierSources?.map {
+                                .init(source: $0.source, selection: $0.selection, factor: $0.factor)
+                            },
+                            evidenceTier: $0.evidenceTier,
+                            driverKind: $0.driverKind)
+            }
+            self.topPositive = context.topPositive.map {
+                ContributorPayload(topic: $0.topic, contribution: $0.contribution,
+                                   evidenceTier: $0.evidenceTier,
+                                   potentialLoss: $0.potentialLoss)
+            }
+            self.topNegative = context.topNegative.map {
+                ContributorPayload(topic: $0.topic, contribution: $0.contribution,
+                                   evidenceTier: $0.evidenceTier,
+                                   potentialLoss: $0.potentialLoss)
+            }
+            self.nutrientLevels = context.nutrientLevels
+            self.deltaValue = context.deltaValue
+            self.deltaDrivers = context.deltaDrivers.map {
+                DeltaDriverPayload(topic: $0.topic, direction: $0.direction)
+            }
+            self.avoidMatches = context.avoidMatches
+            self.detectedAdditives = context.detectedAdditives
+            self.novaGroup = context.novaGroup
+            self.hardGate = context.hardGate.map {
+                HardGatePayload(kind: $0.kind, detail: $0.detail, cappedTo: $0.cappedTo,
+                                intensity: $0.intensity, bindingCapId: $0.bindingCapId,
+                                shortLabel: $0.shortLabel)
+            }
+            self.bindingCap = context.bindingCap.map {
+                CapPayload(id: $0.id, value: $0.value, shortLabel: $0.shortLabel,
+                           kind: $0.kind, intensity: $0.intensity)
+            }
+            self.firedCaps = context.firedCaps.map {
+                CapPayload(id: $0.id, value: $0.value, shortLabel: $0.shortLabel,
+                           kind: $0.kind, intensity: $0.intensity)
+            }
+            self.overallBindingCap = context.overallBindingCap.map {
+                CapPayload(id: $0.id, value: $0.value, shortLabel: $0.shortLabel,
+                           kind: $0.kind, intensity: $0.intensity)
+            }
+            self.overallFiredCaps = context.overallFiredCaps.map {
+                CapPayload(id: $0.id, value: $0.value, shortLabel: $0.shortLabel,
+                           kind: $0.kind, intensity: $0.intensity)
+            }
+            self.knownRuleIds = context.knownRuleIds
+            self.nutrientNudge = context.nutrientNudge
+            self.nutrientNudgeDriver = context.nutrientNudgeDriver
+        }
     }
 
     private struct ExplainResponse: Decodable {
         let explanation: String?
     }
 
-    /// Fire-and-forget by design: any failure returns nil and the app keeps
-    /// the rule-based deltaReason it already rendered.
+    /// Fire-and-forget by design: any failure returns nil and the app uses
+    /// the deterministic template fallback.
     func explain(_ payload: ExplainPayload) async -> String? {
         guard let (data, status) = try? await post(path: "explain", body: payload),
               status == 200,

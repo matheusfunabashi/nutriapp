@@ -8,19 +8,35 @@ struct ProductAdditive: Identifiable, Hashable, Codable {
     var id = UUID()
     let name: String
     let risk: RiskLevel
-    /// Short justification, shown for higher-risk additives. nil when not applicable.
+    /// One-line summary from the knowledge base (or legacy note).
     var note: String? = nil
-    /// Normalized E-number ("e150d") — scoring v4 looks tiers up by code.
+    /// Normalized E-number ("e452") — scoring v4 looks tiers up by code.
     /// Optional for back-compat with snapshots saved before Phase B.
     var code: String? = nil
     /// Tier from AdditiveDetector when available; drives S1 and v3 additive penalties.
     var tier: AdditiveTier? = nil
+    /// Subtype / alias codes merged into this parent (e.g. ["E452i", "E452vi"]).
+    var detectedAs: [String]? = nil
 }
 
 struct Restriction: Identifiable, Hashable, Codable {
     var id = UUID()
     let type: String
     let trigger: String
+}
+
+/// A personalization ceiling that can fire (and optionally bind) on Your Score.
+struct ScoreCap: Hashable, Codable, Equatable {
+    /// Stable id: "dietConflictCap" | "avoidListCap" | "seedOilCap"
+    let id: String
+    let value: Int
+    /// Chip label fragment, e.g. "low-sugar diet" / "seed oils".
+    let shortLabel: String
+    /// "dietConflict" | "avoidList"
+    let kind: String
+    /// For diet tapers: "full" (at minCap) | "partial" (between start/end).
+    let intensity: String?
+    let detail: String?
 }
 
 struct Nutrients: Hashable, Codable {
@@ -38,6 +54,8 @@ struct Nutrients: Hashable, Codable {
     /// Added sugars per 100g — mostly US labels; scoring v4's S3 prefers it and
     /// falls back to fvn-discounted total sugars. Optional for back-compat.
     var addedSugar_g: Double? = nil
+    /// Trans fat per 100g/ml. Card / flag requires strictly > 0 (nil or 0 → no flag).
+    var transFat_g: Double? = nil
     // Beneficial micronutrients per 100g (mg) — drive scoring v4's S13 credit
     // and the Iron/Potassium breakdown rows. Optional for back-compat; most
     // products report none, in which case S13 falls back to a neutral credit.
@@ -65,6 +83,26 @@ struct DeltaReason: Hashable, Codable {
     let text: String
 }
 
+/// Stored overview paragraph shown in the OVERVIEW section.
+typealias ProductOverview = DeltaReason
+
+/// Whether Sage assigned a 0–100 health score or declined to score.
+enum ProductScoreState: Hashable, Codable, Equatable {
+    case scored
+    /// Sage withheld a health score. `reasonKey` is stable for UI/copy (e.g. "sweetener").
+    case unscored(reasonKey: String)
+
+    var isUnscored: Bool {
+        if case .unscored = self { return true }
+        return false
+    }
+
+    var reasonKey: String? {
+        if case .unscored(let key) = self { return key }
+        return nil
+    }
+}
+
 struct Product: Identifiable, Hashable, Codable {
     let id: String
     let name: String
@@ -72,19 +110,34 @@ struct Product: Identifiable, Hashable, Codable {
     let size: String
     let glyph: String
     // Scores and their explanations are filled in by the ScoringEngine, so they're mutable.
-    var overallScore: Int
-    var yourScore: Int
-    var deltaReason: DeltaReason?
+    /// Nil when `scoreState` is unscored — never display a sentinel 0.
+    var overallScore: Int?
+    var yourScore: Int?
+    /// Scored vs declined-to-score. Nil / absent in legacy snapshots → treated as scored.
+    var scoreState: ProductScoreState? = nil
+    /// LLM- or template-generated product overview (formerly deltaReason).
+    var overview: ProductOverview?
+    /// When true, stored overview is stale and should regenerate on next open.
+    var overviewStale: Bool? = nil
     let nutriGrade: String
     let novaGroup: Int
-    let nutrients: Nutrients
+    var nutrients: Nutrients
     var bonuses: [String]
+    /// Derived at ingest: true only when `nutrients.transFat_g > 0` (strict).
     let transFats: Bool
     let caffeine_mg: Double?
     let sweeteners: [String]
     let seedOils: Bool
     let additives: [ProductAdditive]
     var restrictions: [Restriction]
+    /// Preference caps (diet/avoid) whose conditions were met for Your Score.
+    var firedCaps: [ScoreCap]? = nil
+    /// Tightest preference cap that actually limited Your Score. Nil if none bind.
+    var bindingCap: ScoreCap? = nil
+    /// Health overall caps (freeSugar / transFat / nns) that fired. Separate from Your Score.
+    var overallFiredCaps: [ScoreCap]? = nil
+    /// Overall-score binding health cap, if it actually limited Overall.
+    var overallBindingCap: ScoreCap? = nil
     /// Normalized dietary signals from Open Food Facts (e.g. "non-vegan", "gluten",
     /// "milk"), used by the ScoringEngine to flag profile restrictions. Optional for
     /// backward-compatible decoding of older snapshots.
@@ -142,6 +195,12 @@ enum DataConfidence: String, Codable {
 }
 
 extension Product {
+    /// True when Sage declined a 0–100 health score for this product.
+    var isUnscored: Bool { scoreState?.isUnscored == true }
+
+    /// Stable reason key when unscored (e.g. "sweetener"); nil when scored.
+    var unscoredReasonKey: String? { scoreState?.reasonKey }
+
     var hasIngredientData: Bool {
         (ingredientsText?.isEmpty == false) || !(ingredientShares ?? []).isEmpty
     }
@@ -166,6 +225,12 @@ extension Product {
     /// Scoreable only with a real nutrition table OR a scoreable ingredient signal.
     /// Ingredient text alone is never sufficient.
     var hasMinimumData: Bool { hasNutritionData || hasScoreableIngredientSignal }
+
+    /// Trans-fat warning card: requires a strictly positive amount (nil/0 → hide).
+    var showsTransFatFlag: Bool {
+        if let g = nutrients.transFat_g { return g > 0 }
+        return transFats
+    }
 
     /// Provisional Phase-A confidence: a presence checklist over the signals
     /// scoring uses. Phase B replaces this with the rule-weight-backed version
