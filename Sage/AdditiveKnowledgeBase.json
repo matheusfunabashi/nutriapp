@@ -1,0 +1,2081 @@
+{
+  "e100": {
+    "code": "E100",
+    "name": {
+      "en": "Curcumin",
+      "pt-BR": "Curcumin"
+    },
+    "function": {
+      "en": "Food additive",
+      "pt-BR": "Aditivo alimentar"
+    },
+    "summary": {
+      "en": "Curcumin is a permitted food additive at regulated use levels.",
+      "pt-BR": "Curcumin is a permitted food additive at regulated use levels."
+    },
+    "detail": {
+      "en": "Curcumin is a permitted food additive at regulated use levels.",
+      "pt-BR": "Curcumin is a permitted food additive at regulated use levels."
+    },
+    "tier": "low",
+    "sources": []
+  },
+  "e101": {
+    "name": {
+      "en": "Riboflavin",
+      "pt-BR": "Riboflavina"
+    },
+    "function": {
+      "en": "Colour and vitamin B2",
+      "pt-BR": "Corante e vitamina B2"
+    },
+    "summary": {
+      "en": "Vitamin B2 used as a yellow colour and nutrient fortificant.",
+      "pt-BR": "Vitamina B2 usada como corante amarelo e fortificante."
+    },
+    "detail": {
+      "en": "Riboflavin (E101) is an essential vitamin. As a food additive it is rated low.",
+      "pt-BR": "Riboflavina (E101) é uma vitamina essencial. Como aditivo alimentar, classificada como baixa."
+    },
+    "sources": [
+      "https://www.efsa.europa.eu/"
+    ],
+    "code": "E101",
+    "tier": "low"
+  },
+  "e102": {
+    "name": {
+      "en": "Tartrazine",
+      "pt-BR": "Tartrazina"
+    },
+    "function": {
+      "en": "Yellow colour",
+      "pt-BR": "Corante amarelo"
+    },
+    "summary": {
+      "en": "Azo dye; EU labels warn about possible effects on children's attention.",
+      "pt-BR": "Corante azo; rótulos da UE alertam sobre possíveis efeitos na atenção infantil."
+    },
+    "detail": {
+      "en": "Tartrazine (E102) is a synthetic azo colour. The EU requires a warning about activity and attention in children. Rated high.",
+      "pt-BR": "Tartrazina (E102) é um corante azo sintético. A UE exige alerta sobre atividade e atenção em crianças. Classificada como alta."
+    },
+    "sources": [
+      "https://www.efsa.europa.eu/"
+    ],
+    "code": "E102",
+    "tier": "high"
+  },
+  "e104": {
+    "code": "E104",
+    "name": {
+      "en": "Quinoline Yellow",
+      "pt-BR": "Quinoline Yellow"
+    },
+    "function": {
+      "en": "Food additive",
+      "pt-BR": "Aditivo alimentar"
+    },
+    "summary": {
+      "en": "Azo-type colour; EU warning label for effects on children's attention.",
+      "pt-BR": "Azo-type colour; EU warning label for effects on children's attention."
+    },
+    "detail": {
+      "en": "Azo-type colour; EU warning label for effects on children's attention.",
+      "pt-BR": "Azo-type colour; EU warning label for effects on children's attention."
+    },
+    "tier": "high",
+    "sources": []
+  },
+  "e110": {
+    "name": {
+      "en": "Sunset Yellow FCF",
+      "pt-BR": "Amarelo crepúsculo FCF"
+    },
+    "function": {
+      "en": "Yellow-orange colour",
+      "pt-BR": "Corante amarelo-alaranjado"
+    },
+    "summary": {
+      "en": "Azo dye with an EU warning label about children's attention.",
+      "pt-BR": "Corante azo com alerta da UE sobre atenção infantil."
+    },
+    "detail": {
+      "en": "Sunset Yellow (E110) is an azo colour subject to the same EU attention warning as other Southampton dyes. Rated high.",
+      "pt-BR": "Amarelo crepúsculo (E110) é um corante azo sujeito ao mesmo alerta da UE que outros corantes de Southampton. Classificado como alto."
+    },
+    "sources": [
+      "https://www.efsa.europa.eu/"
+    ],
+    "code": "E110",
+    "tier": "high"
+  },
+  "e120": {
+    "code": "E120",
+    "name": {
+      "en": "Cochineal / Carmine",
+      "pt-BR": "Cochineal / Carmine"
+    },
+    "function": {
+      "en": "Food additive",
+      "pt-BR": "Aditivo alimentar"
+    },
+    "summary": {
+      "en": "Natural colour; can trigger allergic reactions in sensitive people.",
+      "pt-BR": "Natural colour; can trigger allergic reactions in sensitive people."
+    },
+    "detail": {
+      "en": "Natural colour; can trigger allergic reactions in sensitive people.",
+      "pt-BR": "Natural colour; can trigger allergic reactions in sensitive people."
+    },
+    "tier": "moderate",
+    "sources": []
+  },
+  "e122": {
+    "code": "E122",
+    "name": {
+      "en": "Azorubine (Carmoisine)",
+      "pt-BR": "Azorubine (Carmoisine)"
+    },
+    "function": {
+      "en": "Food additive",
+      "pt-BR": "Aditivo alimentar"
+    },
+    "summary": {
+      "en": "Azo dye; EU warning label for possible effects on children.",
+      "pt-BR": "Azo dye; EU warning label for possible effects on children."
+    },
+    "detail": {
+      "en": "Azo dye; EU warning label for possible effects on children.",
+      "pt-BR": "Azo dye; EU warning label for possible effects on children."
+    },
+    "tier": "high",
+    "sources": []
+  },
+  "e123": {
+    "code": "E123",
+    "name": {
+      "en": "Amaranth",
+      "pt-BR": "Amaranth"
+    },
+    "function": {
+      "en": "Food additive",
+      "pt-BR": "Aditivo alimentar"
+    },
+    "summary": {
+      "en": "Azo dye banned in the United States; restricted in the EU.",
+      "pt-BR": "Azo dye banned in the United States; restricted in the EU."
+    },
+    "detail": {
+      "en": "Azo dye banned in the United States; restricted in the EU.",
+      "pt-BR": "Azo dye banned in the United States; restricted in the EU."
+    },
+    "tier": "high",
+    "sources": []
+  },
+  "e124": {
+    "name": {
+      "en": "Ponceau 4R",
+      "pt-BR": "Ponceau 4R"
+    },
+    "function": {
+      "en": "Red colour",
+      "pt-BR": "Corante vermelho"
+    },
+    "summary": {
+      "en": "Azo red dye; EU warning label for possible effects on children.",
+      "pt-BR": "Corante azo vermelho; alerta da UE sobre possíveis efeitos em crianças."
+    },
+    "detail": {
+      "en": "Ponceau 4R (E124) carries the EU children's-attention warning. Rated high.",
+      "pt-BR": "Ponceau 4R (E124) traz o alerta da UE sobre atenção infantil. Classificado como alto."
+    },
+    "sources": [
+      "https://www.efsa.europa.eu/"
+    ],
+    "code": "E124",
+    "tier": "high"
+  },
+  "e127": {
+    "code": "E127",
+    "name": {
+      "en": "Erythrosine",
+      "pt-BR": "Erythrosine"
+    },
+    "function": {
+      "en": "Food additive",
+      "pt-BR": "Aditivo alimentar"
+    },
+    "summary": {
+      "en": "Erythrosine is a permitted food additive at regulated use levels.",
+      "pt-BR": "Erythrosine is a permitted food additive at regulated use levels."
+    },
+    "detail": {
+      "en": "Erythrosine is a permitted food additive at regulated use levels.",
+      "pt-BR": "Erythrosine is a permitted food additive at regulated use levels."
+    },
+    "tier": "moderate",
+    "sources": []
+  },
+  "e129": {
+    "name": {
+      "en": "Allura Red AC",
+      "pt-BR": "Vermelho Allura AC"
+    },
+    "function": {
+      "en": "Red colour",
+      "pt-BR": "Corante vermelho"
+    },
+    "summary": {
+      "en": "Azo red dye with an EU warning about children's attention.",
+      "pt-BR": "Corante azo vermelho com alerta da UE sobre atenção infantil."
+    },
+    "detail": {
+      "en": "Allura Red (E129) is widely used in sweets and drinks. EU packaging must carry the attention warning. Rated high.",
+      "pt-BR": "Vermelho Allura (E129) é muito usado em doces e bebidas. Embalagens na UE devem trazer o alerta de atenção. Classificado como alto."
+    },
+    "sources": [
+      "https://www.efsa.europa.eu/"
+    ],
+    "code": "E129",
+    "tier": "high"
+  },
+  "e131": {
+    "code": "E131",
+    "name": {
+      "en": "Patent Blue V",
+      "pt-BR": "Patent Blue V"
+    },
+    "function": {
+      "en": "Food additive",
+      "pt-BR": "Aditivo alimentar"
+    },
+    "summary": {
+      "en": "Patent Blue V is a permitted food additive at regulated use levels.",
+      "pt-BR": "Patent Blue V is a permitted food additive at regulated use levels."
+    },
+    "detail": {
+      "en": "Patent Blue V is a permitted food additive at regulated use levels.",
+      "pt-BR": "Patent Blue V is a permitted food additive at regulated use levels."
+    },
+    "tier": "moderate",
+    "sources": []
+  },
+  "e133": {
+    "code": "E133",
+    "name": {
+      "en": "Brilliant Blue FCF",
+      "pt-BR": "Brilliant Blue FCF"
+    },
+    "function": {
+      "en": "Food additive",
+      "pt-BR": "Aditivo alimentar"
+    },
+    "summary": {
+      "en": "Brilliant Blue FCF is a permitted food additive at regulated use levels.",
+      "pt-BR": "Brilliant Blue FCF is a permitted food additive at regulated use levels."
+    },
+    "detail": {
+      "en": "Brilliant Blue FCF is a permitted food additive at regulated use levels.",
+      "pt-BR": "Brilliant Blue FCF is a permitted food additive at regulated use levels."
+    },
+    "tier": "moderate",
+    "sources": []
+  },
+  "e140": {
+    "code": "E140",
+    "name": {
+      "en": "Chlorophylls",
+      "pt-BR": "Chlorophylls"
+    },
+    "function": {
+      "en": "Food additive",
+      "pt-BR": "Aditivo alimentar"
+    },
+    "summary": {
+      "en": "Chlorophylls is a permitted food additive at regulated use levels.",
+      "pt-BR": "Chlorophylls is a permitted food additive at regulated use levels."
+    },
+    "detail": {
+      "en": "Chlorophylls is a permitted food additive at regulated use levels.",
+      "pt-BR": "Chlorophylls is a permitted food additive at regulated use levels."
+    },
+    "tier": "low",
+    "sources": []
+  },
+  "e150a": {
+    "code": "E150a",
+    "name": {
+      "en": "Plain Caramel",
+      "pt-BR": "Plain Caramel"
+    },
+    "function": {
+      "en": "Food additive",
+      "pt-BR": "Aditivo alimentar"
+    },
+    "summary": {
+      "en": "Plain Caramel is a permitted food additive at regulated use levels.",
+      "pt-BR": "Plain Caramel is a permitted food additive at regulated use levels."
+    },
+    "detail": {
+      "en": "Plain Caramel is a permitted food additive at regulated use levels.",
+      "pt-BR": "Plain Caramel is a permitted food additive at regulated use levels."
+    },
+    "tier": "moderate",
+    "sources": []
+  },
+  "e150b": {
+    "code": "E150b",
+    "name": {
+      "en": "Caustic Sulphite Caramel",
+      "pt-BR": "Caustic Sulphite Caramel"
+    },
+    "function": {
+      "en": "Food additive",
+      "pt-BR": "Aditivo alimentar"
+    },
+    "summary": {
+      "en": "Caustic Sulphite Caramel is a permitted food additive at regulated use levels.",
+      "pt-BR": "Caustic Sulphite Caramel is a permitted food additive at regulated use levels."
+    },
+    "detail": {
+      "en": "Caustic Sulphite Caramel is a permitted food additive at regulated use levels.",
+      "pt-BR": "Caustic Sulphite Caramel is a permitted food additive at regulated use levels."
+    },
+    "tier": "moderate",
+    "sources": []
+  },
+  "e150c": {
+    "code": "E150c",
+    "name": {
+      "en": "Ammonia Caramel",
+      "pt-BR": "Ammonia Caramel"
+    },
+    "function": {
+      "en": "Food additive",
+      "pt-BR": "Aditivo alimentar"
+    },
+    "summary": {
+      "en": "Ammonia Caramel is a permitted food additive at regulated use levels.",
+      "pt-BR": "Ammonia Caramel is a permitted food additive at regulated use levels."
+    },
+    "detail": {
+      "en": "Ammonia Caramel is a permitted food additive at regulated use levels.",
+      "pt-BR": "Ammonia Caramel is a permitted food additive at regulated use levels."
+    },
+    "tier": "moderate",
+    "sources": []
+  },
+  "e150d": {
+    "code": "E150d",
+    "name": {
+      "en": "Sulphite Ammonia Caramel",
+      "pt-BR": "Sulphite Ammonia Caramel"
+    },
+    "function": {
+      "en": "Food additive",
+      "pt-BR": "Aditivo alimentar"
+    },
+    "summary": {
+      "en": "May contain 4-methylimidazole; intake limits recommended by EFSA.",
+      "pt-BR": "May contain 4-methylimidazole; intake limits recommended by EFSA."
+    },
+    "detail": {
+      "en": "May contain 4-methylimidazole; intake limits recommended by EFSA.",
+      "pt-BR": "May contain 4-methylimidazole; intake limits recommended by EFSA."
+    },
+    "tier": "moderate",
+    "sources": []
+  },
+  "e160a": {
+    "code": "E160a",
+    "name": {
+      "en": "Carotenes",
+      "pt-BR": "Carotenes"
+    },
+    "function": {
+      "en": "Food additive",
+      "pt-BR": "Aditivo alimentar"
+    },
+    "summary": {
+      "en": "Carotenes is a permitted food additive at regulated use levels.",
+      "pt-BR": "Carotenes is a permitted food additive at regulated use levels."
+    },
+    "detail": {
+      "en": "Carotenes is a permitted food additive at regulated use levels.",
+      "pt-BR": "Carotenes is a permitted food additive at regulated use levels."
+    },
+    "tier": "low",
+    "sources": []
+  },
+  "e160c": {
+    "code": "E160c",
+    "name": {
+      "en": "Paprika Extract",
+      "pt-BR": "Paprika Extract"
+    },
+    "function": {
+      "en": "Food additive",
+      "pt-BR": "Aditivo alimentar"
+    },
+    "summary": {
+      "en": "Paprika Extract is a permitted food additive at regulated use levels.",
+      "pt-BR": "Paprika Extract is a permitted food additive at regulated use levels."
+    },
+    "detail": {
+      "en": "Paprika Extract is a permitted food additive at regulated use levels.",
+      "pt-BR": "Paprika Extract is a permitted food additive at regulated use levels."
+    },
+    "tier": "low",
+    "sources": []
+  },
+  "e161b": {
+    "code": "E161b",
+    "name": {
+      "en": "Lutein",
+      "pt-BR": "Lutein"
+    },
+    "function": {
+      "en": "Food additive",
+      "pt-BR": "Aditivo alimentar"
+    },
+    "summary": {
+      "en": "Lutein is a permitted food additive at regulated use levels.",
+      "pt-BR": "Lutein is a permitted food additive at regulated use levels."
+    },
+    "detail": {
+      "en": "Lutein is a permitted food additive at regulated use levels.",
+      "pt-BR": "Lutein is a permitted food additive at regulated use levels."
+    },
+    "tier": "low",
+    "sources": []
+  },
+  "e162": {
+    "code": "E162",
+    "name": {
+      "en": "Beetroot Red",
+      "pt-BR": "Beetroot Red"
+    },
+    "function": {
+      "en": "Food additive",
+      "pt-BR": "Aditivo alimentar"
+    },
+    "summary": {
+      "en": "Beetroot Red is a permitted food additive at regulated use levels.",
+      "pt-BR": "Beetroot Red is a permitted food additive at regulated use levels."
+    },
+    "detail": {
+      "en": "Beetroot Red is a permitted food additive at regulated use levels.",
+      "pt-BR": "Beetroot Red is a permitted food additive at regulated use levels."
+    },
+    "tier": "low",
+    "sources": []
+  },
+  "e163": {
+    "code": "E163",
+    "name": {
+      "en": "Anthocyanins",
+      "pt-BR": "Anthocyanins"
+    },
+    "function": {
+      "en": "Food additive",
+      "pt-BR": "Aditivo alimentar"
+    },
+    "summary": {
+      "en": "Anthocyanins is a permitted food additive at regulated use levels.",
+      "pt-BR": "Anthocyanins is a permitted food additive at regulated use levels."
+    },
+    "detail": {
+      "en": "Anthocyanins is a permitted food additive at regulated use levels.",
+      "pt-BR": "Anthocyanins is a permitted food additive at regulated use levels."
+    },
+    "tier": "low",
+    "sources": []
+  },
+  "e170": {
+    "code": "E170",
+    "name": {
+      "en": "Calcium Carbonate",
+      "pt-BR": "Calcium Carbonate"
+    },
+    "function": {
+      "en": "Food additive",
+      "pt-BR": "Aditivo alimentar"
+    },
+    "summary": {
+      "en": "Calcium Carbonate is a permitted food additive at regulated use levels.",
+      "pt-BR": "Calcium Carbonate is a permitted food additive at regulated use levels."
+    },
+    "detail": {
+      "en": "Calcium Carbonate is a permitted food additive at regulated use levels.",
+      "pt-BR": "Calcium Carbonate is a permitted food additive at regulated use levels."
+    },
+    "tier": "low",
+    "sources": []
+  },
+  "e171": {
+    "code": "E171",
+    "name": {
+      "en": "Titanium Dioxide",
+      "pt-BR": "Titanium Dioxide"
+    },
+    "function": {
+      "en": "Food additive",
+      "pt-BR": "Aditivo alimentar"
+    },
+    "summary": {
+      "en": "Banned as a food additive in the EU (2022) after EFSA could not rule out genotoxicity.",
+      "pt-BR": "Banned as a food additive in the EU (2022) after EFSA could not rule out genotoxicity."
+    },
+    "detail": {
+      "en": "Banned as a food additive in the EU (2022) after EFSA could not rule out genotoxicity.",
+      "pt-BR": "Banned as a food additive in the EU (2022) after EFSA could not rule out genotoxicity."
+    },
+    "tier": "high",
+    "sources": []
+  },
+  "e200": {
+    "code": "E200",
+    "name": {
+      "en": "Sorbic Acid",
+      "pt-BR": "Sorbic Acid"
+    },
+    "function": {
+      "en": "Food additive",
+      "pt-BR": "Aditivo alimentar"
+    },
+    "summary": {
+      "en": "Sorbic Acid is a permitted food additive at regulated use levels.",
+      "pt-BR": "Sorbic Acid is a permitted food additive at regulated use levels."
+    },
+    "detail": {
+      "en": "Sorbic Acid is a permitted food additive at regulated use levels.",
+      "pt-BR": "Sorbic Acid is a permitted food additive at regulated use levels."
+    },
+    "tier": "moderate",
+    "sources": []
+  },
+  "e202": {
+    "code": "E202",
+    "name": {
+      "en": "Potassium Sorbate",
+      "pt-BR": "Potassium Sorbate"
+    },
+    "function": {
+      "en": "Food additive",
+      "pt-BR": "Aditivo alimentar"
+    },
+    "summary": {
+      "en": "Potassium Sorbate is a permitted food additive at regulated use levels.",
+      "pt-BR": "Potassium Sorbate is a permitted food additive at regulated use levels."
+    },
+    "detail": {
+      "en": "Potassium Sorbate is a permitted food additive at regulated use levels.",
+      "pt-BR": "Potassium Sorbate is a permitted food additive at regulated use levels."
+    },
+    "tier": "low",
+    "sources": []
+  },
+  "e211": {
+    "code": "E211",
+    "name": {
+      "en": "Sodium Benzoate",
+      "pt-BR": "Sodium Benzoate"
+    },
+    "function": {
+      "en": "Food additive",
+      "pt-BR": "Aditivo alimentar"
+    },
+    "summary": {
+      "en": "Can form benzene when combined with ascorbic acid (vitamin C).",
+      "pt-BR": "Can form benzene when combined with ascorbic acid (vitamin C)."
+    },
+    "detail": {
+      "en": "Can form benzene when combined with ascorbic acid (vitamin C).",
+      "pt-BR": "Can form benzene when combined with ascorbic acid (vitamin C)."
+    },
+    "tier": "moderate",
+    "sources": []
+  },
+  "e212": {
+    "code": "E212",
+    "name": {
+      "en": "Potassium Benzoate",
+      "pt-BR": "Potassium Benzoate"
+    },
+    "function": {
+      "en": "Food additive",
+      "pt-BR": "Aditivo alimentar"
+    },
+    "summary": {
+      "en": "Potassium Benzoate is a permitted food additive at regulated use levels.",
+      "pt-BR": "Potassium Benzoate is a permitted food additive at regulated use levels."
+    },
+    "detail": {
+      "en": "Potassium Benzoate is a permitted food additive at regulated use levels.",
+      "pt-BR": "Potassium Benzoate is a permitted food additive at regulated use levels."
+    },
+    "tier": "moderate",
+    "sources": []
+  },
+  "e220": {
+    "code": "E220",
+    "name": {
+      "en": "Sulphur Dioxide",
+      "pt-BR": "Sulphur Dioxide"
+    },
+    "function": {
+      "en": "Food additive",
+      "pt-BR": "Aditivo alimentar"
+    },
+    "summary": {
+      "en": "Common allergen; can trigger reactions in asthmatics.",
+      "pt-BR": "Common allergen; can trigger reactions in asthmatics."
+    },
+    "detail": {
+      "en": "Common allergen; can trigger reactions in asthmatics.",
+      "pt-BR": "Common allergen; can trigger reactions in asthmatics."
+    },
+    "tier": "moderate",
+    "sources": []
+  },
+  "e223": {
+    "code": "E223",
+    "name": {
+      "en": "Sodium Metabisulphite",
+      "pt-BR": "Sodium Metabisulphite"
+    },
+    "function": {
+      "en": "Food additive",
+      "pt-BR": "Aditivo alimentar"
+    },
+    "summary": {
+      "en": "Sulphite; may cause reactions in sensitive individuals.",
+      "pt-BR": "Sulphite; may cause reactions in sensitive individuals."
+    },
+    "detail": {
+      "en": "Sulphite; may cause reactions in sensitive individuals.",
+      "pt-BR": "Sulphite; may cause reactions in sensitive individuals."
+    },
+    "tier": "moderate",
+    "sources": []
+  },
+  "e250": {
+    "name": {
+      "en": "Sodium nitrite",
+      "pt-BR": "Nitrito de sódio"
+    },
+    "function": {
+      "en": "Curing preservative",
+      "pt-BR": "Conservante de cura"
+    },
+    "summary": {
+      "en": "Cures meats and blocks botulism; linked to nitrosamine formation concerns.",
+      "pt-BR": "Cura carnes e bloqueia botulismo; ligado a preocupações com nitrosaminas."
+    },
+    "detail": {
+      "en": "Sodium nitrite (E250) is essential for cured-meat safety but can contribute to nitrosamines. Processed meats are classified carcinogenic by IARC. Rated high.",
+      "pt-BR": "Nitrito de sódio (E250) é essencial para a segurança de carnes curadas, mas pode contribuir para nitrosaminas. Carnes processadas são classificadas como carcinogênicas pela IARC. Classificado como alto."
+    },
+    "sources": [
+      "https://www.iarc.who.int/"
+    ],
+    "code": "E250",
+    "tier": "high"
+  },
+  "e249": {
+    "code": "E249",
+    "name": {
+      "en": "Potassium Nitrite",
+      "pt-BR": "Potassium Nitrite"
+    },
+    "function": {
+      "en": "Food additive",
+      "pt-BR": "Aditivo alimentar"
+    },
+    "summary": {
+      "en": "Can form nitrosamines; linked to processed-meat cancer risk (IARC).",
+      "pt-BR": "Can form nitrosamines; linked to processed-meat cancer risk (IARC)."
+    },
+    "detail": {
+      "en": "Can form nitrosamines; linked to processed-meat cancer risk (IARC).",
+      "pt-BR": "Can form nitrosamines; linked to processed-meat cancer risk (IARC)."
+    },
+    "tier": "high",
+    "sources": []
+  },
+  "e251": {
+    "name": {
+      "en": "Sodium nitrate",
+      "pt-BR": "Nitrato de sódio"
+    },
+    "function": {
+      "en": "Curing preservative",
+      "pt-BR": "Conservante de cura"
+    },
+    "summary": {
+      "en": "Converts toward nitrite in cured foods; shares nitrosamine concerns.",
+      "pt-BR": "Converte-se em nitrito em alimentos curados; compartilha preocupações com nitrosaminas."
+    },
+    "detail": {
+      "en": "Sodium nitrate (E251) is used in longer cures and can form nitrite in situ. Rated high alongside nitrite for the same processed-meat rationale.",
+      "pt-BR": "Nitrato de sódio (E251) é usado em curas mais longas e pode formar nitrito in situ. Classificado como alto junto com o nitrito, pelo mesmo raciocínio das carnes processadas."
+    },
+    "sources": [
+      "https://www.iarc.who.int/"
+    ],
+    "code": "E251",
+    "tier": "high"
+  },
+  "e252": {
+    "code": "E252",
+    "name": {
+      "en": "Potassium Nitrate",
+      "pt-BR": "Potassium Nitrate"
+    },
+    "function": {
+      "en": "Food additive",
+      "pt-BR": "Aditivo alimentar"
+    },
+    "summary": {
+      "en": "Converts to nitrite; nitrosamine formation concern.",
+      "pt-BR": "Converts to nitrite; nitrosamine formation concern."
+    },
+    "detail": {
+      "en": "Converts to nitrite; nitrosamine formation concern.",
+      "pt-BR": "Converts to nitrite; nitrosamine formation concern."
+    },
+    "tier": "high",
+    "sources": []
+  },
+  "e260": {
+    "code": "E260",
+    "name": {
+      "en": "Acetic Acid",
+      "pt-BR": "Acetic Acid"
+    },
+    "function": {
+      "en": "Food additive",
+      "pt-BR": "Aditivo alimentar"
+    },
+    "summary": {
+      "en": "Acetic Acid is a permitted food additive at regulated use levels.",
+      "pt-BR": "Acetic Acid is a permitted food additive at regulated use levels."
+    },
+    "detail": {
+      "en": "Acetic Acid is a permitted food additive at regulated use levels.",
+      "pt-BR": "Acetic Acid is a permitted food additive at regulated use levels."
+    },
+    "tier": "low",
+    "sources": []
+  },
+  "e270": {
+    "code": "E270",
+    "name": {
+      "en": "Lactic Acid",
+      "pt-BR": "Lactic Acid"
+    },
+    "function": {
+      "en": "Food additive",
+      "pt-BR": "Aditivo alimentar"
+    },
+    "summary": {
+      "en": "Lactic Acid is a permitted food additive at regulated use levels.",
+      "pt-BR": "Lactic Acid is a permitted food additive at regulated use levels."
+    },
+    "detail": {
+      "en": "Lactic Acid is a permitted food additive at regulated use levels.",
+      "pt-BR": "Lactic Acid is a permitted food additive at regulated use levels."
+    },
+    "tier": "low",
+    "sources": []
+  },
+  "e280": {
+    "code": "E280",
+    "name": {
+      "en": "Propionic Acid",
+      "pt-BR": "Propionic Acid"
+    },
+    "function": {
+      "en": "Food additive",
+      "pt-BR": "Aditivo alimentar"
+    },
+    "summary": {
+      "en": "Propionic Acid is a permitted food additive at regulated use levels.",
+      "pt-BR": "Propionic Acid is a permitted food additive at regulated use levels."
+    },
+    "detail": {
+      "en": "Propionic Acid is a permitted food additive at regulated use levels.",
+      "pt-BR": "Propionic Acid is a permitted food additive at regulated use levels."
+    },
+    "tier": "moderate",
+    "sources": []
+  },
+  "e282": {
+    "code": "E282",
+    "name": {
+      "en": "Calcium Propionate",
+      "pt-BR": "Calcium Propionate"
+    },
+    "function": {
+      "en": "Food additive",
+      "pt-BR": "Aditivo alimentar"
+    },
+    "summary": {
+      "en": "Calcium Propionate is a permitted food additive at regulated use levels.",
+      "pt-BR": "Calcium Propionate is a permitted food additive at regulated use levels."
+    },
+    "detail": {
+      "en": "Calcium Propionate is a permitted food additive at regulated use levels.",
+      "pt-BR": "Calcium Propionate is a permitted food additive at regulated use levels."
+    },
+    "tier": "moderate",
+    "sources": []
+  },
+  "e290": {
+    "code": "E290",
+    "name": {
+      "en": "Carbon Dioxide",
+      "pt-BR": "Carbon Dioxide"
+    },
+    "function": {
+      "en": "Food additive",
+      "pt-BR": "Aditivo alimentar"
+    },
+    "summary": {
+      "en": "Carbon Dioxide is a permitted food additive at regulated use levels.",
+      "pt-BR": "Carbon Dioxide is a permitted food additive at regulated use levels."
+    },
+    "detail": {
+      "en": "Carbon Dioxide is a permitted food additive at regulated use levels.",
+      "pt-BR": "Carbon Dioxide is a permitted food additive at regulated use levels."
+    },
+    "tier": "low",
+    "sources": []
+  },
+  "e296": {
+    "code": "E296",
+    "name": {
+      "en": "Malic Acid",
+      "pt-BR": "Malic Acid"
+    },
+    "function": {
+      "en": "Food additive",
+      "pt-BR": "Aditivo alimentar"
+    },
+    "summary": {
+      "en": "Malic Acid is a permitted food additive at regulated use levels.",
+      "pt-BR": "Malic Acid is a permitted food additive at regulated use levels."
+    },
+    "detail": {
+      "en": "Malic Acid is a permitted food additive at regulated use levels.",
+      "pt-BR": "Malic Acid is a permitted food additive at regulated use levels."
+    },
+    "tier": "low",
+    "sources": []
+  },
+  "e300": {
+    "code": "E300",
+    "name": {
+      "en": "Ascorbic Acid (Vitamin C)",
+      "pt-BR": "Ascorbic Acid (Vitamin C)"
+    },
+    "function": {
+      "en": "Food additive",
+      "pt-BR": "Aditivo alimentar"
+    },
+    "summary": {
+      "en": "Ascorbic Acid (Vitamin C) is a permitted food additive at regulated use levels.",
+      "pt-BR": "Ascorbic Acid (Vitamin C) is a permitted food additive at regulated use levels."
+    },
+    "detail": {
+      "en": "Ascorbic Acid (Vitamin C) is a permitted food additive at regulated use levels.",
+      "pt-BR": "Ascorbic Acid (Vitamin C) is a permitted food additive at regulated use levels."
+    },
+    "tier": "low",
+    "sources": []
+  },
+  "e301": {
+    "code": "E301",
+    "name": {
+      "en": "Sodium Ascorbate",
+      "pt-BR": "Sodium Ascorbate"
+    },
+    "function": {
+      "en": "Food additive",
+      "pt-BR": "Aditivo alimentar"
+    },
+    "summary": {
+      "en": "Sodium Ascorbate is a permitted food additive at regulated use levels.",
+      "pt-BR": "Sodium Ascorbate is a permitted food additive at regulated use levels."
+    },
+    "detail": {
+      "en": "Sodium Ascorbate is a permitted food additive at regulated use levels.",
+      "pt-BR": "Sodium Ascorbate is a permitted food additive at regulated use levels."
+    },
+    "tier": "low",
+    "sources": []
+  },
+  "e306": {
+    "code": "E306",
+    "name": {
+      "en": "Tocopherols (Vitamin E)",
+      "pt-BR": "Tocopherols (Vitamin E)"
+    },
+    "function": {
+      "en": "Food additive",
+      "pt-BR": "Aditivo alimentar"
+    },
+    "summary": {
+      "en": "Tocopherols (Vitamin E) is a permitted food additive at regulated use levels.",
+      "pt-BR": "Tocopherols (Vitamin E) is a permitted food additive at regulated use levels."
+    },
+    "detail": {
+      "en": "Tocopherols (Vitamin E) is a permitted food additive at regulated use levels.",
+      "pt-BR": "Tocopherols (Vitamin E) is a permitted food additive at regulated use levels."
+    },
+    "tier": "low",
+    "sources": []
+  },
+  "e307": {
+    "code": "E307",
+    "name": {
+      "en": "Alpha-Tocopherol",
+      "pt-BR": "Alpha-Tocopherol"
+    },
+    "function": {
+      "en": "Food additive",
+      "pt-BR": "Aditivo alimentar"
+    },
+    "summary": {
+      "en": "Alpha-Tocopherol is a permitted food additive at regulated use levels.",
+      "pt-BR": "Alpha-Tocopherol is a permitted food additive at regulated use levels."
+    },
+    "detail": {
+      "en": "Alpha-Tocopherol is a permitted food additive at regulated use levels.",
+      "pt-BR": "Alpha-Tocopherol is a permitted food additive at regulated use levels."
+    },
+    "tier": "low",
+    "sources": []
+  },
+  "e310": {
+    "code": "E310",
+    "name": {
+      "en": "Propyl Gallate",
+      "pt-BR": "Propyl Gallate"
+    },
+    "function": {
+      "en": "Food additive",
+      "pt-BR": "Aditivo alimentar"
+    },
+    "summary": {
+      "en": "Propyl Gallate is a permitted food additive at regulated use levels.",
+      "pt-BR": "Propyl Gallate is a permitted food additive at regulated use levels."
+    },
+    "detail": {
+      "en": "Propyl Gallate is a permitted food additive at regulated use levels.",
+      "pt-BR": "Propyl Gallate is a permitted food additive at regulated use levels."
+    },
+    "tier": "moderate",
+    "sources": []
+  },
+  "e320": {
+    "name": {
+      "en": "BHA",
+      "pt-BR": "BHA"
+    },
+    "function": {
+      "en": "Antioxidant",
+      "pt-BR": "Antioxidante"
+    },
+    "summary": {
+      "en": "Synthetic antioxidant used to keep fats and packaged foods from going rancid.",
+      "pt-BR": "Antioxidante sintético usado para evitar a rancidez de gorduras e alimentos embalados."
+    },
+    "detail": {
+      "en": "BHA (E320) is classified by IARC as possibly carcinogenic to humans (Group 2B) based mainly on animal evidence. Food use is still permitted within limits in many regions. Sage rates it high so it stands out on the label scan.",
+      "pt-BR": "BHA (E320) é classificado pela IARC como possivelmente carcinogênico para humanos (Grupo 2B), com base sobretudo em evidência animal. O uso em alimentos ainda é permitido dentro de limites em muitas regiões. O Sage classifica como alto para destacá-lo na leitura do rótulo."
+    },
+    "sources": [
+      "https://monographs.iarc.who.int/"
+    ],
+    "code": "E320",
+    "tier": "high"
+  },
+  "e321": {
+    "name": {
+      "en": "BHT",
+      "pt-BR": "BHT"
+    },
+    "function": {
+      "en": "Antioxidant",
+      "pt-BR": "Antioxidante"
+    },
+    "summary": {
+      "en": "Synthetic antioxidant closely related to BHA, used in fats and packaging.",
+      "pt-BR": "Antioxidante sintético próximo do BHA, usado em gorduras e embalagens."
+    },
+    "detail": {
+      "en": "BHT (E321) slows fat oxidation in foods. Safety reviews are mixed across agencies and decades of use; Sage rates it high to match a cautious stance similar to other synthetic phenolic antioxidants.",
+      "pt-BR": "BHT (E321) atrasa a oxidação de gorduras. Revisões de segurança variam entre agências e décadas de uso; o Sage classifica como alto, alinhado a uma postura cautelosa semelhante à de outros antioxidantes fenólicos sintéticos."
+    },
+    "sources": [
+      "https://www.efsa.europa.eu/"
+    ],
+    "code": "E321",
+    "tier": "high"
+  },
+  "e322": {
+    "name": {
+      "en": "Lecithins",
+      "pt-BR": "Lecitinas"
+    },
+    "function": {
+      "en": "Emulsifier",
+      "pt-BR": "Emulsificante"
+    },
+    "summary": {
+      "en": "Usually from soy or sunflower; helps emulsions in chocolate and baked goods.",
+      "pt-BR": "Em geral de soja ou girassol; ajuda emulsões em chocolate e assados."
+    },
+    "detail": {
+      "en": "Lecithins (E322) are naturally occurring emulsifiers. Subtypes like E322ii collapse to this parent in Sage. Rated low.",
+      "pt-BR": "Lecitinas (E322) são emulsificantes de ocorrência natural. Subtipos como E322ii são agrupados neste pai no Sage. Classificadas como baixas."
+    },
+    "sources": [
+      "https://www.efsa.europa.eu/"
+    ],
+    "code": "E322",
+    "tier": "low"
+  },
+  "e325": {
+    "code": "E325",
+    "name": {
+      "en": "Sodium Lactate",
+      "pt-BR": "Sodium Lactate"
+    },
+    "function": {
+      "en": "Food additive",
+      "pt-BR": "Aditivo alimentar"
+    },
+    "summary": {
+      "en": "Sodium Lactate is a permitted food additive at regulated use levels.",
+      "pt-BR": "Sodium Lactate is a permitted food additive at regulated use levels."
+    },
+    "detail": {
+      "en": "Sodium Lactate is a permitted food additive at regulated use levels.",
+      "pt-BR": "Sodium Lactate is a permitted food additive at regulated use levels."
+    },
+    "tier": "low",
+    "sources": []
+  },
+  "e330": {
+    "name": {
+      "en": "Citric acid",
+      "pt-BR": "Ácido cítrico"
+    },
+    "function": {
+      "en": "Acidity regulator / antioxidant aid",
+      "pt-BR": "Regulador de acidez / auxiliar antioxidante"
+    },
+    "summary": {
+      "en": "The acid in citrus fruits, widely used to brighten flavour and preserve colour.",
+      "pt-BR": "O ácido dos cítricos, amplamente usado para realçar sabor e preservar cor."
+    },
+    "detail": {
+      "en": "Citric acid (E330) is ubiquitous and rated low for typical food use.",
+      "pt-BR": "Ácido cítrico (E330) é ubíquo e classificado como baixo no uso alimentar típico."
+    },
+    "sources": [
+      "https://www.efsa.europa.eu/"
+    ],
+    "code": "E330",
+    "tier": "low"
+  },
+  "e331": {
+    "code": "E331",
+    "name": {
+      "en": "Sodium Citrates",
+      "pt-BR": "Sodium Citrates"
+    },
+    "function": {
+      "en": "Food additive",
+      "pt-BR": "Aditivo alimentar"
+    },
+    "summary": {
+      "en": "Sodium Citrates is a permitted food additive at regulated use levels.",
+      "pt-BR": "Sodium Citrates is a permitted food additive at regulated use levels."
+    },
+    "detail": {
+      "en": "Sodium Citrates is a permitted food additive at regulated use levels.",
+      "pt-BR": "Sodium Citrates is a permitted food additive at regulated use levels."
+    },
+    "tier": "low",
+    "sources": []
+  },
+  "e333": {
+    "code": "E333",
+    "name": {
+      "en": "Calcium Citrates",
+      "pt-BR": "Calcium Citrates"
+    },
+    "function": {
+      "en": "Food additive",
+      "pt-BR": "Aditivo alimentar"
+    },
+    "summary": {
+      "en": "Calcium Citrates is a permitted food additive at regulated use levels.",
+      "pt-BR": "Calcium Citrates is a permitted food additive at regulated use levels."
+    },
+    "detail": {
+      "en": "Calcium Citrates is a permitted food additive at regulated use levels.",
+      "pt-BR": "Calcium Citrates is a permitted food additive at regulated use levels."
+    },
+    "tier": "low",
+    "sources": []
+  },
+  "e334": {
+    "code": "E334",
+    "name": {
+      "en": "Tartaric Acid",
+      "pt-BR": "Tartaric Acid"
+    },
+    "function": {
+      "en": "Food additive",
+      "pt-BR": "Aditivo alimentar"
+    },
+    "summary": {
+      "en": "Tartaric Acid is a permitted food additive at regulated use levels.",
+      "pt-BR": "Tartaric Acid is a permitted food additive at regulated use levels."
+    },
+    "detail": {
+      "en": "Tartaric Acid is a permitted food additive at regulated use levels.",
+      "pt-BR": "Tartaric Acid is a permitted food additive at regulated use levels."
+    },
+    "tier": "low",
+    "sources": []
+  },
+  "e338": {
+    "code": "E338",
+    "name": {
+      "en": "Phosphoric Acid",
+      "pt-BR": "Phosphoric Acid"
+    },
+    "function": {
+      "en": "Food additive",
+      "pt-BR": "Aditivo alimentar"
+    },
+    "summary": {
+      "en": "High phosphate intake associated with bone and kidney concerns.",
+      "pt-BR": "High phosphate intake associated with bone and kidney concerns."
+    },
+    "detail": {
+      "en": "High phosphate intake associated with bone and kidney concerns.",
+      "pt-BR": "High phosphate intake associated with bone and kidney concerns."
+    },
+    "tier": "moderate",
+    "sources": []
+  },
+  "e339": {
+    "name": {
+      "en": "Sodium phosphates",
+      "pt-BR": "Fosfatos de sódio"
+    },
+    "function": {
+      "en": "Acidity regulator and stabilizer",
+      "pt-BR": "Regulador de acidez e estabilizante"
+    },
+    "summary": {
+      "en": "Added phosphates that adjust acidity and help hold moisture.",
+      "pt-BR": "Fosfatos adicionados que ajustam acidez e ajudam a reter umidade."
+    },
+    "detail": {
+      "en": "Sodium phosphates (E339) are widely used in processed foods. EFSA evaluates them with other phosphates under a shared intake limit. Moderate rating reflects that group limit.",
+      "pt-BR": "Fosfatos de sódio (E339) são amplamente usados em processados. A EFSA os avalia com outros fosfatos sob um limite compartilhado. A classificação moderada reflete esse limite em grupo."
+    },
+    "sources": [
+      "https://www.efsa.europa.eu/en/efsajournal/pub/5674"
+    ],
+    "code": "E339",
+    "tier": "moderate"
+  },
+  "e340": {
+    "name": {
+      "en": "Potassium phosphates",
+      "pt-BR": "Fosfatos de potássio"
+    },
+    "function": {
+      "en": "Acidity regulator and stabilizer",
+      "pt-BR": "Regulador de acidez e estabilizante"
+    },
+    "summary": {
+      "en": "Potassium forms of food phosphates used for acidity and texture.",
+      "pt-BR": "Formas de potássio dos fosfatos alimentares, usadas para acidez e textura."
+    },
+    "detail": {
+      "en": "Potassium phosphates (E340) serve similar roles to sodium phosphates and share the EFSA group ADI for phosphates. Rated moderate for the same cumulative-intake reason.",
+      "pt-BR": "Fosfatos de potássio (E340) têm papéis semelhantes aos de sódio e compartilham o ADI em grupo da EFSA. Classificados como moderados pelo mesmo motivo de ingestão acumulada."
+    },
+    "sources": [
+      "https://www.efsa.europa.eu/en/efsajournal/pub/5674"
+    ],
+    "code": "E340",
+    "tier": "moderate"
+  },
+  "e341": {
+    "code": "E341",
+    "name": {
+      "en": "Calcium Phosphates",
+      "pt-BR": "Calcium Phosphates"
+    },
+    "function": {
+      "en": "Food additive",
+      "pt-BR": "Aditivo alimentar"
+    },
+    "summary": {
+      "en": "Calcium Phosphates is a permitted food additive at regulated use levels.",
+      "pt-BR": "Calcium Phosphates is a permitted food additive at regulated use levels."
+    },
+    "detail": {
+      "en": "Calcium Phosphates is a permitted food additive at regulated use levels.",
+      "pt-BR": "Calcium Phosphates is a permitted food additive at regulated use levels."
+    },
+    "tier": "moderate",
+    "sources": []
+  },
+  "e407": {
+    "name": {
+      "en": "Carrageenan",
+      "pt-BR": "Carragena"
+    },
+    "function": {
+      "en": "Thickener and stabilizer",
+      "pt-BR": "Espessante e estabilizante"
+    },
+    "summary": {
+      "en": "Seaweed-derived thickener; some studies suggest digestive sensitivity for a subset of people.",
+      "pt-BR": "Espessante de algas; alguns estudos sugerem sensibilidade digestiva em parte das pessoas."
+    },
+    "detail": {
+      "en": "Carrageenan (E407) thickens plant milks and desserts. Evidence on gut irritation is mixed and under ongoing review; Sage rates it moderate as a cautious middle ground.",
+      "pt-BR": "Carragena (E407) engrossa leites vegetais e sobremesas. A evidência sobre irritação intestinal é mista e segue em revisão; o Sage classifica como moderada, como meio-termo cauteloso."
+    },
+    "sources": [
+      "https://www.efsa.europa.eu/"
+    ],
+    "code": "E407",
+    "tier": "moderate"
+  },
+  "e410": {
+    "code": "E410",
+    "name": {
+      "en": "Locust Bean Gum",
+      "pt-BR": "Locust Bean Gum"
+    },
+    "function": {
+      "en": "Food additive",
+      "pt-BR": "Aditivo alimentar"
+    },
+    "summary": {
+      "en": "Locust Bean Gum is a permitted food additive at regulated use levels.",
+      "pt-BR": "Locust Bean Gum is a permitted food additive at regulated use levels."
+    },
+    "detail": {
+      "en": "Locust Bean Gum is a permitted food additive at regulated use levels.",
+      "pt-BR": "Locust Bean Gum is a permitted food additive at regulated use levels."
+    },
+    "tier": "low",
+    "sources": []
+  },
+  "e412": {
+    "name": {
+      "en": "Guar gum",
+      "pt-BR": "Goma guar"
+    },
+    "function": {
+      "en": "Thickener",
+      "pt-BR": "Espessante"
+    },
+    "summary": {
+      "en": "Plant fibre gum used to thicken dairy alternatives and sauces.",
+      "pt-BR": "Goma de fibra vegetal usada para engrossar molhos e alternativas lácteas."
+    },
+    "detail": {
+      "en": "Guar gum (E412) is a soluble fibre thickener. Rated low at normal food levels.",
+      "pt-BR": "Goma guar (E412) é um espessante de fibra solúvel. Classificada como baixa nos níveis alimentares normais."
+    },
+    "sources": [
+      "https://www.efsa.europa.eu/"
+    ],
+    "code": "E412",
+    "tier": "low"
+  },
+  "e414": {
+    "code": "E414",
+    "name": {
+      "en": "Acacia Gum (Gum Arabic)",
+      "pt-BR": "Acacia Gum (Gum Arabic)"
+    },
+    "function": {
+      "en": "Food additive",
+      "pt-BR": "Aditivo alimentar"
+    },
+    "summary": {
+      "en": "Acacia Gum (Gum Arabic) is a permitted food additive at regulated use levels.",
+      "pt-BR": "Acacia Gum (Gum Arabic) is a permitted food additive at regulated use levels."
+    },
+    "detail": {
+      "en": "Acacia Gum (Gum Arabic) is a permitted food additive at regulated use levels.",
+      "pt-BR": "Acacia Gum (Gum Arabic) is a permitted food additive at regulated use levels."
+    },
+    "tier": "low",
+    "sources": []
+  },
+  "e415": {
+    "name": {
+      "en": "Xanthan gum",
+      "pt-BR": "Goma xantana"
+    },
+    "function": {
+      "en": "Thickener and stabilizer",
+      "pt-BR": "Espessante e estabilizante"
+    },
+    "summary": {
+      "en": "A fermentation-derived gum that thickens sauces and gluten-free baking.",
+      "pt-BR": "Goma de fermentação que engrossa molhos e assados sem glúten."
+    },
+    "detail": {
+      "en": "Xanthan gum (E415) is widely used and generally well tolerated; large amounts can loosen stools in some people. Rated low.",
+      "pt-BR": "Goma xantana (E415) é amplamente usada e em geral bem tolerada; grandes quantidades podem amolecer as fezes em algumas pessoas. Classificada como baixa."
+    },
+    "sources": [
+      "https://www.efsa.europa.eu/"
+    ],
+    "code": "E415",
+    "tier": "low"
+  },
+  "e420": {
+    "code": "E420",
+    "name": {
+      "en": "Sorbitol",
+      "pt-BR": "Sorbitol"
+    },
+    "function": {
+      "en": "Food additive",
+      "pt-BR": "Aditivo alimentar"
+    },
+    "summary": {
+      "en": "Sorbitol is a permitted food additive at regulated use levels.",
+      "pt-BR": "Sorbitol is a permitted food additive at regulated use levels."
+    },
+    "detail": {
+      "en": "Sorbitol is a permitted food additive at regulated use levels.",
+      "pt-BR": "Sorbitol is a permitted food additive at regulated use levels."
+    },
+    "tier": "low",
+    "sources": []
+  },
+  "e422": {
+    "code": "E422",
+    "name": {
+      "en": "Glycerol",
+      "pt-BR": "Glycerol"
+    },
+    "function": {
+      "en": "Food additive",
+      "pt-BR": "Aditivo alimentar"
+    },
+    "summary": {
+      "en": "Glycerol is a permitted food additive at regulated use levels.",
+      "pt-BR": "Glycerol is a permitted food additive at regulated use levels."
+    },
+    "detail": {
+      "en": "Glycerol is a permitted food additive at regulated use levels.",
+      "pt-BR": "Glycerol is a permitted food additive at regulated use levels."
+    },
+    "tier": "low",
+    "sources": []
+  },
+  "e433": {
+    "code": "E433",
+    "name": {
+      "en": "Polysorbate 80",
+      "pt-BR": "Polysorbate 80"
+    },
+    "function": {
+      "en": "Food additive",
+      "pt-BR": "Aditivo alimentar"
+    },
+    "summary": {
+      "en": "Emulsifier; animal studies suggest possible gut-microbiome effects.",
+      "pt-BR": "Emulsifier; animal studies suggest possible gut-microbiome effects."
+    },
+    "detail": {
+      "en": "Emulsifier; animal studies suggest possible gut-microbiome effects.",
+      "pt-BR": "Emulsifier; animal studies suggest possible gut-microbiome effects."
+    },
+    "tier": "moderate",
+    "sources": []
+  },
+  "e440": {
+    "code": "E440",
+    "name": {
+      "en": "Pectin",
+      "pt-BR": "Pectin"
+    },
+    "function": {
+      "en": "Food additive",
+      "pt-BR": "Aditivo alimentar"
+    },
+    "summary": {
+      "en": "Pectin is a permitted food additive at regulated use levels.",
+      "pt-BR": "Pectin is a permitted food additive at regulated use levels."
+    },
+    "detail": {
+      "en": "Pectin is a permitted food additive at regulated use levels.",
+      "pt-BR": "Pectin is a permitted food additive at regulated use levels."
+    },
+    "tier": "low",
+    "sources": []
+  },
+  "e450": {
+    "name": {
+      "en": "Diphosphates",
+      "pt-BR": "Difosfatos"
+    },
+    "function": {
+      "en": "Stabilizer, leavening aid",
+      "pt-BR": "Estabilizante e fermento químico"
+    },
+    "summary": {
+      "en": "Phosphate salts that help texture, moisture, and some baked goods rise.",
+      "pt-BR": "Sais de fosfato que ajudam textura, umidade e o crescimento de alguns assados."
+    },
+    "detail": {
+      "en": "Diphosphates (E450) appear in processed meats, cheese, and baking powders. They fall under EFSA's group phosphate ADI. Sage rates them moderate because cumulative phosphate intake, not a single serving, is the main dietary concern.",
+      "pt-BR": "Difosfatos (E450) aparecem em carnes processadas, queijos e fermentos químicos. Entram no ADI em grupo de fosfatos da EFSA. O Sage classifica como moderado porque a preocupação principal é a ingestão acumulada, não uma porção isolada."
+    },
+    "sources": [
+      "https://www.efsa.europa.eu/en/efsajournal/pub/5674"
+    ],
+    "code": "E450",
+    "tier": "moderate"
+  },
+  "e451": {
+    "name": {
+      "en": "Triphosphates",
+      "pt-BR": "Trifosfatos"
+    },
+    "function": {
+      "en": "Stabilizer and moisture retainer",
+      "pt-BR": "Estabilizante e retentor de umidade"
+    },
+    "summary": {
+      "en": "A phosphate salt used to retain moisture and texture in processed foods.",
+      "pt-BR": "Sal de fosfato usado para reter umidade e textura em alimentos processados."
+    },
+    "detail": {
+      "en": "Triphosphates (E451) are part of the same phosphate group reviewed by EFSA. They improve water binding in meats and convenience foods. Moderate rating reflects the group ADI for phosphates rather than a unique hazard from E451 alone.",
+      "pt-BR": "Trifosfatos (E451) fazem parte do mesmo grupo de fosfatos avaliado pela EFSA. Melhoram a retenção de água em carnes e alimentos prontos. A classificação moderada reflete o ADI em grupo dos fosfatos, não um risco exclusivo do E451."
+    },
+    "sources": [
+      "https://www.efsa.europa.eu/en/efsajournal/pub/5674"
+    ],
+    "code": "E451",
+    "tier": "moderate"
+  },
+  "e452": {
+    "name": {
+      "en": "Polyphosphates",
+      "pt-BR": "Polifosfatos"
+    },
+    "function": {
+      "en": "Stabilizer and moisture retainer",
+      "pt-BR": "Estabilizante e retentor de umidade"
+    },
+    "summary": {
+      "en": "Helps noodles and processed foods hold water and stay firm on the shelf.",
+      "pt-BR": "Ajuda massas e alimentos processados a reter água e manter a textura."
+    },
+    "detail": {
+      "en": "Polyphosphates (E452) bind water and minerals in foods like instant noodles and processed meats. EFSA set a group acceptable daily intake for phosphates; typical packaged-food use is within that framework, though high total phosphate intake from many sources can matter for kidney health. Sage rates them moderate for that reason.",
+      "pt-BR": "Polifosfatos (E452) ligam água e minerais em alimentos como macarrão instantâneo e carnes processadas. A EFSA definiu uma ingestão diária aceitável em grupo para fosfatos; o uso típico em embalados fica nesse contexto, embora a soma de fosfatos de várias fontes importe para a saúde renal. O Sage classifica como moderado por isso."
+    },
+    "sources": [
+      "https://www.efsa.europa.eu/en/efsajournal/pub/5674"
+    ],
+    "code": "E452",
+    "tier": "moderate"
+  },
+  "e466": {
+    "code": "E466",
+    "name": {
+      "en": "Carboxymethyl Cellulose",
+      "pt-BR": "Carboxymethyl Cellulose"
+    },
+    "function": {
+      "en": "Food additive",
+      "pt-BR": "Aditivo alimentar"
+    },
+    "summary": {
+      "en": "Emulsifier; emerging research on gut-microbiome effects.",
+      "pt-BR": "Emulsifier; emerging research on gut-microbiome effects."
+    },
+    "detail": {
+      "en": "Emulsifier; emerging research on gut-microbiome effects.",
+      "pt-BR": "Emulsifier; emerging research on gut-microbiome effects."
+    },
+    "tier": "moderate",
+    "sources": []
+  },
+  "e471": {
+    "name": {
+      "en": "Mono- and diglycerides",
+      "pt-BR": "Mono e diglicerídeos"
+    },
+    "function": {
+      "en": "Emulsifier",
+      "pt-BR": "Emulsificante"
+    },
+    "summary": {
+      "en": "Helps oil and water stay mixed in spreads, baked goods, and peanut butter.",
+      "pt-BR": "Ajuda óleo e água a permanecerem misturados em cremes, assados e manteiga de amendoim."
+    },
+    "detail": {
+      "en": "Mono- and diglycerides of fatty acids (E471) are among the most common emulsifiers. They are generally considered low concern at typical use levels. Rated low.",
+      "pt-BR": "Mono e diglicerídeos de ácidos graxos (E471) estão entre os emulsificantes mais comuns. Em geral são considerados de baixa preocupação nos níveis típicos. Classificados como baixos."
+    },
+    "sources": [
+      "https://www.efsa.europa.eu/"
+    ],
+    "code": "E471",
+    "tier": "low"
+  },
+  "e472e": {
+    "code": "E472e",
+    "name": {
+      "en": "DATEM",
+      "pt-BR": "DATEM"
+    },
+    "function": {
+      "en": "Food additive",
+      "pt-BR": "Aditivo alimentar"
+    },
+    "summary": {
+      "en": "DATEM is a permitted food additive at regulated use levels.",
+      "pt-BR": "DATEM is a permitted food additive at regulated use levels."
+    },
+    "detail": {
+      "en": "DATEM is a permitted food additive at regulated use levels.",
+      "pt-BR": "DATEM is a permitted food additive at regulated use levels."
+    },
+    "tier": "moderate",
+    "sources": []
+  },
+  "e476": {
+    "code": "E476",
+    "name": {
+      "en": "Polyglycerol Polyricinoleate",
+      "pt-BR": "Polyglycerol Polyricinoleate"
+    },
+    "function": {
+      "en": "Food additive",
+      "pt-BR": "Aditivo alimentar"
+    },
+    "summary": {
+      "en": "Polyglycerol Polyricinoleate is a permitted food additive at regulated use levels.",
+      "pt-BR": "Polyglycerol Polyricinoleate is a permitted food additive at regulated use levels."
+    },
+    "detail": {
+      "en": "Polyglycerol Polyricinoleate is a permitted food additive at regulated use levels.",
+      "pt-BR": "Polyglycerol Polyricinoleate is a permitted food additive at regulated use levels."
+    },
+    "tier": "moderate",
+    "sources": []
+  },
+  "e481": {
+    "code": "E481",
+    "name": {
+      "en": "Sodium Stearoyl Lactylate",
+      "pt-BR": "Sodium Stearoyl Lactylate"
+    },
+    "function": {
+      "en": "Food additive",
+      "pt-BR": "Aditivo alimentar"
+    },
+    "summary": {
+      "en": "Sodium Stearoyl Lactylate is a permitted food additive at regulated use levels.",
+      "pt-BR": "Sodium Stearoyl Lactylate is a permitted food additive at regulated use levels."
+    },
+    "detail": {
+      "en": "Sodium Stearoyl Lactylate is a permitted food additive at regulated use levels.",
+      "pt-BR": "Sodium Stearoyl Lactylate is a permitted food additive at regulated use levels."
+    },
+    "tier": "moderate",
+    "sources": []
+  },
+  "e500": {
+    "name": {
+      "en": "Sodium carbonates",
+      "pt-BR": "Carbonatos de sódio"
+    },
+    "function": {
+      "en": "Acidity regulator / raising agent",
+      "pt-BR": "Regulador de acidez / fermento"
+    },
+    "summary": {
+      "en": "Includes baking soda forms used to regulate acidity and help dough rise.",
+      "pt-BR": "Inclui formas de bicarbonato usadas para acidez e crescimento da massa."
+    },
+    "detail": {
+      "en": "Sodium carbonates (E500) are everyday kitchen chemistry in packaged form. Rated low for typical food use.",
+      "pt-BR": "Carbonatos de sódio (E500) são química cotidiana de cozinha em forma embalada. Classificados como baixos no uso alimentar típico."
+    },
+    "sources": [
+      "https://www.efsa.europa.eu/"
+    ],
+    "code": "E500",
+    "tier": "low"
+  },
+  "e501": {
+    "name": {
+      "en": "Potassium carbonates",
+      "pt-BR": "Carbonatos de potássio"
+    },
+    "function": {
+      "en": "Acidity regulator",
+      "pt-BR": "Regulador de acidez"
+    },
+    "summary": {
+      "en": "Potassium salts that adjust acidity in cocoa and other foods.",
+      "pt-BR": "Sais de potássio que ajustam a acidez em cacau e outros alimentos."
+    },
+    "detail": {
+      "en": "Potassium carbonates (E501) are long-used acidity regulators. Rated low at food-use levels.",
+      "pt-BR": "Carbonatos de potássio (E501) são reguladores de acidez de uso antigo. Classificados como baixos nos níveis alimentares."
+    },
+    "sources": [
+      "https://www.efsa.europa.eu/"
+    ],
+    "code": "E501",
+    "tier": "low"
+  },
+  "e503": {
+    "code": "E503",
+    "name": {
+      "en": "Ammonium Carbonates",
+      "pt-BR": "Ammonium Carbonates"
+    },
+    "function": {
+      "en": "Food additive",
+      "pt-BR": "Aditivo alimentar"
+    },
+    "summary": {
+      "en": "Ammonium Carbonates is a permitted food additive at regulated use levels.",
+      "pt-BR": "Ammonium Carbonates is a permitted food additive at regulated use levels."
+    },
+    "detail": {
+      "en": "Ammonium Carbonates is a permitted food additive at regulated use levels.",
+      "pt-BR": "Ammonium Carbonates is a permitted food additive at regulated use levels."
+    },
+    "tier": "low",
+    "sources": []
+  },
+  "e509": {
+    "code": "E509",
+    "name": {
+      "en": "Calcium Chloride",
+      "pt-BR": "Calcium Chloride"
+    },
+    "function": {
+      "en": "Food additive",
+      "pt-BR": "Aditivo alimentar"
+    },
+    "summary": {
+      "en": "Calcium Chloride is a permitted food additive at regulated use levels.",
+      "pt-BR": "Calcium Chloride is a permitted food additive at regulated use levels."
+    },
+    "detail": {
+      "en": "Calcium Chloride is a permitted food additive at regulated use levels.",
+      "pt-BR": "Calcium Chloride is a permitted food additive at regulated use levels."
+    },
+    "tier": "low",
+    "sources": []
+  },
+  "e575": {
+    "code": "E575",
+    "name": {
+      "en": "Glucono Delta-Lactone",
+      "pt-BR": "Glucono Delta-Lactone"
+    },
+    "function": {
+      "en": "Food additive",
+      "pt-BR": "Aditivo alimentar"
+    },
+    "summary": {
+      "en": "Glucono Delta-Lactone is a permitted food additive at regulated use levels.",
+      "pt-BR": "Glucono Delta-Lactone is a permitted food additive at regulated use levels."
+    },
+    "detail": {
+      "en": "Glucono Delta-Lactone is a permitted food additive at regulated use levels.",
+      "pt-BR": "Glucono Delta-Lactone is a permitted food additive at regulated use levels."
+    },
+    "tier": "low",
+    "sources": []
+  },
+  "e621": {
+    "name": {
+      "en": "MSG",
+      "pt-BR": "Glutamato monossódico (MSG)"
+    },
+    "function": {
+      "en": "Flavour enhancer",
+      "pt-BR": "Realçador de sabor"
+    },
+    "summary": {
+      "en": "Adds umami; some people report sensitivity, though evidence is limited.",
+      "pt-BR": "Adiciona umami; algumas pessoas relatam sensibilidade, embora a evidência seja limitada."
+    },
+    "detail": {
+      "en": "Monosodium glutamate (E621) is the sodium salt of a common amino acid and is used to deepen savoury flavour. Controlled studies have not consistently confirmed widespread sensitivity, but some people still prefer to avoid it. Sage rates MSG low risk for the general population.",
+      "pt-BR": "Glutamato monossódico (E621) é o sal de sódio de um aminoácido comum e aprofunda o sabor salgado. Estudos controlados não confirmam de forma consistente sensibilidade ampla, mas algumas pessoas preferem evitá-lo. O Sage classifica o MSG como baixo risco para a população geral."
+    },
+    "sources": [
+      "https://www.fda.gov/food/food-additives-petitions/questions-and-answers-monosodium-glutamate-msg"
+    ],
+    "code": "E621",
+    "tier": "low"
+  },
+  "e627": {
+    "name": {
+      "en": "Disodium guanylate",
+      "pt-BR": "Guanilato dissódico"
+    },
+    "function": {
+      "en": "Flavour enhancer",
+      "pt-BR": "Realçador de sabor"
+    },
+    "summary": {
+      "en": "Nucleotide flavour enhancer often paired with MSG for umami.",
+      "pt-BR": "Realçador de sabor do tipo nucleotídeo, frequentemente combinado com MSG."
+    },
+    "detail": {
+      "en": "Disodium guanylate (E627) boosts savoury taste, especially with glutamate. It is widely permitted and generally considered low concern at food-use levels. Rated low.",
+      "pt-BR": "Guanilato dissódico (E627) reforça o sabor salgado, sobretudo com glutamato. É amplamente permitido e em geral considerado de baixa preocupação nos níveis alimentares. Classificado como baixo."
+    },
+    "sources": [
+      "https://www.efsa.europa.eu/"
+    ],
+    "code": "E627",
+    "tier": "low"
+  },
+  "e631": {
+    "name": {
+      "en": "Disodium inosinate",
+      "pt-BR": "Inosinato dissódico"
+    },
+    "function": {
+      "en": "Flavour enhancer",
+      "pt-BR": "Realçador de sabor"
+    },
+    "summary": {
+      "en": "Another nucleotide enhancer that works with MSG for umami depth.",
+      "pt-BR": "Outro realçador do tipo nucleotídeo que potencializa o umami com MSG."
+    },
+    "detail": {
+      "en": "Disodium inosinate (E631) is used like guanylate to amplify savoury flavour. Food-use levels are typically low; Sage rates it low.",
+      "pt-BR": "Inosinato dissódico (E631) é usado como o guanilato para amplificar o sabor salgado. Os níveis em alimentos costumam ser baixos; o Sage classifica como baixo."
+    },
+    "sources": [
+      "https://www.efsa.europa.eu/"
+    ],
+    "code": "E631",
+    "tier": "low"
+  },
+  "e635": {
+    "code": "E635",
+    "name": {
+      "en": "Disodium 5'-Ribonucleotides",
+      "pt-BR": "Disodium 5'-Ribonucleotides"
+    },
+    "function": {
+      "en": "Food additive",
+      "pt-BR": "Aditivo alimentar"
+    },
+    "summary": {
+      "en": "Disodium 5'-Ribonucleotides is a permitted food additive at regulated use levels.",
+      "pt-BR": "Disodium 5'-Ribonucleotides is a permitted food additive at regulated use levels."
+    },
+    "detail": {
+      "en": "Disodium 5'-Ribonucleotides is a permitted food additive at regulated use levels.",
+      "pt-BR": "Disodium 5'-Ribonucleotides is a permitted food additive at regulated use levels."
+    },
+    "tier": "moderate",
+    "sources": []
+  },
+  "e950": {
+    "name": {
+      "en": "Acesulfame K",
+      "pt-BR": "Acesulfame K"
+    },
+    "function": {
+      "en": "Intense sweetener",
+      "pt-BR": "Edulcorante intenso"
+    },
+    "summary": {
+      "en": "Zero-calorie sweetener; long-term evidence is still developing.",
+      "pt-BR": "Adoçante sem calorias; a evidência de longo prazo ainda está em evolução."
+    },
+    "detail": {
+      "en": "Acesulfame K (E950) is permitted worldwide within ADIs. Sage rates it moderate while longer-term research continues.",
+      "pt-BR": "Acesulfame K (E950) é permitido mundialmente dentro dos ADIs. O Sage classifica como moderado enquanto a pesquisa de longo prazo continua."
+    },
+    "sources": [
+      "https://www.efsa.europa.eu/"
+    ],
+    "code": "E950",
+    "tier": "moderate"
+  },
+  "e951": {
+    "name": {
+      "en": "Aspartame",
+      "pt-BR": "Aspartame"
+    },
+    "function": {
+      "en": "Intense sweetener",
+      "pt-BR": "Edulcorante intenso"
+    },
+    "summary": {
+      "en": "Common diet-drink sweetener; IARC rated it possibly carcinogenic (2B) while JECFA kept the ADI.",
+      "pt-BR": "Adoçante comum em refrigerantes diet; a IARC classificou como possivelmente carcinogênico (2B), enquanto o JECFA manteve o ADI."
+    },
+    "detail": {
+      "en": "Aspartame (E951) remains widely approved. In 2023 IARC classified it as Group 2B (possibly carcinogenic) based on limited evidence, while JECFA reaffirmed the ADI. Sage uses a moderate tier to reflect that mixed but closely watched status.",
+      "pt-BR": "Aspartame (E951) segue amplamente aprovado. Em 2023 a IARC o classificou no Grupo 2B (possivelmente carcinogênico) com evidência limitada, enquanto o JECFA reafirmou o ADI. O Sage usa nível moderado para refletir esse status misto, porém monitorado."
+    },
+    "sources": [
+      "https://www.iarc.who.int/",
+      "https://www.who.int/"
+    ],
+    "code": "E951",
+    "tier": "moderate"
+  },
+  "e952": {
+    "code": "E952",
+    "name": {
+      "en": "Cyclamate",
+      "pt-BR": "Cyclamate"
+    },
+    "function": {
+      "en": "Food additive",
+      "pt-BR": "Aditivo alimentar"
+    },
+    "summary": {
+      "en": "Banned in the United States; permitted with limits in the EU.",
+      "pt-BR": "Banned in the United States; permitted with limits in the EU."
+    },
+    "detail": {
+      "en": "Banned in the United States; permitted with limits in the EU.",
+      "pt-BR": "Banned in the United States; permitted with limits in the EU."
+    },
+    "tier": "moderate",
+    "sources": []
+  },
+  "e954": {
+    "code": "E954",
+    "name": {
+      "en": "Saccharin",
+      "pt-BR": "Saccharin"
+    },
+    "function": {
+      "en": "Food additive",
+      "pt-BR": "Aditivo alimentar"
+    },
+    "summary": {
+      "en": "Saccharin is a permitted food additive at regulated use levels.",
+      "pt-BR": "Saccharin is a permitted food additive at regulated use levels."
+    },
+    "detail": {
+      "en": "Saccharin is a permitted food additive at regulated use levels.",
+      "pt-BR": "Saccharin is a permitted food additive at regulated use levels."
+    },
+    "tier": "moderate",
+    "sources": []
+  },
+  "e955": {
+    "name": {
+      "en": "Sucralose",
+      "pt-BR": "Sucralose"
+    },
+    "function": {
+      "en": "Intense sweetener",
+      "pt-BR": "Edulcorante intenso"
+    },
+    "summary": {
+      "en": "Heat-stable sweetener; some research explores effects when heated or on the microbiome.",
+      "pt-BR": "Adoçante estável ao calor; algumas pesquisas exploram efeitos quando aquecido ou no microbioma."
+    },
+    "detail": {
+      "en": "Sucralose (E955) is widely used in diet products. Emerging studies are mixed; Sage rates it moderate as a cautious default.",
+      "pt-BR": "Sucralose (E955) é muito usada em produtos diet. Estudos emergentes são mistos; o Sage classifica como moderada como padrão cauteloso."
+    },
+    "sources": [
+      "https://www.efsa.europa.eu/"
+    ],
+    "code": "E955",
+    "tier": "moderate"
+  },
+  "e960": {
+    "code": "E960",
+    "name": {
+      "en": "Steviol Glycosides (Stevia)",
+      "pt-BR": "Steviol Glycosides (Stevia)"
+    },
+    "function": {
+      "en": "Food additive",
+      "pt-BR": "Aditivo alimentar"
+    },
+    "summary": {
+      "en": "Steviol Glycosides (Stevia) is a permitted food additive at regulated use levels.",
+      "pt-BR": "Steviol Glycosides (Stevia) is a permitted food additive at regulated use levels."
+    },
+    "detail": {
+      "en": "Steviol Glycosides (Stevia) is a permitted food additive at regulated use levels.",
+      "pt-BR": "Steviol Glycosides (Stevia) is a permitted food additive at regulated use levels."
+    },
+    "tier": "low",
+    "sources": []
+  },
+  "e965": {
+    "code": "E965",
+    "name": {
+      "en": "Maltitol",
+      "pt-BR": "Maltitol"
+    },
+    "function": {
+      "en": "Food additive",
+      "pt-BR": "Aditivo alimentar"
+    },
+    "summary": {
+      "en": "Maltitol is a permitted food additive at regulated use levels.",
+      "pt-BR": "Maltitol is a permitted food additive at regulated use levels."
+    },
+    "detail": {
+      "en": "Maltitol is a permitted food additive at regulated use levels.",
+      "pt-BR": "Maltitol is a permitted food additive at regulated use levels."
+    },
+    "tier": "low",
+    "sources": []
+  },
+  "e967": {
+    "code": "E967",
+    "name": {
+      "en": "Xylitol",
+      "pt-BR": "Xylitol"
+    },
+    "function": {
+      "en": "Food additive",
+      "pt-BR": "Aditivo alimentar"
+    },
+    "summary": {
+      "en": "Xylitol is a permitted food additive at regulated use levels.",
+      "pt-BR": "Xylitol is a permitted food additive at regulated use levels."
+    },
+    "detail": {
+      "en": "Xylitol is a permitted food additive at regulated use levels.",
+      "pt-BR": "Xylitol is a permitted food additive at regulated use levels."
+    },
+    "tier": "low",
+    "sources": []
+  },
+  "e968": {
+    "code": "E968",
+    "name": {
+      "en": "Erythritol",
+      "pt-BR": "Erythritol"
+    },
+    "function": {
+      "en": "Food additive",
+      "pt-BR": "Aditivo alimentar"
+    },
+    "summary": {
+      "en": "Recent studies suggest a possible association with cardiovascular events.",
+      "pt-BR": "Recent studies suggest a possible association with cardiovascular events."
+    },
+    "detail": {
+      "en": "Recent studies suggest a possible association with cardiovascular events.",
+      "pt-BR": "Recent studies suggest a possible association with cardiovascular events."
+    },
+    "tier": "moderate",
+    "sources": []
+  },
+  "e319": {
+    "name": {
+      "en": "TBHQ",
+      "pt-BR": "TBHQ"
+    },
+    "function": {
+      "en": "Antioxidant (preserves oils and fats)",
+      "pt-BR": "Antioxidante (conserva óleos e gorduras)"
+    },
+    "summary": {
+      "en": "Synthetic antioxidant that slows rancidity in oils and fried snacks.",
+      "pt-BR": "Antioxidante sintético que atrasa a rancidez em óleos e salgadinhos."
+    },
+    "detail": {
+      "en": "TBHQ (E319) protects fats from oxidation. Allowed levels are regulated; some people prefer to limit frequent intake of foods that rely on synthetic antioxidants. Sage rates it high among common antioxidants because of that cautionary profile.",
+      "pt-BR": "TBHQ (E319) protege gorduras da oxidação. Os níveis permitidos são regulados; algumas pessoas preferem limitar o consumo frequente de alimentos que dependem de antioxidantes sintéticos. O Sage classifica como alto entre antioxidantes comuns por esse perfil de cautela."
+    },
+    "sources": [
+      "https://www.fda.gov/food/food-additives-petitions/food-additive-status-list"
+    ],
+    "code": "E319",
+    "tier": "high"
+  },
+  "e551": {
+    "name": {
+      "en": "Silicon dioxide",
+      "pt-BR": "Dióxido de silício"
+    },
+    "function": {
+      "en": "Anti-caking agent",
+      "pt-BR": "Antiaglomerante"
+    },
+    "summary": {
+      "en": "Keeps powders free-flowing; common in spices and dry mixes.",
+      "pt-BR": "Mantém pós soltos; comum em temperos e misturas secas."
+    },
+    "detail": {
+      "en": "Silicon dioxide (E551) is an inert anti-caking aid. It is poorly absorbed and generally recognized as low concern in food. Rated low.",
+      "pt-BR": "Dióxido de silício (E551) é um antiaglomerante inerte. É pouco absorvido e em geral considerado de baixa preocupação em alimentos. Classificado como baixo."
+    },
+    "sources": [
+      "https://www.efsa.europa.eu/"
+    ],
+    "code": "E551",
+    "tier": "low"
+  },
+  "e375": {
+    "name": {
+      "en": "Niacin",
+      "pt-BR": "Niacina"
+    },
+    "function": {
+      "en": "Vitamin fortificant",
+      "pt-BR": "Fortificante vitamínico"
+    },
+    "summary": {
+      "en": "Vitamin B3 added for fortification in some foods.",
+      "pt-BR": "Vitamina B3 adicionada para fortificação em alguns alimentos."
+    },
+    "detail": {
+      "en": "Niacin (E375) is vitamin B3. Food fortification uses are rated low.",
+      "pt-BR": "Niacina (E375) é a vitamina B3. Usos de fortificação são classificados como baixos."
+    },
+    "sources": [
+      "https://www.efsa.europa.eu/"
+    ],
+    "code": "E375",
+    "tier": "low"
+  }
+}

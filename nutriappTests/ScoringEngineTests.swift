@@ -20,7 +20,7 @@ struct ScoringEngineTests {
     ) -> Product {
         Product(
             id: "x", name: "T", brand: "B", size: "100 g", glyph: "🛒",
-            overallScore: 0, yourScore: 0, deltaReason: nil,
+            overallScore: 0, yourScore: 0, overview: nil,
             nutriGrade: "?", novaGroup: nova,
             nutrients: Nutrients(sugar_g: sugar, sodium_mg: sodium, satFat_g: satFat,
                                  fiber_g: fiber, protein_g: protein, calcium_mg: calcium,
@@ -53,7 +53,7 @@ struct ScoringEngineTests {
     private var cheetos: Product { product(kcal: 570, protein: 6, fiber: 1, sugar: 3, satFat: 4, sodium: 800, fvn: 0, nova: 4) }
 
     private func your(_ p: Product, _ objective: String) -> Int {
-        ScoringEngine.score(p, for: profile(objective: objective)).yourScore
+        ScoringEngine.score(p, for: profile(objective: objective)).yourScore!
     }
 
     // MARK: Overall (Score 1, goal-neutral)
@@ -129,12 +129,12 @@ struct ScoringEngineTests {
         var lowSodiumFan = profile(objective: "maintain")
         lowSodiumFan.preferences = ["Low sodium"]
         let scored = ScoringEngine.score(cheetos, for: lowSodiumFan)
-        #expect(scored.yourScore < scored.overallScore)   // 800mg sodium
+        #expect(scored.yourScore! < scored.overallScore!)   // 800mg sodium
 
         var proteinFan = profile(objective: "maintain")
         proteinFan.preferences = ["High protein"]
         let chick = ScoringEngine.score(chicken, for: proteinFan)
-        #expect(chick.yourScore > chick.overallScore)
+        #expect(chick.yourScore! > chick.overallScore!)
     }
 
     @Test func maintainEqualsOverall() {
@@ -174,16 +174,16 @@ struct ScoringEngineTests {
     @Test func lowSugarRestrictionHardCaps() {
         let candy = product(kcal: 400, sugar: 60, satFat: 5, sodium: 50, fvn: 0, nova: 4)
         let scored = ScoringEngine.score(candy, for: profile(restrictions: ["Low-sugar diet"]))
-        #expect(scored.yourScore <= ScoringEngine.restrictionCap)
+        #expect((scored.yourScore ?? 999) <= ScoringEngine.restrictionCap)
         #expect(scored.restrictions.contains { $0.type == "low-sugar diet" })
-        #expect(scored.deltaReason?.tone == .negative)
+        #expect(scored.overview?.tone == .negative)
     }
 
     @Test func veganConflictHardCaps() {
         let cheese = product(kcal: 400, protein: 25, satFat: 20, sodium: 600, fvn: 0, nova: 3,
                              dietFlags: ["non-vegan"])
         let scored = ScoringEngine.score(cheese, for: profile(restrictions: ["Vegan"]))
-        #expect(scored.yourScore <= ScoringEngine.restrictionCap)
+        #expect((scored.yourScore ?? 999) <= ScoringEngine.restrictionCap)
         #expect(scored.restrictions.contains { $0.type == "vegan" })
     }
 
@@ -207,7 +207,7 @@ struct ScoringEngineTests {
                         fvn: nil, nova: 4)
         p = Product(
             id: p.id, name: p.name, brand: p.brand, size: p.size, glyph: p.glyph,
-            overallScore: 0, yourScore: 0, deltaReason: nil,
+            overallScore: 0, yourScore: 0, overview: nil,
             nutriGrade: p.nutriGrade, novaGroup: p.novaGroup, nutrients: p.nutrients,
             bonuses: [], transFats: false, caffeine_mg: nil,
             sweeteners: [], seedOils: false, additives: [], restrictions: [],
@@ -223,7 +223,7 @@ struct ScoringEngineTests {
     @Test func personalizeOffMirrorsOverall() {
         let s = ScoringEngine.score(chicken, for: profile(objective: "build muscle", personalize: false))
         #expect(s.yourScore == s.overallScore)
-        #expect(s.deltaReason == nil)
+        #expect(s.overview == nil)
     }
 
     @Test func proteinBonusPill() {
@@ -236,7 +236,7 @@ struct ScoringEngineTests {
     @Test func trivialIngredientTextDoesNotPassGate() {
         let prata = Product(
             id: "7897123881325", name: "Prata Água Mineral 370ml", brand: "Prata",
-            size: "370 ml", glyph: "💧", overallScore: 0, yourScore: 0, deltaReason: nil,
+            size: "370 ml", glyph: "💧", overallScore: 0, yourScore: 0, overview: nil,
             nutriGrade: "?", novaGroup: 0,
             nutrients: Nutrients(sugar_g: nil, sodium_mg: nil, satFat_g: nil,
                                  fiber_g: nil, protein_g: nil, calcium_mg: nil, kcal: nil),
@@ -260,7 +260,7 @@ struct ScoringEngineTests {
     @Test func detectedAdditivePassesGateWithoutNutrition() {
         let p = Product(
             id: "a", name: "Diet", brand: "", size: "", glyph: "🛒",
-            overallScore: 0, yourScore: 0, deltaReason: nil,
+            overallScore: 0, yourScore: 0, overview: nil,
             nutriGrade: "?", novaGroup: 0,
             nutrients: Nutrients(sugar_g: nil, sodium_mg: nil, satFat_g: nil,
                                  fiber_g: nil, protein_g: nil, calcium_mg: nil, kcal: nil),

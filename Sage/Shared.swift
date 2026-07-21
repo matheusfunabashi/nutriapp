@@ -42,18 +42,46 @@ struct ScoreRing: View {
 }
 
 /// Compact score ring for list rows (e.g. Recent scans on Home).
+/// Pass `score: nil` (or `isUnscored: true`) for the neutral "Unscored" badge —
+/// never render a sentinel 0.
 struct CompactScoreRing: View {
-    let score: Int
+    let score: Int?
+    var isUnscored: Bool = false
     var dark: Bool = false
 
     private let size: CGFloat = 52
     private let stroke: CGFloat = 4.5
 
+    private var showsUnscored: Bool { isUnscored || score == nil }
+
     var body: some View {
+        if showsUnscored {
+            unscoredBadge
+        } else if let score {
+            scoredRing(score)
+        }
+    }
+
+    private var unscoredBadge: some View {
+        let track = dark ? Color.white.opacity(0.08) : Color.black.opacity(0.06)
+        let fg = Theme.textSecondary(dark)
+        return ZStack {
+            Circle().stroke(track, lineWidth: stroke)
+            Text("Unscored")
+                .font(.sageBold(9))
+                .multilineTextAlignment(.center)
+                .foregroundColor(fg)
+                .padding(.horizontal, 4)
+        }
+        .frame(width: size, height: size)
+        .accessibilityLabel(Text("Unscored"))
+    }
+
+    private func scoredRing(_ score: Int) -> some View {
         let style = Self.style(for: score)
         let track = dark ? Color.white.opacity(0.08) : Color.black.opacity(0.06)
 
-        ZStack {
+        return ZStack {
             Circle().stroke(track, lineWidth: stroke)
             Circle()
                 .trim(from: 0, to: CGFloat(score) / 100)
@@ -73,12 +101,8 @@ struct CompactScoreRing: View {
     }
 
     private static func style(for score: Int) -> (color: Color, label: String) {
-        switch score {
-        case 81...100: return (Color(hex: "1F8A5B"), "Great")
-        case 61...80:  return (Color(hex: "2BA66D"), "Good")
-        case 31...60:  return (Color(hex: "E07A26"), "Okay")
-        default:       return (Color(hex: "C9442B"), "Bad")
-        }
+        let tier = scoreTier(score)
+        return (tier.mid, tier.label)
     }
 }
 
@@ -87,7 +111,8 @@ struct CompactScoreRing: View {
 struct ProductThumb: View {
     @EnvironmentObject private var store: AppStore
     let glyph: String
-    let score: Int
+    /// Nil when unscored — uses a neutral backdrop (never tint from a sentinel 0).
+    let score: Int?
     var size: CGFloat = 48
     /// When true, uses a neutral backdrop instead of the score-tinted gradient.
     var neutral: Bool = false
@@ -96,7 +121,8 @@ struct ProductThumb: View {
     var imageURL: String? = nil
 
     var body: some View {
-        let c = scoreColor(score)
+        let useNeutral = neutral || score == nil
+        let c = score.map(scoreColor) ?? Theme.textSecondary(store.darkMode)
         // Concentric: when nested inside a 18pt-radius row with ~12pt
         // padding the inner radius wants to be ~6–10. 10 keeps the tile
         // shape recognisable without fighting the parent capsule.
@@ -105,7 +131,7 @@ struct ProductThumb: View {
 
         ZStack {
             RoundedRectangle(cornerRadius: r, style: .continuous)
-                .fill(neutral
+                .fill(useNeutral
                       ? AnyShapeStyle(dark ? Color.white.opacity(0.08) : Color.white)
                       : AnyShapeStyle(LinearGradient(
                           colors: [c.opacity(0.12), c.opacity(0.04)],
@@ -149,14 +175,26 @@ struct ProductThumb: View {
 // MARK: - YourScorePill
 
 struct YourScorePill: View {
-    let score: Int
+    let score: Int?
+    var isUnscored: Bool = false
+
+    private var showsUnscored: Bool { isUnscored || score == nil }
+
     var body: some View {
-        Text("\(score)")
-            .font(.sageBold(12))
-            .monospacedDigit()
-            .foregroundColor(.white)
-            .padding(.horizontal, 8).padding(.vertical, 4)
-            .background(Capsule().fill(scoreColor(score)))
+        if showsUnscored {
+            Text("Unscored")
+                .font(.sageBold(10))
+                .foregroundColor(.white)
+                .padding(.horizontal, 8).padding(.vertical, 4)
+                .background(Capsule().fill(Color.gray.opacity(0.55)))
+        } else if let score {
+            Text("\(score)")
+                .font(.sageBold(12))
+                .monospacedDigit()
+                .foregroundColor(.white)
+                .padding(.horizontal, 8).padding(.vertical, 4)
+                .background(Capsule().fill(scoreColor(score)))
+        }
     }
 }
 
@@ -167,9 +205,9 @@ struct EyebrowLabel: View {
     let dark: Bool
     var horizontalPadding: CGFloat = 24
     var body: some View {
-        Text(text.uppercased())
-            .font(.sageBold(10))
-            .tracking(1.4)
+        Text(text)
+            .font(.sageBold(12))
+            .tracking(-0.1)
             .foregroundColor(Theme.textSecondary(dark))
             .padding(.horizontal, horizontalPadding)
             .padding(.top, 14).padding(.bottom, 6)
@@ -425,8 +463,20 @@ enum RiskStyle {
     }
     static func label(_ r: RiskLevel) -> String {
         switch r {
-        case .low: return "Low"; case .moderate: return "Moderate"
-        case .high: return "High"; case .unrated: return "Unrated"
+        case .low: return "Low risk"
+        case .moderate: return "Moderate risk"
+        case .high: return "High risk"
+        case .unrated: return "Unrated"
+        }
+    }
+
+    /// Compact chip / summary stem without the word "risk" (caller adds it).
+    static func shortLabel(_ r: RiskLevel) -> String {
+        switch r {
+        case .low: return "low risk"
+        case .moderate: return "moderate risk"
+        case .high: return "high risk"
+        case .unrated: return "unrated"
         }
     }
 }

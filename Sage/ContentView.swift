@@ -283,7 +283,9 @@ struct ContentView: View {
                     store.recordScan(product)
                     push(.result(productId: product.id, fromScan: true))
                 }
-                fetchExplanation(for: product)
+                if !product.isUnscored {
+                    store.requestOverview(for: product.id)
+                }
             } catch {
                 isLookingUp = false
                 lookupError = Self.lookupMessage(for: error, barcode: barcode)
@@ -297,6 +299,9 @@ struct ContentView: View {
     @MainActor private func scoreForDisplay(_ raw: Product) -> Product? {
         switch ScoringEngineV4.scoreProduct(raw, for: store.user, ruleset: RulesetStore.current) {
         case .scored(let p):
+            return p
+        case .unscored(let p, _):
+            // Pure sweeteners etc.: open ResultView with data, no health score.
             return p
         case .insufficientData:
             presentInsufficientData(raw); return nil
@@ -332,46 +337,13 @@ struct ContentView: View {
                 guard let product = scoreForDisplay(raw) else { return }
                 store.saveProduct(product)
                 push(.result(productId: product.id, fromScan: false))
-                fetchExplanation(for: product)
+                if !product.isUnscored {
+                    store.requestOverview(for: product.id)
+                }
             } catch {
                 isLookingUp = false
                 lookupError = Self.lookupMessage(for: error, barcode: barcode)
             }
-        }
-    }
-
-    /// Fires `/explain` after the result is already on screen and swaps the
-    /// rule-based deltaReason for the LLM sentence when it arrives. Every scan
-    /// gets one — capped and personalization-off included; the class-bucket
-    /// cache (hash covers objective, preferences, restrictions, and toggles)
-    /// keeps repeat cost at zero.
-    private func fetchExplanation(for product: Product) {
-        let classHash = ScoreClass(store.user).hash
-        let payload = BackendService.ExplainPayload(
-            barcode: product.id,
-            classHash: classHash,
-            productName: product.name,
-            objective: store.user.objective,
-            overall: product.overallScore,
-            your: product.yourScore,
-            factors: ScoringEngineV4.signedFactors(product, profile: store.user,
-                                                   ruleset: RulesetStore.current),
-            nutrientLevels: NutrientLevels.promptLines(product.nutrients)
-        )
-        guard !payload.factors.isEmpty else { return }   // data-poor product
-        Task { @MainActor in
-            guard let text = await backend.explain(payload) else { return }
-            // Drop a stale reply: the profile class changed mid-flight, or the
-            // product was rescored/removed while we waited.
-            guard ScoreClass(store.user).hash == classHash,
-                  var current = store.products[product.id],
-                  current.yourScore == product.yourScore else { return }
-            let delta = product.yourScore - product.overallScore
-            let tone: DeltaReason.Tone = delta > 0 ? .positive
-                : delta < 0 ? .negative
-                : (payload.factors.first?.hasPrefix("+") == true ? .positive : .negative)
-            current.deltaReason = DeltaReason(tone: tone, text: text)
-            store.saveProduct(current)
         }
     }
 

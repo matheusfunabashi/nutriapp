@@ -37,11 +37,12 @@ enum ScoringEngine {
         var out = product
         let b = Blocks(product)
         out.overallScore = overall(b)
-        let r = computePersonal(product, profile: profile, blocks: b, overall: out.overallScore)
+        let r = computePersonal(product, profile: profile, blocks: b, overall: out.overallScore ?? 0)
         out.yourScore = r.score
+        out.scoreState = .scored
         out.bonuses = r.bonuses
         out.restrictions = r.restrictions
-        out.deltaReason = r.reason
+        out.overview = r.reason
         return out
     }
 

@@ -252,7 +252,8 @@ private struct RecentRow: View {
                         .foregroundColor(Theme.textSecondary(dark))
                 }
                 Spacer(minLength: 8)
-                CompactScoreRing(score: product.yourScore, dark: dark)
+                CompactScoreRing(score: product.yourScore,
+                                 isUnscored: product.isUnscored, dark: dark)
                 Image(systemName: "chevron.right")
                     .font(.sageBold(12))
                     .foregroundColor(Theme.textSecondary(dark))

@@ -135,7 +135,7 @@ struct BackendIntegrationTests {
     ) -> Product {
         Product(
             id: "x", name: "T", brand: "B", size: "100 g", glyph: "🛒",
-            overallScore: 0, yourScore: 0, deltaReason: nil,
+            overallScore: 0, yourScore: 0, overview: nil,
             nutriGrade: "?", novaGroup: nova,
             nutrients: Nutrients(sugar_g: sugar, sodium_mg: sodium, satFat_g: satFat,
                                  fiber_g: fiber, protein_g: protein, calcium_mg: nil,

@@ -5,11 +5,11 @@ private func rulesetFileURL() -> URL {
     let dir = FileManager.default.urls(for: .applicationSupportDirectory,
                                        in: .userDomainMask)[0]
     try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
-    return dir.appendingPathComponent("RulesetV4.json")
+    return dir.appendingPathComponent("RulesetV5.json")
 }
 
-/// Holds the active scoring-v4 ruleset: the last successfully downloaded copy
-/// if one exists and decodes, else the bundled default (SCORING_V4.md §10).
+/// Holds the active scoring-v5 ruleset: the last successfully downloaded copy
+/// if one exists and decodes, else the bundled default (SCORING_V5.md).
 ///
 /// Engineering contract (§11): the refresh is fire-and-forget — it is never
 /// awaited on the launch or scan path, and offline simply means the current
@@ -19,11 +19,15 @@ private func rulesetFileURL() -> URL {
 enum RulesetStore {
 
     private(set) static var current: RulesetV4 = {
+        let bundled = RulesetV4.bundled
         if let data = try? Data(contentsOf: rulesetFileURL()),
-           let rs = try? JSONDecoder().decode(RulesetV4.self, from: data) {
+           let rs = try? JSONDecoder().decode(RulesetV4.self, from: data),
+           // Never boot on a persisted download older than the app bundle —
+           // otherwise a newer app would keep running a stale downloaded file.
+           rs.version >= bundled.version {
             return rs
         }
-        return .bundled
+        return bundled
     }()
 
     /// Detached background refresh: cheap version probe first, full download

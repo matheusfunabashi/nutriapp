@@ -400,8 +400,6 @@ struct DietaryView: View {
     let priorities: [(String, WritableKeyPath<UserProfile, Int?>)] = [
         ("Clean ingredients", \.sliderCleanIngredients),
         ("Nutrition", \.sliderNutrition),
-        ("Environment", \.sliderEnvironment),
-        ("Animal welfare", \.sliderAnimalWelfare),
     ]
 
     var body: some View {
@@ -431,7 +429,7 @@ struct DietaryView: View {
                              dark: dark) { v in toggleOptional(\.avoidList, v) }
                 }
                 card(title: "Preferences",
-                     desc: "Soft signals. They nudge Your Score, no warnings.",
+                     desc: "Soft signals. Most nudge Your Score; Organic shows a label check.",
                      dark: dark) {
                     chipFlow(items: preferences,
                              active: store.user.preferences,

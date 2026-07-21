@@ -35,9 +35,11 @@ enum AdditiveSource: String {
 }
 
 struct Additive: Hashable {
-    let eNumber: String     // canonical, e.g. "E150d"
+    let eNumber: String     // canonical parent, e.g. "E452"
     let tier: AdditiveTier
-    let commonName: String  // for display, e.g. "Caramel colour IV"
+    let commonName: String  // for display, e.g. "Polyphosphates"
+    /// Original subtype / alias codes merged into this parent (e.g. E452i, E452vi).
+    var detectedAs: [String] = []
 }
 
 struct AdditiveScanResult {
@@ -91,8 +93,9 @@ enum AdditiveDetector {
         let weAddedBeyondOff = found.values.contains { $0.1 != .offTag }
         let textMissing = rawText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
 
-        let additives = found.values.map { $0.0 }.sorted { $0.eNumber < $1.eNumber }
-        let sources = Dictionary(uniqueKeysWithValues: found.map { ($0.key, $0.value.1) })
+        let collapsed = collapseToParents(found)
+        let additives = collapsed.map(\.additive).sorted { $0.eNumber < $1.eNumber }
+        let sources = Dictionary(uniqueKeysWithValues: collapsed.map { ($0.additive.eNumber, $0.source) })
 
         return AdditiveScanResult(
             additives: additives,
@@ -102,15 +105,114 @@ enum AdditiveDetector {
         )
     }
 
+    // MARK: Parent / subtype collapse
+
+    /// Strip roman-numeral subtype suffixes only: E452i / E452vi / E322ii → E452 / E322.
+    /// Letter subtypes that identify distinct EU additives (E150d, E472e) are kept intact.
+    static func parentENumber(_ raw: String) -> String {
+        let e = canonicalENumber(raw.hasPrefix("E") || raw.hasPrefix("e") || raw.contains(":")
+                                 ? raw
+                                 : "E" + raw)
+        guard !e.isEmpty else { return raw.uppercased() }
+        let body = String(e.dropFirst()) // digits + optional suffix
+        // Match digits then a roman-numeral run (i, ii, iii, iv, vi, …).
+        guard let rx = try? NSRegularExpression(pattern: #"^(\d{3,4})([ivx]+)$"#,
+                                                options: [.caseInsensitive]) else {
+            return e
+        }
+        let ns = body as NSString
+        let range = NSRange(location: 0, length: ns.length)
+        guard let m = rx.firstMatch(in: body, range: range), m.numberOfRanges >= 2 else {
+            // Preserve forms like E150d / E472e (latin letter, not roman).
+            return "E" + body
+        }
+        let digits = ns.substring(with: m.range(at: 1))
+        return "E" + digits
+    }
+
+    private struct Collapsed {
+        var additive: Additive
+        var source: AdditiveSource
+    }
+
+    private static func collapseToParents(
+        _ found: [String: (Additive, AdditiveSource)]
+    ) -> [Collapsed] {
+        var byParent: [String: Collapsed] = [:]
+        for (code, (additive, source)) in found {
+            let parent = parentENumber(code)
+            let resolved = resolveDefinition(parent: parent, original: code, fallback: additive)
+            if var existing = byParent[parent] {
+                if code.uppercased() != parent.uppercased(),
+                   !existing.additive.detectedAs.contains(where: { $0.caseInsensitiveCompare(code) == .orderedSame }) {
+                    existing.additive.detectedAs.append(canonicalDisplayCode(code))
+                }
+                // Prefer a classified tier over unclassified when merging.
+                if existing.additive.tier == .unclassified, resolved.tier != .unclassified {
+                    existing.additive = Additive(
+                        eNumber: parent,
+                        tier: resolved.tier,
+                        commonName: resolved.commonName,
+                        detectedAs: existing.additive.detectedAs
+                    )
+                }
+                // Prefer OFF tag provenance when present.
+                if source == .offTag { existing.source = .offTag }
+                byParent[parent] = existing
+            } else {
+                var detectedAs: [String] = []
+                if code.uppercased() != parent.uppercased() {
+                    detectedAs = [canonicalDisplayCode(code)]
+                }
+                byParent[parent] = Collapsed(
+                    additive: Additive(eNumber: parent, tier: resolved.tier,
+                                       commonName: resolved.commonName,
+                                       detectedAs: detectedAs),
+                    source: source
+                )
+            }
+        }
+        return Array(byParent.values)
+    }
+
+    private static func resolveDefinition(parent: String, original: String,
+                                          fallback: Additive) -> (tier: AdditiveTier, commonName: String) {
+        if let def = definitions[parent] {
+            return (def.tier, def.commonName)
+        }
+        if let def = definitions[original] {
+            return (def.tier, def.commonName)
+        }
+        // Knowledge-base tier wins when the detector dictionary has no entry.
+        if let kb = AdditiveKnowledgeBase.entry(for: parent) {
+            return (tierFromRisk(kb.risk), kb.name.resolved())
+        }
+        return (fallback.tier, fallback.commonName == original ? parent : fallback.commonName)
+    }
+
+    private static func tierFromRisk(_ risk: RiskLevel) -> AdditiveTier {
+        switch risk {
+        case .high: return .major
+        case .moderate: return .moderate
+        case .low: return .mild
+        case .unrated: return .unclassified
+        }
+    }
+
+    private static func canonicalDisplayCode(_ code: String) -> String {
+        let c = canonicalENumber(code)
+        return c.isEmpty ? code.uppercased() : c
+    }
+
     // MARK: Code extraction
 
-    /// Pulls "E150d", "E 150", "E-150d", "INS 150d", "INS:951" out of raw text.
-    /// Returns canonical E-numbers (lowercase letter suffix, e.g. "E150d").
+    /// Pulls "E150d", "E 150", "E-150d", "E452i", "INS 150d", "INS:951" out of raw text.
+    /// Returns canonical E-numbers (letter or roman suffix preserved for later parent collapse).
     static func extractCodes(from text: String) -> Set<String> {
         var out = Set<String>()
         let patterns = [
-            #"(?i)\bE[\s\-]?(\d{3,4}[a-f]?)\b"#,       // E-numbers
-            #"(?i)\bINS[\s:]{0,2}(\d{3,4}[a-z]?)\b"#   // ANVISA / Codex INS numbers map 1:1 to E-numbers
+            #"(?i)\bE[\s\-]?(\d{3,4}(?:[ivx]+|[a-f])?)\b"#,
+            #"(?i)\bINS[\s:]{0,2}(\d{3,4}(?:[ivx]+|[a-z])?)\b"#
         ]
         let ns = text as NSString
         for p in patterns {
@@ -306,6 +408,16 @@ private let definitions: [String: AdditiveDef] = [
     "E466": .init(tier: .mild, commonName: "Cellulose gum (CMC)",
         synonyms: ["carboximetilcelulose", "carbossimetilcellulosa", "carboximetilcelulosa",
                    "carboxymethylcellulose", "cellulose gum", "cmc"]),
+    "E450": .init(tier: .moderate, commonName: "Diphosphates",
+        synonyms: ["difosfato", "difosfatos", "diphosphate", "diphosphates",
+                   "disodium diphosphate", "sodium acid pyrophosphate"]),
+    "E451": .init(tier: .moderate, commonName: "Triphosphates",
+        synonyms: ["trifosfato", "trifosfatos", "triphosphate", "triphosphates",
+                   "pentasodium triphosphate"]),
+    "E452": .init(tier: .moderate, commonName: "Polyphosphates",
+        synonyms: ["polifosfato", "polifosfatos", "polyphosphate", "polyphosphates",
+                   "sodium hexametaphosphate", "hexametafosfato", "hexametafosfato de sodio",
+                   "sodium polyphosphate", "potassium polyphosphate"]),
     "E471": .init(tier: .mild, commonName: "Mono- & diglycerides",
         synonyms: ["mono e digliceridios", "mono e digliceridi", "mono y digliceridos",
                    "mono et diglycerides", "monoglycerides", "diglycerides",

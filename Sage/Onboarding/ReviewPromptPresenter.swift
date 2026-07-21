@@ -1,4 +1,5 @@
 import StoreKit
+#if canImport(UIKit)
 import UIKit
 
 // MARK: - Review prompt
@@ -128,3 +129,10 @@ enum ReviewPromptPresenter {
             .first { $0.activationState == .foregroundActive }
     }
 }
+#else
+enum ReviewPromptPresenter {
+    static func requestThenContinue(onComplete: @escaping () -> Void) {
+        onComplete()
+    }
+}
+#endif

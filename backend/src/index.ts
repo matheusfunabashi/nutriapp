@@ -18,9 +18,9 @@ import {
 } from "./cache";
 import { bumpScanCount, logFetch } from "./db";
 import { fetchUSDA, mergeUSDA, plausiblyUS } from "./usda";
-import { generateExplanation } from "./explanation";
+import { generateExplanation, buildTemplateOverview } from "./explanation";
 // Scoring-v4 ruleset served to clients (SCORING_V4.md §10). Keep in sync:
-// `cp Sage/RulesetV4.json backend/src/ruleset.json` before deploying — the
+// `cp Sage/RulesetV5.json backend/src/ruleset.json` before deploying — the
 // app treats the served version as newer than its bundled copy.
 import ruleset from "./ruleset.json";
 
@@ -125,25 +125,21 @@ app.post("/explain", async (c) => {
     return c.json({ error: "missing_barcode_or_classHash" }, 400);
   }
 
-  const version = c.env.EXPLANATION_VERSION ?? "exp-v1";
+  const version = c.env.EXPLANATION_VERSION ?? "exp-v8";
   const key = explanationKey(version, body.barcode, body.classHash);
 
   // L2 cache hit.
   const cached = await getExplanation(c.env.CACHE, key);
   if (cached) return c.json({ source: "cache", explanation: cached });
 
-  // Nothing to explain without factors (e.g. a data-poor product); the app
-  // keeps its rule-based text. Cost stays bounded by the class-bucket cache.
-  if (!body.factors?.length) {
+  if (!body.rules?.length) {
     return c.json({ source: "skip", explanation: null });
   }
 
-  const text = await generateExplanation(c.env, body).catch(() => null);
-  if (text) {
-    c.executionCtx.waitUntil(putExplanation(c.env.CACHE, key, text));
-    c.executionCtx.waitUntil(logFetch(c.env.DB, "llm", body.barcode, "generate"));
-  }
-  return c.json({ source: text ? "llm" : "fallback", explanation: text });
+  const text = await generateExplanation(c.env, body).catch(() => buildTemplateOverview(body));
+  c.executionCtx.waitUntil(putExplanation(c.env.CACHE, key, text));
+  c.executionCtx.waitUntil(logFetch(c.env.DB, "llm", body.barcode, "generate"));
+  return c.json({ source: "overview", explanation: text });
 });
 
 export default app;

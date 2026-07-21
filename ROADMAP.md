@@ -42,12 +42,11 @@ Each branch builds on the previous; all pushed to `origin`.
 
 ---
 
-> **⚠️ Scoring v4 is specced:** see [SCORING_V4.md](SCORING_V4.md) — a
-> category-aware rule system (router + weighted fractional rules + Data
-> Confidence + JSON rulesets) that will replace v3 below once the team signs
-> off. v3 remains the shipped engine until Phase B of that plan completes.
+> **⚠️ Scoring v5 is live:** see [SCORING_V5.md](SCORING_V5.md) — health-only
+> ruleset `2026.07-v5.0.7` (sweeteners are **unscored**). Historical v4 design
+> notes: [SCORING_V4.md](SCORING_V4.md).
 
-## Scoring engine v3 — anchored modifier model (CURRENT, replaces v2)
+## Scoring engine v3 — anchored modifier model (LEGACY)
 
 Anchored scale: **100 perfect · 70 good · 50 neutral · 30 bad · 10 shouldn't eat
 it** — scores are floored at 10, never 0. Same per-100g building blocks as v2,

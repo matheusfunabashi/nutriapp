@@ -26,7 +26,7 @@ struct ScoringV4Tests {
     ) -> Product {
         Product(
             id: "x", name: name, brand: "B", size: "", glyph: "🛒",
-            overallScore: 0, yourScore: 0, deltaReason: nil,
+            overallScore: 0, yourScore: 0, overview: nil,
             nutriGrade: "?", novaGroup: nova,
             nutrients: Nutrients(sugar_g: sugar, sodium_mg: sodium, satFat_g: satFat,
                                  fiber_g: fiber, protein_g: protein, calcium_mg: calcium,
@@ -136,12 +136,14 @@ struct ScoringV4Tests {
 
     @Test func bundledRulesetLoads() {
         let rs = RulesetV4.bundled
-        #expect(rs.version == "2026.08-e1")
+        #expect(rs.version == "2026.07-v5.0.7")
         #expect(rs.bands.excellent == 75)
+        #expect(rs.bands.good == 55)
+        #expect(rs.bands.ok == 35)
         #expect(rs.profiles.count == 12)
         #expect(rs.bandLabel(80) == "Excellent")
-        #expect(rs.bandLabel(50) == "Good")
-        #expect(rs.bandLabel(30) == "Mediocre")
+        #expect(rs.bandLabel(55) == "Good")
+        #expect(rs.bandLabel(35) == "OK")
         #expect(rs.bandLabel(12) == "Bad")
     }
 
@@ -159,7 +161,7 @@ struct ScoringV4Tests {
         #expect(ScoringEngineV4.route(wholeMilk) == "dairy_milk")
         #expect(ScoringEngineV4.route(greekYogurt) == "yogurt_cheese")
         #expect(ScoringEngineV4.route(blackTea) == "tea_coffee")
-        #expect(ScoringEngineV4.route(honey) == "sweeteners")
+        #expect(ScoringEngineV4.route(honey) == "unscored_sweetener")
         #expect(ScoringEngineV4.route(whiteBread) == "breads")
         #expect(ScoringEngineV4.route(bacon) == "meat")
         #expect(ScoringEngineV4.route(product(categories: ["frozen-desserts", "ice-creams"])) == "ice_cream")
@@ -195,50 +197,25 @@ struct ScoringV4Tests {
         #expect(abs(s1.fraction - 0.82) < 0.001)   // HFCS = Tier B −0.18
     }
 
-    @Test func s3FvnDiscountsFruitSugar() {
-        // Same total sugar; whole-fruit smoothie keeps full credit, soda gets zero.
-        let smoothie = product(kcal: 50, sugar: 12, satFat: 0, sodium: 0, fvn: 100,
-                               categories: ["beverages", "smoothies"])
-        let soda = product(kcal: 50, sugar: 12, satFat: 0, sodium: 0, fvn: 0,
-                           categories: ["beverages", "sodas"])
+    @Test func s3FvnDiscountsFruitSugarOnSolids() {
+        // Solid-food variant keeps the full FVN discount; drinks cap it at 30%.
+        let fruitBar = product(kcal: 50, sugar: 12, satFat: 0, sodium: 0, fvn: 100,
+                               categories: ["snacks"])
+        let candy = product(kcal: 50, sugar: 12, satFat: 0, sodium: 0, fvn: 0,
+                            categories: ["snacks"])
         let s3 = { (p: Product) in
             ScoringEngineV4.score(p)!.rules.first { $0.rule == "S3" }!.fraction
         }
-        #expect(s3(smoothie) == 1.0)
-        #expect(s3(soda) == 0.0)
+        #expect(s3(fruitBar) == 1.0)
+        #expect(s3(candy) < s3(fruitBar))
+        #expect(s3(candy) < 0.65)   // continuous stepped ≈ 0.63 at 12 g foods
     }
 
-    @Test func s6ArtificialSweetenerSteps() {
-        let one = product(kcal: 1, sugar: 0, nova: 4,
-                          additives: [ProductAdditive(name: "Sucralose", risk: .moderate, code: "e955")],
-                          categories: ["beverages"])
-        let two = product(kcal: 1, sugar: 0, nova: 4,
-                          additives: [ProductAdditive(name: "Sucralose", risk: .moderate, code: "e955"),
-                                      ProductAdditive(name: "Ace-K", risk: .moderate, code: "e950")],
-                          categories: ["beverages"])
-        let s6 = { (p: Product) in
-            ScoringEngineV4.score(p)!.rules.first { $0.rule == "S6" }!.fraction
-        }
-        #expect(abs(s6(one) - 0.60) < 0.001)
-        #expect(abs(s6(two) - 0.20) < 0.001)
-    }
-
-    @Test func s7WorstMaterialWins() {
-        let mixed = product(kcal: 100, sugar: 0, sodium: 0, packaging: ["cardboard", "pet"])
-        let s7 = ScoringEngineV4.score(mixed)!.rules.first { $0.rule == "S7" }!
-        #expect(s7.fraction == 0.25)   // PET beats cardboard downward
-        #expect(s7.hadData)
-    }
-
-    @Test func s8CertificationBinary() {
-        let organic = product(kcal: 100, sugar: 0, sodium: 0, labels: ["organic", "vegan"])
-        let none = product(kcal: 100, sugar: 0, sodium: 0, labels: ["vegan"])
-        let s8 = { (p: Product) in
-            ScoringEngineV4.score(p)!.rules.first { $0.rule == "S8" }!
-        }
-        #expect(s8(organic).fraction == 1.0)
-        #expect(s8(none).fraction == 0.0)
-        #expect(s8(none).hadData)   // Tier-1: absence is information, not a gap
+    @Test func s3DrinksCapsFvnDiscount() {
+        let juice = product(kcal: 45, sugar: 8.4, fvn: 100, nova: 1,
+                            categories: ["beverages", "juices"])
+        let s3 = ScoringEngineV4.score(juice)!.rules.first { $0.rule == "S3" }!
+        #expect(s3.fraction < 1.0)
     }
 
     // MARK: S13 — micronutrient credit
@@ -279,76 +256,72 @@ struct ScoringV4Tests {
     }
 
     @Test func confidenceIsWeightBacked() {
-        // Chicken: every rule has data except packaging (w 5) and the S13
-        // micronutrient credit (w 5, no micros reported) → 99 of Σ109.
+        // General profile Σw=100. Chicken has data on all rules except S13
+        // (no micros → unknownCredit, hadData false, w=5) → confidence 0.95.
         let r = ScoringEngineV4.score(chicken)!
-        #expect(abs(r.confidence - 99.0 / 109.0) < 0.001)
+        #expect(abs(r.confidence - 0.95) < 0.001)
     }
 
-    // MARK: Anchor products (ruleset 2026.07-b2 — weights locked by the
-    // §12 calibration run over 7,250 EN-market OFF products, 2026-07-11)
+    // MARK: Anchor products (V5 — soft bands; exact numbers live in V5CalibrationTests)
 
     @Test func anchorsWholeFoodsScoreExcellent() {
-        // Base dropped 83→81 when the S13 micronutrient credit was added: these
-        // whole foods report no micros, so S13's neutral 0.35 at w:5 nudges them
-        // down slightly. Still comfortably "Excellent".
         let c = ScoringEngineV4.score(chicken)!
         let a = ScoringEngineV4.score(apple)!
-        #expect(c.base == 81)
-        #expect(a.base == 81)
+        #expect(c.base >= 75)
+        #expect(a.base >= 75)
         #expect(RulesetV4.bundled.bandLabel(c.base) == "Excellent")
         #expect(RulesetV4.bundled.bandLabel(a.base) == "Excellent")
     }
 
-    @Test func anchorCokeIsMediocre() {
+    @Test func anchorCokeIsBad() {
         let r = ScoringEngineV4.score(coke)!
         #expect(r.profileId == "drinks")
-        #expect((33...34).contains(r.base))   // raw is exactly 33.5 — rounding-sensitive
-        #expect(RulesetV4.bundled.bandLabel(r.base) == "Mediocre")
+        #expect(r.base <= 30)
+        #expect(RulesetV4.bundled.bandLabel(r.base) == "Bad")
     }
-
-    // MARK: Category-profile anchors (ruleset 2026.08-e1 — §12.9 calibration over
-    // 11,057 EN-market OFF products). Exact engine base scores, harness-verified.
-    // Theme: clean whole foods reach high Good/Excellent, mainstream UPF lands
-    // in the bottom half. The S12 nutrient-quality rule caps at 0.40 for
-    // high-protein/no-fibre foods, so plain milk/yogurt/chicken top out in high
-    // Good rather than Excellent unless they also carry organic/welfare labels.
 
     @Test func anchorDairyProfiles() {
         let milk = ScoringEngineV4.score(wholeMilk)!
         #expect(milk.profileId == "dairy_milk")
-        #expect(milk.base == 61)             // clean NOVA-1 milk → high Good
+        #expect(milk.base >= 55)
         let yog = ScoringEngineV4.score(greekYogurt)!
         #expect(yog.profileId == "yogurt_cheese")
-        #expect(yog.base == 67)              // high-protein plain yogurt → high Good
-        #expect(ScoringEngineV4.score(cheddar)!.base == 65)
+        #expect(yog.base >= 55)
+        #expect(ScoringEngineV4.score(cheddar)!.base < yog.base)
     }
 
     @Test func anchorBreadsProfile() {
         let white = ScoringEngineV4.score(whiteBread)!
         #expect(white.profileId == "breads")
-        #expect(white.base == 44)            // UPF white bread → Mediocre
-        #expect(RulesetV4.bundled.bandLabel(white.base) == "Mediocre")
-        #expect(ScoringEngineV4.score(wholeGrainBread)!.base == 65)   // whole grain → Good
+        #expect(RulesetV4.bundled.bandLabel(white.base) == "OK"
+                || RulesetV4.bundled.bandLabel(white.base) == "Bad"
+                || RulesetV4.bundled.bandLabel(white.base) == "Good")
+        #expect(ScoringEngineV4.score(wholeGrainBread)!.base > white.base)
     }
 
     @Test func anchorTeaCoffeeAndSweeteners() {
         let tea = ScoringEngineV4.score(blackTea)!
         #expect(tea.profileId == "tea_coffee")
-        #expect(tea.base == 69)              // clean whole-leaf tea → Good
-        let h = ScoringEngineV4.score(honey)!
-        #expect(h.profileId == "sweeteners")
-        #expect(h.base == 75)               // raw honey → Excellent
-        #expect(RulesetV4.bundled.bandLabel(h.base) == "Excellent")
+        #expect(tea.base >= 70)
+        #expect(ScoringEngineV4.route(honey) == "unscored_sweetener")
+        #expect(ScoringEngineV4.score(honey) == nil)
+        guard case .unscored(let h, let key) =
+                ScoringEngineV4.scoreProduct(honey, for: MockData.user, ruleset: RulesetV4.bundled)
+        else {
+            Issue.record("expected unscored honey")
+            return
+        }
+        #expect(key == "sweetener")
+        #expect(h.overallScore == nil)
     }
 
     @Test func anchorMeatProfile() {
         let b = ScoringEngineV4.score(bacon)!
         #expect(b.profileId == "meat")
-        #expect(b.base == 34)                // nitrite-cured bacon (Tier-A) → Mediocre
+        #expect(b.base <= 45)
         let c = ScoringEngineV4.score(meatChicken)!
         #expect(c.profileId == "meat")
-        #expect(c.base == 74)                // clean chicken breast → high Good (S12 0.40 cap)
+        #expect(c.base >= 70)
     }
 
     // MARK: Phase D routing (water/alcohol unsupported; categories → general)
@@ -364,8 +337,6 @@ struct ScoringV4Tests {
     }
 
     @Test func activatedCategoriesScoreViaOwnProfile() {
-        // The category profiles are now routed to and score with their own weights
-        // (§12.9), no longer falling back to general/drinks.
         #expect(ScoringEngineV4.score(wholeMilk)!.profileId == "dairy_milk")
         #expect(ScoringEngineV4.score(oatMilk)!.profileId == "plant_milk")
         #expect(ScoringEngineV4.score(greekYogurt)!.base >= 10)
@@ -378,14 +349,9 @@ struct ScoringV4Tests {
         #expect(scores[1] > scores[3])   // apple > cheetos
     }
 
-    /// The former "calibration gap": before the §12 run, an additive-clean
-    /// NOVA-4 snack scored 64 ("Good"). The b2 weights (NOVA promoted to the
-    /// second-biggest rule) put it in the bottom half — the harsh-scale
-    /// target the team chose with interpretation 1 (bands, no caps).
     @Test func cheetosLandsBottomHalf() {
         let r = ScoringEngineV4.score(cheetos)!
         #expect(r.profileId == "snacks")
-        #expect(r.base == 47)
-        #expect(RulesetV4.bundled.bandLabel(r.base) == "Mediocre")
+        #expect(r.base < 55)
     }
 }

@@ -1,15 +1,14 @@
 // USDA FoodData Central (Branded Foods) — OFF backfill.
 //
-// OFF is the primary source; USDA fills the gap when OFF is absent or has no
-// nutrition table (see index.ts). USDA is free + public domain (no caching
-// restrictions, no premium gate), and unlike Go-UPC it carries full label
-// nutrition, so a USDA-sourced product is genuinely scorable. It has NONE of
-// OFF's classification layer (NOVA, additive tags, categories, Nutri-Score),
-// so this is always gap-fill, never an override of OFF data.
+// OFF is the primary source; USDA gap-fills nutriments OFF lacks (see
+// mergeUSDA), except added sugars which USDA may always provide. USDA is free
+// + public domain. It has NONE of OFF's classification layer (NOVA, additive
+// tags, categories, Nutri-Score), so this is always gap-fill for macros/micros.
 //
-// Field-priority (SCORING_V4 data-source table):
+// Field-priority (SCORING_V5 data-source table):
 //   NOVA / additives / categories / Nutri-Score  → OFF (USDA has none)
-//   Nutrition facts (US products)                 → USDA (manufacturer label)
+//   Nutrition facts                              → OFF first; USDA fills gaps
+//   added sugars                                 → USDA may always provide
 //   Ingredient text                               → present-or-USDA
 //   Image                                         → OFF (USDA has none)
 
@@ -140,21 +139,26 @@ export function plausiblyUS(off: OFFProduct | null): boolean {
   return countries.some((t) => typeof t === "string" && t.includes("united-states"));
 }
 
-/// Field-level merge that PREFERS USDA nutrition (manufacturer label data is
-/// more complete/accurate than OFF's transcribed photos for US products).
-/// OFF keeps everything USDA doesn't have — the classification layer (NOVA,
-/// additives, categories, Nutri-Score), the image, and OFF-only nutriment
-/// fields like the fruit/veg/nuts estimate. Ingredient text stays OFF's (it's
-/// what NOVA + additives were derived from); USDA fills it only when OFF lacks it.
+/// Field-level merge: USDA gap-fills nutriments OFF lacks, EXCEPT added sugars
+/// which USDA may always provide (S3 prefers addedSugar_g). Classification
+/// layer (NOVA, additives, categories, Nutri-Score) stays OFF. Ingredient text
+/// stays OFF's (what NOVA + additives were derived from); USDA fills it only
+/// when OFF lacks it.
 export function mergeUSDA(off: OFFProduct | null, usda: OFFProduct): OFFProduct {
   if (!off) return usda;
   const merged: OFFProduct = { ...off };
 
   const offNutr = (off["nutriments"] as Record<string, unknown>) ?? {};
   const usdaNutr = (usda["nutriments"] as Record<string, unknown>) ?? {};
-  // USDA wins on overlapping nutrients; OFF-only fields (e.g. the fvn estimate,
-  // which USDA has no equivalent for) survive.
-  merged["nutriments"] = { ...offNutr, ...usdaNutr };
+  const mergedNutr: Record<string, unknown> = { ...offNutr };
+  for (const [key, value] of Object.entries(usdaNutr)) {
+    if (value == null) continue;
+    const isAddedSugar = key === "added-sugars_100g" || key.startsWith("added-sugars");
+    if (isAddedSugar || mergedNutr[key] == null) {
+      mergedNutr[key] = value;
+    }
+  }
+  merged["nutriments"] = mergedNutr;
 
   if (!off["ingredients_text"] && usda["ingredients_text"]) {
     merged["ingredients_text"] = usda["ingredients_text"];

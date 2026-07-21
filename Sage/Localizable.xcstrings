@@ -1,0 +1,902 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "" : {
+
+    },
+    "!" : {
+
+    },
+    "?" : {
+
+    },
+    "·" : {
+
+    },
+    "· %@" : {
+
+    },
+    "/100" : {
+
+    },
+    "%@" : {
+
+    },
+    "%@ %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ %2$@"
+          }
+        }
+      }
+    },
+    "%@ %lld, %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ %2$lld, %3$@"
+          }
+        }
+      }
+    },
+    "%@ Trigger: %@." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ Trigger: %2$@."
+          }
+        }
+      }
+    },
+    "%@, %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@, %2$@"
+          }
+        }
+      }
+    },
+    "%@: %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@: %2$@"
+          }
+        }
+      }
+    },
+    "%lld" : {
+
+    },
+    "%lld %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld %2$@"
+          }
+        }
+      }
+    },
+    "%lld%%" : {
+
+    },
+    "+ BOOST" : {
+
+    },
+    "+%lld" : {
+
+    },
+    "⚠️" : {
+
+    },
+    "🌱" : {
+
+    },
+    "🛒" : {
+
+    },
+    "4.9" : {
+
+    },
+    "400,000+ ratings" : {
+
+    },
+    "A health score, not an ethics score" : {
+
+    },
+    "Add" : {
+
+    },
+    "Add %@.png" : {
+
+    },
+    "Add another allergy" : {
+
+    },
+    "Additive" : {
+
+    },
+    "Additive risk" : {
+
+    },
+    "Agave — a more concentrated sweetener" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Agave — a more concentrated sweetener"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Agave — adoçante mais concentrado"
+          }
+        }
+      }
+    },
+    "Align the barcode" : {
+
+    },
+    "Already have an account? " : {
+
+    },
+    "Always confirm on the product packaging — allergen data can be incomplete." : {
+
+    },
+    "Among sweeteners" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Among sweeteners"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Entre adoçantes"
+          }
+        }
+      }
+    },
+    "Appearance" : {
+
+    },
+    "Based on your goals, here's how your current pantry scores — and where Sage users land." : {
+
+    },
+    "BETTER" : {
+
+    },
+    "Blend" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Blend"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mistura"
+          }
+        }
+      }
+    },
+    "Brand" : {
+
+    },
+    "Brown sugar — still a refined sweetener" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Brown sugar — still a refined sweetener"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Açúcar mascavo — ainda é um adoçante refinado"
+          }
+        }
+      }
+    },
+    "BROWSE" : {
+
+    },
+    "Browse %@" : {
+
+    },
+    "Building your Sage" : {
+
+    },
+    "Cancel" : {
+
+    },
+    "Capped by %@" : {
+
+    },
+    "Capped: %@" : {
+
+    },
+    "Choose light, dark, or system appearance" : {
+
+    },
+    "Coconut sugar — less refined than white sugar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Coconut sugar — less refined than white sugar"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Açúcar de coco — menos refinado que o açúcar branco"
+          }
+        }
+      }
+    },
+    "Collapse" : {
+
+    },
+    "COMPARE" : {
+
+    },
+    "Compare with another" : {
+
+    },
+    "Compare with another product" : {
+
+    },
+    "Conflicts with your %@." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Conflicts with your %@."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Conflita com sua %@."
+          }
+        }
+      }
+    },
+    "Contains trans fats" : {
+
+    },
+    "Corn syrup — highly processed" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Corn syrup — highly processed"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Xarope de milho — altamente processado"
+          }
+        }
+      }
+    },
+    "Data may be incomplete — always check the packaging." : {
+
+    },
+    "DATE OF BIRTH" : {
+
+    },
+    "Day" : {
+
+    },
+    "Detected in the ingredient list" : {
+
+    },
+    "Done" : {
+
+    },
+    "Expand" : {
+
+    },
+    "FIRST NAME" : {
+
+    },
+    "FOR YOU" : {
+
+    },
+    "Full ingredients" : {
+
+    },
+    "GENDER" : {
+
+    },
+    "Generating overview…" : {
+
+    },
+    "GREEK\nYOGURT" : {
+
+    },
+    "Here's where you stand" : {
+      "comment" : "A title for the results screen.",
+      "isCommentAutoGenerated" : true
+    },
+    "High-fructose corn syrup" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "High-fructose corn syrup"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Xarope de milho rico em frutose"
+          }
+        }
+      }
+    },
+    "HILLTOP" : {
+
+    },
+    "History" : {
+
+    },
+    "Hold steady — we'll detect it automatically" : {
+
+    },
+    "Honey — among the less refined options" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Honey — among the less refined options"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mel — entre as opções menos refinadas"
+          }
+        }
+      }
+    },
+    "How scoring works: multipliers reweight rules; caps are ceilings from your restrictions" : {
+
+    },
+    "How we score" : {
+
+    },
+    "Imperial units" : {
+
+    },
+    "Know exactly\nwhat's inside." : {
+
+    },
+    "Library" : {
+
+    },
+    "LIFE STAGE" : {
+
+    },
+    "Limited label data — treat this score as provisional." : {
+
+    },
+    "Listed as an allergen for this product" : {
+
+    },
+    "Looking up product…" : {
+
+    },
+    "Loved by clean eaters" : {
+
+    },
+    "Manual Entry" : {
+
+    },
+    "Manuka honey — one of the less processed options" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Manuka honey — one of the less processed options"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mel manuka — uma das opções menos processadas"
+          }
+        }
+      }
+    },
+    "Maple syrup — one of the less processed options" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Maple syrup — one of the less processed options"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Xarope de maple — uma das opções menos processadas"
+          }
+        }
+      }
+    },
+    "Minimally processed" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Minimally processed"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Minimamente processado"
+          }
+        }
+      }
+    },
+    "Monk fruit — a non-nutritive option" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Monk fruit — a non-nutritive option"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fruta-dos-monges — opção não nutritiva"
+          }
+        }
+      }
+    },
+    "Month" : {
+
+    },
+    "Name" : {
+
+    },
+    "No additives" : {
+
+    },
+    "No additives detected" : {
+
+    },
+    "No declared allergens matched your profile, but data may be incomplete — always check the packaging." : {
+
+    },
+    "No ingredient data" : {
+
+    },
+    "No scans yet" : {
+
+    },
+    "Not enough data to score" : {
+
+    },
+    "Not rated" : {
+
+    },
+    "Not scored" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Not scored"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Não pontuado"
+          }
+        }
+      }
+    },
+    "Not scored — sweetener" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Not scored — sweetener"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Não pontuado — adoçante"
+          }
+        }
+      }
+    },
+    "Nothing here yet" : {
+
+    },
+    "NOVA" : {
+
+    },
+    "NOVA %lld" : {
+
+    },
+    "NOVA %lld, %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "NOVA %1$lld, %2$@"
+          }
+        }
+      }
+    },
+    "NOVA not rated" : {
+
+    },
+    "Nutri-Score" : {
+
+    },
+    "Nutri-Score %@" : {
+
+    },
+    "Nutri-Score %@, nutrition grade" : {
+
+    },
+    "Nutri-Score not rated" : {
+
+    },
+    "Nutrient amounts" : {
+
+    },
+    "Nutrition grade" : {
+
+    },
+    "ON" : {
+
+    },
+    "One of the less processed sweetener options" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "One of the less processed sweetener options"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Uma das opções de adoçante menos processadas"
+          }
+        }
+      }
+    },
+    "Organic ✓" : {
+
+    },
+    "Organic certified" : {
+
+    },
+    "Overview" : {
+
+    },
+    "Partially refined cane sugar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Partially refined cane sugar"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Açúcar de cana parcialmente refinado"
+          }
+        }
+      }
+    },
+    "Per 100 g / 100 ml" : {
+
+    },
+    "Pick the goal Sage should weigh against when scoring scans. You can change this anytime, your scores will recalculate." : {
+
+    },
+    "Point your camera at any food barcode." : {
+
+    },
+    "Product name" : {
+
+    },
+    "Profile" : {
+
+    },
+    "Raw honey — one of the less processed options" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Raw honey — one of the less processed options"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mel cru — uma das opções menos processadas"
+          }
+        }
+      }
+    },
+    "Recent scans" : {
+
+    },
+    "Refined" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Refined"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Refinado"
+          }
+        }
+      }
+    },
+    "Relative quality among sweeteners — not a health score." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Relative quality among sweeteners — not a health score."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Qualidade relativa entre adoçantes — não é uma nota de saúde."
+          }
+        }
+      }
+    },
+    "Restore purchase" : {
+
+    },
+    "Sage" : {
+
+    },
+    "Sage combines public nutrition data (per-100g nutrients, ingredient-derived processing level, additive risk) into an Overall score, then tunes it to your goal and preferences to compute Your Score." : {
+
+    },
+    "Sage is informational, not advice" : {
+
+    },
+    "Sage measures health only. Packaging, certifications, animal welfare, and origin claims are out of the score unless they have a direct health pathway (for example brew-bag microplastics or arsenic risk in rice drinks)." : {
+
+    },
+    "Sage Premium" : {
+
+    },
+    "Sage v1.0.3 · Database from Open Food Facts" : {
+
+    },
+    "Save" : {
+
+    },
+    "SAVED" : {
+
+    },
+    "Scan" : {
+
+    },
+    "Scan a barcode" : {
+
+    },
+    "Scan a product to see it in your history." : {
+
+    },
+    "Scan any label. We translate every additive into plain language and score it for **your** body." : {
+
+    },
+    "Scan barcode" : {
+
+    },
+    "Scan history" : {
+
+    },
+    "Score not available" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Score not available"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nota indisponível"
+          }
+        }
+      }
+    },
+    "Scores are a guide, not medical or professional nutrition advice. For specific dietary needs, please consult a registered dietitian or doctor." : {
+
+    },
+    "Search" : {
+
+    },
+    "Search a product or brand" : {
+
+    },
+    "Search by product or brand" : {
+
+    },
+    "Searching…" : {
+
+    },
+    "See all" : {
+
+    },
+    "See all recent scans" : {
+
+    },
+    "Shows additive details" : {
+
+    },
+    "Sign in" : {
+
+    },
+    "Single-ingredient product" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Single-ingredient product"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Produto de um único ingrediente"
+          }
+        }
+      }
+    },
+    "Skip" : {
+
+    },
+    "Sources" : {
+
+    },
+    "Start scanning" : {
+
+    },
+    "Stevia — a non-nutritive option" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stevia — a non-nutritive option"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stevia — opção não nutritiva"
+          }
+        }
+      }
+    },
+    "These can’t be ranked by score — at least one product isn’t scored." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "These can’t be ranked by score — at least one product isn’t scored."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Não dá para ranquear por nota — pelo menos um produto não é pontuado."
+          }
+        }
+      }
+    },
+    "This is essentially pure sugar, and no concentrated sugar is a health food. Sage doesn't score sweeteners, so a number here would only mislead." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This is essentially pure sugar, and no concentrated sugar is a health food. Sage doesn't score sweeteners, so a number here would only mislead."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Isto é essencialmente açúcar puro, e nenhum açúcar concentrado é um alimento saudável. O Sage não pontua adoçantes, pois um número aqui só enganaria."
+          }
+        }
+      }
+    },
+    "This is not professional advice. For specialized recommendation, seek a nutritionist." : {
+
+    },
+    "This product isn't fully catalogued yet." : {
+
+    },
+    "Unlimited scans, AI ingredient analysis, and personalized insights." : {
+
+    },
+    "Unscored" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unscored"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sem nota"
+          }
+        }
+      }
+    },
+    "WE'LL WATCH FOR" : {
+
+    },
+    "What the labels mean" : {
+
+    },
+    "Why sweeteners aren’t scored" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Why sweeteners aren’t scored"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Por que adoçantes não são pontuados"
+          }
+        }
+      }
+    },
+    "Year" : {
+
+    },
+    "Your scanned products will appear here." : {
+
+    }
+  },
+  "version" : "1.1"
+}

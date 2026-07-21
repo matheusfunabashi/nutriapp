@@ -86,8 +86,8 @@ struct HistoryView: View {
             guard let p = store.products[h.productId] else { return false }
             switch filter {
             case .all: return true
-            case .good: return p.yourScore >= 50
-            case .bad: return p.yourScore < 50
+            case .good: return (p.yourScore ?? -1) >= 50
+            case .bad: return p.yourScore.map { $0 < 50 } ?? false
             }
         }
     }
@@ -104,10 +104,12 @@ struct HistoryView: View {
 
     private var filterItems: [(id: Filter, label: String, count: Int)] {
         let goodCount = store.history.filter {
-            (store.products[$0.productId]?.yourScore ?? 0) >= 50
+            guard let s = store.products[$0.productId]?.yourScore else { return false }
+            return s >= 50
         }.count
         let badCount = store.history.filter {
-            (store.products[$0.productId]?.yourScore ?? 0) < 50
+            guard let s = store.products[$0.productId]?.yourScore else { return false }
+            return s < 50
         }.count
         return [
             (.all,  "All",           store.history.count),
@@ -175,7 +177,7 @@ private struct HistoryRow: View {
                         .foregroundColor(Theme.textSecondary(dark))
                 }
                 Spacer(minLength: 8)
-                YourScorePill(score: product.yourScore)
+                YourScorePill(score: product.yourScore, isUnscored: product.isUnscored)
                 Image(systemName: "chevron.right")
                     .font(.sageBold(12))
                     .foregroundColor(Theme.textSecondary(dark))
