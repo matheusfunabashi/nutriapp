@@ -218,6 +218,29 @@ struct ScoringV4Tests {
         #expect(s3.fraction < 1.0)
     }
 
+    @Test func s3IgnoresBogusZeroAddedSugar() {
+        let s3 = { (p: Product) in
+            ScoringEngineV4.score(p)!.rules.first { $0.rule == "S3" }!.fraction
+        }
+        // OFF frequently reports a bogus `added-sugars: 0` on plainly-sweetened
+        // drinks. A cola (10.6 g total, low FVN, 0 g "added") must NOT earn full
+        // sugar credit — it falls through to the FVN-discounted total path → 0.
+        let cola = product(kcal: 42, sugar: 10.6, addedSugar: 0, fvn: 0, nova: 4,
+                           ingredientsText: "carbonated water, sugar, caramel color",
+                           categories: ["beverages", "sodas"])
+        #expect(s3(cola) == 0.0)
+        // A genuinely unsweetened drink (added 0, low total) keeps full credit.
+        let seltzer = product(kcal: 0, sugar: 0.3, addedSugar: 0, fvn: 0, nova: 1,
+                              ingredientsText: "carbonated water, natural flavor",
+                              categories: ["beverages", "sodas"])
+        #expect(s3(seltzer) == 1.0)
+        // A real, positive added-sugars value is still trusted over total sugar.
+        let yogurt = product(kcal: 90, sugar: 20, addedSugar: 3, fvn: 0, nova: 3,
+                             categories: ["dairies", "yogurts"])
+        #expect(s3(yogurt) > s3(product(kcal: 90, sugar: 20, fvn: 0, nova: 3,
+                                        categories: ["dairies", "yogurts"])))
+    }
+
     // MARK: S13 — micronutrient credit
 
     @Test func s13RewardsMicronutrientDensity() {

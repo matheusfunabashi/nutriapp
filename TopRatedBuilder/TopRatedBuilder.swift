@@ -80,6 +80,50 @@ private struct TopRatedProduct: Encodable {
     }
 }
 
+// Alternatives output (ALTERNATIVES_SPEC.md §2.1): richer than TopRatedProduct —
+// each candidate carries its scoring inputs so the app can re-score on-device
+// under the current ruleset. Shape round-trips into the app's AlternativeCandidate.
+private struct AltCandidate: Encodable {
+    let barcode: String
+    let name: String
+    let brand: String?
+    let imageURL: String?
+    let precomputedScore: Int?
+    let categoriesTags: [String]?
+    let ingredientsText: String?
+    let additivesTags: [String]?
+    let novaGroup: Int?
+    let nutriscoreGrade: String?
+    let labelsTags: [String]?
+    let nutriments: OFFNutriments?
+
+    enum CodingKeys: String, CodingKey {
+        case barcode, name, brand, nutriments
+        case imageURL = "image_url"
+        case precomputedScore = "precomputed_score"
+        case categoriesTags = "categories_tags"
+        case ingredientsText = "ingredients_text"
+        case additivesTags = "additives_tags"
+        case novaGroup = "nova_group"
+        case nutriscoreGrade = "nutriscore_grade"
+        case labelsTags = "labels_tags"
+    }
+}
+
+private struct AltFile: Encodable {
+    let version: Int
+    let rulesetVersion: String
+    let generatedAt: String
+    let country: String
+    let shelves: [String: [AltCandidate]]
+
+    enum CodingKeys: String, CodingKey {
+        case version, country, shelves
+        case rulesetVersion = "ruleset_version"
+        case generatedAt = "generated_at"
+    }
+}
+
 // MARK: - Processing
 
 private struct ScoredCandidate {
@@ -121,6 +165,7 @@ enum TopRatedBuilder {
             let profile = rankingProfile()
 
             var outputCategories: [TopRatedCategory] = []
+            var altShelves: [String: [AltCandidate]] = [:]
             let sortedKeys = candidates.categories.keys.sorted()
 
             for categoryId in sortedKeys {
@@ -156,10 +201,16 @@ enum TopRatedBuilder {
 
                     switch ScoringEngineV4.scoreProduct(raw, for: profile, ruleset: ruleset) {
                     case .scored(let product):
-                        scored.append(ScoredCandidate(entry: entry, product: product, score: product.yourScore))
+                        // Neutral ranking profile ⇒ Your == Overall; both are optional
+                        // in V5, so fall back defensively.
+                        scored.append(ScoredCandidate(entry: entry, product: product,
+                                                      score: product.overallScore ?? product.yourScore ?? 0))
                     case .unsupported:
                         stats.skippedUnsupported += 1
                     case .insufficientData:
+                        stats.skippedInsufficient += 1
+                    case .unscored:
+                        // V5 withholds a score (e.g. table sweeteners) — not shelf-able.
                         stats.skippedInsufficient += 1
                     }
                 }
@@ -189,6 +240,10 @@ enum TopRatedBuilder {
                     products: products
                 ))
 
+                // Alternatives keeps a deeper cut (top ~25) with scoring inputs, so
+                // the app's "better than scanned" filter has headroom (SPEC §2.1).
+                altShelves[categoryId] = ranked.prefix(25).map(altCandidate(from:))
+
                 printCategorySummary(
                     categoryId: categoryId,
                     inputCount: entries.count,
@@ -207,6 +262,17 @@ enum TopRatedBuilder {
             encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
             try encoder.encode(output).write(to: outputURL, options: .atomic)
             print("\nWrote \(outputURL.path)")
+
+            let altOut = AltFile(
+                version: 1,
+                rulesetVersion: ruleset.version,
+                generatedAt: ISO8601DateFormatter().string(from: Date()),
+                country: "us",
+                shelves: altShelves
+            )
+            let altURL = inputURL.deletingLastPathComponent().appendingPathComponent("alternatives.json")
+            try encoder.encode(altOut).write(to: altURL, options: .atomic)
+            print("Wrote \(altURL.path)")
         } catch {
             fputs("TopRatedBuilder failed: \(error)\n", stderr)
             exit(1)
@@ -246,6 +312,24 @@ enum TopRatedBuilder {
             .split(separator: " ")
             .map { $0.prefix(1).uppercased() + $0.dropFirst() }
             .joined(separator: " ")
+    }
+
+    /// Maps a scored+deduped candidate into an alternatives record, carrying the
+    /// entry's scoring inputs forward for on-device re-scoring.
+    private static func altCandidate(from item: ScoredCandidate) -> AltCandidate {
+        AltCandidate(
+            barcode: item.entry.barcode,
+            name: item.product.name,
+            brand: item.product.brand,
+            imageURL: item.entry.imageURL,
+            precomputedScore: item.score,
+            categoriesTags: item.entry.categoriesTags,
+            ingredientsText: item.entry.ingredientsText,
+            additivesTags: item.entry.additivesTags,
+            novaGroup: item.entry.novaGroup,
+            nutriscoreGrade: item.entry.nutriscoreGrade,
+            labelsTags: item.entry.labelsTags,
+            nutriments: item.entry.nutriments)
     }
 
     private static func dedupe(_ items: [ScoredCandidate], stats: inout CategoryStats) -> [ScoredCandidate] {

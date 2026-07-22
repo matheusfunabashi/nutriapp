@@ -1187,7 +1187,13 @@ enum ScoringEngineV4 {
         let isDrinks = variant == "drinks"
 
         let result: (Double, Bool)
-        if let added = p.nutrients.addedSugar_g {
+        // Only trust added-sugars when it's > 0. OFF frequently reports a bogus
+        // `added-sugars_100g: 0` on plainly-sweetened products (e.g. cola: 10.6 g
+        // total, 0 g "added"), which would otherwise earn full sugar credit. A
+        // genuine 0 falls through to the total-sugars path, which credits
+        // intrinsic fruit/dairy sugar via the FVN discount and still penalises
+        // free sugar (low FVN). See ALTERNATIVES_SPEC §7 / the added-sugars issue.
+        if let added = p.nutrients.addedSugar_g, added > 0 {
             let effective: Double
             if isDrinks, fvn >= 80, let total = p.nutrients.sugar_g {
                 // ≥80% juice: treat at least 70% of total sugar as free sugar.

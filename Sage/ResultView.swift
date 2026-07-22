@@ -7,10 +7,16 @@ struct ResultView: View {
     let onBack: () -> Void
     let onCompare: () -> Void
     let onOpenMethodology: () -> Void
+    /// Open a "better alternative" the user tapped. Defaulted so other call
+    /// sites (previews/tests) compile unchanged.
+    var onSelectAlternative: (Product) -> Void = { _ in }
 
     @State private var showLabelLegend = false
     @State private var selectedAdditive: ProductAdditive? = nil
     @State private var ingredientsExpanded = false
+    /// Computed once on appear (re-scoring candidates is cheap but not free, so
+    /// it stays off the per-render path).
+    @State private var alternatives: [Alternative] = []
 
     var body: some View {
         let dark = store.darkMode
@@ -24,6 +30,7 @@ struct ResultView: View {
                         scrollableHeader(dark: dark)
                         allergenSection(dark: dark)
                         avoidFlagsSection(dark: dark)
+                        betterOptionsSection(dark: dark)
                         if showNutriCard || showNovaCard {
                             SectionTitle(title: "Breakdown", dark: dark)
                             gradesRow(dark: dark)
@@ -54,7 +61,10 @@ struct ResultView: View {
             }
         }
         .background(Theme.bg(dark).ignoresSafeArea())
-        .onAppear { store.requestOverview(for: product.id) }
+        .onAppear {
+            store.requestOverview(for: product.id)
+            alternatives = Alternatives.suggest(for: liveProduct, profile: store.user)
+        }
         .sheet(isPresented: $showLabelLegend) {
             LabelLegendSheet(dark: dark)
                 .presentationDetents([.medium, .large])
@@ -78,6 +88,31 @@ struct ResultView: View {
     private var yourScoreIsWorstSignal: Bool {
         guard let score = liveProduct.yourScore else { return false }
         return scoreTier(score) == .bad
+    }
+
+    /// "Better options": up to three same-shelf products that beat this one on
+    /// Overall (ALTERNATIVES_SPEC.md). Hidden when the product has no shelf,
+    /// is unscored, or nothing scores meaningfully higher.
+    @ViewBuilder private func betterOptionsSection(dark: Bool) -> some View {
+        if !alternatives.isEmpty {
+            let baseline = liveProduct.overallScore ?? 0
+            SectionTitle(title: "Better options", dark: dark)
+            VStack(spacing: 0) {
+                ForEach(Array(alternatives.enumerated()), id: \.element.id) { idx, alt in
+                    AlternativeRow(alt: alt, delta: alt.score - baseline,
+                                   divider: idx > 0, dark: dark) {
+                        onSelectAlternative(alt.product)
+                    }
+                }
+            }
+            .background(
+                RoundedRectangle(cornerRadius: 24, style: .continuous)
+                    .fill(Theme.surface(dark))
+            )
+            .cardShadow(dark)
+            .padding(.horizontal, 16)
+            .padding(.top, 8)
+        }
     }
 
     private func scrollableHeader(dark: Bool) -> some View {
@@ -1626,5 +1661,53 @@ func sweetenerLabel(_ key: String) -> String {
     case "stevia":        return "Stevia"
     case "monk fruit":    return "Monk fruit"
     default:              return key
+    }
+}
+
+// MARK: - Better-options row
+
+/// One "Better options" card (ALTERNATIVES_SPEC.md §5) — mirrors HistoryRow, with
+/// a green "+N vs. this" delta instead of a timestamp.
+private struct AlternativeRow: View {
+    let alt: Alternative
+    let delta: Int
+    let divider: Bool
+    let dark: Bool
+    let onTap: () -> Void
+
+    var body: some View {
+        Button(action: onTap) {
+            HStack(spacing: 12) {
+                ProductThumb(glyph: alt.product.glyph, score: alt.score, size: 48,
+                             imageURL: alt.product.imageURL)
+                VStack(alignment: .leading, spacing: 1) {
+                    if !alt.product.brand.isEmpty {
+                        Text(alt.product.brand.uppercased())
+                            .font(.sageBold(10)).tracking(1.2)
+                            .foregroundColor(Theme.textSecondary(dark))
+                            .lineLimit(1)
+                    }
+                    Text(alt.product.name)
+                        .font(.sageBold(14)).tracking(-0.2)
+                        .foregroundColor(Theme.textPrimary(dark))
+                        .lineLimit(1)
+                    Text("+\(delta) vs. this")
+                        .font(.sageBold(11))
+                        .foregroundColor(Color.scoreGood)
+                }
+                Spacer(minLength: 8)
+                YourScorePill(score: alt.score, isUnscored: false)
+                Image(systemName: "chevron.right")
+                    .font(.sageBold(12))
+                    .foregroundColor(Theme.textSecondary(dark))
+            }
+            .padding(.horizontal, 14).padding(.vertical, 12)
+            .overlay(alignment: .top) {
+                if divider {
+                    Theme.divider(dark).frame(height: 0.5).padding(.horizontal, 12)
+                }
+            }
+        }
+        .buttonStyle(.pressable)
     }
 }

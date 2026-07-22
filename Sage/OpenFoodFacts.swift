@@ -670,7 +670,10 @@ struct OFFIngredient: Decodable {
     }
 }
 
-struct OFFNutriments: Decodable {
+// Codable: decoded from OFF responses, and re-encoded by TopRatedBuilder when it
+// writes candidate scoring inputs into alternatives.json (the shape round-trips
+// back through the same CodingKeys on-device).
+struct OFFNutriments: Codable {
     let sugars: Double?
     let sodium: Double?
     let salt: Double?
@@ -741,5 +744,27 @@ struct OFFNutriments: Decodable {
         magnesium = value(.magnesium)
         zinc = value(.zinc)
         vitaminC = value(.vitaminC)
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var c = encoder.container(keyedBy: CodingKeys.self)
+        try c.encodeIfPresent(sugars, forKey: .sugars)
+        try c.encodeIfPresent(sodium, forKey: .sodium)
+        try c.encodeIfPresent(salt, forKey: .salt)
+        try c.encodeIfPresent(saturatedFat, forKey: .saturatedFat)
+        try c.encodeIfPresent(transFat, forKey: .transFat)
+        try c.encodeIfPresent(fiber, forKey: .fiber)
+        try c.encodeIfPresent(proteins, forKey: .proteins)
+        try c.encodeIfPresent(calcium, forKey: .calcium)
+        try c.encodeIfPresent(caffeine, forKey: .caffeine)
+        try c.encodeIfPresent(energyKcal, forKey: .energyKcal)
+        try c.encodeIfPresent(energyKj, forKey: .energyKj)
+        try c.encodeIfPresent(fvn, forKey: .fvnNuts)   // one canonical fvn key
+        try c.encodeIfPresent(addedSugars, forKey: .addedSugars)
+        try c.encodeIfPresent(iron, forKey: .iron)
+        try c.encodeIfPresent(potassium, forKey: .potassium)
+        try c.encodeIfPresent(magnesium, forKey: .magnesium)
+        try c.encodeIfPresent(zinc, forKey: .zinc)
+        try c.encodeIfPresent(vitaminC, forKey: .vitaminC)
     }
 }
