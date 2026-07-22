@@ -299,6 +299,10 @@ struct BackendService {
     // MARK: /ruleset (scoring-v4 remote config)
 
     private struct RulesetVersionResponse: Decodable { let version: String }
+    private struct AlternativesVersionResponse: Decodable {
+        let generatedAt: String?
+        enum CodingKeys: String, CodingKey { case generatedAt = "generated_at" }
+    }
 
     /// Tiny edge-cached probe — the background refresh checks this first.
     func rulesetVersion() async -> String? {
@@ -315,6 +319,24 @@ struct BackendService {
               let rs = try? JSONDecoder().decode(RulesetV4.self, from: data)
         else { return nil }
         return (data, rs)
+    }
+
+    /// Tiny edge-cached probe for the "better alternatives" dataset — the
+    /// background refresh checks this generated_at before downloading.
+    func alternativesVersion() async -> String? {
+        guard let (data, status) = try? await get(path: "alternatives/version"), status == 200,
+              let decoded = try? JSONDecoder().decode(AlternativesVersionResponse.self, from: data)
+        else { return nil }
+        return decoded.generatedAt
+    }
+
+    /// Full alternatives dataset; returns the raw bytes too so the store can
+    /// persist exactly what it validated.
+    func fetchAlternatives() async -> (Data, AlternativesFile)? {
+        guard let (data, status) = try? await get(path: "alternatives"), status == 200,
+              let file = try? JSONDecoder().decode(AlternativesFile.self, from: data)
+        else { return nil }
+        return (data, file)
     }
 
     // MARK: Transport

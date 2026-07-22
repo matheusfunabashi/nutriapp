@@ -23,6 +23,7 @@ import { generateExplanation, buildTemplateOverview } from "./explanation";
 // `cp Sage/RulesetV5.json backend/src/ruleset.json` before deploying — the
 // app treats the served version as newer than its bundled copy.
 import ruleset from "./ruleset.json";
+import alternatives from "./alternatives.json";
 
 const app = new Hono<{ Bindings: Env }>();
 
@@ -55,6 +56,23 @@ app.get("/ruleset/version", (c) => {
 app.get("/ruleset", (c) => {
   c.header("Cache-Control", "public, max-age=300");
   return c.json(ruleset);
+});
+
+// --- Better-alternatives dataset (ALTERNATIVES_SPEC.md §4) -----------------
+// Precomputed per-shelf candidates. The client probes generated_at and only
+// downloads the full document when the server's is strictly newer. Candidates
+// are re-scored on-device, so this dataset is not ruleset-locked.
+app.use("/alternatives", requireKey);
+app.use("/alternatives/version", requireKey);
+
+app.get("/alternatives/version", (c) => {
+  c.header("Cache-Control", "public, max-age=300");
+  return c.json({ generated_at: (alternatives as { generated_at: string | null }).generated_at });
+});
+
+app.get("/alternatives", (c) => {
+  c.header("Cache-Control", "public, max-age=300");
+  return c.json(alternatives);
 });
 
 // --- Product lookup -------------------------------------------------------

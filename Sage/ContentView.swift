@@ -67,7 +67,10 @@ struct ContentView: View {
                 .transition(.opacity)
                 // Fire-and-forget ruleset refresh (SCORING_V4.md §11): never
                 // blocks anything; offline silently keeps the current tables.
-                .task { RulesetStore.refreshInBackground(backend: backend) }
+                .task {
+                    RulesetStore.refreshInBackground(backend: backend)
+                    AlternativesStore.refreshInBackground(backend: backend)
+                }
         }
     }
 
@@ -176,7 +179,8 @@ struct ContentView: View {
                     fromScan: fromScan,
                     onBack: dismissOverlay,
                     onCompare: { beginCompare(productId: id) },
-                    onOpenMethodology: { showMethodModal = true }
+                    onOpenMethodology: { showMethodModal = true },
+                    onSelectAlternative: { alt in openAlternative(alt) }
                 )
             } else {
                 OverlayFallbackView(
@@ -240,6 +244,14 @@ struct ContentView: View {
     private func openProduct(_ id: String) {
         if case .result(let topId, _) = stack.last, topId == id { return }
         push(.result(productId: id, fromScan: false))
+    }
+
+    /// Opens a "better alternative" the user tapped. The candidate is already
+    /// scored on-device, so we cache the snapshot and push its detail — no
+    /// network round-trip.
+    private func openAlternative(_ product: Product) {
+        store.saveProduct(product)
+        openProduct(product.id)
     }
 
     private func startScan() {
