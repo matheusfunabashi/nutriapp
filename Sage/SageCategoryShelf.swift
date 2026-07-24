@@ -95,4 +95,11 @@ extension SageCategory {
         let tags = Set(product.categories ?? [])
         return def.subTags.first(where: tags.contains)
     }
+
+    /// Whether this category has a Top Rated / alternatives list. False for the
+    /// two categories with no data — water (unsupported) and coffee (deliberately
+    /// shelf-excluded) — which the Top Rated grid shows greyed out (TOPRATED_SPEC §2).
+    @MainActor var hasTopRated: Bool {
+        !AlternativesStore.candidates(for: self).isEmpty
+    }
 }

@@ -75,10 +75,16 @@ export async function searchOFF(query: string, pageSize = 20): Promise<SearchHit
   return deduped.slice(0, 12);
 }
 
+// Sage targets the US market, so search is filtered to US products — otherwise
+// a generic term like "cheese" surfaces globally-popular non-US items.
+const US_COUNTRY_TAG = "en:united-states";
+
 async function searchModern(query: string, pageSize: number): Promise<SearchHit[]> {
+  // search-a-licious combines full-text + field filters in `q` (implicit AND).
+  const q = `${query} countries_tags:"${US_COUNTRY_TAG}"`;
   const url =
     "https://search.openfoodfacts.org/search" +
-    `?q=${encodeURIComponent(query)}&page_size=${pageSize}&fields=${SEARCH_FIELDS}`;
+    `?q=${encodeURIComponent(q)}&page_size=${pageSize}&fields=${SEARCH_FIELDS}`;
   const res = await fetch(url, { headers: SEARCH_UA });
   if (!res.ok) throw new Error(`OFF search-a-licious ${res.status}`);
   const data = (await res.json()) as { hits?: Record<string, unknown>[] };
@@ -88,7 +94,8 @@ async function searchModern(query: string, pageSize: number): Promise<SearchHit[
 async function searchLegacy(query: string, pageSize: number): Promise<SearchHit[]> {
   const url =
     "https://world.openfoodfacts.org/cgi/search.pl?action=process&json=1&search_simple=1" +
-    `&search_terms=${encodeURIComponent(query)}&page_size=${pageSize}&fields=${SEARCH_FIELDS}`;
+    `&search_terms=${encodeURIComponent(query)}&page_size=${pageSize}&fields=${SEARCH_FIELDS}` +
+    "&tagtype_0=countries&tag_contains_0=contains&tag_0=united-states";
   const res = await fetch(url, { headers: SEARCH_UA });
   if (!res.ok) throw new Error(`OFF search ${res.status}`);
   const data = (await res.json()) as { products?: Record<string, unknown>[] };
