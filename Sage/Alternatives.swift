@@ -193,7 +193,7 @@ enum Alternatives {
             barcode: c.barcode, name: c.name, brands: c.brand,
             ingredientsText: c.ingredientsText, additivesTags: c.additivesTags,
             nutriments: c.nutriments, nutriscoreGrade: c.nutriscoreGrade,
-            novaGroup: c.novaGroup, imageURL: c.imageURL,
+            novaGroup: c.novaGroup, imageURL: BackendService.productImageURL(barcode: c.barcode),
             categoriesTags: c.categoriesTags, labelsTags: c.labelsTags)
         guard case .scored(let p) = ScoringEngineV4.scoreProduct(raw, for: profile, ruleset: ruleset),
               let score = p.overallScore else { return nil }

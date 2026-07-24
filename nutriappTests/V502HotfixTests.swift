@@ -139,7 +139,7 @@ struct V502HotfixTests {
         #expect(abs(butterScore.base - 45) <= 2)
         let butterDelta = butterScore.base - saltedButterScore.base
         #expect((4...8).contains(butterDelta))
-        #expect(margarineScore.base <= 35)
+        #expect(margarineScore.base <= 34)
         #expect(ScoringEngineV4.applyBaseCaps(base: 100, product: margarine, rs: rs)
             .fired.contains(where: { $0.kind == "transFat" }))
         #expect(coconut.base <= 42)

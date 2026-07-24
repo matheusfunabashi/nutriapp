@@ -18,9 +18,20 @@ binding = "DB"
 database_name = "sage"
 database_id = "99dba7b9-0a2f-4c3d-b893-bdfeea1e5591"
 
+# --- R2: cached product pack shots (`product-images/{barcode}`) ---
+# Create with:  wrangler r2 bucket create sage-product-images
+# Preview:      wrangler r2 bucket create sage-product-images-preview
+[[r2_buckets]]
+binding = "IMAGES"
+bucket_name = "sage-product-images"
+preview_bucket_name = "sage-product-images-preview"
+
 [vars]
 EXPLANATION_VERSION = "exp-v8"   # bump: v4 scoring engine live (factors from rule deltas)
+KROGER_BASE_URL = "https://api.kroger.com"  # validated live; override if using api-ce
 
 # Secrets (DO NOT put in this file) — set with:
 #   wrangler secret put OPENAI_API_KEY
-#   wrangler secret put USDA_API_KEY    # api.data.gov FoodData Central key
+#   wrangler secret put USDA_API_KEY         # api.data.gov FoodData Central key
+#   wrangler secret put KROGER_CLIENT_ID     # developer.kroger.com app
+#   wrangler secret put KROGER_CLIENT_SECRET

@@ -148,10 +148,18 @@ struct Product: Identifiable, Hashable, Codable {
     /// Raw ingredient text from Open Food Facts, used as a fallback for allergen
     /// keyword matching. Optional for backward-compatible decoding.
     var ingredientsText: String? = nil
-    /// Product photo URL (OFF front image, or Go-UPC via the backend fallback).
+    /// Product photo URL for detail (backend `/images/{barcode}` or OFF front).
     /// nil = no image, a first-class state rendered as the glyph placeholder.
     /// Optional for backward-compatible decoding of older snapshots.
     var imageURL: String? = nil
+    /// Smaller list/grid URL. Optional; UI falls back to `imageURL`.
+    var imageThumbURL: String? = nil
+    /// True when the source image is too small / soft to show or process.
+    var imageIsLowQuality: Bool? = nil
+    /// Backend image provenance: `"kroger"` | `"off"`. Nil on legacy snapshots.
+    var imageSource: String? = nil
+    /// True when the resolved shot is front-of-pack.
+    var imageIsFrontImage: Bool? = nil
 
     // MARK: Scoring-v4 data foundation (SCORING_V4.md §2) — all optional so
     // snapshots saved before Phase A keep decoding.
@@ -200,6 +208,28 @@ extension Product {
 
     /// Stable reason key when unscored (e.g. "sweetener"); nil when scored.
     var unscoredReasonKey: String? { scoreState?.reasonKey }
+
+    /// Prefer glyph / user-scan photo over a soft OFF community shot.
+    var prefersGlyphOverRemoteImage: Bool {
+        imageIsLowQuality == true && (imageSource == "off" || imageSource == nil)
+    }
+
+    /// List/grid image — prefers thumb; nil when missing or soft OFF (glyph fallback).
+    var listImageURL: String? {
+        guard !prefersGlyphOverRemoteImage else { return nil }
+        return imageThumbURL ?? imageURL
+    }
+
+    /// Detail-screen image — nil when missing or soft OFF (glyph / user photo fallback).
+    var detailImageURL: String? {
+        guard !prefersGlyphOverRemoteImage else { return nil }
+        return imageURL
+    }
+
+    /// Run on-device cutout processing for this product's remote photo.
+    var shouldProcessCutout: Bool {
+        !prefersGlyphOverRemoteImage && (listImageURL != nil || detailImageURL != nil)
+    }
 
     var hasIngredientData: Bool {
         (ingredientsText?.isEmpty == false) || !(ingredientShares ?? []).isEmpty

@@ -3,6 +3,9 @@
 // thin caching proxy over OFF, with USDA FoodData Central as a gap-fill backfill
 // (see usda.ts) when OFF is absent or has no nutrition table.
 
+import type { SearchHit } from "./cache.ts";
+import { upgradeOFFThumbURL } from "./offImage.ts";
+
 // Scoring v4 (SCORING_V4.md §2) widened this list: labels/certifications,
 // packaging, origins, per-ingredient percents, eco grade, data-completeness
 // signals, serving size, and market countries all feed the rule engine.
@@ -11,7 +14,8 @@ const FIELDS = [
   "nutriscore_grade", "nova_group", "nutriments",
   "additives_tags", "ingredients_analysis_tags", "allergens_tags",
   "ingredients_text", "categories_tags",
-  "image_front_url", "image_url",
+  "image_front_url", "image_front_small_url", "image_url",
+  "selected_images", "images", "lang",
   "labels_tags", "packagings", "packaging_materials_tags",
   "origins_tags", "manufacturing_places", "ingredients",
   "ecoscore_grade", "environmental_score_grade",
@@ -41,7 +45,12 @@ export async function fetchOFF(barcode: string): Promise<OFFProduct | null> {
 }
 
 export function hasImage(p: OFFProduct | null): boolean {
-  return !!(p && (p["image_front_url"] || p["image_url"]));
+  if (!p) return false;
+  if (p["image_front_url"] || p["image_url"] || p["image_front_small_url"]) return true;
+  const selected = p["selected_images"] as
+    | { front?: { display?: Record<string, string> } }
+    | undefined;
+  return !!(selected?.front?.display && Object.keys(selected.front.display).length > 0);
 }
 
 // --- Free-text name search -------------------------------------------------
@@ -49,8 +58,6 @@ export function hasImage(p: OFFProduct | null): boolean {
 // server-side (full-text over name/brand). NOTE: it is rate-limited harder
 // than product reads (~10 req/min/IP), which is why /search sits behind the
 // Worker's KV cache and the app debounces keystrokes.
-
-import type { SearchHit } from "./cache";
 
 const SEARCH_FIELDS = "code,product_name,brands,quantity,image_front_small_url,image_front_url";
 const SEARCH_UA = { "User-Agent": "Sage/1.0 (backend proxy; contact@sage.app)" };
@@ -118,7 +125,9 @@ function mapHits(items: Record<string, unknown>[]): SearchHit[] {
         brand,
         quantity: typeof p["quantity"] === "string" && p["quantity"] !== ""
           ? (p["quantity"] as string).trim() : null,
-        imageURL: (p["image_front_small_url"] ?? p["image_front_url"] ?? null) as string | null,
+        imageURL: upgradeOFFThumbURL(
+          (p["image_front_small_url"] ?? p["image_front_url"] ?? null) as string | null
+        ),
       };
     });
 }

@@ -129,7 +129,8 @@ struct OpenFoodFactsService {
         "nutriscore_grade", "nova_group", "nutriments",
         "additives_tags", "ingredients_analysis_tags", "allergens_tags",
         "ingredients_text", "categories_tags",
-        "image_front_url", "image_url",
+        "image_front_url", "image_front_small_url", "image_url",
+        "selected_images", "images", "lang",
         // Scoring-v4 data foundation (kept in sync with the Worker's list).
         "labels_tags", "packagings", "packaging_materials_tags",
         "origins_tags", "manufacturing_places", "ingredients",
@@ -173,7 +174,45 @@ struct OpenFoodFactsService {
               (p.productName?.isEmpty == false) || p.nutriments != nil else {
             throw LookupError.notFound
         }
-        return map(p, barcode: barcode)
+        var product = map(p, barcode: barcode)
+        if let image = decoded.image {
+            product = applyBackendImage(product, image)
+        }
+        return product
+    }
+
+    /// Prefer the Worker's stable `/images/{barcode}` object when present; keep
+    /// OFF-resolved URLs when the envelope omits `image` (legacy / direct OFF).
+    static func applyBackendImage(_ product: Product, _ image: BackendProductImage) -> Product {
+        var p = product
+        if let url = absoluteImageURL(image.url) {
+            p.imageURL = url
+        }
+        if let thumb = absoluteImageURL(image.thumbUrl) {
+            p.imageThumbURL = thumb
+        } else if p.imageURL != nil, p.imageThumbURL == nil {
+            p.imageThumbURL = p.imageURL
+        }
+        if let source = image.source {
+            p.imageSource = source
+        }
+        if let front = image.isFrontImage {
+            p.imageIsFrontImage = front
+        }
+        if let low = image.isLowQuality {
+            p.imageIsLowQuality = low
+        }
+        return p
+    }
+
+    /// https URLs via sanitize; relative `/images/…` joined to the Worker origin.
+    static func absoluteImageURL(_ raw: String?) -> String? {
+        guard let trimmed = raw?.trimmingCharacters(in: .whitespacesAndNewlines),
+              !trimmed.isEmpty else { return nil }
+        if trimmed.hasPrefix("/") {
+            return URL(string: trimmed, relativeTo: BackendService.defaultBaseURL)?.absoluteString
+        }
+        return sanitizedImageURL(trimmed)
     }
 
     // MARK: Mapping
@@ -200,6 +239,8 @@ struct OpenFoodFactsService {
             additivesTags: additivesTags,
             ingredientsText: ingredientsText,
             categoriesTags: categoriesTags,
+            // Curated / candidate URLs are typically front-of-pack.
+            imageFrontUrl: imageURL,
             imageUrl: imageURL,
             labelsTags: labelsTags
         )
@@ -249,6 +290,11 @@ struct OpenFoodFactsService {
 
         let grade = off.nutriscoreGrade?.uppercased()
         let overall = placeholderScore(grade: grade, nova: off.novaGroup)
+        let resolved = OFFImageResolver.resolve(
+            from: off,
+            barcode: barcode,
+            preferredLanguages: OFFImageResolver.preferredLanguages()
+        )
 
         return Product(
             id: barcode,
@@ -272,7 +318,9 @@ struct OpenFoodFactsService {
             dietFlags: dietFlags,
             allergenTags: allergenTags,
             ingredientsText: off.ingredientsText,
-            imageURL: sanitizedImageURL(off.imageFrontUrl ?? off.imageUrl),
+            imageURL: resolved.map { $0.displayURL.absoluteString },
+            imageThumbURL: resolved?.thumbURL?.absoluteString,
+            imageIsLowQuality: resolved.map(\.isLowQuality),
             labels: normalizedTags(off.labelsTags),
             packagingMaterials: packagingMaterials(off),
             origins: normalizedTags(off.originsTags),
@@ -348,14 +396,9 @@ struct OpenFoodFactsService {
 
     /// Only keep a usable image URL: non-empty, parseable, and https (ATS
     /// blocks plain http anyway). Anything else is the designed "no image"
-    /// state, not an error.
+    /// state, not an error. Delegates to `OFFImageResolver.sanitize`.
     static func sanitizedImageURL(_ raw: String?) -> String? {
-        guard let s = raw?.trimmingCharacters(in: .whitespacesAndNewlines),
-              !s.isEmpty,
-              let url = URL(string: s),
-              url.scheme?.lowercased() == "https"
-        else { return nil }
-        return s
+        OFFImageResolver.sanitize(raw)
     }
 
     /// Normalize OFF ingredient-analysis + allergen tags into simple diet flags
@@ -463,6 +506,8 @@ struct OpenFoodFactsService {
 
 struct OFFResponse: Decodable {
     let product: OFFProduct?
+    /// Stable Worker image object (`/images/{barcode}`). Optional for legacy payloads.
+    let image: BackendProductImage?
 }
 
 struct OFFProduct: Decodable {
@@ -478,7 +523,11 @@ struct OFFProduct: Decodable {
     let ingredientsText: String?
     let categoriesTags: [String]?
     let imageFrontUrl: String?
+    let imageFrontSmallUrl: String?
     let imageUrl: String?
+    let selectedImages: OFFSelectedImages?
+    let images: [String: OFFImageEntry]?
+    let lang: String?
     let labelsTags: [String]?
     let packagings: [OFFPackaging]?
     let packagingMaterialsTags: [String]?
@@ -505,7 +554,11 @@ struct OFFProduct: Decodable {
         case ingredientsText = "ingredients_text"
         case categoriesTags = "categories_tags"
         case imageFrontUrl = "image_front_url"
+        case imageFrontSmallUrl = "image_front_small_url"
         case imageUrl = "image_url"
+        case selectedImages = "selected_images"
+        case images
+        case lang
         case labelsTags = "labels_tags"
         case packagings
         case packagingMaterialsTags = "packaging_materials_tags"
@@ -534,7 +587,11 @@ struct OFFProduct: Decodable {
         ingredientsText = try? c.decodeIfPresent(String.self, forKey: .ingredientsText)
         categoriesTags = try? c.decodeIfPresent([String].self, forKey: .categoriesTags)
         imageFrontUrl = try? c.decodeIfPresent(String.self, forKey: .imageFrontUrl)
+        imageFrontSmallUrl = try? c.decodeIfPresent(String.self, forKey: .imageFrontSmallUrl)
         imageUrl = try? c.decodeIfPresent(String.self, forKey: .imageUrl)
+        selectedImages = try? c.decodeIfPresent(OFFSelectedImages.self, forKey: .selectedImages)
+        images = try? c.decodeIfPresent([String: OFFImageEntry].self, forKey: .images)
+        lang = try? c.decodeIfPresent(String.self, forKey: .lang)
         labelsTags = try? c.decodeIfPresent([String].self, forKey: .labelsTags)
         packagings = try? c.decodeIfPresent([OFFPackaging].self, forKey: .packagings)
         packagingMaterialsTags = try? c.decodeIfPresent([String].self, forKey: .packagingMaterialsTags)
@@ -586,7 +643,11 @@ struct OFFProduct: Decodable {
          ingredientsText: String? = nil,
          categoriesTags: [String]? = nil,
          imageFrontUrl: String? = nil,
+         imageFrontSmallUrl: String? = nil,
          imageUrl: String? = nil,
+         selectedImages: OFFSelectedImages? = nil,
+         images: [String: OFFImageEntry]? = nil,
+         lang: String? = nil,
          labelsTags: [String]? = nil,
          packagings: [OFFPackaging]? = nil,
          packagingMaterialsTags: [String]? = nil,
@@ -612,7 +673,11 @@ struct OFFProduct: Decodable {
         self.ingredientsText = ingredientsText
         self.categoriesTags = categoriesTags
         self.imageFrontUrl = imageFrontUrl
+        self.imageFrontSmallUrl = imageFrontSmallUrl
         self.imageUrl = imageUrl
+        self.selectedImages = selectedImages
+        self.images = images
+        self.lang = lang
         self.labelsTags = labelsTags
         self.packagings = packagings
         self.packagingMaterialsTags = packagingMaterialsTags

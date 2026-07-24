@@ -112,6 +112,6 @@ struct V505FVNInferenceTests {
     }
 
     @Test func rulesetVersionIsV505() {
-        #expect(rs.version == "2026.07-v5.0.7")
+        #expect(rs.version == "2026.07-v5.0.8")
     }
 }

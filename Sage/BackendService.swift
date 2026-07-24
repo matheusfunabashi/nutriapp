@@ -20,8 +20,21 @@ struct BackendService {
     private let baseURL: URL
     private let apiKey: String
 
+    /// Shared Worker origin — also used to absolutize relative `/images/…` URLs.
+    static let defaultBaseURL = URL(string: "https://sage-backend.sage-app1710.workers.dev")!
+
+    /// Must match Worker `IMAGE_CACHE_VERSION` (URL `?v=` busts immutable caches).
+    static let imageCacheVersion = 3
+
+    /// Stable pack-shot URL served by `GET /images/{barcode}` (lazy-resolves).
+    static func productImageURL(barcode: String) -> String {
+        let base = defaultBaseURL.absoluteString.trimmingCharacters(in: CharacterSet(charactersIn: "/"))
+        let code = barcode.trimmingCharacters(in: .whitespacesAndNewlines)
+        return "\(base)/images/\(code)?v=\(imageCacheVersion)"
+    }
+
     init(session: URLSession = .shared,
-         baseURL: URL = URL(string: "https://sage-backend.sage-app1710.workers.dev")!,
+         baseURL: URL = BackendService.defaultBaseURL,
          apiKey: String = Secrets.sageAPIKey) {
         self.session = session
         self.baseURL = baseURL

@@ -161,8 +161,9 @@ private struct HistoryRow: View {
     var body: some View {
         Button(action: onTap) {
             HStack(spacing: 12) {
-                ProductThumb(glyph: product.glyph, score: product.yourScore, size: 48,
-                             imageURL: product.imageURL)
+                ProductThumb(glyph: product.glyph, score: product.yourScore, size: 56,
+                             imageURL: product.listImageURL,
+                             processCutout: product.shouldProcessCutout)
                 VStack(alignment: .leading, spacing: 1) {
                     Text(product.brand.uppercased())
                         .font(.sageBold(10)).tracking(1.2)

@@ -77,10 +77,6 @@ struct ResultView: View {
         }
     }
 
-    private var isSaved: Bool {
-        store.history.contains { $0.productId == product.id }
-    }
-
     private var liveProduct: Product {
         store.products[product.id] ?? product
     }
@@ -136,43 +132,43 @@ struct ResultView: View {
     }
 
     private func topBar(dark: Bool) -> some View {
-        HStack {
-            CircleIconButton(systemName: "chevron.left", dark: dark,
-                             accessibilityLabel: "Back", action: onBack)
-            Spacer()
-            if isSaved {
-                Text("SAVED")
-                    .font(.sageBold(13))
-                    .tracking(1.6)
-                    .foregroundColor(Theme.textSecondary(dark))
-                    .accessibilityAddTraits(.isHeader)
-            } else {
-                Text("Sage")
-                    .font(.sageBold(18))
-                    .tracking(-0.4)
-                    .foregroundColor(Theme.textPrimary(dark))
-                    .accessibilityAddTraits(.isHeader)
+        ZStack {
+            HStack {
+                CircleIconButton(systemName: "chevron.left", dark: dark,
+                                 accessibilityLabel: "Back", action: onBack)
+                Spacer()
             }
-            Spacer()
-            CircleIconButton(
-                systemName: isSaved ? "bookmark.fill" : "bookmark",
-                dark: dark,
-                accessibilityLabel: isSaved ? "Saved to history" : "Not saved to history"
-            )
+            HStack(spacing: 8) {
+                SageMark(size: 26, color: store.accent)
+                Text("Sage")
+                    .font(.sageSemiBold(22))
+                    .tracking(-0.6)
+                    .foregroundColor(Theme.textPrimary(dark))
+            }
+            .accessibilityElement(children: .combine)
+            .accessibilityAddTraits(.isHeader)
+            .accessibilityLabel("Sage")
         }
         .padding(.horizontal, 16).padding(.top, 8).padding(.bottom, 8)
     }
 
+    private var productTitle: String {
+        let brand = product.brand.trimmingCharacters(in: .whitespacesAndNewlines)
+        let name = product.name.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !brand.isEmpty else { return name }
+        if name.lowercased().hasPrefix(brand.lowercased()) { return name }
+        return "\(brand.localizedCapitalized) \(name)"
+    }
+
     private func productHeader(dark: Bool) -> some View {
         HStack(alignment: .center, spacing: 12) {
-            ProductThumb(glyph: product.glyph, score: product.yourScore, size: 64,
-                         neutral: true, imageURL: product.imageURL)
+            ProductThumb(glyph: product.glyph, score: product.yourScore,
+                         neutral: true, imageURL: product.detailImageURL,
+                         processCutout: product.shouldProcessCutout,
+                         isDetail: true)
 
             VStack(alignment: .leading, spacing: 2) {
-                Text(product.brand.localizedCapitalized)
-                    .font(.sageBold(12)).tracking(-0.1)
-                    .foregroundColor(store.accent)
-                Text(product.name)
+                Text(productTitle)
                     .font(.sageBold(22)).tracking(-0.5)
                     .foregroundColor(Theme.textPrimary(dark))
                     .lineLimit(2)
@@ -1354,7 +1350,7 @@ struct SeriousFlag: View {
         let fg = Color.cautionMuted
         let subtitle = isHeaviestScorePenalty
             ? "Caps the overall score at 35 — industrial trans fat has no safe intake."
-            : "Industrial trans fats have no safe intake level. Overall score capped at 35 when above 0.2 g/100 g."
+            : "Industrial trans fats have no safe intake level. Overall score capped at 34 when above 0.2 g/100 g."
         HStack(spacing: 12) {
             Text("!")
                 .font(.sageBold(16))
@@ -1678,8 +1674,9 @@ private struct AlternativeRow: View {
     var body: some View {
         Button(action: onTap) {
             HStack(spacing: 12) {
-                ProductThumb(glyph: alt.product.glyph, score: alt.score, size: 48,
-                             imageURL: alt.product.imageURL)
+                ProductThumb(glyph: alt.product.glyph, score: alt.score, size: 56,
+                             imageURL: alt.product.listImageURL,
+                             processCutout: alt.product.shouldProcessCutout)
                 VStack(alignment: .leading, spacing: 1) {
                     if !alt.product.brand.isEmpty {
                         Text(alt.product.brand.uppercased())

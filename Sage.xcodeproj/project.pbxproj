@@ -17,6 +17,7 @@
 		TRB001BF008 /* AdditiveTier+Codable.swift in Sources */ = {isa = PBXBuildFile; fileRef = TRB001SF008 /* AdditiveTier+Codable.swift */; };
 		TRB001BF009 /* AvoidListMatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = TRB001SF009 /* AvoidListMatcher.swift */; };
 		TRB001BF010 /* AdditiveKnowledgeBase.swift in Sources */ = {isa = PBXBuildFile; fileRef = TRB001SF010 /* AdditiveKnowledgeBase.swift */; };
+		TRB001BF011 /* OFFImageResolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = TRB001SF011 /* OFFImageResolver.swift */; };
 		TRB001COPYBF001 /* RulesetV5.json in CopyFiles */ = {isa = PBXBuildFile; fileRef = TRB001REFF002 /* RulesetV5.json */; };
 		TRB001COPYBF002 /* Additives.json in CopyFiles */ = {isa = PBXBuildFile; fileRef = TRB001REFF001 /* Additives.json */; };
 		TRB001COPYBF003 /* AdditiveKnowledgeBase.json in CopyFiles */ = {isa = PBXBuildFile; fileRef = TRB001REFF003 /* AdditiveKnowledgeBase.json */; };
@@ -75,6 +76,7 @@
 		TRB001SF008 /* AdditiveTier+Codable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AdditiveTier+Codable.swift"; sourceTree = "<group>"; };
 		TRB001SF009 /* AvoidListMatcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AvoidListMatcher.swift; sourceTree = "<group>"; };
 		TRB001SF010 /* AdditiveKnowledgeBase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdditiveKnowledgeBase.swift; sourceTree = "<group>"; };
+		TRB001SF011 /* OFFImageResolver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OFFImageResolver.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -172,6 +174,7 @@
 				TRB001SF001 /* ScoringV4.swift */,
 				TRB001SF002 /* Models.swift */,
 				TRB001SF003 /* OpenFoodFacts.swift */,
+				TRB001SF011 /* OFFImageResolver.swift */,
 				TRB001SF004 /* MockData.swift */,
 				TRB001SF005 /* SageCategory.swift */,
 				TRB001SF006 /* NutrientLevels.swift */,
@@ -391,6 +394,7 @@
 				TRB001BF001 /* ScoringV4.swift in Sources */,
 				TRB001BF002 /* Models.swift in Sources */,
 				TRB001BF003 /* OpenFoodFacts.swift in Sources */,
+				TRB001BF011 /* OFFImageResolver.swift in Sources */,
 				TRB001BF004 /* MockData.swift in Sources */,
 				TRB001BF005 /* SageCategory.swift in Sources */,
 				TRB001BF006 /* NutrientLevels.swift in Sources */,

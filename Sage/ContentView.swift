@@ -15,8 +15,9 @@ enum Overlay: Identifiable, Hashable {
     case preferences
     case nutritionGoals
     case dietary
-    /// Top Rated: category grid, then the best-scoring products in a category.
-    case topRated
+    /// Product search opened from the Home search field (not a tab).
+    case search
+    /// Best-scoring products in one Top Rated category (drill-in from the tab).
     case topRatedCategory(shelf: String)
 
     var id: String {
@@ -32,7 +33,7 @@ enum Overlay: Identifiable, Hashable {
         case .preferences:           return "preferences"
         case .nutritionGoals:        return "nutritionGoals"
         case .dietary:               return "dietary"
-        case .topRated:              return "topRated"
+        case .search:                return "search"
         case .topRatedCategory(let s): return "topRated_\(s)"
         }
     }
@@ -81,7 +82,7 @@ struct ContentView: View {
 
     private var mainContent: some View {
         ZStack {
-            // Keep tab content alive under overlays so Search (and other tabs)
+            // Keep tab content alive under overlays so Top Rated (and other tabs)
             // retain their state when the user taps back from a product page.
             tabContent
                 .ignoresSafeArea(.keyboard)
@@ -156,14 +157,15 @@ struct ContentView: View {
             ScannerHomeView(
                 onTapScan: { startScan() },
                 onTapHistory: { tab = .pantry },
-                onTapSearch: { tab = .search },
-                onTapTopRated: { push(.topRated) },
+                onTapSearch: { push(.search) },
                 onOpenProduct: { id in openProduct(id) }
+            )
+        case .topRated:
+            TopRatedCategoriesView(
+                onOpenCategory: { shelf in push(.topRatedCategory(shelf: shelf.rawValue)) }
             )
         case .pantry:
             HistoryView(onOpenProduct: { id in openProduct(id) })
-        case .search:
-            SearchView(onSelect: { code in openFromSearch(barcode: code) })
         case .you:
             ProfileView(
                 onOpenPersonal: { push(.personal) },
@@ -225,11 +227,6 @@ struct ContentView: View {
                     onBack: dismissOverlay
                 )
             }
-        case .topRated:
-            TopRatedCategoriesView(
-                onBack: dismissOverlay,
-                onOpenCategory: { shelf in push(.topRatedCategory(shelf: shelf.rawValue)) }
-            )
         case .topRatedCategory(let raw):
             if let shelf = SageCategory(rawValue: raw) {
                 TopRatedListView(shelf: shelf, onBack: dismissOverlay,
@@ -239,6 +236,11 @@ struct ContentView: View {
                                     message: "This category couldn't be loaded.",
                                     onBack: dismissOverlay)
             }
+        case .search:
+            SearchView(
+                onSelect: { code in openFromSearch(barcode: code) },
+                onBack: dismissOverlay
+            )
         case .paywall:        PaywallView(onDismiss: dismissOverlay)
         case .manual:         ManualEntryView(onCancel: dismissOverlay, onSubmit: dismissOverlay)
         case .methodology:    MethodologyView(onBack: dismissOverlay)
@@ -476,8 +478,10 @@ struct InsufficientDataView: View {
                 Spacer()
 
                 VStack(spacing: 14) {
-                    ProductThumb(glyph: product.glyph, score: 0, size: 84,
-                                 neutral: true, imageURL: product.imageURL)
+                    ProductThumb(glyph: product.glyph, score: 0,
+                                 neutral: true, imageURL: product.detailImageURL,
+                                 processCutout: product.shouldProcessCutout,
+                                 isDetail: true)
                     VStack(spacing: 2) {
                         if !product.brand.isEmpty {
                             Text(product.brand.uppercased())
@@ -597,8 +601,10 @@ struct UnsupportedView: View {
                 Spacer()
 
                 VStack(spacing: 14) {
-                    ProductThumb(glyph: product.glyph, score: 0, size: 84,
-                                 neutral: true, imageURL: product.imageURL)
+                    ProductThumb(glyph: product.glyph, score: 0,
+                                 neutral: true, imageURL: product.detailImageURL,
+                                 processCutout: product.shouldProcessCutout,
+                                 isDetail: true)
                     VStack(spacing: 2) {
                         if !product.brand.isEmpty {
                             Text(product.brand.uppercased())

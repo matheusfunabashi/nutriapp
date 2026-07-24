@@ -48,7 +48,7 @@ struct V506HotfixTests {
 
     @Test func rulesetIsV506() throws {
         // Structural weight asserts still hold under V5.0.7; version bumped.
-        #expect(rs.version == "2026.07-v5.0.7")
+        #expect(rs.version == "2026.07-v5.0.8")
         let wf = try #require(rs.profiles["whole_foods"])
         #expect(wf.contains { $0.rule == "S5" && $0.w == 10 })
         #expect(wf.first { $0.rule == "S2" }?.w == 24)
@@ -100,7 +100,7 @@ struct V506HotfixTests {
             bindingCap: nil,
             firedCaps: [],
             overallBindingCap: .init(
-                id: "freeSugarCeiling", value: 35, shortLabel: "free sugar",
+                id: "freeSugarCeiling", value: 34, shortLabel: "free sugar",
                 kind: "freeSugar", intensity: "full"
             ),
             overallFiredCaps: [],
@@ -111,7 +111,7 @@ struct V506HotfixTests {
         let bad = "It scores well on processing (also on your list: free sugar)."
         #expect(OverviewValidator.forbiddenPhrase(in: bad, ctx: ctx)?
             .contains("false list claim") == true)
-        let good = "As a concentrated sugar, its score is capped at 35."
+        let good = "As a concentrated sugar, its score is capped at 34."
         #expect(OverviewValidator.isValid(good, ctx: ctx))
     }
 

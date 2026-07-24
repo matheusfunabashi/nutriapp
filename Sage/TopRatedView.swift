@@ -6,7 +6,6 @@ import SwiftUI
 /// coffee — §2) are shown greyed out and disabled.
 struct TopRatedCategoriesView: View {
     @EnvironmentObject var store: AppStore
-    let onBack: () -> Void
     let onOpenCategory: (SageCategory) -> Void
 
     private let columns = [GridItem(.flexible(), spacing: 10),
@@ -14,9 +13,20 @@ struct TopRatedCategoriesView: View {
 
     var body: some View {
         let dark = store.darkMode
-        VStack(spacing: 0) {
-            SubHeader(title: "Top Rated", onBack: onBack)
-            ScrollView(showsIndicators: false) {
+        ScrollView(showsIndicators: false) {
+            VStack(alignment: .leading, spacing: 0) {
+                StaggeredAppear(index: 0) {
+                    Text("Top Rated")
+                        .font(.sageBold(34)).tracking(-1)
+                        .foregroundColor(Theme.textPrimary(dark))
+                        .padding(.horizontal, 24).padding(.top, 12).padding(.bottom, 8)
+                }
+                StaggeredAppear(index: 1) {
+                    Text("The best-scoring products in each category.")
+                        .font(.sageRegular(14))
+                        .foregroundColor(Theme.textSecondary(dark))
+                        .padding(.horizontal, 24).padding(.bottom, 14)
+                }
                 LazyVGrid(columns: columns, spacing: 10) {
                     ForEach(SageCategory.allCases) { category in
                         tile(category, dark: dark)
@@ -124,8 +134,9 @@ private struct TopRatedRow: View {
                     .font(.sageBold(15)).monospacedDigit()
                     .foregroundColor(Theme.textSecondary(dark))
                     .frame(width: 22, alignment: .center)
-                ProductThumb(glyph: alt.product.glyph, score: alt.score, size: 48,
-                             imageURL: alt.product.imageURL)
+                ProductThumb(glyph: alt.product.glyph, score: alt.score, size: 56,
+                             imageURL: alt.product.listImageURL,
+                             processCutout: alt.product.shouldProcessCutout)
                 VStack(alignment: .leading, spacing: 1) {
                     if !alt.product.brand.isEmpty {
                         Text(alt.product.brand.uppercased())

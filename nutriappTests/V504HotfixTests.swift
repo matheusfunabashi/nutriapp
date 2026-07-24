@@ -266,7 +266,7 @@ struct V504HotfixTests {
     }
 
     @Test func rulesetVersionIsV504() {
-        #expect(rs.version == "2026.07-v5.0.7")
+        #expect(rs.version == "2026.07-v5.0.8")
         #expect(rs.multipliers?.preference?["high protein"]?["S12"] == 1.25)
     }
 }

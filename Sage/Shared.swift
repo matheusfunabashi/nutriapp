@@ -109,66 +109,28 @@ struct CompactScoreRing: View {
 // MARK: - Product thumbnail
 
 struct ProductThumb: View {
-    @EnvironmentObject private var store: AppStore
     let glyph: String
-    /// Nil when unscored — uses a neutral backdrop (never tint from a sentinel 0).
+    /// Unused for tint; kept for call-site stability.
     let score: Int?
     var size: CGFloat = 48
-    /// When true, uses a neutral backdrop instead of the score-tinted gradient.
+    /// Unused — chrome is always `Theme.surface` on fallbacks; kept for call-site stability.
     var neutral: Bool = false
     /// Product photo; nil (or a failed load) falls back to the glyph tile —
     /// "no image" is a designed state, never an error.
     var imageURL: String? = nil
+    /// Run Vision cutout when a remote URL is shown. False for soft OFF shots /
+    /// placeholder-only rows.
+    var processCutout: Bool = true
+    /// Detail header: larger frame + no chrome flash while loading/processing.
+    var isDetail: Bool = false
 
     var body: some View {
-        let useNeutral = neutral || score == nil
-        let c = score.map(scoreColor) ?? Theme.textSecondary(store.darkMode)
-        // Concentric: when nested inside a 18pt-radius row with ~12pt
-        // padding the inner radius wants to be ~6–10. 10 keeps the tile
-        // shape recognisable without fighting the parent capsule.
-        let r: CGFloat = 10
-        let dark = store.darkMode
-
-        ZStack {
-            RoundedRectangle(cornerRadius: r, style: .continuous)
-                .fill(useNeutral
-                      ? AnyShapeStyle(dark ? Color.white.opacity(0.08) : Color.white)
-                      : AnyShapeStyle(LinearGradient(
-                          colors: [c.opacity(0.12), c.opacity(0.04)],
-                          startPoint: .topLeading, endPoint: .bottomTrailing)))
-            if let url = imageURL.flatMap(URL.init(string:)) {
-                AsyncImage(url: url) { phase in
-                    switch phase {
-                    case .success(let image):
-                        // OFF/Go-UPC photos are usually on white — give them
-                        // a matching backdrop so transparent edges stay clean.
-                        image.resizable()
-                            .scaledToFill()
-                            .frame(width: size, height: size)
-                            .background(Color.white)
-                    default:
-                        // .empty (loading) and .failure both show the glyph.
-                        glyphLabel
-                    }
-                }
-            } else {
-                glyphLabel
-            }
-        }
-        .frame(width: size, height: size)
-        .clipShape(RoundedRectangle(cornerRadius: r, style: .continuous))
-        // Pure black/white outline (skill: never tinted) — keeps a clean
-        // edge against any surface color.
-        .overlay(
-            RoundedRectangle(cornerRadius: r, style: .continuous)
-                .inset(by: 0.5)
-                .stroke(dark ? Color.white.opacity(0.10) : Color.black.opacity(0.10),
-                        lineWidth: 1)
+        ProductImageView(
+            url: imageURL.flatMap(URL.init(string:)),
+            style: isDetail ? .detail : .fixed(size),
+            glyph: glyph,
+            processCutout: processCutout && imageURL != nil
         )
-    }
-
-    private var glyphLabel: some View {
-        Text(glyph).font(.sageRegular(size * 0.5))
     }
 }
 
@@ -270,23 +232,23 @@ struct CircleIconButton: View {
 /// because it triggers an action (open the camera) rather than swap a
 /// destination view.
 enum AppTab: String, CaseIterable {
-    case home, search, pantry, you
+    case home, topRated, pantry, you
 
     var label: String {
         switch self {
-        case .home:   return "Home"
-        case .search: return "Search"
-        case .pantry: return "Pantry"
-        case .you:    return "Profile"
+        case .home:     return "Home"
+        case .topRated: return "Top Rated"
+        case .pantry:   return "Pantry"
+        case .you:      return "Profile"
         }
     }
 
     var icon: String {
         switch self {
-        case .home:   return "house"
-        case .search: return "magnifyingglass"
-        case .pantry: return "line.3.horizontal"
-        case .you:    return "person"
+        case .home:     return "house"
+        case .topRated: return "trophy"
+        case .pantry:   return "line.3.horizontal"
+        case .you:      return "person"
         }
     }
 
@@ -294,9 +256,10 @@ enum AppTab: String, CaseIterable {
     /// filled symbol meaningfully differs.
     var activeIcon: String {
         switch self {
-        case .home: return "house.fill"
-        case .you:  return "person.fill"
-        default:    return icon
+        case .home:     return "house.fill"
+        case .topRated: return "trophy.fill"
+        case .you:      return "person.fill"
+        default:        return icon
         }
     }
 }
@@ -311,7 +274,7 @@ struct TabBar: View {
         let dark = store.darkMode
         HStack(spacing: 0) {
             tabButton(.home)
-            tabButton(.search)
+            tabButton(.topRated)
             scanHero
             tabButton(.pantry)
             tabButton(.you)
@@ -508,32 +471,13 @@ struct SageMark: View {
     var size: CGFloat = 26
     var color: Color = Theme.accent
     var body: some View {
-        ZStack {
-            LeafShape().fill(color)
-            Path { p in
-                p.move(to: CGPoint(x: size * 0.28, y: size * 0.69))
-                p.addLine(to: CGPoint(x: size * 0.69, y: size * 0.28))
-            }
-            .stroke(Color.white.opacity(0.9), style: StrokeStyle(lineWidth: 1.6, lineCap: .round))
-        }
-        .frame(width: size, height: size)
-    }
-}
-
-private struct LeafShape: Shape {
-    func path(in rect: CGRect) -> Path {
-        var p = Path()
-        let w = rect.width, h = rect.height
-        p.move(to: CGPoint(x: w * 0.15, y: h * 0.69))
-        p.addCurve(to: CGPoint(x: w * 0.84, y: h * 0.13),
-                   control1: CGPoint(x: w * 0.15, y: h * 0.34),
-                   control2: CGPoint(x: w * 0.40, y: h * 0.13))
-        p.addCurve(to: CGPoint(x: w * 0.28, y: h * 0.81),
-                   control1: CGPoint(x: w * 0.84, y: h * 0.56),
-                   control2: CGPoint(x: w * 0.59, y: h * 0.81))
-        p.addLine(to: CGPoint(x: w * 0.15, y: h * 0.81))
-        p.closeSubpath()
-        return p
+        Image("02 Symbol")
+            .renderingMode(.template)
+            .resizable()
+            .scaledToFit()
+            .foregroundStyle(color)
+            .frame(width: size, height: size)
+            .accessibilityHidden(true)
     }
 }
 

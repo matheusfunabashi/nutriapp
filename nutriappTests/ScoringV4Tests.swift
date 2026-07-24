@@ -136,7 +136,7 @@ struct ScoringV4Tests {
 
     @Test func bundledRulesetLoads() {
         let rs = RulesetV4.bundled
-        #expect(rs.version == "2026.07-v5.0.7")
+        #expect(rs.version == "2026.07-v5.0.8")
         #expect(rs.bands.excellent == 75)
         #expect(rs.bands.good == 55)
         #expect(rs.bands.ok == 35)

@@ -1,5 +1,5 @@
 // KV cache (L2 shared). Product snapshots + bucketed explanations.
-import type { OFFProduct } from "./off";
+import type { OFFProduct } from "./off.ts";
 
 const PRODUCT_TTL_SECONDS = 60 * 60 * 24 * 30; // 30 days
 

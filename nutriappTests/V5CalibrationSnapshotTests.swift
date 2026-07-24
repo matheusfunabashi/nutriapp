@@ -2,8 +2,8 @@ import Testing
 import Foundation
 @testable import Sage
 
-/// Prints / asserts the V5.0.7 calibration snapshot used in SCORING_V5.md.
-/// Baseline is V5.0.6; only white sugar / raw honey / stevia change (→ unscored).
+/// Prints / asserts the V5.0.8 calibration snapshot used in SCORING_V5.md.
+/// Baseline is V5.0.6; margarine moves 35→34 (transFat/freeSugar caps 35→34).
 struct V5CalibrationSnapshotTests {
 
     private let rs = RulesetV4.bundled
@@ -17,6 +17,10 @@ struct V5CalibrationSnapshotTests {
         "fresh coconut": 82, "whole milk": 70, "dates": 86,
         "salted nuts": 87, "unsalted nuts": 91, "ramen": 28,
         "Jif": 48, "Cheerios": 58, "Nature Valley": 48, "Yorgus": 59,
+    ]
+    /// Expected live Overall after the v5.0.8 cap tweak (only margarine moves).
+    private let v508Overrides: [String: Int] = [
+        "margarine": 34,
     ]
     private let unscoredNames: Set<String> = ["white sugar", "raw honey", "stevia tablets"]
 
@@ -178,7 +182,7 @@ struct V5CalibrationSnapshotTests {
             lines.append(row(p))
         }
         let table = lines.joined(separator: "\n")
-        print("\n=== CALIBRATION SNAPSHOT V5.0.7 ===\n\(table)\n")
+        print("\n=== CALIBRATION SNAPSHOT V5.0.8 ===\n\(table)\n")
 
         let scores = Dictionary(uniqueKeysWithValues: fixtures.compactMap { p -> (String, Int)? in
             guard !unscoredNames.contains(p.name) else { return nil }
@@ -193,16 +197,32 @@ struct V5CalibrationSnapshotTests {
             #expect(scores[name] == nil)
         }
 
-        // All other rows Δ0 vs V5.0.6.
+        // Band / score movers vs V5.0.6 (v5.0.8 cap tweak).
+        var bandChanges: [(name: String, from: Int, to: Int, fromBand: String, toBand: String)] = []
         for (name, previous) in v506 {
-            #expect(scores[name] == previous,
-                    "snapshot drifted: \(name) was \(previous) now \(scores[name] as Any)")
+            let expected = v508Overrides[name] ?? previous
+            #expect(scores[name] == expected,
+                    "snapshot drifted: \(name) expected \(expected) (v5.0.6=\(previous)) now \(scores[name] as Any)")
+            if let live = scores[name], live != previous {
+                bandChanges.append((
+                    name,
+                    previous,
+                    live,
+                    RulesetV4.bundled.bandLabel(previous), // label under same cuts
+                    RulesetV4.bundled.bandLabel(live)
+                ))
+            }
         }
+        print("Band/score changes vs v5.0.6: \(bandChanges)")
+        #expect(bandChanges.map(\.name) == ["margarine"])
+        #expect(scores["margarine"] == 34)
+        #expect(rs.bandLabel(34) == "Bad")
+        #expect(rs.bandLabel(35) == "OK") // cut unchanged; only the cap moved
 
         #expect(ScoringEngineV4.route(fixtures.first { $0.name == "Jif" }!) == "general")
         #expect(ScoringEngineV4.route(fixtures.first { $0.name == "fresh coconut" }!) == "whole_foods")
         #expect(lines.count == fixtures.count + 2)
-        #expect(rs.version == "2026.07-v5.0.7")
+        #expect(rs.version == "2026.07-v5.0.8")
         #expect(rs.profiles["sweeteners"] == nil)
     }
 }

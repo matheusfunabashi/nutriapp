@@ -34,7 +34,7 @@ struct MethodologyView: View {
                     dark: dark)
                 methodCard(
                     title: "Caps",
-                    body: "Industrial trans fat (NOVA 4 or partially hydrogenated oil) caps Overall at 35. Free-sugar ceiling (35) still applies to foods with concentrated added sugar — candy in snacks, sugary drinks — but intrinsic dried-fruit sugar is exempt. Pure table sweeteners are not scored at all (see below), so the old NNS table-sweetener ceiling no longer applies to them. Your Score can be further limited by diet conflicts and avoid-list items; when several fire, the lowest wins.",
+                    body: "Industrial trans fat (NOVA 4 or partially hydrogenated oil) caps Overall at 34. Free-sugar ceiling (34) still applies to foods with concentrated added sugar — candy in snacks, sugary drinks — but intrinsic dried-fruit sugar is exempt. Pure table sweeteners are not scored at all (see below), so the old NNS table-sweetener ceiling no longer applies to them. Your Score can be further limited by diet conflicts and avoid-list items; when several fire, the lowest wins.",
                     dark: dark)
                 methodCard(
                     title: "Why sweeteners aren’t scored",

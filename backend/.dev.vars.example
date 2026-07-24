@@ -2,3 +2,8 @@
 # For production use `wrangler secret put <NAME>` instead.
 OPENAI_API_KEY=sk-replace-me
 GOUPC_API_KEY=
+USDA_API_KEY=
+KROGER_CLIENT_ID=
+KROGER_CLIENT_SECRET=
+SAGE_API_KEY=
+ADMIN_TOKEN=

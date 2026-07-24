@@ -49,38 +49,67 @@ enum Theme {
 
 extension Color {
     /// Saturated red — reserve for the single worst on-screen signal (e.g. BAD Your Score).
-    static let scoreBad = Color(hex: "C9442B")
-    /// Muted amber for middling scores and non-primary warnings.
-    static let scoreOk = Color(hex: "B0832A")
-    /// Positive / good band.
-    static let scoreGood = Color(hex: "1F8A5B")
+    static let scoreBad = Color(hex: ScoreBandColor.bad)
+    /// Muted amber — nutrient "OK" / middling warnings (also the OK score band).
+    static let scoreOk = Color(hex: ScoreBandColor.ok)
+    /// Deep green — nutrient "Good" / positive accents (also the Excellent score band).
+    static let scoreGood = Color(hex: ScoreBandColor.excellent)
     /// De-emphasized body copy, secondary stats, and quiet warnings.
     static let neutralMuted = Color(hex: "8A8A8A")
     /// Soft caution — restrictions, moderate risk, non-primary deltas.
     static let cautionMuted = Color(hex: "9A8475")
 }
 
-// MARK: - Score helpers
+// MARK: - Score bands (cuts + colors — single source of truth)
 
+/// Hex tokens for score-band colors. Band cuts live in `RulesetV4.bands`;
+/// `ScoreTier` maps each band to these tokens. No other file may keep a
+/// local Excellent/Good/OK/Bad color table.
+enum ScoreBandColor {
+    /// Excellent — deep green (brand / nutrient-good family).
+    static let excellent = "1F8A5B"
+    static let excellentMid = "2BA66D"
+    /// Good — lighter, less-saturated green (readable at ~20pt ring).
+    static let good = "3FA870"
+    static let goodMid = "55BC84"
+    /// OK — amber/gold formerly used for Good.
+    static let ok = "B0832A"
+    static let okMid = "D4A02D"
+    /// Bad — saturated red.
+    static let bad = "C9442B"
+    static let badMid = "DB4F33"
+}
+
+/// Band cuts come from the live ruleset; band → color is defined via `ScoreBandColor`.
 enum ScoreTier: String {
     case excellent, good, poor, bad
 
+    /// Live cut points (Excellent ≥75 · Good ≥55 · OK ≥35 · Bad else).
+    static var cuts: (excellent: Int, good: Int, ok: Int) {
+        let b = RulesetV4.bundled.bands
+        return (b.excellent, b.good, b.ok)
+    }
+
+    /// Primary fill / large-ring color for this band.
     var fg: Color {
         switch self {
-        case .excellent: return Color(hex: "1F8A5B")
-        case .good:      return Color(hex: "B0832A")
-        case .poor:      return Color(hex: "C76A1F")
-        case .bad:       return Color(hex: "C9442B")
+        case .excellent: return Color(hex: ScoreBandColor.excellent)
+        case .good:      return Color(hex: ScoreBandColor.good)
+        case .poor:      return Color(hex: ScoreBandColor.ok)
+        case .bad:       return Color(hex: ScoreBandColor.bad)
         }
     }
+
+    /// Brighter stroke for compact rings (number sits in primary text, not white-on-fill).
     var mid: Color {
         switch self {
-        case .excellent: return Color(hex: "2BA66D")
-        case .good:      return Color(hex: "D4A02D")
-        case .poor:      return Color(hex: "E07A26")
-        case .bad:       return Color(hex: "DB4F33")
+        case .excellent: return Color(hex: ScoreBandColor.excellentMid)
+        case .good:      return Color(hex: ScoreBandColor.goodMid)
+        case .poor:      return Color(hex: ScoreBandColor.okMid)
+        case .bad:       return Color(hex: ScoreBandColor.badMid)
         }
     }
+
     var label: String {
         switch self {
         case .excellent: return "Excellent"

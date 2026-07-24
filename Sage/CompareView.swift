@@ -148,7 +148,8 @@ struct CompareCol: View {
                 .padding(.bottom, -22)
             }
             ProductThumb(glyph: product.glyph, score: product.yourScore, size: 60,
-                         imageURL: product.imageURL)
+                         imageURL: product.listImageURL,
+                         processCutout: product.shouldProcessCutout)
             Text(product.brand.uppercased())
                 .font(.sageBold(10)).tracking(1.2)
                 .foregroundColor(Theme.textSecondary(dark))

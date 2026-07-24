@@ -2,10 +2,19 @@
 export interface Env {
   CACHE: KVNamespace;
   DB: D1Database;
+  /** Product pack-shot bytes (`product-images/{barcode}`). */
+  IMAGES: R2Bucket;
   OPENAI_API_KEY?: string;
   USDA_API_KEY?: string;
   EXPLANATION_VERSION?: string;
   SAGE_API_KEY?: string;
+  /** Kroger Developer Portal app credentials (wrangler secret). */
+  KROGER_CLIENT_ID?: string;
+  KROGER_CLIENT_SECRET?: string;
+  /** Kroger API host, e.g. https://api.kroger.com (wrangler [vars]). */
+  KROGER_BASE_URL?: string;
+  /** Bearer token for POST /admin/curated-images/{barcode}. */
+  ADMIN_TOKEN?: string;
 }
 
 export interface LookupRequest {

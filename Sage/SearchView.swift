@@ -5,6 +5,8 @@ struct SearchView: View {
     /// Called with the barcode of the tapped hit — ContentView runs the same
     /// lookup → score → /explain pipeline as a camera scan.
     let onSelect: (String) -> Void
+    /// When set (Home overlay), shows a back control. Nil when Search is a root.
+    var onBack: (() -> Void)? = nil
 
     private enum Phase: Equatable {
         case idle          // under 2 chars typed
@@ -25,14 +27,19 @@ struct SearchView: View {
         let dark = store.darkMode
         ScrollView(showsIndicators: false) {
             VStack(alignment: .leading, spacing: 0) {
-                StaggeredAppear(index: 0) {
-                    Text("Search")
-                        .font(.sageBold(34)).tracking(-1)
+                if let onBack {
+                    SubHeader(title: "Search", onBack: onBack)
                         .foregroundColor(Theme.textPrimary(dark))
-                        // 12pt above the system safe-area; ContentView's
-                        // tabContent isn't ignoring it, so this is the only
-                        // breathing room we need below the Dynamic Island.
-                        .padding(.horizontal, 24).padding(.top, 12).padding(.bottom, 8)
+                } else {
+                    StaggeredAppear(index: 0) {
+                        Text("Search")
+                            .font(.sageBold(34)).tracking(-1)
+                            .foregroundColor(Theme.textPrimary(dark))
+                            // 12pt above the system safe-area; ContentView's
+                            // tabContent isn't ignoring it, so this is the only
+                            // breathing room we need below the Dynamic Island.
+                            .padding(.horizontal, 24).padding(.top, 12).padding(.bottom, 8)
+                    }
                 }
 
                 StaggeredAppear(index: 1) {
@@ -281,25 +288,12 @@ private struct SearchHitRow: View {
     /// No score exists before the lookup, so this is a plain photo tile with
     /// the generic glyph as loading/failure/no-image fallback.
     private var thumb: some View {
-        ZStack {
-            RoundedRectangle(cornerRadius: 10, style: .continuous)
-                .fill(dark ? Color.white.opacity(0.06) : Color.black.opacity(0.04))
-            if let url = hit.imageURL.flatMap(URL.init(string:)) {
-                AsyncImage(url: url) { phase in
-                    if case .success(let image) = phase {
-                        image.resizable()
-                            .scaledToFill()
-                            .frame(width: 44, height: 44)
-                            .background(Color.white)
-                    } else {
-                        Text("🛒").font(.sageRegular(20))
-                    }
-                }
-            } else {
-                Text("🛒").font(.sageRegular(20))
-            }
-        }
-        .frame(width: 44, height: 44)
-        .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+        ProductImageView(
+            url: OFFImageResolver.upgradeToDisplaySize(hit.imageURL)
+                .flatMap(URL.init(string:)),
+            style: .fixed(44),
+            glyph: "🛒",
+            processCutout: true
+        )
     }
 }

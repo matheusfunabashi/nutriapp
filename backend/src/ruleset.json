@@ -1,5 +1,5 @@
 {
-  "version": "2026.07-v5.0.7",
+  "version": "2026.07-v5.0.8",
   "bands": {
     "excellent": 75,
     "good": 55,
@@ -1615,10 +1615,10 @@
     },
     "transFat": {
       "threshold": 0.2,
-      "cap": 35
+      "cap": 34
     },
     "freeSugarCeiling": {
-      "cap": 35
+      "cap": 34
     },
     "nnsCeiling": {
       "cap": 58

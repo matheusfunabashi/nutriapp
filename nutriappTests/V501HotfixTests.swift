@@ -47,15 +47,15 @@ struct V501HotfixTests {
         #expect(!gate.fired.contains(where: { $0.kind == "transFat" }))
     }
 
-    @Test func margarinePartiallyHydrogenatedCapsAt35() throws {
+    @Test func margarinePartiallyHydrogenatedCapsAt34() throws {
         let marg = product(kcal: 700, sugar: 0, satFat: 15, sodium: 700, transFat: 1.5, nova: 4,
                            name: "margarine",
                            ingredientsText: "partially hydrogenated soybean oil, water, salt",
                            categories: ["fats", "margarines"])
         let r = try #require(ScoringEngineV4.score(marg))
-        #expect(r.base <= 35)
+        #expect(r.base <= 34)
         let gate = ScoringEngineV4.applyBaseCaps(base: 80, product: marg, rs: rs)
-        #expect(gate.fired.contains(where: { $0.kind == "transFat" && $0.value == 35 }))
+        #expect(gate.fired.contains(where: { $0.kind == "transFat" && $0.value == 34 }))
     }
 
     @Test func fullyHydrogenatedOilsDoNotCap() {

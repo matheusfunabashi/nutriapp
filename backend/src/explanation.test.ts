@@ -141,7 +141,7 @@ describe("validateOverview", () => {
       deltaValue: 0,
       overallBindingCap: {
         id: "freeSugarCeiling",
-        value: 35,
+        value: 34,
         shortLabel: "free sugar",
         kind: "freeSugar",
         intensity: "full",
@@ -152,7 +152,7 @@ describe("validateOverview", () => {
       "overallBindingCap"
     );
     assert.equal(
-      validateOverview("As a concentrated sugar, its score is capped at 35.", capped),
+      validateOverview("As a concentrated sugar, its score is capped at 34.", capped),
       null
     );
   });
@@ -165,7 +165,7 @@ describe("validateOverview", () => {
       hardGate: null,
       overallBindingCap: {
         id: "freeSugarCeiling",
-        value: 35,
+        value: 34,
         shortLabel: "free sugar",
         kind: "freeSugar",
       },
@@ -281,7 +281,7 @@ describe("buildTemplateOverview", () => {
       deltaValue: 0,
       overallBindingCap: {
         id: "freeSugarCeiling",
-        value: 35,
+        value: 34,
         shortLabel: "free sugar",
         kind: "freeSugar",
         intensity: "full",
@@ -292,7 +292,7 @@ describe("buildTemplateOverview", () => {
       ],
     };
     const text = buildTemplateOverview(input);
-    assert.match(text.toLowerCase(), /concentrated sugar|capped at 35/);
+    assert.match(text.toLowerCase(), /concentrated sugar|capped at 34/);
     assert.match(text.toLowerCase(), /secondary factors/);
     assert.doesNotMatch(text.toLowerCase(), /held back mainly by/);
   });

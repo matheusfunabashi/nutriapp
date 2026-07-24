@@ -23,3 +23,5 @@ Package.resolved
 .cursor/
 .agents/
 skills-lock.json
+.dev.vars
+backend/scripts/fixtures-live/

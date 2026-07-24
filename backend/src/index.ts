@@ -2,6 +2,12 @@
 //
 //   POST /lookup   → product data (OFF primary, KV-cached; USDA FoodData
 //                    Central gap-fill backfill), tracks popularity.
+//                    Also resolves the best pack shot (curated → Kroger → OFF)
+//                    into `image: { url, thumbUrl, source, ... }` pointing at
+//                    GET /images/{barcode}.
+//   GET  /images/{barcode} → cached pack-shot bytes from R2 (lazy-resolves).
+//   POST /admin/curated-images/{barcode} → curated override (ADMIN_TOKEN).
+//   GET  /alternatives → Top Rated candidates; image_url enriched to /images/…
 //   POST /explain  → bucketed LLM explanation (KV-cached by version+barcode+class).
 //   GET  /health   → liveness.
 //
@@ -19,6 +25,8 @@ import {
 import { bumpScanCount, logFetch } from "./db";
 import { fetchUSDA, mergeUSDA, plausiblyUS } from "./usda";
 import { generateExplanation, buildTemplateOverview } from "./explanation";
+import { resolveProductImage, serveCachedImage, enrichAlternativesImages, IMAGE_CACHE_VERSION } from "./imageResolver.ts";
+import { putCuratedImage } from "./curatedImages.ts";
 // Scoring-v4 ruleset served to clients (SCORING_V4.md §10). Keep in sync:
 // `cp Sage/RulesetV5.json backend/src/ruleset.json` before deploying — the
 // app treats the served version as newer than its bundled copy.
@@ -27,8 +35,8 @@ import alternatives from "./alternatives.json";
 
 const app = new Hono<{ Bindings: Env }>();
 
-// Shared-secret gate on data endpoints (/health stays open for monitoring).
-// Enforced only when SAGE_API_KEY is configured, so local dev without it still works.
+// Shared-secret gate on data endpoints (/health and /images stay open —
+// images need to load in AsyncImage without custom headers).
 const requireKey: MiddlewareHandler<{ Bindings: Env }> = async (c, next) => {
   const expected = c.env.SAGE_API_KEY;
   if (expected && c.req.header("X-Sage-Key") !== expected) {
@@ -41,6 +49,49 @@ app.use("/explain", requireKey);
 app.use("/search", requireKey);
 
 app.get("/health", (c) => c.json({ ok: true, service: "sage-backend" }));
+
+// Stable pack-shot URL — one per barcode for the life of the R2 object.
+app.get("/images/:barcode", async (c) => {
+  const barcode = c.req.param("barcode")?.trim();
+  if (!barcode) return c.text("missing barcode", 400);
+  return serveCachedImage(c.env, barcode, c.req.header("If-None-Match") ?? null, {
+    origin: new URL(c.req.url).origin,
+    waitUntil: (p) => c.executionCtx.waitUntil(p),
+    lazyResolve: true,
+  });
+});
+
+// --- Curated pack-shot upload (admin) --------------------------------------
+app.post("/admin/curated-images/:barcode", async (c) => {
+  const expected = c.env.ADMIN_TOKEN;
+  if (!expected) return c.json({ error: "admin_disabled" }, 503);
+  const auth = c.req.header("Authorization") ?? "";
+  const token = auth.startsWith("Bearer ") ? auth.slice(7).trim() : "";
+  if (!token || token !== expected) return c.json({ error: "unauthorized" }, 401);
+
+  const barcode = c.req.param("barcode")?.trim();
+  if (!barcode) return c.json({ error: "missing_barcode" }, 400);
+
+  const contentType = c.req.header("Content-Type") || "image/jpeg";
+  const bytes = await c.req.arrayBuffer();
+  try {
+    const result = await putCuratedImage(
+      c.env,
+      barcode,
+      bytes,
+      contentType,
+      IMAGE_CACHE_VERSION,
+    );
+    return c.json({ ok: true, ...result, cacheVersion: IMAGE_CACHE_VERSION });
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    const status =
+      msg === "too_large" || msg === "too_large_dimensions" ? 413
+      : msg === "unsupported_type" || msg === "empty_body" || msg === "missing_barcode" ? 400
+      : 500;
+    return c.json({ error: msg }, status);
+  }
+});
 
 // --- Scoring ruleset (v4) --------------------------------------------------
 // Version probe is tiny and edge-cached hard; the full document is fetched
@@ -70,9 +121,18 @@ app.get("/alternatives/version", (c) => {
   return c.json({ generated_at: (alternatives as { generated_at: string | null }).generated_at });
 });
 
-app.get("/alternatives", (c) => {
-  c.header("Cache-Control", "public, max-age=300");
-  return c.json(alternatives);
+app.get("/alternatives", async (c) => {
+  c.header("Cache-Control", "public, max-age=60");
+  const origin = new URL(c.req.url).origin;
+  const enriched = await enrichAlternativesImages(
+    c.env,
+    alternatives as { shelves?: Record<string, Array<{ barcode?: string; image_url?: string | null }>> },
+    {
+      origin,
+      waitUntil: (p) => c.executionCtx.waitUntil(p),
+    },
+  );
+  return c.json(enriched);
 });
 
 // --- Product lookup -------------------------------------------------------
@@ -80,12 +140,18 @@ app.post("/lookup", async (c) => {
   const body = await c.req.json<LookupRequest>().catch(() => null);
   if (!body?.barcode) return c.json({ error: "missing_barcode" }, 400);
   const barcode = body.barcode.trim();
+  const origin = new URL(c.req.url).origin;
 
   // L2 cache hit.
   const cached = await getProduct(c.env.CACHE, barcode);
   if (cached) {
     c.executionCtx.waitUntil(bumpScanCount(c.env.DB, barcode, hasImage(cached)));
-    return c.json({ source: "cache", product: cached });
+    const image = await resolveProductImage(c.env, barcode, cached, {
+      origin,
+      waitUntil: (p) => c.executionCtx.waitUntil(p),
+    });
+    // `product.image_*` fields remain for back-compat (deprecated — prefer `image`).
+    return c.json({ source: "cache", product: cached, image });
   }
 
   // Open Food Facts is the primary source (global; owns the classification
@@ -115,7 +181,16 @@ app.post("/lookup", async (c) => {
   const finalSource = source ?? "off";
   c.executionCtx.waitUntil(putProduct(c.env.CACHE, barcode, product));
   c.executionCtx.waitUntil(bumpScanCount(c.env.DB, barcode, hasImage(product), finalSource));
-  return c.json({ source: finalSource, product });
+
+  const image = await resolveProductImage(c.env, barcode, product, {
+    origin,
+    waitUntil: (p) => c.executionCtx.waitUntil(p),
+  });
+
+  // Deprecated: clients should read top-level `image` (Worker-hosted URL).
+  // product.image_front_url / image_url / image_front_small_url stay populated
+  // from OFF for older app builds.
+  return c.json({ source: finalSource, product, image });
 });
 
 // --- Free-text name search -------------------------------------------------
