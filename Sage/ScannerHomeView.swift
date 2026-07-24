@@ -5,6 +5,7 @@ struct ScannerHomeView: View {
     let onTapScan: () -> Void
     let onTapHistory: () -> Void
     let onTapSearch: () -> Void
+    let onTapTopRated: () -> Void
     let onOpenProduct: (String) -> Void
 
     var body: some View {
@@ -22,7 +23,11 @@ struct ScannerHomeView: View {
                     heroCard(dark: dark)
                         .padding(.horizontal, 16).padding(.bottom, 6)
                 }
-                StaggeredAppear(index: 3) { recentSection(dark: dark) }
+                StaggeredAppear(index: 3) {
+                    topRatedCard(dark: dark)
+                        .padding(.horizontal, 16).padding(.bottom, 6)
+                }
+                StaggeredAppear(index: 4) { recentSection(dark: dark) }
                 Spacer().frame(height: 120)
             }
         }
@@ -129,6 +134,41 @@ struct ScannerHomeView: View {
         }
         .buttonStyle(.pressable)
         .accessibilityLabel("Scan a barcode")
+    }
+
+    private func topRatedCard(dark: Bool) -> some View {
+        Button(action: onTapTopRated) {
+            HStack(spacing: 14) {
+                ZStack {
+                    RoundedRectangle(cornerRadius: 11, style: .continuous)
+                        .fill(store.accent.opacity(dark ? 0.18 : 0.12))
+                    Image(systemName: "trophy.fill")
+                        .font(.sageBold(17))
+                        .foregroundColor(store.accent)
+                }
+                .frame(width: 44, height: 44)
+                VStack(alignment: .leading, spacing: 3) {
+                    Text("Top Rated")
+                        .font(.sageBold(17)).tracking(-0.4)
+                        .foregroundColor(Theme.textPrimary(dark))
+                    Text("The best-scoring products in each category.")
+                        .font(.sageRegular(13))
+                        .foregroundColor(Theme.textSecondary(dark))
+                        .lineLimit(1)
+                }
+                Spacer(minLength: 8)
+                Image(systemName: "chevron.right")
+                    .font(.sageBold(13))
+                    .foregroundColor(Theme.textSecondary(dark))
+            }
+            .padding(.horizontal, 18).padding(.vertical, 16)
+            .background(
+                RoundedRectangle(cornerRadius: 18, style: .continuous).fill(Theme.surface(dark))
+            )
+            .cardShadow(dark)
+        }
+        .buttonStyle(.pressable)
+        .accessibilityLabel("Top Rated products by category")
     }
 
     // MARK: Recent scans (display-time grouping)

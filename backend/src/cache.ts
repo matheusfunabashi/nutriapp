@@ -36,9 +36,9 @@ export interface SearchHit {
 }
 
 export function searchKey(query: string): string {
-  // v2: results are deduped by brand+name and carry quantity — new prefix so
-  // stale v1 cache entries aren't served during the TTL window.
-  return `search:v2:${query}`;
+  // v3: results are US-market filtered — new prefix so stale v2 entries (which
+  // could contain non-US products) aren't served during the TTL window.
+  return `search:v3:${query}`;
 }
 
 export async function getSearch(kv: KVNamespace, query: string): Promise<SearchHit[] | null> {

@@ -175,22 +175,29 @@ enum Alternatives {
         var pool: [Alternative] = []
         for cand in candidates {
             if cand.barcode == scanned.id { continue }          // exact same product
-            let raw = OpenFoodFactsService.mapCandidate(
-                barcode: cand.barcode, name: cand.name, brands: cand.brand,
-                ingredientsText: cand.ingredientsText, additivesTags: cand.additivesTags,
-                nutriments: cand.nutriments, nutriscoreGrade: cand.nutriscoreGrade,
-                novaGroup: cand.novaGroup, imageURL: cand.imageURL,
-                categoriesTags: cand.categoriesTags, labelsTags: cand.labelsTags)
-
-            guard case .scored(let p) = ScoringEngineV4.scoreProduct(raw, for: profile, ruleset: ruleset),
-                  let score = p.overallScore else { continue }
+            guard let (p, score) = scored(cand, profile: profile, ruleset: ruleset) else { continue }
             // Never recommend a different SKU of the scanned product itself.
             if dedupeKey(brand: p.brand, name: p.name) == scannedKey { continue }
-
             let shared = anchorTag.map { p.categories?.contains($0) ?? false } ?? false
             pool.append(Alternative(product: p, score: score, sharedTag: shared))
         }
         return select(baseline: baseline, from: pool)
+    }
+
+    /// Map a precomputed candidate to a scored (product, Overall) pair under the
+    /// given ruleset, or nil when it doesn't score. Shared by Alternatives and
+    /// Top Rated so both re-score candidates identically (version-consistent).
+    static func scored(_ c: AlternativeCandidate, profile: UserProfile,
+                       ruleset: RulesetV4) -> (product: Product, score: Int)? {
+        let raw = OpenFoodFactsService.mapCandidate(
+            barcode: c.barcode, name: c.name, brands: c.brand,
+            ingredientsText: c.ingredientsText, additivesTags: c.additivesTags,
+            nutriments: c.nutriments, nutriscoreGrade: c.nutriscoreGrade,
+            novaGroup: c.novaGroup, imageURL: c.imageURL,
+            categoriesTags: c.categoriesTags, labelsTags: c.labelsTags)
+        guard case .scored(let p) = ScoringEngineV4.scoreProduct(raw, for: profile, ruleset: ruleset),
+              let score = p.overallScore else { return nil }
+        return (p, score)
     }
 
     /// Pure selection over already-scored candidates (§3.5–3.6): margin gate,
@@ -210,5 +217,37 @@ enum Alternatives {
     private static func dedupeKey(brand: String, name: String) -> String {
         let s = (brand + name).lowercased()
         return String(s.unicodeScalars.filter(CharacterSet.alphanumerics.contains))
+    }
+}
+
+// MARK: - Top Rated (TOPRATED_SPEC.md)
+//
+// The best-scoring products per category, ranked by Overall (same for every
+// user). Reuses the Alternatives dataset + scoring — no new data or pipeline;
+// candidates are re-scored on-device so the list matches the detail screen and
+// the current ruleset.
+
+enum TopRated {
+    static let maxItems = 20
+
+    /// Top-N products in a category, re-scored on-device (Overall), best first.
+    @MainActor
+    static func items(for shelf: SageCategory, profile: UserProfile) -> [Alternative] {
+        items(from: AlternativesStore.candidates(for: shelf),
+              profile: profile, ruleset: RulesetStore.current)
+    }
+
+    /// Pure core (no global state) — testable in isolation.
+    static func items(from candidates: [AlternativeCandidate],
+                      profile: UserProfile, ruleset: RulesetV4) -> [Alternative] {
+        candidates
+            .compactMap { c -> Alternative? in
+                guard let (p, s) = Alternatives.scored(c, profile: profile, ruleset: ruleset)
+                else { return nil }
+                return Alternative(product: p, score: s, sharedTag: false)
+            }
+            .sorted { $0.score > $1.score }
+            .prefix(maxItems)
+            .map { $0 }
     }
 }

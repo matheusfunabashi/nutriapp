@@ -15,6 +15,9 @@ enum Overlay: Identifiable, Hashable {
     case preferences
     case nutritionGoals
     case dietary
+    /// Top Rated: category grid, then the best-scoring products in a category.
+    case topRated
+    case topRatedCategory(shelf: String)
 
     var id: String {
         switch self {
@@ -29,6 +32,8 @@ enum Overlay: Identifiable, Hashable {
         case .preferences:           return "preferences"
         case .nutritionGoals:        return "nutritionGoals"
         case .dietary:               return "dietary"
+        case .topRated:              return "topRated"
+        case .topRatedCategory(let s): return "topRated_\(s)"
         }
     }
 }
@@ -152,6 +157,7 @@ struct ContentView: View {
                 onTapScan: { startScan() },
                 onTapHistory: { tab = .pantry },
                 onTapSearch: { tab = .search },
+                onTapTopRated: { push(.topRated) },
                 onOpenProduct: { id in openProduct(id) }
             )
         case .pantry:
@@ -218,6 +224,20 @@ struct ContentView: View {
                     message: "One or both products couldn't be loaded.",
                     onBack: dismissOverlay
                 )
+            }
+        case .topRated:
+            TopRatedCategoriesView(
+                onBack: dismissOverlay,
+                onOpenCategory: { shelf in push(.topRatedCategory(shelf: shelf.rawValue)) }
+            )
+        case .topRatedCategory(let raw):
+            if let shelf = SageCategory(rawValue: raw) {
+                TopRatedListView(shelf: shelf, onBack: dismissOverlay,
+                                 onOpenProduct: { product in openAlternative(product) })
+            } else {
+                OverlayFallbackView(title: "Category unavailable",
+                                    message: "This category couldn't be loaded.",
+                                    onBack: dismissOverlay)
             }
         case .paywall:        PaywallView(onDismiss: dismissOverlay)
         case .manual:         ManualEntryView(onCancel: dismissOverlay, onSubmit: dismissOverlay)
