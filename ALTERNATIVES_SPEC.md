@@ -164,13 +164,16 @@ bundled copy.
 
 ## 5. Behavior rules & empty states
 
-- **Show:** a "Better options" row under the score card, max 3 cards
-  (image · name · brand · score pill), each tappable → its own ResultView.
+- **Show suggestions:** a "Better options" row under the score card, max 3 cards
+  (image · name · brand · score pill), each tappable → its own ResultView —
+  when `Alternatives.suggest` returns `.suggestions([...])`.
+- **Show already-top chip:** when the outcome is `.alreadyTopOfShelf` (shelf
+  peers exist, but `baseline + MARGIN > max(live peer scores)`), render a single
+  positive line — checkmark + "Among the best in its category" — styled like the
+  Organic ✓ chip. No empty suggestion cards.
+- **Hide entirely when:** `.noShelf` · `.unscored` · `.noBetterPeers` (shelf has
+  peers but none clear the margin for a reason other than "already top").
 - **Fire after** the result screen renders; never block score/scan.
-- **Hide entirely when:** no shelf match (incl. coffee/water/alcohol/sweeteners —
-  §7) · shelf list empty · no candidate clears the margin (even margin-only) ·
-  the scanned product is itself already ≥ `GOOD_FLOOR` **and** ranks in the
-  shelf's own top 3 ("already a top pick").
 - **One heading, "Better options"** — a margin-only pick in a junk shelf is still
   genuinely better than what they scanned, so no separate "less bad" copy in v1.
 - **Margin/floor tunable** in the ruleset-adjacent config so they can move
@@ -178,21 +181,19 @@ bundled copy.
 
 ---
 
-## 6. Offline generation pipeline (to build)
+## 6. Offline generation pipeline
 
-Not in the repo yet — only the `TopRatedBuilder` consumer + a test fixture exist.
+Implemented in `TopRatedBuilder/`:
 
-1. **`candidates.json` generator** (new script; reuse the calibration OFF-pull
-   harness): per shelf, pull OFF products matching `SageCategory.shelfTags` +
-   `countries_tags`, emitting the §2.1 scoring-input fields + `data_problems`.
-   Prefer popularity-sorted but **let the data-quality gate do the real
-   filtering** (OFF popularity is thin in some US categories).
-2. **Extend `TopRatedBuilder`** to also emit `alternatives.json`: keep top ~25
-   per shelf (not 10), **retain the scoring-input fields** (today it drops them),
-   and stamp `ruleset_version`. Its existing gate (`shouldSkipForDataProblems`,
-   `.unsupported`/`.insufficientData`) + `dedupe` are reused as-is.
-3. **Regenerate on:** every ruleset version bump (scores shift with calibration)
-   **and** a periodic OFF-freshness cadence (~monthly). Automatable via a cron.
+1. **`generate_candidates.py`** — per shelf, pulls OFF products matching
+   `SHELF_TAGS` + `countries_tags` for each market (`us`, `br` by default),
+   stamps `countries`, merges duplicate barcodes, emits `candidates.json`.
+2. **`TopRatedBuilder`** — scores with the real engine + bundled ruleset, keeps
+   top **25 per shelf per country**, merges by barcode, stamps
+   `ruleset_version`, writes `alternatives.json`.
+3. **Regenerate on:** every ruleset version bump (enforced by
+   `AlternativesSyncTests`) **and** a periodic OFF-freshness cadence (~monthly).
+   See `TopRatedBuilder/README.md` for the two-country command.
 
 ---
 
@@ -202,34 +203,32 @@ Not in the repo yet — only the `TopRatedBuilder` consumer + a test fixture exi
 - **Junk-shelf floor** — `GOOD_FLOOR` is a per-scan preference with a margin-only
   fallback (§3.5), so guilty-pleasure shelves still surface a less-bad pick.
 - **Compare axis** — Overall for v1 (`yourScore` is v2).
-- **No-alternative categories** — coffee, water, alcohol, and table sweeteners
-  all correctly yield **no alternatives row**, for two different reasons that the
-  feature doesn't need to distinguish:
-  - *water / alcohol* → `unsupported` (not scored) · *table sweeteners* →
-    `unscored_sweetener` (V5.0.7, not scored). No score ⇒ nothing to improve on.
-  - *coffee* → **is** scored (`tea_coffee` profile) but is deliberately excluded
-    from the shelves (`TopRatedBuilder` skips it — joint team decision, same
-    basket as water/alcohol for *shelving*). So there is simply no coffee shelf.
-  ⇒ `SageCategory.shelf(for:)` returns nil for all of these; §5 hides the row.
+- **Empty-reason contract** — `Alternatives.suggest` returns
+  `AlternativesOutcome`:
+  - `.suggestions` — up to 3 peers clearing the +10 margin (region-preferring).
+  - `.alreadyTopOfShelf` — live peers exist, but none are ≥ `baseline + 10`
+    *and* `baseline + 10 > max(peer scores)` (product is at/near the top).
+  - `.noBetterPeers` — shelf exists / has candidates, but nothing clears the
+    margin for other reasons (e.g. empty scored pool after gates).
+  - `.noShelf` — `SageCategory.shelf(for:)` is nil (coffee excluded; water /
+    alcohol / unknown categories).
+  - `.unscored` — no Overall baseline (water/alcohol unsupported, table
+    sweeteners).
+  The older §5 gate ("already Good **and** shelf top-3") is **not** implemented;
+  already-top is purely the margin vs max-peer comparison above.
+- **Multi-country** — candidates carry `countries: ["us"]` / `["br"]` (or both).
+  Selection prefers the scanned product's GS1 region (789/790 → `br`, else `us`)
+  and tops up from the other region when fewer than 3 same-region peers clear
+  the margin.
+- **No-alternative categories** — coffee (shelf-excluded), water/alcohol
+  (unsupported), table sweeteners (unscored) correctly hide the row via
+  `.noShelf` / `.unscored`.
 
-**Coverage beyond the 14 shelves — the plan to include more products:**
-The 14 shelves are the hand-curated *launch* set, not a ceiling. Two levers,
-in order of leverage:
-1. **On-demand OFF-tag anchoring + backend cache (recommended for growth).** For
-   a scan outside the 14 shelves, the *backend* resolves the product's OFF
-   category anchor (walk the hierarchy to a tag with enough peers), does a
-   one-time OFF pull for that category, scores + gates + dedupes it (same
-   pipeline as `TopRatedBuilder`), and **caches** the result (KV, long TTL). The
-   first scan of a new category returns empty (or one slow fetch); every scan
-   after is fast. Coverage then **grows automatically to wherever users actually
-   scan**, with no per-category hand-work. Trade-offs: dynamic backend path,
-   lower long-tail data quality, first-scan-empty. This is the real answer to
-   "include more products".
-2. **Add more curated shelves** to `SageCategory` — linear hand-work per shelf
-   (tags + candidate generation); worth it for a few marquee gaps (meat, snack
-   bars) but doesn't scale to the long tail.
-   ⇒ v1 ships the 14 bundled shelves; **instrument the scan→shelf hit-rate** so
-   the uncovered fraction drives whether/when to build lever 1.
+**Coverage beyond the curated shelves:**
+Additional shelves (`nutButtersAndSpreads`, `snackBars`, `milks`, `fatsAndOils`,
+`instantNoodles`) ship alongside the original twelve. Further growth can still
+use on-demand OFF-tag anchoring + backend cache (see prior plan) for the long
+tail.
 
 **Remaining edge:**
 - **Dedup strength** — OFF has many size/region SKUs of one product; reuse
@@ -240,25 +239,26 @@ in order of leverage:
 
 ## 8. Phasing
 
-- **v1 (this spec):** 14 bundled precomputed shelves, on-device re-score on
+- **v1 (this spec):** curated precomputed shelves (US+BR), on-device re-score on
   **Overall**, margin gate with preferred floor, shared-tag preference,
-  bundle+refresh delivery, US-only. Instrument scan→shelf hit-rate.
-- **v1.5 (coverage):** on-demand OFF-tag anchoring + backend cache (§7 lever 1)
-  for scans outside the 14 shelves — coverage grows to real demand.
+  region preference, bundle+refresh delivery. Instrument scan→shelf hit-rate.
+- **v1.5 (coverage):** on-demand OFF-tag anchoring + backend cache for scans
+  outside curated shelves — coverage grows to real demand.
 - **v2:** `yourScore` personalization · finer within-shelf sub-tag clustering ·
-  multi-country.
+  more countries.
 - **v3:** embeddings (Cloudflare Vectorize) for cross-category swaps.
 
 ---
 
 ## 9. Test plan
 
-- **Unit:** `SageCategory.shelf(for:)` routing (incl. no-match) · `anchorTag`
-  precision · `Alternatives.suggest` margin/floor/self-exclusion/top-3/empty
-  states — hand-built `Product` fixtures, same style as `ScoringV4Tests`.
+- **Unit:** `SageCategory.shelf(for:)` routing (incl. new shelves + no-match) ·
+  `anchorTag` precision · `Alternatives.select` margin/floor/region/top-3 ·
+  `AlternativesOutcome` empty reasons — hand-built fixtures.
+- **Sync:** `Sage/Alternatives.json` ≡ `backend/src/alternatives.json`;
+  `ruleset_version` matches bundled ruleset.
 - **Golden:** a fixed `alternatives.json` fixture → assert exact suggestions for
-  a few scans (grape juice → better grape/fruit juices; a good yogurt → empty).
-- **Harness:** reuse the macOS scoring CLI to verify re-scored candidate order
-  matches the engine.
+  a few scans (grape juice → better grape/fruit juices; a good yogurt →
+  already-top or empty).
 - **Version-consistency:** candidates carrying an older `ruleset_version` still
   compare correctly because they're re-scored under `RulesetStore.current`.

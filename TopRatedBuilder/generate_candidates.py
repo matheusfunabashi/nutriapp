@@ -2,15 +2,22 @@
 """Generate candidates.json for TopRatedBuilder (ALTERNATIVES_SPEC.md §6).
 
 Per Sage shelf, pulls popularity-ranked products for the shelf's OFF category
-tags in one market via the OFF search API — an offline batch (run on ruleset
-bumps + ~monthly), NOT the per-scan path — then writes the CandidatesFile shape
-TopRatedBuilder consumes. TopRatedBuilder + the on-device engine do the real
-data-quality gating; here we only flag a missing image (the one problem the
+tags in one or more markets via the OFF search API — an offline batch (run on
+ruleset bumps + ~monthly), NOT the per-scan path — then writes the CandidatesFile
+shape TopRatedBuilder consumes. TopRatedBuilder + the on-device engine do the
+real data-quality gating; here we only flag a missing image (the one problem the
 builder tolerates).
 
+Each candidate is stamped with `countries` (e.g. ["us"], ["br"], or both when
+the same barcode appears in multiple market pulls). TopRatedBuilder keeps the
+top 25 *per country* per shelf.
+
 Usage:
-  python3 generate_candidates.py [--out candidates.json] [--country us]
+  python3 generate_candidates.py [--out candidates.json] [--countries us,br]
                                  [--per-shelf 50] [--shelves juice,yogurt]
+
+Two-country regeneration (default):
+  python3 generate_candidates.py --countries us,br --out fixtures/candidates.json
 """
 import argparse, json, sys, time, urllib.parse, urllib.request, urllib.error
 
@@ -29,10 +36,33 @@ SHELF_TAGS = {
     "pasta":     ["en:pastas"],
     "iceCream":  ["en:ice-creams"],
     "babyFood":  ["en:baby-foods"],
+    "nutButtersAndSpreads": [
+        "en:peanut-butters", "en:nut-butters", "en:almond-butters",
+        "en:hazelnut-spreads", "en:chocolate-spreads",
+    ],
+    "snackBars": [
+        "en:cereal-bars", "en:granola-bars", "en:protein-bars",
+    ],
+    "milks": [
+        "en:milks", "en:plant-milks", "en:almond-milks", "en:oat-milks",
+        "en:soy-milks", "en:rice-milks",
+    ],
+    "fatsAndOils": [
+        "en:butters", "en:margarines", "en:olive-oils", "en:vegetable-oils",
+        "en:coconut-oils",
+    ],
+    "instantNoodles": [
+        "en:instant-noodles", "en:noodles", "en:dried-meals",
+    ],
 }
 
-COUNTRY_TAG = {"us": "en:united-states", "uk": "en:united-kingdom",
-               "ca": "en:canada", "au": "en:australia"}
+COUNTRY_TAG = {
+    "us": "en:united-states",
+    "br": "en:brazil",
+    "uk": "en:united-kingdom",
+    "ca": "en:canada",
+    "au": "en:australia",
+}
 
 # The per-100g nutriment keys the app's OFFNutriments reads.
 NUTRIMENT_KEYS = [
@@ -81,7 +111,7 @@ def nutriments(off):
     return out or None
 
 
-def entry(off):
+def entry(off, country_code):
     img = off.get("image_front_url") or off.get("image_url")
     problems = [] if img else ["no image"]
     return {
@@ -97,38 +127,84 @@ def entry(off):
         "categories_tags": off.get("categories_tags") or [],
         "labels_tags": off.get("labels_tags") or [],
         "data_problems": problems,
+        "countries": [country_code],
     }
+
+
+def merge_entry(existing, new):
+    """Same barcode in another market → union countries; keep richer fields."""
+    countries = sorted(set(existing.get("countries") or []) | set(new.get("countries") or []))
+    keep = existing
+    # Prefer the row that has an image + ingredients when merging.
+    def richness(e):
+        return (
+            (1 if e.get("image_url") else 0)
+            + (1 if e.get("ingredients_text") else 0)
+            + (1 if e.get("nutriments") else 0)
+        )
+    if richness(new) > richness(existing):
+        keep = new
+    out = dict(keep)
+    out["countries"] = countries
+    return out
+
+
+def pull_shelf(shelf, tags, country_code, country_tag, per_shelf):
+    seen, rows = set(), []
+    for tag in tags:
+        for off in fetch(tag, country_tag, per_shelf):
+            code = off.get("code")
+            if not code or code in seen:
+                continue
+            seen.add(code)
+            rows.append(entry(off, country_code))
+        time.sleep(0.5)
+    return rows
 
 
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--out", default="candidates.json")
-    ap.add_argument("--country", default="us", choices=list(COUNTRY_TAG))
+    ap.add_argument("--countries", default="us,br",
+                    help="comma-separated market codes (default us,br)")
+    ap.add_argument("--country", default="",
+                    help="deprecated single-country alias; prefer --countries")
     ap.add_argument("--per-shelf", type=int, default=50)
     ap.add_argument("--shelves", default="", help="comma-separated subset; default all")
     args = ap.parse_args()
 
-    country_tag = COUNTRY_TAG[args.country]
+    if args.country:
+        country_codes = [args.country]
+    else:
+        country_codes = [c.strip() for c in args.countries.split(",") if c.strip()]
+    for c in country_codes:
+        if c not in COUNTRY_TAG:
+            print(f"! unknown country {c}", file=sys.stderr)
+            sys.exit(1)
+
     shelves = [s for s in args.shelves.split(",") if s] or list(SHELF_TAGS)
     categories = {}
     for shelf in shelves:
         tags = SHELF_TAGS.get(shelf)
         if not tags:
             print(f"! unknown shelf {shelf}", file=sys.stderr); continue
-        seen, rows = set(), []
-        for tag in tags:
-            for off in fetch(tag, country_tag, args.per_shelf):
-                code = off.get("code")
-                if not code or code in seen:
-                    continue
-                seen.add(code)
-                rows.append(entry(off))
-            time.sleep(0.5)
-        categories[shelf] = rows
-        print(f"{shelf}: {len(rows)} candidates")
+        by_barcode = {}
+        for code in country_codes:
+            rows = pull_shelf(shelf, tags, code, COUNTRY_TAG[code], args.per_shelf)
+            print(f"{shelf}/{code}: {len(rows)} pulled")
+            for row in rows:
+                bc = row["barcode"]
+                if bc in by_barcode:
+                    by_barcode[bc] = merge_entry(by_barcode[bc], row)
+                else:
+                    by_barcode[bc] = row
+        categories[shelf] = list(by_barcode.values())
+        print(f"{shelf}: {len(categories[shelf])} unique candidates "
+              f"({', '.join(country_codes)})")
 
     with open(args.out, "w") as f:
-        json.dump({"categories": categories}, f, ensure_ascii=False, indent=2)
+        json.dump({"categories": categories, "countries": country_codes},
+                  f, ensure_ascii=False, indent=2)
     print(f"wrote {args.out} ({sum(len(v) for v in categories.values())} total)")
 
 

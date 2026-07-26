@@ -248,20 +248,31 @@ private struct SearchHitRow: View {
     let onTap: () -> Void
 
     var body: some View {
-        Button(action: onTap) {
+        let formatted = ProductNameFormatter.format(
+            productName: hit.name,
+            brands: hit.brand.isEmpty ? nil : hit.brand,
+            quantity: hit.quantity
+        )
+        return Button(action: onTap) {
             HStack(spacing: 12) {
                 thumb
                 VStack(alignment: .leading, spacing: 1) {
-                    if !eyebrow.isEmpty {
-                        Text(eyebrow.uppercased())
+                    if let brand = formatted.brand {
+                        Text(brand.uppercased())
                             .font(.sageBold(10)).tracking(1.2)
                             .foregroundColor(Theme.textSecondary(dark))
                     }
-                    Text(hit.name)
+                    Text(formatted.name)
                         .font(.sageBold(14))
                         .foregroundColor(Theme.textPrimary(dark))
                         .lineLimit(2)
                         .multilineTextAlignment(.leading)
+                    if let size = formatted.size {
+                        Text(size)
+                            .font(.sageRegular(11))
+                            .foregroundColor(Theme.textSecondary(dark))
+                            .lineLimit(1)
+                    }
                 }
                 Spacer(minLength: 8)
                 Image(systemName: "chevron.right")
@@ -273,16 +284,10 @@ private struct SearchHitRow: View {
                 RoundedRectangle(cornerRadius: 18, style: .continuous).fill(Theme.surface(dark))
             )
             .cardShadow(dark)
+            .accessibilityElement(children: .combine)
+            .accessibilityLabel(formatted.accessibilityLabel)
         }
         .buttonStyle(.pressable)
-    }
-
-    /// Brand plus pack size (when known) — distinguishes remaining variants
-    /// after the backend collapses same-brand-same-name duplicates.
-    private var eyebrow: String {
-        [hit.brand, hit.quantity ?? ""]
-            .filter { !$0.isEmpty }
-            .joined(separator: " · ")
     }
 
     /// No score exists before the lookup, so this is a plain photo tile with

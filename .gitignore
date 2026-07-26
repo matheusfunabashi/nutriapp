@@ -25,3 +25,6 @@ Package.resolved
 skills-lock.json
 .dev.vars
 backend/scripts/fixtures-live/
+TopRatedBuilder/fixtures/candidates-live.json
+TopRatedBuilder/fixtures/alternatives.json
+TopRatedBuilder/fixtures/top-rated.json

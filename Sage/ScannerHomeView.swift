@@ -238,17 +238,25 @@ private struct RecentRow: View {
     let onTap: () -> Void
 
     var body: some View {
-        Button(action: onTap) {
+        let formatted = ProductNameFormatter.format(product)
+        let meta = [formatted.size, subtitle].compactMap { $0 }.filter { !$0.isEmpty }.joined(separator: " · ")
+        return Button(action: onTap) {
             HStack(spacing: 12) {
                 ProductThumb(glyph: product.glyph, score: product.yourScore, size: 48,
                              imageURL: product.listImageURL,
                              processCutout: product.shouldProcessCutout)
                 VStack(alignment: .leading, spacing: 1) {
-                    Text(product.name)
+                    if let brand = formatted.brand {
+                        Text(brand.uppercased())
+                            .font(.sageBold(10)).tracking(1.2)
+                            .foregroundColor(Theme.textSecondary(dark))
+                            .lineLimit(1)
+                    }
+                    Text(formatted.name)
                         .font(.sageSemiBold(14))
                         .foregroundColor(Theme.textPrimary(dark))
                         .lineLimit(1)
-                    Text(subtitle)
+                    Text(meta)
                         .font(.sageRegular(11))
                         .foregroundColor(Theme.textSecondary(dark))
                 }
@@ -266,7 +274,7 @@ private struct RecentRow: View {
             .cardShadow(dark)
         }
         .buttonStyle(.pressable)
-        .accessibilityLabel("\(product.name), \(subtitle)")
+        .accessibilityLabel("\(formatted.accessibilityLabel), \(subtitle)")
     }
 }
 

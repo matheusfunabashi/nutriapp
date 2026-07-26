@@ -2,8 +2,8 @@ import SwiftUI
 
 // MARK: - Top Rated (TOPRATED_SPEC.md)
 
-/// Category grid: the 14 Sage categories. The two with no data (water,
-/// coffee — §2) are shown greyed out and disabled.
+/// Category grid: Sage categories. Water and coffee have no data (TOPRATED_SPEC
+/// §2) and are shown greyed out and disabled.
 struct TopRatedCategoriesView: View {
     @EnvironmentObject var store: AppStore
     let onOpenCategory: (SageCategory) -> Void
@@ -128,7 +128,8 @@ private struct TopRatedRow: View {
     let onTap: () -> Void
 
     var body: some View {
-        Button(action: onTap) {
+        let formatted = ProductNameFormatter.format(alt.product)
+        return Button(action: onTap) {
             HStack(spacing: 12) {
                 Text("\(rank)")
                     .font(.sageBold(15)).monospacedDigit()
@@ -138,16 +139,22 @@ private struct TopRatedRow: View {
                              imageURL: alt.product.listImageURL,
                              processCutout: alt.product.shouldProcessCutout)
                 VStack(alignment: .leading, spacing: 1) {
-                    if !alt.product.brand.isEmpty {
-                        Text(alt.product.brand.uppercased())
+                    if let brand = formatted.brand {
+                        Text(brand.uppercased())
                             .font(.sageBold(10)).tracking(1.2)
                             .foregroundColor(Theme.textSecondary(dark))
                             .lineLimit(1)
                     }
-                    Text(alt.product.name)
+                    Text(formatted.name)
                         .font(.sageBold(14)).tracking(-0.2)
                         .foregroundColor(Theme.textPrimary(dark))
                         .lineLimit(1)
+                    if let size = formatted.size {
+                        Text(size)
+                            .font(.sageRegular(11))
+                            .foregroundColor(Theme.textSecondary(dark))
+                            .lineLimit(1)
+                    }
                 }
                 Spacer(minLength: 8)
                 YourScorePill(score: alt.score, isUnscored: false)
@@ -161,6 +168,8 @@ private struct TopRatedRow: View {
                     Theme.divider(dark).frame(height: 0.5).padding(.horizontal, 12)
                 }
             }
+            .accessibilityElement(children: .combine)
+            .accessibilityLabel(formatted.accessibilityLabel)
         }
         .buttonStyle(.pressable)
     }

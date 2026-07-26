@@ -65,7 +65,7 @@ struct CompareView: View {
             summary = "These are roughly equivalent for your profile."
         } else {
             headline = "Better choice"
-            let winName = (winner == "a" ? a : b).name
+            let winName = ProductNameFormatter.format(winner == "a" ? a : b).name
             summary = "\(winName) is +\(abs(delta)) better for you."
         }
         return VStack(alignment: .leading, spacing: 4) {
@@ -132,6 +132,7 @@ struct CompareCol: View {
     let dark: Bool
     var body: some View {
         let c = product.yourScore.map(scoreColor) ?? Theme.textSecondary(dark)
+        let formatted = ProductNameFormatter.format(product)
         VStack(alignment: .leading, spacing: 10) {
             if isWinner {
                 HStack(spacing: 4) {
@@ -150,17 +151,21 @@ struct CompareCol: View {
             ProductThumb(glyph: product.glyph, score: product.yourScore, size: 60,
                          imageURL: product.listImageURL,
                          processCutout: product.shouldProcessCutout)
-            Text(product.brand.uppercased())
-                .font(.sageBold(10)).tracking(1.2)
-                .foregroundColor(Theme.textSecondary(dark))
-            Text(product.name)
+            if let brand = formatted.brand {
+                Text(brand.uppercased())
+                    .font(.sageBold(10)).tracking(1.2)
+                    .foregroundColor(Theme.textSecondary(dark))
+            }
+            Text(formatted.name)
                 .font(.sageBold(14)).tracking(-0.2)
                 .lineLimit(2)
                 .foregroundColor(Theme.textPrimary(dark))
                 .frame(minHeight: 34, alignment: .top)
-            Text(product.size)
-                .font(.sageRegular(11))
-                .foregroundColor(Theme.textSecondary(dark))
+            if let size = formatted.size {
+                Text(size)
+                    .font(.sageRegular(11))
+                    .foregroundColor(Theme.textSecondary(dark))
+            }
 
             if !product.restrictions.isEmpty {
                 VStack(alignment: .leading, spacing: 4) {
@@ -201,6 +206,8 @@ struct CompareCol: View {
                 .stroke(isWinner ? c : Color.clear, lineWidth: 2)
         )
         .cardShadow(dark)
+        .accessibilityElement(children: .contain)
+        .accessibilityLabel(formatted.accessibilityLabel)
     }
 }
 

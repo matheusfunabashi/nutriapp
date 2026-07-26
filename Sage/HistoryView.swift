@@ -159,22 +159,26 @@ private struct HistoryRow: View {
     let dark: Bool
     let onTap: () -> Void
     var body: some View {
-        Button(action: onTap) {
+        let formatted = ProductNameFormatter.format(product)
+        let meta = [formatted.size, when].compactMap { $0 }.filter { !$0.isEmpty }.joined(separator: " · ")
+        return Button(action: onTap) {
             HStack(spacing: 12) {
                 ProductThumb(glyph: product.glyph, score: product.yourScore, size: 56,
                              imageURL: product.listImageURL,
                              processCutout: product.shouldProcessCutout)
                 VStack(alignment: .leading, spacing: 1) {
-                    Text(product.brand.uppercased())
-                        .font(.sageBold(10)).tracking(1.2)
-                        .foregroundColor(Theme.textSecondary(dark))
-                    Text(product.name)
+                    if let brand = formatted.brand {
+                        Text(brand.uppercased())
+                            .font(.sageBold(10)).tracking(1.2)
+                            .foregroundColor(Theme.textSecondary(dark))
+                    }
+                    Text(formatted.name)
                         .font(.sageBold(14)).tracking(-0.2)
                         .foregroundColor(Theme.textPrimary(dark))
                         .lineLimit(1)
-                    Text(when)
+                    Text(meta)
                         .font(.sageRegular(11))
-                        .monospacedDigit() // align times across rows
+                        .monospacedDigit()
                         .foregroundColor(Theme.textSecondary(dark))
                 }
                 Spacer(minLength: 8)
@@ -186,11 +190,11 @@ private struct HistoryRow: View {
             .padding(.horizontal, 14).padding(.vertical, 12)
             .overlay(alignment: .top) {
                 if divider {
-                    // Dividers stay as borders (layout separation, not depth)
-                    // per the skill's "shadows over borders" exception.
                     Theme.divider(dark).frame(height: 0.5).padding(.horizontal, 12)
                 }
             }
+            .accessibilityElement(children: .combine)
+            .accessibilityLabel("\(formatted.accessibilityLabel), \(when)")
         }
         .buttonStyle(.pressable)
     }

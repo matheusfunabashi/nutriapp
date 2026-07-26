@@ -3,6 +3,7 @@ import SwiftUI
 @main
 struct SageApp: App {
     @StateObject private var store = AppStore()
+    @State private var showSplash = true
 
     init() {
         // AsyncImage uses URLSession.shared → URLCache.shared. Size the disk
@@ -16,9 +17,25 @@ struct SageApp: App {
 
     var body: some Scene {
         WindowGroup {
-            ContentView()
-                .environmentObject(store)
-                .preferredColorScheme(store.darkMode ? .dark : .light)
+            ZStack {
+                ContentView()
+                    .environmentObject(store)
+                    .preferredColorScheme(store.darkMode ? .dark : .light)
+
+                if showSplash {
+                    SplashView(dark: store.darkMode, accent: store.accent)
+                        .transition(.opacity)
+                        .zIndex(1)
+                }
+            }
+            .onAppear {
+                // Brief hold so the system launch screen → in-app splash feels continuous.
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.9) {
+                    withAnimation(.easeOut(duration: 0.35)) {
+                        showSplash = false
+                    }
+                }
+            }
         }
     }
 }

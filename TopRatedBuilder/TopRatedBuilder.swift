@@ -4,6 +4,7 @@ import Foundation
 
 private struct CandidatesFile: Decodable {
     let categories: [String: [CandidateEntry]]
+    let countries: [String]?
 }
 
 private struct CandidateEntry: Decodable {
@@ -19,9 +20,11 @@ private struct CandidateEntry: Decodable {
     let categoriesTags: [String]?
     let labelsTags: [String]?
     let dataProblems: [String]?
+    /// Markets this row was pulled for (`us` / `br`).
+    let countries: [String]?
 
     enum CodingKeys: String, CodingKey {
-        case barcode
+        case barcode, countries
         case offName = "off_name"
         case offBrands = "off_brands"
         case ingredientsText = "ingredients_text"
@@ -33,6 +36,16 @@ private struct CandidateEntry: Decodable {
         case categoriesTags = "categories_tags"
         case labelsTags = "labels_tags"
         case dataProblems = "data_problems"
+    }
+
+    func withCountries(_ countries: [String]) -> CandidateEntry {
+        CandidateEntry(
+            barcode: barcode, offName: offName, offBrands: offBrands,
+            ingredientsText: ingredientsText, additivesTags: additivesTags,
+            nutriments: nutriments, nutriscoreGrade: nutriscoreGrade,
+            novaGroup: novaGroup, imageURL: imageURL,
+            categoriesTags: categoriesTags, labelsTags: labelsTags,
+            dataProblems: dataProblems, countries: countries)
     }
 }
 
@@ -96,9 +109,10 @@ private struct AltCandidate: Encodable {
     let nutriscoreGrade: String?
     let labelsTags: [String]?
     let nutriments: OFFNutriments?
+    let countries: [String]?
 
     enum CodingKeys: String, CodingKey {
-        case barcode, name, brand, nutriments
+        case barcode, name, brand, nutriments, countries
         case imageURL = "image_url"
         case precomputedScore = "precomputed_score"
         case categoriesTags = "categories_tags"
@@ -114,11 +128,13 @@ private struct AltFile: Encodable {
     let version: Int
     let rulesetVersion: String
     let generatedAt: String
+    /// Legacy single-market field; multi-market files also set `countries`.
     let country: String
+    let countries: [String]
     let shelves: [String: [AltCandidate]]
 
     enum CodingKeys: String, CodingKey {
-        case version, country, shelves
+        case version, country, countries, shelves
         case rulesetVersion = "ruleset_version"
         case generatedAt = "generated_at"
     }
@@ -163,6 +179,9 @@ enum TopRatedBuilder {
             let candidates = try JSONDecoder().decode(CandidatesFile.self, from: data)
             let ruleset = RulesetV4.bundled
             let profile = rankingProfile()
+            let marketCodes = candidates.countries?.isEmpty == false
+                ? (candidates.countries ?? ["us"])
+                : ["us"]
 
             var outputCategories: [TopRatedCategory] = []
             var altShelves: [String: [AltCandidate]] = [:]
@@ -201,8 +220,6 @@ enum TopRatedBuilder {
 
                     switch ScoringEngineV4.scoreProduct(raw, for: profile, ruleset: ruleset) {
                     case .scored(let product):
-                        // Neutral ranking profile ⇒ Your == Overall; both are optional
-                        // in V5, so fall back defensively.
                         scored.append(ScoredCandidate(entry: entry, product: product,
                                                       score: product.overallScore ?? product.yourScore ?? 0))
                     case .unsupported:
@@ -210,7 +227,6 @@ enum TopRatedBuilder {
                     case .insufficientData:
                         stats.skippedInsufficient += 1
                     case .unscored:
-                        // V5 withholds a score (e.g. table sweeteners) — not shelf-able.
                         stats.skippedInsufficient += 1
                     }
                 }
@@ -218,6 +234,10 @@ enum TopRatedBuilder {
                 let beforeDedupe = scored.count
                 scored = dedupe(scored, stats: &stats)
                 stats.scored = scored.count
+
+                // Top 25 per market, then merge by barcode (union countries).
+                let altMerged = topPerCountry(scored, markets: marketCodes, limit: 25)
+                altShelves[categoryId] = altMerged.map(altCandidate(from:))
 
                 let ranked = scored.sorted { $0.score > $1.score }
                 let top = Array(ranked.prefix(10))
@@ -235,14 +255,10 @@ enum TopRatedBuilder {
                 outputCategories.append(TopRatedCategory(
                     id: categoryId,
                     displayName: displayName(for: categoryId),
-                    country: "us",
+                    country: marketCodes.joined(separator: "+"),
                     rankedCount: stats.scored,
                     products: products
                 ))
-
-                // Alternatives keeps a deeper cut (top ~25) with scoring inputs, so
-                // the app's "better than scanned" filter has headroom (SPEC §2.1).
-                altShelves[categoryId] = ranked.prefix(25).map(altCandidate(from:))
 
                 printCategorySummary(
                     categoryId: categoryId,
@@ -251,6 +267,12 @@ enum TopRatedBuilder {
                     stats: stats,
                     top: top
                 )
+                for market in marketCodes {
+                    let n = altMerged.filter {
+                        ($0.entry.countries ?? []).contains(market)
+                    }.count
+                    print("  alt \(market): \(n) (cap 25)")
+                }
             }
 
             let output = TopRatedFile(
@@ -267,7 +289,8 @@ enum TopRatedBuilder {
                 version: 1,
                 rulesetVersion: ruleset.version,
                 generatedAt: ISO8601DateFormatter().string(from: Date()),
-                country: "us",
+                country: marketCodes.count == 1 ? marketCodes[0] : "multi",
+                countries: marketCodes,
                 shelves: altShelves
             )
             let altURL = inputURL.deletingLastPathComponent().appendingPathComponent("alternatives.json")
@@ -277,6 +300,37 @@ enum TopRatedBuilder {
             fputs("TopRatedBuilder failed: \(error)\n", stderr)
             exit(1)
         }
+    }
+
+    /// Keep top `limit` per market code, then merge duplicate barcodes.
+    private static func topPerCountry(_ scored: [ScoredCandidate],
+                                      markets: [String],
+                                      limit: Int) -> [ScoredCandidate] {
+        var byBarcode: [String: ScoredCandidate] = [:]
+        for market in markets {
+            let inMarket = scored.filter {
+                let cs = $0.entry.countries ?? []
+                return cs.isEmpty || cs.contains(market)
+            }
+            .sorted { $0.score > $1.score }
+            for item in inMarket.prefix(limit) {
+                if let existing = byBarcode[item.entry.barcode] {
+                    let union = sortedUnion(existing.entry.countries, item.entry.countries)
+                    byBarcode[item.entry.barcode] = ScoredCandidate(
+                        entry: existing.entry.withCountries(union),
+                        product: existing.score >= item.score ? existing.product : item.product,
+                        score: max(existing.score, item.score)
+                    )
+                } else {
+                    byBarcode[item.entry.barcode] = item
+                }
+            }
+        }
+        return Array(byBarcode.values).sorted { $0.score > $1.score }
+    }
+
+    private static func sortedUnion(_ a: [String]?, _ b: [String]?) -> [String] {
+        Array(Set(a ?? []).union(b ?? [])).sorted()
     }
 
     /// Goal-neutral profile so shelf rankings match Overall (Your == Overall).
@@ -329,7 +383,8 @@ enum TopRatedBuilder {
             novaGroup: item.entry.novaGroup,
             nutriscoreGrade: item.entry.nutriscoreGrade,
             labelsTags: item.entry.labelsTags,
-            nutriments: item.entry.nutriments)
+            nutriments: item.entry.nutriments,
+            countries: item.entry.countries)
     }
 
     private static func dedupe(_ items: [ScoredCandidate], stats: inout CategoryStats) -> [ScoredCandidate] {

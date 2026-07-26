@@ -481,6 +481,20 @@ struct SageMark: View {
     }
 }
 
+/// Cold-start splash: app background + centered logo mark (no wordmark).
+struct SplashView: View {
+    let dark: Bool
+    var accent: Color = Theme.accent
+
+    var body: some View {
+        ZStack {
+            Theme.bg(dark).ignoresSafeArea()
+            SageMark(size: 88, color: accent)
+        }
+        .accessibilityHidden(true)
+    }
+}
+
 // MARK: - Toggle
 
 struct CustomToggle: View {

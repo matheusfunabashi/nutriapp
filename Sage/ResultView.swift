@@ -16,7 +16,7 @@ struct ResultView: View {
     @State private var ingredientsExpanded = false
     /// Computed once on appear (re-scoring candidates is cheap but not free, so
     /// it stays off the per-render path).
-    @State private var alternatives: [Alternative] = []
+    @State private var alternativesOutcome: AlternativesOutcome = .noShelf
 
     var body: some View {
         let dark = store.darkMode
@@ -63,7 +63,7 @@ struct ResultView: View {
         .background(Theme.bg(dark).ignoresSafeArea())
         .onAppear {
             store.requestOverview(for: product.id)
-            alternatives = Alternatives.suggest(for: liveProduct, profile: store.user)
+            alternativesOutcome = Alternatives.suggest(for: liveProduct, profile: store.user)
         }
         .sheet(isPresented: $showLabelLegend) {
             LabelLegendSheet(dark: dark)
@@ -86,11 +86,10 @@ struct ResultView: View {
         return scoreTier(score) == .bad
     }
 
-    /// "Better options": up to three same-shelf products that beat this one on
-    /// Overall (ALTERNATIVES_SPEC.md). Hidden when the product has no shelf,
-    /// is unscored, or nothing scores meaningfully higher.
+    /// "Better options" / already-top chip (ALTERNATIVES_SPEC.md §5 / §7).
     @ViewBuilder private func betterOptionsSection(dark: Bool) -> some View {
-        if !alternatives.isEmpty {
+        switch alternativesOutcome {
+        case .suggestions(let alternatives):
             let baseline = liveProduct.overallScore ?? 0
             SectionTitle(title: "Better options", dark: dark)
             VStack(spacing: 0) {
@@ -108,6 +107,24 @@ struct ResultView: View {
             .cardShadow(dark)
             .padding(.horizontal, 16)
             .padding(.top, 8)
+        case .alreadyTopOfShelf:
+            HStack(spacing: 6) {
+                Image(systemName: "checkmark")
+                    .font(.sageSemiBold(11))
+                Text("Among the best in its category")
+                    .font(.sageSemiBold(11))
+            }
+            .foregroundColor(Theme.textSecondary(dark))
+            .padding(.horizontal, 10).padding(.vertical, 4)
+            .background(
+                Capsule().fill(dark ? Color.white.opacity(0.08) : Color.black.opacity(0.05))
+            )
+            .accessibilityLabel("Among the best in its category")
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.horizontal, 16)
+            .padding(.top, 10)
+        case .noShelf, .unscored, .noBetterPeers:
+            EmptyView()
         }
     }
 
@@ -152,34 +169,36 @@ struct ResultView: View {
         .padding(.horizontal, 16).padding(.top, 8).padding(.bottom, 8)
     }
 
-    private var productTitle: String {
-        let brand = product.brand.trimmingCharacters(in: .whitespacesAndNewlines)
-        let name = product.name.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !brand.isEmpty else { return name }
-        if name.lowercased().hasPrefix(brand.lowercased()) { return name }
-        return "\(brand.localizedCapitalized) \(name)"
-    }
-
     private func productHeader(dark: Bool) -> some View {
-        HStack(alignment: .center, spacing: 12) {
+        let formatted = ProductNameFormatter.format(liveProduct)
+        return HStack(alignment: .center, spacing: 12) {
             ProductThumb(glyph: product.glyph, score: product.yourScore,
                          neutral: true, imageURL: product.detailImageURL,
                          processCutout: product.shouldProcessCutout,
                          isDetail: true)
 
             VStack(alignment: .leading, spacing: 2) {
-                Text(productTitle)
+                if let brand = formatted.brand {
+                    Text(brand.uppercased())
+                        .font(.sageBold(12)).tracking(1.2)
+                        .foregroundColor(store.accent)
+                }
+                Text(formatted.name)
                     .font(.sageBold(22)).tracking(-0.5)
                     .foregroundColor(Theme.textPrimary(dark))
                     .lineLimit(2)
                     .truncationMode(.tail)
                     .minimumScaleFactor(0.9)
-                Text(product.size)
-                    .font(.sageRegular(13))
-                    .foregroundColor(Theme.textSecondary(dark))
+                if let size = formatted.size {
+                    Text(size)
+                        .font(.sageRegular(13))
+                        .foregroundColor(Theme.textSecondary(dark))
+                }
             }
             .frame(minWidth: 0, maxWidth: .infinity, alignment: .leading)
             .layoutPriority(1)
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel(formatted.accessibilityLabel)
         }
         .padding(.horizontal, 16)
     }
@@ -1672,19 +1691,20 @@ private struct AlternativeRow: View {
     let onTap: () -> Void
 
     var body: some View {
-        Button(action: onTap) {
+        let formatted = ProductNameFormatter.format(alt.product)
+        return Button(action: onTap) {
             HStack(spacing: 12) {
                 ProductThumb(glyph: alt.product.glyph, score: alt.score, size: 56,
                              imageURL: alt.product.listImageURL,
                              processCutout: alt.product.shouldProcessCutout)
                 VStack(alignment: .leading, spacing: 1) {
-                    if !alt.product.brand.isEmpty {
-                        Text(alt.product.brand.uppercased())
+                    if let brand = formatted.brand {
+                        Text(brand.uppercased())
                             .font(.sageBold(10)).tracking(1.2)
                             .foregroundColor(Theme.textSecondary(dark))
                             .lineLimit(1)
                     }
-                    Text(alt.product.name)
+                    Text(formatted.name)
                         .font(.sageBold(14)).tracking(-0.2)
                         .foregroundColor(Theme.textPrimary(dark))
                         .lineLimit(1)
@@ -1704,6 +1724,8 @@ private struct AlternativeRow: View {
                     Theme.divider(dark).frame(height: 0.5).padding(.horizontal, 12)
                 }
             }
+            .accessibilityElement(children: .combine)
+            .accessibilityLabel("\(formatted.accessibilityLabel), +\(delta) vs. this")
         }
         .buttonStyle(.pressable)
     }

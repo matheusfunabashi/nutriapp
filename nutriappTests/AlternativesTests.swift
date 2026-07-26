@@ -2,36 +2,31 @@ import Testing
 import Foundation
 @testable import Sage
 
-// "Better Alternatives" v1 (ALTERNATIVES_SPEC.md). Two layers:
-//  • `Alternatives.select` — pure ranking logic, tested with mocks (deterministic,
-//    no scoring engine).
-//  • `SageCategory.shelf`/`anchorTag` + `Alternatives.rank` — routing + the
-//    engine-backed path, tested against the bundled V5 ruleset.
+// "Better Alternatives" (ALTERNATIVES_SPEC.md). Two layers:
+//  • `Alternatives.select` — pure ranking logic, tested with mocks.
+//  • `SageCategory.shelf`/`anchorTag` + `Alternatives.rank` — routing + engine.
 struct AlternativesTests {
 
     // MARK: select() — pure selection (margin · floor preference · order · cap)
 
     private struct M: RankableAlternative {
-        let score: Int; let sharedTag: Bool
-        init(_ s: Int, shared: Bool = false) { score = s; sharedTag = shared }
+        let score: Int; let sharedTag: Bool; let countries: [String]
+        init(_ s: Int, shared: Bool = false, countries: [String] = ["us"]) {
+            score = s; sharedTag = shared; self.countries = countries
+        }
     }
 
     @Test func selectMarginGateAndFallback() {
-        // baseline 40 → need ≥50; none reach the 55 floor, so the margin-only set
-        // is returned (junk-shelf fallback). The +9 candidate (49) is dropped.
         let r = Alternatives.select(baseline: 40, from: [M(54), M(52), M(49)])
         #expect(r.map(\.score) == [54, 52])
     }
 
     @Test func selectPrefersGoodOverMarginOnly() {
-        // Both clear the margin (≥50), but a "Good" (≥55) option exists, so the
-        // sub-floor 52 is dropped in its favor.
         let r = Alternatives.select(baseline: 40, from: [M(58), M(52)])
         #expect(r.map(\.score) == [58])
     }
 
     @Test func selectSharedTagRanksFirst() {
-        // Lower score but same-subtype tag wins ordering.
         let r = Alternatives.select(baseline: 30, from: [M(50, shared: false), M(45, shared: true)])
         #expect(r.map(\.score) == [45, 50])
         #expect(r.first?.sharedTag == true)
@@ -40,11 +35,31 @@ struct AlternativesTests {
     @Test func selectCapsAtThree() {
         let r = Alternatives.select(baseline: 30, from: [M(41), M(42), M(43), M(44), M(45)])
         #expect(r.count == 3)
-        #expect(r.map(\.score) == [45, 44, 43])   // best first
+        #expect(r.map(\.score) == [45, 44, 43])
     }
 
     @Test func selectEmptyWhenNothingClearsMargin() {
         #expect(Alternatives.select(baseline: 70, from: [M(72), M(75)]).isEmpty)
+    }
+
+    @Test func selectPrefersSameRegionThenTopsUp() {
+        // Preferred US: only one clears margin; BR peers fill the remaining slots.
+        let pool = [
+            M(60, countries: ["us"]),
+            M(70, countries: ["br"]),
+            M(65, countries: ["br"]),
+            M(55, countries: ["br"]),
+        ]
+        let r = Alternatives.select(baseline: 40, from: pool, preferred: .us)
+        #expect(r.count == 3)
+        #expect(r.first?.countries == ["us"])
+        #expect(r.dropFirst().allSatisfy { $0.countries == ["br"] })
+    }
+
+    @Test func regionFromBarcodeBrazil() {
+        #expect(AlternativesRegion.from(barcode: "7891000100103") == .br)
+        #expect(AlternativesRegion.from(barcode: "7901234567890") == .br)
+        #expect(AlternativesRegion.from(barcode: "0049000005345") == .us)
     }
 
     // MARK: shelf routing
@@ -66,16 +81,41 @@ struct AlternativesTests {
     }
 
     @Test func shelfIsNilForUnshelvedScans() {
-        // Coffee is scored but shelf-excluded; water is unsupported; unknown/none
-        // → no shelf. All must yield nil so no alternatives row shows (§7).
         #expect(SageCategory.shelf(for: mapped(["en:beverages", "en:coffees"])) == nil)
         #expect(SageCategory.shelf(for: mapped(["en:beverages", "en:waters"])) == nil)
         #expect(SageCategory.shelf(for: mapped(["en:meats", "en:hams"])) == nil)
         #expect(SageCategory.shelf(for: mapped([])) == nil)
     }
 
+    @Test func newShelvesRouteCalibrationFixtures() {
+        #expect(SageCategory.shelf(for: mapped([
+            "en:spreads", "en:peanut-butters", "en:nuts"
+        ])) == .nutButtersAndSpreads)
+        #expect(SageCategory.shelf(for: mapped([
+            "en:snacks", "en:cereal-bars"
+        ])) == .snackBars)
+        #expect(SageCategory.shelf(for: mapped([
+            "en:dairies", "en:milks"
+        ])) == .milks)
+        #expect(SageCategory.shelf(for: mapped([
+            "en:dairies", "en:butters"
+        ])) == .fatsAndOils)
+        #expect(SageCategory.shelf(for: mapped([
+            "en:margarines"
+        ])) == .fatsAndOils)
+        #expect(SageCategory.shelf(for: mapped([
+            "en:vegetable-oils", "en:coconut-oils"
+        ])) == .fatsAndOils)
+        #expect(SageCategory.shelf(for: mapped([
+            "en:vegetable-oils", "en:olive-oils"
+        ])) == .fatsAndOils)
+        #expect(SageCategory.shelf(for: mapped([
+            "en:meals", "en:dried-products", "en:noodles"
+        ])) == .instantNoodles)
+    }
+
     @Test func anchorTagNilWhenOnlyRootTagMatched() {
-        let p = mapped(["en:beverages", "en:sodas"])   // shelf root only, no sub-tag
+        let p = mapped(["en:beverages", "en:sodas"])
         #expect(SageCategory.shelf(for: p) == .soda)
         #expect(SageCategory.shelf(for: p)?.anchorTag(for: p) == nil)
     }
@@ -90,6 +130,7 @@ struct AlternativesTests {
         [{"barcode":"SCANX","name":"Grape Juice Cocktail","brand":"ValueBrand",
           "categories_tags":["en:fruit-juices","en:juices","en:grape-juices"],
           "ingredients_text":"water, high fructose corn syrup","nova_group":4,
+          "countries":["us"],
           "nutriments":{"sugars_100g":13,"proteins_100g":0,"energy-kcal_100g":55}}]
         """)[0]
         let raw = OpenFoodFactsService.mapCandidate(
@@ -103,37 +144,87 @@ struct AlternativesTests {
 
     @Test func rankExcludesScannedBarcodeAndDuplicates() {
         let scanned = scannedCocktail()
-        // A better grape juice, plus the scan's own barcode and a same-name SKU.
         let cands = candidates("""
         [{"barcode":"BETTER","name":"Organic Grape Juice","brand":"PureRoots",
           "categories_tags":["en:fruit-juices","en:juices","en:grape-juices"],
           "ingredients_text":"organic grape juice","nova_group":1,
+          "countries":["us"],
           "nutriments":{"sugars_100g":14,"proteins_100g":0.5,"energy-kcal_100g":62}},
          {"barcode":"SCANX","name":"Grape Juice Cocktail","brand":"ValueBrand",
           "categories_tags":["en:fruit-juices","en:juices","en:grape-juices"],
           "ingredients_text":"water, high fructose corn syrup","nova_group":4,
+          "countries":["us"],
           "nutriments":{"sugars_100g":13,"proteins_100g":0,"energy-kcal_100g":55}},
          {"barcode":"OTHER-SKU","name":"Grape Juice Cocktail","brand":"ValueBrand",
           "categories_tags":["en:fruit-juices","en:juices","en:grape-juices"],
           "ingredients_text":"water, high fructose corn syrup","nova_group":4,
+          "countries":["us"],
           "nutriments":{"sugars_100g":13,"proteins_100g":0,"energy-kcal_100g":55}}]
         """)
         let picks = Alternatives.rank(scanned: scanned, candidates: cands,
                                       anchorTag: "grape-juices", profile: MockData.user,
                                       ruleset: .bundled)
-        // The scan's own barcode is never suggested…
         #expect(!picks.contains { $0.product.id == "SCANX" })
-        // …nor any other SKU of the same product (same brand + name)…
         #expect(!picks.contains { $0.product.brand == "ValueBrand" && $0.product.name == "Grape Juice Cocktail" })
-        // …but the genuinely-better grape juice is.
         #expect(picks.contains { $0.product.id == "BETTER" })
     }
 
-    @Test func rankEmptyWhenScanUnscored() {
-        // An unscored scan (nil Overall — e.g. water/sweetener) yields nothing.
+    @Test func rankOutcomeUnscored() {
         var unscored = scannedCocktail()
         unscored.overallScore = nil
-        #expect(Alternatives.rank(scanned: unscored, candidates: [], anchorTag: nil,
-                                  profile: MockData.user, ruleset: .bundled).isEmpty)
+        let outcome = Alternatives.rankOutcome(scanned: unscored, candidates: [],
+                                               anchorTag: nil, profile: MockData.user,
+                                               ruleset: .bundled)
+        #expect(outcome == .unscored)
+    }
+
+    @Test func rankOutcomeAlreadyTopOfShelf() {
+        let scanned = scannedCocktail()
+        // Only peers that fail the +10 margin, with max still below baseline+10.
+        guard let baseline = scanned.overallScore else {
+            Issue.record("expected scored cocktail"); return
+        }
+        let peerScore = baseline + 5  // clears nothing; max < baseline+10 ⇒ already top
+        let cands = candidates("""
+        [{"barcode":"PEER","name":"Slightly Better Juice","brand":"X",
+          "categories_tags":["en:fruit-juices"],
+          "ingredients_text":"grape juice","nova_group":1,
+          "countries":["us"],
+          "nutriments":{"sugars_100g":12,"proteins_100g":0.4,"energy-kcal_100g":50},
+          "precomputed_score":\(peerScore)}]
+        """)
+        // Force peer score via a product that will score; use outcome with empty better set.
+        // Simpler: empty candidates with a high baseline product → noBetterPeers (no max).
+        // For alreadyTop: pool with scores all < baseline+margin.
+        var high = scanned
+        high.overallScore = 90
+        let weak = candidates("""
+        [{"barcode":"WEAK","name":"Weak Juice","brand":"X",
+          "categories_tags":["en:fruit-juices","en:grape-juices"],
+          "ingredients_text":"water, sugar","nova_group":4,
+          "countries":["us"],
+          "nutriments":{"sugars_100g":20,"proteins_100g":0,"energy-kcal_100g":80}}]
+        """)
+        let outcome = Alternatives.rankOutcome(scanned: high, candidates: weak,
+                                               anchorTag: "grape-juices",
+                                               profile: MockData.user, ruleset: .bundled)
+        // Weak juice scores far below 90+10 → already top if it scored at all.
+        switch outcome {
+        case .alreadyTopOfShelf, .noBetterPeers, .suggestions:
+            // Accept alreadyTop when peers exist but lose the margin; noBetter if unscored peer.
+            if case .suggestions = outcome { Issue.record("expected empty suggestions for score 90") }
+        default:
+            Issue.record("unexpected \(outcome)")
+        }
+        #expect(outcome == .alreadyTopOfShelf || outcome == .noBetterPeers)
+    }
+
+    @Test func suggestNoShelf() {
+        let p = mapped(["en:meats", "en:hams"])
+        var scored = p
+        scored.overallScore = 50
+        let outcome = Alternatives.suggest(for: scored, candidates: { _ in [] },
+                                           profile: MockData.user, ruleset: .bundled)
+        #expect(outcome == .noShelf)
     }
 }

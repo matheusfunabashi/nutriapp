@@ -30,9 +30,12 @@ struct AlternativeCandidate: Decodable {
     let nutriscoreGrade: String?
     let labelsTags: [String]?
     let nutriments: OFFNutriments?
+    /// Markets this candidate was pulled for (`us` / `br`). Dual-listed products
+    /// keep both tags after barcode merge.
+    let countries: [String]?
 
     enum CodingKeys: String, CodingKey {
-        case barcode, name, brand, nutriments
+        case barcode, name, brand, nutriments, countries
         case imageURL = "image_url"
         case precomputedScore = "precomputed_score"
         case categoriesTags = "categories_tags"
@@ -44,23 +47,27 @@ struct AlternativeCandidate: Decodable {
     }
 }
 
-/// The versioned, per-shelf, per-country file the app ships + background-refreshes.
+/// The versioned, per-shelf, multi-country file the app ships + background-refreshes.
 struct AlternativesFile: Decodable {
     let version: Int
     let rulesetVersion: String?
     let generatedAt: String?
+    /// Legacy single-market stamp; prefer `countries` when present.
     let country: String?
+    /// Markets represented in this file (e.g. `["us","br"]`).
+    let countries: [String]?
     /// shelf id (`SageCategory.rawValue`) → ranked candidates.
     let shelves: [String: [AlternativeCandidate]]
 
     enum CodingKeys: String, CodingKey {
-        case version, country, shelves
+        case version, country, countries, shelves
         case rulesetVersion = "ruleset_version"
         case generatedAt = "generated_at"
     }
 
     static let empty = AlternativesFile(version: 0, rulesetVersion: nil,
-                                        generatedAt: nil, country: nil, shelves: [:])
+                                        generatedAt: nil, country: nil,
+                                        countries: nil, shelves: [:])
 }
 
 // MARK: Store (bundled default + background refresh — mirrors RulesetStore)
@@ -129,14 +136,56 @@ struct Alternative: Identifiable, Hashable {
     let score: Int
     /// Candidate shares the scanned product's most-specific OFF tag (grape→grape).
     let sharedTag: Bool
+    /// Markets this candidate belongs to (`us` / `br`).
+    let countries: [String]
     var id: String { product.id }
 }
 
-/// The two fields the pure selection step needs — lets `select` be unit-tested
+/// Outcome of `Alternatives.suggest` — list plus empty-reason for the UI.
+enum AlternativesOutcome: Equatable {
+    case suggestions([Alternative])
+    /// Scanned product already beats (or nearly matches) the best live peers.
+    case alreadyTopOfShelf
+    /// Shelf exists and has peers, but none clear the +10 margin.
+    case noBetterPeers
+    case noShelf
+    case unscored
+}
+
+/// Market region for alternatives preference (GS1 → coarse region).
+enum AlternativesRegion: String, Equatable {
+    case us, br
+
+    /// 789/790 → Brazil; everything else defaults to US for v1.
+    static func from(barcode: String) -> AlternativesRegion {
+        let digits = barcode.filter(\.isNumber)
+        let padded: String
+        if digits.count == 12 {
+            padded = "0" + digits
+        } else if digits.count == 14, digits.hasPrefix("0") {
+            padded = String(digits.dropFirst())
+        } else {
+            padded = digits.count >= 13 ? String(digits.suffix(13)) : digits.padLeft(to: 13, with: "0")
+        }
+        guard padded.count >= 3, let prefix = Int(padded.prefix(3)) else { return .us }
+        if (789...790).contains(prefix) { return .br }
+        return .us
+    }
+}
+
+private extension String {
+    func padLeft(to length: Int, with char: Character) -> String {
+        if count >= length { return self }
+        return String(repeating: String(char), count: length - count) + self
+    }
+}
+
+/// The fields the pure selection step needs — lets `select` be unit-tested
 /// with lightweight mocks, decoupled from the scoring engine.
 protocol RankableAlternative {
     var score: Int { get }
     var sharedTag: Bool { get }
+    var countries: [String] { get }
 }
 
 extension Alternative: RankableAlternative {}
@@ -153,35 +202,66 @@ enum Alternatives {
 
     /// Convenience entry point for the UI (reads the shared stores on the main actor).
     @MainActor
-    static func suggest(for scanned: Product, profile: UserProfile) -> [Alternative] {
-        guard let shelf = SageCategory.shelf(for: scanned) else { return [] }
-        return rank(scanned: scanned,
-                    candidates: AlternativesStore.candidates(for: shelf),
-                    anchorTag: shelf.anchorTag(for: scanned),
-                    profile: profile,
-                    ruleset: RulesetStore.current)
+    static func suggest(for scanned: Product, profile: UserProfile) -> AlternativesOutcome {
+        suggest(for: scanned,
+                candidates: { shelf in AlternativesStore.candidates(for: shelf) },
+                profile: profile,
+                ruleset: RulesetStore.current)
     }
 
-    /// Pure core (no global state) — the §3 algorithm. Testable in isolation.
+    /// Testable entry — inject candidates by shelf.
+    static func suggest(for scanned: Product,
+                        candidates: (SageCategory) -> [AlternativeCandidate],
+                        profile: UserProfile,
+                        ruleset: RulesetV4) -> AlternativesOutcome {
+        guard scanned.overallScore != nil else { return .unscored }
+        guard let shelf = SageCategory.shelf(for: scanned) else { return .noShelf }
+        return rankOutcome(scanned: scanned,
+                           candidates: candidates(shelf),
+                           anchorTag: shelf.anchorTag(for: scanned),
+                           profile: profile,
+                           ruleset: ruleset)
+    }
+
+    /// Pure core (no global state) — the §3 algorithm + empty-reason (§7).
     static func rank(scanned: Product,
                      candidates: [AlternativeCandidate],
                      anchorTag: String?,
                      profile: UserProfile,
                      ruleset: RulesetV4) -> [Alternative] {
-        // Unscored scans (water/alcohol/sweeteners) have no baseline to beat.
-        guard let baseline = scanned.overallScore else { return [] }
+        switch rankOutcome(scanned: scanned, candidates: candidates,
+                           anchorTag: anchorTag, profile: profile, ruleset: ruleset) {
+        case .suggestions(let list): return list
+        default: return []
+        }
+    }
+
+    static func rankOutcome(scanned: Product,
+                            candidates: [AlternativeCandidate],
+                            anchorTag: String?,
+                            profile: UserProfile,
+                            ruleset: RulesetV4) -> AlternativesOutcome {
+        guard let baseline = scanned.overallScore else { return .unscored }
         let scannedKey = dedupeKey(brand: scanned.brand, name: scanned.name)
+        let preferred = AlternativesRegion.from(barcode: scanned.id)
 
         var pool: [Alternative] = []
         for cand in candidates {
-            if cand.barcode == scanned.id { continue }          // exact same product
+            if cand.barcode == scanned.id { continue }
             guard let (p, score) = scored(cand, profile: profile, ruleset: ruleset) else { continue }
-            // Never recommend a different SKU of the scanned product itself.
             if dedupeKey(brand: p.brand, name: p.name) == scannedKey { continue }
             let shared = anchorTag.map { p.categories?.contains($0) ?? false } ?? false
-            pool.append(Alternative(product: p, score: score, sharedTag: shared))
+            let countries = cand.countries ?? []
+            pool.append(Alternative(product: p, score: score, sharedTag: shared,
+                                    countries: countries))
         }
-        return select(baseline: baseline, from: pool)
+
+        let picks = select(baseline: baseline, from: pool, preferred: preferred)
+        if !picks.isEmpty { return .suggestions(picks) }
+
+        guard let maxPeer = pool.map(\.score).max() else { return .noBetterPeers }
+        if baseline + margin > maxPeer { return .alreadyTopOfShelf }
+        return .noBetterPeers
     }
 
     /// Map a precomputed candidate to a scored (product, Overall) pair under the
@@ -202,21 +282,37 @@ enum Alternatives {
 
     /// Pure selection over already-scored candidates (§3.5–3.6): margin gate,
     /// "Good" preference with a margin-only fallback, same-subtype first, top N.
-    /// Generic over `RankableAlternative` so it unit-tests without the engine.
-    static func select<T: RankableAlternative>(baseline: Int, from pool: [T]) -> [T] {
-        let overMargin = pool.filter { $0.score >= baseline + margin }
-        let good = overMargin.filter { $0.score >= goodFloor }
-        let ranked = (good.isEmpty ? overMargin : good).sorted {
-            $0.sharedTag != $1.sharedTag ? $0.sharedTag       // same-subtype first
-                                         : $0.score > $1.score // then best score
+    /// Same-region first; top up from the other region when under `maxResults`.
+    static func select<T: RankableAlternative>(baseline: Int, from pool: [T],
+                                               preferred: AlternativesRegion = .us) -> [T] {
+        let preferredCode = preferred.rawValue
+        let same = pool.filter { $0.countries.isEmpty || $0.countries.contains(preferredCode) }
+        let other = pool.filter { !$0.countries.isEmpty && !$0.countries.contains(preferredCode) }
+
+        var picks = selectMargin(baseline: baseline, from: same)
+        if picks.count < maxResults {
+            let fillers = selectMargin(baseline: baseline, from: other)
+            for f in fillers where picks.count < maxResults {
+                picks.append(f)
+            }
         }
-        return Array(ranked.prefix(maxResults))
+        return picks
     }
 
     /// Brand + name, alphanumerics only — collapses size/region SKUs of one product.
     private static func dedupeKey(brand: String, name: String) -> String {
         let s = (brand + name).lowercased()
         return String(s.unicodeScalars.filter(CharacterSet.alphanumerics.contains))
+    }
+
+    private static func selectMargin<T: RankableAlternative>(baseline: Int, from pool: [T]) -> [T] {
+        let overMargin = pool.filter { $0.score >= baseline + margin }
+        let good = overMargin.filter { $0.score >= goodFloor }
+        let ranked = (good.isEmpty ? overMargin : good).sorted {
+            $0.sharedTag != $1.sharedTag ? $0.sharedTag
+                                         : $0.score > $1.score
+        }
+        return Array(ranked.prefix(maxResults))
     }
 }
 
@@ -244,7 +340,8 @@ enum TopRated {
             .compactMap { c -> Alternative? in
                 guard let (p, s) = Alternatives.scored(c, profile: profile, ruleset: ruleset)
                 else { return nil }
-                return Alternative(product: p, score: s, sharedTag: false)
+                return Alternative(product: p, score: s, sharedTag: false,
+                                   countries: c.countries ?? [])
             }
             .sorted { $0.score > $1.score }
             .prefix(maxItems)

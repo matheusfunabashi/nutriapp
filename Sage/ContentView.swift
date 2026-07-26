@@ -482,19 +482,27 @@ struct InsufficientDataView: View {
                                  neutral: true, imageURL: product.detailImageURL,
                                  processCutout: product.shouldProcessCutout,
                                  isDetail: true)
+                    let formatted = ProductNameFormatter.format(product)
                     VStack(spacing: 2) {
-                        if !product.brand.isEmpty {
-                            Text(product.brand.uppercased())
+                        if let brand = formatted.brand {
+                            Text(brand.uppercased())
                                 .font(.sageBold(11)).tracking(1.2)
                                 .foregroundColor(store.accent)
                         }
-                        Text(product.name)
+                        Text(formatted.name)
                             .font(.sageBold(22)).tracking(-0.5)
                             .foregroundColor(Theme.textPrimary(dark))
                             .multilineTextAlignment(.center)
                             .lineLimit(3)
+                        if let size = formatted.size {
+                            Text(size)
+                                .font(.sageRegular(13))
+                                .foregroundColor(Theme.textSecondary(dark))
+                        }
                     }
                     .padding(.horizontal, 32)
+                    .accessibilityElement(children: .ignore)
+                    .accessibilityLabel(formatted.accessibilityLabel)
 
                     VStack(spacing: 8) {
                         Text("Not enough data to score")
@@ -605,19 +613,27 @@ struct UnsupportedView: View {
                                  neutral: true, imageURL: product.detailImageURL,
                                  processCutout: product.shouldProcessCutout,
                                  isDetail: true)
+                    let formatted = ProductNameFormatter.format(product)
                     VStack(spacing: 2) {
-                        if !product.brand.isEmpty {
-                            Text(product.brand.uppercased())
+                        if let brand = formatted.brand {
+                            Text(brand.uppercased())
                                 .font(.sageBold(11)).tracking(1.2)
                                 .foregroundColor(store.accent)
                         }
-                        Text(product.name)
+                        Text(formatted.name)
                             .font(.sageBold(22)).tracking(-0.5)
                             .foregroundColor(Theme.textPrimary(dark))
                             .multilineTextAlignment(.center)
                             .lineLimit(3)
+                        if let size = formatted.size {
+                            Text(size)
+                                .font(.sageRegular(13))
+                                .foregroundColor(Theme.textSecondary(dark))
+                        }
                     }
                     .padding(.horizontal, 32)
+                    .accessibilityElement(children: .ignore)
+                    .accessibilityLabel(formatted.accessibilityLabel)
 
                     VStack(spacing: 8) {
                         Text("Not rated")
