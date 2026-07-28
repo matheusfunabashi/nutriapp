@@ -10,6 +10,7 @@ struct ScannerHomeView: View {
     var body: some View {
         ScrollView(showsIndicators: false) {
             VStack(spacing: 0) {
+                wordmark
                 // Split + stagger: greeting → search → scan → recent.
                 StaggeredAppear(index: 0) { greeting() }
                 StaggeredAppear(index: 1) {
@@ -24,16 +25,28 @@ struct ScannerHomeView: View {
             }
         }
         .sageScreenBackground()
-        // A real large title: it collapses to inline on scroll and renders in
-        // DM Sans via the nav-bar appearance configured in SageApp.
-        .navigationTitle("Sage")
-        .navigationBarTitleDisplayMode(.large)
-        .toolbar {
-            ToolbarItem(placement: .topBarLeading) {
-                SageMark(size: 22, color: store.accent)
-                    .debugMenuTap()
-            }
+        // The brand lockup is the title here, so the system bar would only add
+        // an empty strip above it. Pushed screens still get their own bar.
+        .toolbar(.hidden, for: .navigationBar)
+    }
+
+    /// Mark and wordmark as one horizontal lockup, sitting directly on the
+    /// background — a toolbar item would wrap it in the system's glass capsule
+    /// and push it onto its own line above the title.
+    private var wordmark: some View {
+        HStack(spacing: 8) {
+            SageMark(size: 26, color: store.accent)
+            Text("Sage")
+                .font(.sageSemiBold(22))
+                .tracking(-0.6)
+                .foregroundColor(Theme.ink)
         }
+        .debugMenuTap()
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.horizontal, 20).padding(.top, 12).padding(.bottom, 4)
+        .accessibilityElement(children: .combine)
+        .accessibilityAddTraits(.isHeader)
+        .accessibilityLabel("Sage")
     }
 
     private func greeting() -> some View {
