@@ -2,12 +2,12 @@ import SwiftUI
 
 struct CompareView: View {
     @EnvironmentObject var store: AppStore
+    @Environment(\.colorScheme) private var colorScheme
     let a: Product
     let b: Product
-    let onBack: () -> Void
 
     var body: some View {
-        let dark = store.darkMode
+        let dark = colorScheme == .dark
         let bothScored = !a.isUnscored && !b.isUnscored
             && a.yourScore != nil && b.yourScore != nil
         let delta: Int = {
@@ -22,36 +22,23 @@ struct CompareView: View {
 
         ScrollView(showsIndicators: false) {
             VStack(alignment: .leading, spacing: 0) {
-                topBar(dark: dark)
                 title(dark: dark, bothScored: bothScored, tie: tie, winner: winner, delta: delta)
                 HStack(spacing: 8) {
                     CompareCol(product: a, isWinner: winner == "a", tie: tie || !bothScored, dark: dark)
                     CompareCol(product: b, isWinner: winner == "b", tie: tie || !bothScored, dark: dark)
                 }
                 .padding(.horizontal, 16).padding(.top, 12)
-                SectionTitle(title: "Nutrients", subtitle: "Per 100g / 100ml", dark: dark)
+                SectionTitle(title: "Nutrients", subtitle: "Per 100g / 100ml")
                 nutrientsCompare(dark: dark)
                 SectionTitle(title: "Additives",
-                             subtitle: "\(a.additives.count) vs \(b.additives.count)", dark: dark)
+                             subtitle: "\(a.additives.count) vs \(b.additives.count)")
                 additivesCompare(dark: dark)
                 disclaimer(dark: dark)
-                Spacer().frame(height: 120)
             }
         }
-        .background(Theme.bg(dark).ignoresSafeArea())
-    }
-
-    private func topBar(dark: Bool) -> some View {
-        HStack {
-            CircleIconButton(systemName: "chevron.left", dark: dark, action: onBack)
-            Spacer()
-            Text("COMPARE")
-                .font(.sageBold(13)).tracking(1.3)
-                .foregroundColor(Theme.textSecondary(dark))
-            Spacer()
-            Color.clear.frame(width: 42, height: 42)
-        }
-        .padding(.horizontal, 16).padding(.top, 60).padding(.bottom, 12)
+        .sageScreenBackground()
+        .navigationTitle("Compare")
+        .navigationBarTitleDisplayMode(.inline)
     }
 
     private func title(dark: Bool, bothScored: Bool, tie: Bool, winner: String?, delta: Int) -> some View {
@@ -71,17 +58,17 @@ struct CompareView: View {
         return VStack(alignment: .leading, spacing: 4) {
             Text(headline)
                 .font(.sageBold(26)).tracking(-0.6)
-                .foregroundColor(Theme.textPrimary(dark))
+                .foregroundColor(Theme.ink)
             Text(summary)
                 .font(.sageRegular(14))
-                .foregroundColor(Theme.textSecondary(dark))
+                .foregroundColor(Theme.inkSecondary)
                 .lineSpacing(2)
         }
         .padding(.horizontal, 24).padding(.bottom, 2)
     }
 
     private func nutrientsCompare(dark: Bool) -> some View {
-        CardView(dark: dark) {
+        CardView() {
             VStack(spacing: 0) {
                 CompareRow(label: "Sugar",
                            av: a.nutrients.sugar_g, bv: b.nutrients.sugar_g,
@@ -119,7 +106,7 @@ struct CompareView: View {
         Text("This is not professional advice. For specialized recommendation, seek a nutritionist.")
             .font(.sageRegular(11))
             .multilineTextAlignment(.center)
-            .foregroundColor(Theme.textSecondary(dark))
+            .foregroundColor(Theme.inkSecondary)
             .padding(.horizontal, 28).padding(.top, 24).padding(.bottom, 16)
             .frame(maxWidth: .infinity)
     }
@@ -131,7 +118,7 @@ struct CompareCol: View {
     let tie: Bool
     let dark: Bool
     var body: some View {
-        let c = product.yourScore.map(scoreColor) ?? Theme.textSecondary(dark)
+        let c = product.yourScore.map(scoreColor) ?? Theme.inkSecondary
         let formatted = ProductNameFormatter.format(product)
         VStack(alignment: .leading, spacing: 10) {
             if isWinner {
@@ -154,17 +141,17 @@ struct CompareCol: View {
             if let brand = formatted.brand {
                 Text(brand.uppercased())
                     .font(.sageBold(10)).tracking(1.2)
-                    .foregroundColor(Theme.textSecondary(dark))
+                    .foregroundColor(Theme.inkSecondary)
             }
             Text(formatted.name)
                 .font(.sageBold(14)).tracking(-0.2)
                 .lineLimit(2)
-                .foregroundColor(Theme.textPrimary(dark))
+                .foregroundColor(Theme.ink)
                 .frame(minHeight: 34, alignment: .top)
             if let size = formatted.size {
                 Text(size)
                     .font(.sageRegular(11))
-                    .foregroundColor(Theme.textSecondary(dark))
+                    .foregroundColor(Theme.inkSecondary)
             }
 
             if !product.restrictions.isEmpty {
@@ -184,12 +171,12 @@ struct CompareCol: View {
                 }
             }
 
-            Divider().background(Theme.divider(dark)).padding(.top, 4)
+            Divider().background(Theme.hairline).padding(.top, 4)
 
             if product.isUnscored {
                 Text("Not scored — sweetener")
                     .font(.sageSemiBold(13))
-                    .foregroundColor(Theme.textSecondary(dark))
+                    .foregroundColor(Theme.inkSecondary)
                     .padding(.top, 4)
             } else {
                 ScoreLine(label: "Your", score: product.yourScore ?? 0, prominent: true, dark: dark)
@@ -199,13 +186,13 @@ struct CompareCol: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(14)
         .background(
-            RoundedRectangle(cornerRadius: 22, style: .continuous).fill(Theme.surface(dark))
+            RoundedRectangle(cornerRadius: 22, style: .continuous).fill(Theme.card)
         )
         .overlay(
             RoundedRectangle(cornerRadius: 22, style: .continuous)
                 .stroke(isWinner ? c : Color.clear, lineWidth: 2)
         )
-        .cardShadow(dark)
+        .cardShadow()
         .accessibilityElement(children: .contain)
         .accessibilityLabel(formatted.accessibilityLabel)
     }
@@ -221,7 +208,7 @@ struct ScoreLine: View {
         HStack {
             Text(label.uppercased())
                 .font(.sageBold(10)).tracking(1.2)
-                .foregroundColor(Theme.textSecondary(dark))
+                .foregroundColor(Theme.inkSecondary)
             Spacer()
             HStack(alignment: .lastTextBaseline, spacing: 4) {
                 Text("\(score)")
@@ -255,14 +242,14 @@ struct CompareRow: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
             Text(label.uppercased())
                 .font(.sageBold(11)).tracking(0.5)
-                .foregroundColor(Theme.textSecondary(dark))
+                .foregroundColor(Theme.inkSecondary)
                 .frame(maxWidth: .infinity, alignment: .center)
             ValueCell(value: bv.map { "\(fmt($0)) \(unit)" } ?? ",", winner: bWins, align: .trailing, dark: dark)
                 .frame(maxWidth: .infinity, alignment: .trailing)
         }
         .padding(.horizontal, 14).padding(.vertical, 12)
         .overlay(alignment: .top) {
-            if divider { Theme.divider(dark).frame(height: 0.5).padding(.horizontal, 8) }
+            if divider { Theme.hairline.frame(height: 0.5).padding(.horizontal, 8) }
         }
     }
 }
@@ -278,7 +265,7 @@ struct ValueCell: View {
             Text(value)
                 .font(.sageBold(15))
                 .monospacedDigit().tracking(-0.3)
-                .foregroundColor(Theme.textPrimary(dark))
+                .foregroundColor(Theme.ink)
             if align == .trailing && winner { winnerMark }
         }
     }
@@ -304,7 +291,7 @@ struct AdditivesCol: View {
                     Text("No additives")
                         .font(.sageBold(11))
                         .multilineTextAlignment(.center)
-                        .foregroundColor(Theme.textPrimary(dark))
+                        .foregroundColor(Theme.ink)
                 }
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 14)
@@ -315,12 +302,12 @@ struct AdditivesCol: View {
                         Text(a.name)
                             .font(.sageSemiBold(11))
                             .lineLimit(1)
-                            .foregroundColor(Theme.textPrimary(dark))
+                            .foregroundColor(Theme.ink)
                         Spacer(minLength: 0)
                     }
                     .padding(.vertical, 6).padding(.horizontal, 4)
                     .overlay(alignment: .top) {
-                        if i > 0 { Theme.divider(dark).frame(height: 0.5) }
+                        if i > 0 { Theme.hairline.frame(height: 0.5) }
                     }
                 }
             }
@@ -328,9 +315,9 @@ struct AdditivesCol: View {
         .padding(10)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(
-            RoundedRectangle(cornerRadius: 18, style: .continuous).fill(Theme.surface(dark))
+            RoundedRectangle(cornerRadius: 18, style: .continuous).fill(Theme.card)
         )
-        .cardShadow(dark)
+        .cardShadow()
     }
     private func rank(_ r: RiskLevel) -> Int {
         switch r {

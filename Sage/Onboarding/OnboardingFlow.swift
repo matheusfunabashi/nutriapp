@@ -13,12 +13,13 @@ import SwiftUI
 
 struct OnboardingFlow: View {
     @EnvironmentObject var store: AppStore
+    @Environment(\.colorScheme) private var colorScheme
     @StateObject private var state = OnboardingState()
     @State private var awaitingReviewPrompt = false
     let onFinish: () -> Void
 
     var body: some View {
-        let dark = store.darkMode
+        let dark = colorScheme == .dark
 
         ZStack {
             background(dark: dark).ignoresSafeArea()
@@ -77,7 +78,7 @@ struct OnboardingFlow: View {
         if state.step == .results {
             Color(hex: "0B2A1F")
         } else {
-            Theme.bg(dark)
+            Theme.background
         }
     }
 

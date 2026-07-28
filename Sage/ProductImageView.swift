@@ -37,6 +37,7 @@ enum ProductImageStyle: Equatable {
 /// Cutouts float (no card); fallbacks keep a neutral `Theme.surface` container.
 struct ProductImageView: View {
     @EnvironmentObject private var store: AppStore
+    @Environment(\.colorScheme) private var colorScheme
 
     let url: URL?
     var style: ProductImageStyle = .list
@@ -52,7 +53,7 @@ struct ProductImageView: View {
 
     private var size: CGFloat { style.size }
     private var corner: CGFloat { 10 }
-    private var dark: Bool { store.darkMode }
+    private var dark: Bool { colorScheme == .dark }
 
     /// True only for a real transparent cutout (failed Vision keeps chrome).
     private var isFloatingCutout: Bool {
@@ -70,7 +71,7 @@ struct ProductImageView: View {
         ZStack {
             if showsCardChrome {
                 RoundedRectangle(cornerRadius: corner, style: .continuous)
-                    .fill(Theme.surface(dark))
+                    .fill(Theme.card)
                     .transition(.opacity)
             }
 

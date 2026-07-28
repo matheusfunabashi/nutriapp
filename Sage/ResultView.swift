@@ -2,9 +2,9 @@ import SwiftUI
 
 struct ResultView: View {
     @EnvironmentObject var store: AppStore
+    @Environment(\.colorScheme) private var colorScheme
     let product: Product
     let fromScan: Bool
-    let onBack: () -> Void
     let onCompare: () -> Void
     let onOpenMethodology: () -> Void
     /// Open a "better alternative" the user tapped. Defaulted so other call
@@ -19,48 +19,44 @@ struct ResultView: View {
     @State private var alternativesOutcome: AlternativesOutcome = .noShelf
 
     var body: some View {
-        let dark = store.darkMode
-        VStack(spacing: 0) {
-            topBar(dark: dark)
-                .background(Theme.bg(dark))
-
-            GeometryReader { geo in
-                ScrollView(.vertical, showsIndicators: false) {
-                    VStack(spacing: 0) {
-                        scrollableHeader(dark: dark)
-                        allergenSection(dark: dark)
-                        avoidFlagsSection(dark: dark)
-                        betterOptionsSection(dark: dark)
-                        if showNutriCard || showNovaCard {
-                            SectionTitle(title: "Breakdown", dark: dark)
-                            gradesRow(dark: dark)
-                        }
-                        if product.showsTransFatFlag {
-                            SeriousFlag(
-                                isHeaviestScorePenalty: TransFatAttribution.isHeaviestPenalty(in: product)
-                            )
-                            .padding(.horizontal, 16).padding(.top, 8)
-                        }
-                        nutrientsHeader(dark: dark)
-                        nutrientsCard(dark: dark).padding(.horizontal, 16)
-                        EyebrowLabel(text: additivesEyebrow(dark: dark), dark: dark)
-                        additivesCard(dark: dark).padding(.horizontal, 16)
-                        fullIngredientsSection(dark: dark)
-                        detectedSection(dark: dark)
-                        restrictionBanners(dark: dark)
-                        disclaimer(dark: dark)
-#if DEBUG
-                        scoreDebugSection(dark: dark)
-#endif
-                        Spacer().frame(height: 140)
+        let dark = colorScheme == .dark
+        GeometryReader { geo in
+            ScrollView(.vertical, showsIndicators: false) {
+                VStack(spacing: 0) {
+                    scrollableHeader(dark: dark)
+                    allergenSection(dark: dark)
+                    avoidFlagsSection(dark: dark)
+                    betterOptionsSection(dark: dark)
+                    if showNutriCard || showNovaCard {
+                        SectionTitle(title: "Breakdown")
+                        gradesRow(dark: dark)
                     }
-                    .frame(minWidth: geo.size.width, maxWidth: geo.size.width,
-                           minHeight: geo.size.height, alignment: .top)
+                    if product.showsTransFatFlag {
+                        SeriousFlag(
+                            isHeaviestScorePenalty: TransFatAttribution.isHeaviestPenalty(in: product)
+                        )
+                        .padding(.horizontal, 16).padding(.top, 8)
+                    }
+                    nutrientsHeader(dark: dark)
+                    nutrientsCard(dark: dark).padding(.horizontal, 16)
+                    EyebrowLabel(text: additivesEyebrow(dark: dark))
+                    additivesCard(dark: dark).padding(.horizontal, 16)
+                    fullIngredientsSection(dark: dark)
+                    detectedSection(dark: dark)
+                    restrictionBanners(dark: dark)
+                    disclaimer(dark: dark)
+#if DEBUG
+                    scoreDebugSection(dark: dark)
+#endif
                 }
-                .scrollBounceBehavior(.basedOnSize, axes: .vertical)
+                .frame(minWidth: geo.size.width, maxWidth: geo.size.width,
+                       minHeight: geo.size.height, alignment: .top)
             }
+            .scrollBounceBehavior(.basedOnSize, axes: .vertical)
         }
-        .background(Theme.bg(dark).ignoresSafeArea())
+        .sageScreenBackground()
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar { SageToolbarTitle() }
         .onAppear {
             store.requestOverview(for: product.id)
             alternativesOutcome = Alternatives.suggest(for: liveProduct, profile: store.user)
@@ -91,7 +87,7 @@ struct ResultView: View {
         switch alternativesOutcome {
         case .suggestions(let alternatives):
             let baseline = liveProduct.overallScore ?? 0
-            SectionTitle(title: "Better options", dark: dark)
+            SectionTitle(title: "Better options")
             VStack(spacing: 0) {
                 ForEach(Array(alternatives.enumerated()), id: \.element.id) { idx, alt in
                     AlternativeRow(alt: alt, delta: alt.score - baseline,
@@ -102,9 +98,9 @@ struct ResultView: View {
             }
             .background(
                 RoundedRectangle(cornerRadius: 24, style: .continuous)
-                    .fill(Theme.surface(dark))
+                    .fill(Theme.card)
             )
-            .cardShadow(dark)
+            .cardShadow()
             .padding(.horizontal, 16)
             .padding(.top, 8)
         case .alreadyTopOfShelf:
@@ -114,7 +110,7 @@ struct ResultView: View {
                 Text("Among the best in its category")
                     .font(.sageSemiBold(11))
             }
-            .foregroundColor(Theme.textSecondary(dark))
+            .foregroundColor(Theme.inkSecondary)
             .padding(.horizontal, 10).padding(.vertical, 4)
             .background(
                 Capsule().fill(dark ? Color.white.opacity(0.08) : Color.black.opacity(0.05))
@@ -148,27 +144,6 @@ struct ResultView: View {
         .padding(.bottom, 8)
     }
 
-    private func topBar(dark: Bool) -> some View {
-        ZStack {
-            HStack {
-                CircleIconButton(systemName: "chevron.left", dark: dark,
-                                 accessibilityLabel: "Back", action: onBack)
-                Spacer()
-            }
-            HStack(spacing: 8) {
-                SageMark(size: 26, color: store.accent)
-                Text("Sage")
-                    .font(.sageSemiBold(22))
-                    .tracking(-0.6)
-                    .foregroundColor(Theme.textPrimary(dark))
-            }
-            .accessibilityElement(children: .combine)
-            .accessibilityAddTraits(.isHeader)
-            .accessibilityLabel("Sage")
-        }
-        .padding(.horizontal, 16).padding(.top, 8).padding(.bottom, 8)
-    }
-
     private func productHeader(dark: Bool) -> some View {
         let formatted = ProductNameFormatter.format(liveProduct)
         return HStack(alignment: .center, spacing: 12) {
@@ -185,14 +160,14 @@ struct ResultView: View {
                 }
                 Text(formatted.name)
                     .font(.sageBold(22)).tracking(-0.5)
-                    .foregroundColor(Theme.textPrimary(dark))
+                    .foregroundColor(Theme.ink)
                     .lineLimit(2)
                     .truncationMode(.tail)
                     .minimumScaleFactor(0.9)
                 if let size = formatted.size {
                     Text(size)
                         .font(.sageRegular(13))
-                        .foregroundColor(Theme.textSecondary(dark))
+                        .foregroundColor(Theme.inkSecondary)
                 }
             }
             .frame(minWidth: 0, maxWidth: .infinity, alignment: .leading)
@@ -212,7 +187,7 @@ struct ResultView: View {
             if showOrganic {
                 Text("Organic ✓")
                     .font(.sageSemiBold(11))
-                    .foregroundColor(Theme.textSecondary(dark))
+                    .foregroundColor(Theme.inkSecondary)
                     .padding(.horizontal, 10).padding(.vertical, 4)
                     .background(
                         Capsule().fill(dark ? Color.white.opacity(0.08) : Color.black.opacity(0.05))
@@ -236,9 +211,9 @@ struct ResultView: View {
         .padding(14)
         .background(
             RoundedRectangle(cornerRadius: 24, style: .continuous)
-                .fill(Theme.surface(dark))
+                .fill(Theme.card)
         )
-        .cardShadow(dark)
+        .cardShadow()
     }
 
     private func unscoredScoreCard(dark: Bool, product p: Product) -> some View {
@@ -247,30 +222,30 @@ struct ResultView: View {
             VStack(alignment: .leading, spacing: 8) {
                 Text("Not scored")
                     .font(.sageBold(18)).tracking(-0.3)
-                    .foregroundColor(Theme.textPrimary(dark))
+                    .foregroundColor(Theme.ink)
                 Text("This is essentially pure sugar, and no concentrated sugar is a health food. Sage doesn't score sweeteners, so a number here would only mislead.")
                     .font(.sageRegular(13))
-                    .foregroundColor(Theme.textSecondary(dark))
+                    .foregroundColor(Theme.inkSecondary)
                     .lineSpacing(2)
             }
             if !notes.isEmpty {
                 VStack(alignment: .leading, spacing: 6) {
                     Text("Among sweeteners")
                         .font(.sageBold(12)).tracking(0.4)
-                        .foregroundColor(Theme.textSecondary(dark))
+                        .foregroundColor(Theme.inkSecondary)
                     ForEach(notes, id: \.self) { note in
                         HStack(alignment: .top, spacing: 8) {
                             Text("·")
                                 .font(.sageBold(13))
-                                .foregroundColor(Theme.textSecondary(dark))
+                                .foregroundColor(Theme.inkSecondary)
                             Text(LocalizedStringKey(note))
                                 .font(.sageRegular(13))
-                                .foregroundColor(Theme.textPrimary(dark))
+                                .foregroundColor(Theme.ink)
                         }
                     }
                     Text("Relative quality among sweeteners — not a health score.")
                         .font(.sageRegular(11))
-                        .foregroundColor(Theme.textSecondary(dark))
+                        .foregroundColor(Theme.inkSecondary)
                         .padding(.top, 2)
                 }
             }
@@ -282,7 +257,7 @@ struct ResultView: View {
                     Text("Why sweeteners aren’t scored")
                         .font(.sageSemiBold(12))
                 }
-                .foregroundColor(Theme.textSecondary(dark))
+                .foregroundColor(Theme.inkSecondary)
             }
             .buttonStyle(.plain)
         }
@@ -290,9 +265,9 @@ struct ResultView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(
             RoundedRectangle(cornerRadius: 24, style: .continuous)
-                .fill(Theme.surface(dark))
+                .fill(Theme.card)
         )
-        .cardShadow(dark)
+        .cardShadow()
         .accessibilityElement(children: .contain)
         .accessibilityLabel(Text("Not scored"))
     }
@@ -307,8 +282,8 @@ struct ResultView: View {
         return VStack(spacing: 12) {
             Text(title)
                 .font(.sageBold(11)).tracking(1.2)
-                .foregroundColor(Theme.textSecondary(dark))
-            ScoreRing(score: score, size: 96, stroke: 7, dark: dark, ringColor: ringColor)
+                .foregroundColor(Theme.inkSecondary)
+            ScoreRing(score: score, size: 96, stroke: 7, ringColor: ringColor)
             Text(label.uppercased())
                 .font(.sageBold(11)).tracking(0.6)
                 .foregroundColor(.white)
@@ -351,7 +326,7 @@ struct ResultView: View {
                 Button(action: onOpenMethodology) {
                     Image(systemName: "info.circle")
                         .font(.sageSemiBold(13))
-                        .foregroundColor(Theme.textSecondary(dark))
+                        .foregroundColor(Theme.inkSecondary)
                 }
                 .buttonStyle(.plain)
                 .padding(8)
@@ -376,7 +351,7 @@ struct ResultView: View {
                     .lineSpacing(1)
                 Spacer(minLength: 0)
             }
-            .foregroundColor(Theme.textSecondary(dark))
+            .foregroundColor(Theme.inkSecondary)
             .padding(.horizontal, 20)
             .accessibilityElement(children: .combine)
         }
@@ -396,7 +371,7 @@ struct ResultView: View {
                         .foregroundColor(store.accent)
                     Text("Overview")
                         .font(.sageBold(12)).tracking(-0.1)
-                        .foregroundColor(Theme.textSecondary(dark))
+                        .foregroundColor(Theme.inkSecondary)
                     if delta != 0 {
                         let tint = delta < 0 ? Color.scoreBad : Color.scoreGood
                         Text(delta < 0 ? "\(delta)" : "+\(delta)")
@@ -411,12 +386,12 @@ struct ResultView: View {
                 if generating || (p.overviewStale == true && p.overview == nil) {
                     Text("Generating overview…")
                         .font(.sageRegular(13))
-                        .foregroundColor(Theme.textSecondary(dark))
+                        .foregroundColor(Theme.inkSecondary)
                         .italic()
                 } else if let text = p.overview?.text {
                     Text(text)
                         .font(.sageRegular(13))
-                        .foregroundColor(Theme.textPrimary(dark))
+                        .foregroundColor(Theme.ink)
                         .lineSpacing(2)
                         .frame(maxWidth: .infinity, alignment: .leading)
                 }
@@ -425,7 +400,7 @@ struct ResultView: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(
                 RoundedRectangle(cornerRadius: 18, style: .continuous)
-                    .fill(Theme.surface(dark))
+                    .fill(Theme.card)
             )
             .padding(.horizontal, 16)
             .accessibilityElement(children: .contain)
@@ -446,7 +421,7 @@ struct ResultView: View {
                             .foregroundColor(Color.scoreBad)
                         Text(copy)
                             .font(.sageSemiBold(13))
-                            .foregroundColor(Theme.textPrimary(dark))
+                            .foregroundColor(Theme.ink)
                         Spacer(minLength: 0)
                     }
                     .padding(.horizontal, 14).padding(.vertical, 10)
@@ -483,13 +458,13 @@ struct ResultView: View {
         HStack(spacing: 6) {
             Text("Per 100 g / 100 ml")
                 .font(.sageBold(12)).tracking(-0.1)
-                .foregroundColor(Theme.textSecondary(dark))
+                .foregroundColor(Theme.inkSecondary)
             Button {
                 showLabelLegend = true
             } label: {
                 Image(systemName: "info.circle")
                     .font(.sageSemiBold(13))
-                    .foregroundColor(Theme.textSecondary(dark))
+                    .foregroundColor(Theme.inkSecondary)
             }
             .buttonStyle(.plain)
             .accessibilityLabel("What the labels mean")
@@ -513,12 +488,12 @@ struct ResultView: View {
                 Text("Compare with another")
                     .font(.sageSemiBold(14)).tracking(-0.2)
             }
-            .foregroundColor(Theme.textPrimary(dark))
+            .foregroundColor(Theme.ink)
             .padding(.vertical, 13)
             .frame(maxWidth: .infinity)
             .background(
                 RoundedRectangle(cornerRadius: 18, style: .continuous)
-                    .stroke(Theme.divider(dark), lineWidth: 1)
+                    .stroke(Theme.hairline, lineWidth: 1)
             )
         }
         .buttonStyle(.plain)
@@ -550,7 +525,7 @@ struct ResultView: View {
 
     private func nutrientsCard(dark: Bool) -> some View {
         let n = product.nutrients
-        return CardView(dark: dark) {
+        return CardView() {
             VStack(spacing: 0) {
                 // Levels come from NutrientLevels — the same source the
                 // scoring factor labels and the LLM prompt read, so badge
@@ -621,14 +596,14 @@ struct ResultView: View {
     }
 
     private func additivesCard(dark: Bool) -> some View {
-        CardView(dark: dark) {
+        CardView() {
             VStack(spacing: 0) {
                 if product.additiveIngredientTextMissing == true {
                     HStack(spacing: 10) {
                         RiskDot(risk: .unrated)
                         Text("No ingredient data")
                             .font(.sageSemiBold(14))
-                            .foregroundColor(Theme.textSecondary(dark))
+                            .foregroundColor(Theme.inkSecondary)
                     }
                     .padding(.horizontal, 16).padding(.vertical, 14)
                 } else if product.additives.isEmpty {
@@ -636,14 +611,14 @@ struct ResultView: View {
                         RiskDot(risk: .low)
                         Text("No additives detected")
                             .font(.sageSemiBold(14))
-                            .foregroundColor(Theme.textPrimary(dark))
+                            .foregroundColor(Theme.ink)
                     }
                     .padding(.horizontal, 16).padding(.vertical, 14)
                 } else {
                     SeverityBar(additives: product.additives, allowAlarmRed: !yourScoreIsWorstSignal)
                         .padding(.horizontal, 16).padding(.vertical, 12)
                         .overlay(alignment: .bottom) {
-                            Theme.divider(dark).frame(height: 0.5)
+                            Theme.hairline.frame(height: 0.5)
                         }
                     ForEach(Array(product.additives.enumerated()), id: \.element.id) { (i, a) in
                         Button {
@@ -675,11 +650,11 @@ struct ResultView: View {
                     HStack(spacing: 8) {
                         Text("Full ingredients")
                             .font(.sageBold(12)).tracking(-0.1)
-                            .foregroundColor(Theme.textSecondary(dark))
+                            .foregroundColor(Theme.inkSecondary)
                         Spacer(minLength: 0)
                         Image(systemName: "chevron.down")
                             .font(.sageSemiBold(11))
-                            .foregroundColor(Theme.textSecondary(dark))
+                            .foregroundColor(Theme.inkSecondary)
                             .rotationEffect(.degrees(ingredientsExpanded ? 180 : 0))
                     }
                     .padding(.horizontal, 24)
@@ -736,14 +711,14 @@ struct ResultView: View {
             .padding(14)
             .background(
                 RoundedRectangle(cornerRadius: 18, style: .continuous)
-                    .fill(Theme.surface(dark))
+                    .fill(Theme.card)
             )
     }
 
     private func highlightedAttributedString(_ text: String, needles: [String],
                                              dark: Bool) -> AttributedString {
         var result = AttributedString(text)
-        result.foregroundColor = Theme.textPrimary(dark)
+        result.foregroundColor = Theme.ink
         let lower = text.lowercased()
         for needle in needles {
             let n = needle.lowercased()
@@ -771,7 +746,7 @@ struct ResultView: View {
         }
         return Group {
             if show {
-                EyebrowLabel(text: "Detected", dark: dark)
+                EyebrowLabel(text: "Detected")
                 VStack(spacing: 6) {
                     if hasCaffeine, let mg = product.caffeine_mg {
                         InfoRow(emoji: "☕", label: "Contains caffeine",
@@ -855,7 +830,7 @@ struct ResultView: View {
         Text("This is not professional advice. For specialized recommendation, seek a nutritionist.")
             .font(.sageRegular(11))
             .multilineTextAlignment(.center)
-            .foregroundColor(Theme.textSecondary(dark))
+            .foregroundColor(Theme.inkSecondary)
             .lineSpacing(2)
             .padding(.horizontal, 28).padding(.top, 24).padding(.bottom, 16)
     }
@@ -880,11 +855,11 @@ struct ResultView: View {
                 .foregroundColor(Color(hex: "D4A02D"))
             Text("Nutrition source: \(nutritionSourceLabel)")
                 .font(.sageBold(11))
-                .foregroundColor(Theme.textPrimary(dark))
+                .foregroundColor(Theme.ink)
             Text(breakdown)
                 .font(.sageRegular(10))
                 .monospacedDigit()
-                .foregroundColor(Theme.textSecondary(dark))
+                .foregroundColor(Theme.inkSecondary)
                 .lineSpacing(2)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .textSelection(.enabled)
@@ -941,7 +916,7 @@ struct NutriScoreCard: View {
             VStack(alignment: .leading, spacing: 3) {
                 Text("Nutri-Score \(g)")
                     .font(.sageBold(13)).tracking(-0.2)
-                    .foregroundColor(Theme.textPrimary(dark))
+                    .foregroundColor(Theme.ink)
                 Text("Nutrition grade")
                     .font(.sageSemiBold(11))
                     .foregroundColor(c)
@@ -954,9 +929,9 @@ struct NutriScoreCard: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
         .frame(height: breakdownCardHeight)
         .background(
-            RoundedRectangle(cornerRadius: 18, style: .continuous).fill(Theme.surface(dark))
+            RoundedRectangle(cornerRadius: 18, style: .continuous).fill(Theme.card)
         )
-        .cardShadow(dark)
+        .cardShadow()
         .accessibilityLabel("Nutri-Score \(g), nutrition grade")
     }
 
@@ -964,7 +939,7 @@ struct NutriScoreCard: View {
         HStack(alignment: .center, spacing: 12) {
             Text("?")
                 .font(.sageBold(24)).tracking(-0.5)
-                .foregroundColor(Theme.textSecondary(dark))
+                .foregroundColor(Theme.inkSecondary)
                 .frame(width: 52, height: 52)
                 .background(
                     RoundedRectangle(cornerRadius: 14, style: .continuous)
@@ -973,7 +948,7 @@ struct NutriScoreCard: View {
             VStack(alignment: .leading, spacing: 3) {
                 Text("Nutri-Score")
                     .font(.sageBold(13)).tracking(-0.2)
-                    .foregroundColor(Theme.textPrimary(dark))
+                    .foregroundColor(Theme.ink)
                 Text("Not rated")
                     .font(.sageSemiBold(11))
                     .foregroundColor(Color.neutralMuted)
@@ -986,9 +961,9 @@ struct NutriScoreCard: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
         .frame(height: breakdownCardHeight)
         .background(
-            RoundedRectangle(cornerRadius: 18, style: .continuous).fill(Theme.surface(dark))
+            RoundedRectangle(cornerRadius: 18, style: .continuous).fill(Theme.card)
         )
-        .cardShadow(dark)
+        .cardShadow()
         .accessibilityLabel("Nutri-Score not rated")
     }
 }
@@ -1033,7 +1008,7 @@ struct NovaCard: View {
             VStack(alignment: .leading, spacing: 3) {
                 Text("NOVA \(group)")
                     .font(.sageBold(13)).tracking(-0.2)
-                    .foregroundColor(Theme.textPrimary(dark))
+                    .foregroundColor(Theme.ink)
                 Text(labels[group] ?? "")
                     .font(.sageSemiBold(11))
                     .foregroundColor(labelColor)
@@ -1046,9 +1021,9 @@ struct NovaCard: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
         .frame(height: breakdownCardHeight)
         .background(
-            RoundedRectangle(cornerRadius: 18, style: .continuous).fill(Theme.surface(dark))
+            RoundedRectangle(cornerRadius: 18, style: .continuous).fill(Theme.card)
         )
-        .cardShadow(dark)
+        .cardShadow()
         .accessibilityLabel("NOVA \(group), \(labels[group] ?? "")")
     }
 
@@ -1065,7 +1040,7 @@ struct NovaCard: View {
             VStack(alignment: .leading, spacing: 3) {
                 Text("NOVA")
                     .font(.sageBold(13)).tracking(-0.2)
-                    .foregroundColor(Theme.textPrimary(dark))
+                    .foregroundColor(Theme.ink)
                 Text("Not rated")
                     .font(.sageSemiBold(11))
                     .foregroundColor(Color.neutralMuted)
@@ -1078,9 +1053,9 @@ struct NovaCard: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
         .frame(height: breakdownCardHeight)
         .background(
-            RoundedRectangle(cornerRadius: 18, style: .continuous).fill(Theme.surface(dark))
+            RoundedRectangle(cornerRadius: 18, style: .continuous).fill(Theme.card)
         )
-        .cardShadow(dark)
+        .cardShadow()
         .accessibilityLabel("NOVA not rated")
     }
 }
@@ -1116,7 +1091,7 @@ struct NutrientRow: View {
             HStack(spacing: 7) {
                 Text(label)
                     .font(.sageSemiBold(14)).tracking(-0.2)
-                    .foregroundColor(Theme.textPrimary(dark))
+                    .foregroundColor(Theme.ink)
                     .lineLimit(1)
                     .minimumScaleFactor(0.85)
                     .layoutPriority(1)
@@ -1133,7 +1108,7 @@ struct NutrientRow: View {
             Text(value)
                 .font(.sageBold(14))
                 .monospacedDigit().tracking(-0.2)
-                .foregroundColor(Theme.textPrimary(dark))
+                .foregroundColor(Theme.ink)
                 .fixedSize(horizontal: true, vertical: false)
             if let tag {
                 Text(tag.word.uppercased())
@@ -1147,7 +1122,7 @@ struct NutrientRow: View {
         .padding(.horizontal, 14).padding(.vertical, 12)
         .overlay(alignment: .top) {
             if divider {
-                Theme.divider(dark).frame(height: 0.5).padding(.horizontal, 8)
+                Theme.hairline.frame(height: 0.5).padding(.horizontal, 8)
             }
         }
     }
@@ -1172,14 +1147,14 @@ struct AdditiveRow: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text(additive.name)
                     .font(.sageSemiBold(14)).tracking(-0.2)
-                    .foregroundColor(Theme.textPrimary(dark))
+                    .foregroundColor(Theme.ink)
                     .lineLimit(2)
                     .fixedSize(horizontal: false, vertical: true)
                     .multilineTextAlignment(.leading)
                 if let note = additive.note, !note.isEmpty {
                     Text(note)
                         .font(.sageRegular(11))
-                        .foregroundColor(Theme.textSecondary(dark))
+                        .foregroundColor(Theme.inkSecondary)
                         .lineSpacing(1)
                         .lineLimit(3)
                         .fixedSize(horizontal: false, vertical: true)
@@ -1194,12 +1169,12 @@ struct AdditiveRow: View {
                 .background(Capsule().fill(riskBg))
             Image(systemName: "chevron.right")
                 .font(.sageSemiBold(10))
-                .foregroundColor(Theme.textSecondary(dark).opacity(0.6))
+                .foregroundColor(Theme.inkSecondary.opacity(0.6))
         }
         .padding(.horizontal, 16).padding(.vertical, 12)
         .contentShape(Rectangle())
         .overlay(alignment: .top) {
-            if divider { Theme.divider(dark).frame(height: 0.5).padding(.horizontal, 8) }
+            if divider { Theme.hairline.frame(height: 0.5).padding(.horizontal, 8) }
         }
         .accessibilityHint("Shows additive details")
     }
@@ -1294,18 +1269,18 @@ struct InfoRow: View {
             VStack(alignment: .leading, spacing: 1) {
                 Text(label)
                     .font(.sageBold(13)).tracking(-0.2)
-                    .foregroundColor(Theme.textPrimary(dark))
+                    .foregroundColor(Theme.ink)
                 Text(detail)
                     .font(.sageRegular(11))
-                    .foregroundColor(Theme.textSecondary(dark))
+                    .foregroundColor(Theme.inkSecondary)
             }
             Spacer()
         }
         .padding(.horizontal, 14).padding(.vertical, 10)
         .background(
-            RoundedRectangle(cornerRadius: 14, style: .continuous).fill(Theme.surface(dark))
+            RoundedRectangle(cornerRadius: 14, style: .continuous).fill(Theme.card)
         )
-        .cardShadow(dark)
+        .cardShadow()
     }
 }
 
@@ -1440,12 +1415,12 @@ struct AllergenDisclaimer: View {
         HStack(spacing: 8) {
             Image(systemName: "info.circle")
                 .font(.sageRegular(12))
-                .foregroundColor(Theme.textSecondary(dark))
+                .foregroundColor(Theme.inkSecondary)
             Text(hasMatch
                  ? "Always confirm on the product packaging — allergen data can be incomplete."
                  : "No declared allergens matched your profile, but data may be incomplete — always check the packaging.")
                 .font(.sageRegular(11))
-                .foregroundColor(Theme.textSecondary(dark))
+                .foregroundColor(Theme.inkSecondary)
                 .lineSpacing(1)
                 .fixedSize(horizontal: false, vertical: true)
             Spacer()
@@ -1505,11 +1480,11 @@ struct AdditiveDetailSheet: View {
                         VStack(alignment: .leading, spacing: 4) {
                             Text(additive.name)
                                 .font(.sageBold(20)).tracking(-0.3)
-                                .foregroundColor(Theme.textPrimary(dark))
+                                .foregroundColor(Theme.ink)
                             if let code = additive.code {
                                 Text(code.uppercased())
                                     .font(.sageSemiBold(13))
-                                    .foregroundColor(Theme.textSecondary(dark))
+                                    .foregroundColor(Theme.inkSecondary)
                             }
                         }
                         Spacer(minLength: 0)
@@ -1535,7 +1510,7 @@ struct AdditiveDetailSheet: View {
                         VStack(alignment: .leading, spacing: 8) {
                             Text("Sources")
                                 .font(.sageBold(13))
-                                .foregroundColor(Theme.textPrimary(dark))
+                                .foregroundColor(Theme.ink)
                             ForEach(sources, id: \.self) { urlString in
                                 if let url = URL(string: urlString) {
                                     Button(urlString) { openURL(url) }
@@ -1549,7 +1524,7 @@ struct AdditiveDetailSheet: View {
                 }
                 .padding(20)
             }
-            .background(Theme.bg(dark).ignoresSafeArea())
+            .background(Theme.background.ignoresSafeArea())
             .navigationTitle("Additive")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -1573,10 +1548,10 @@ struct AdditiveDetailSheet: View {
         VStack(alignment: .leading, spacing: 6) {
             Text(title)
                 .font(.sageBold(13))
-                .foregroundColor(Theme.textPrimary(dark))
+                .foregroundColor(Theme.ink)
             Text(body)
                 .font(.sageRegular(14))
-                .foregroundColor(Theme.textSecondary(dark))
+                .foregroundColor(Theme.inkSecondary)
                 .lineSpacing(3)
         }
     }
@@ -1620,7 +1595,7 @@ struct LabelLegendSheet: View {
                     VStack(alignment: .leading, spacing: 10) {
                         Text("Nutrient amounts")
                             .font(.sageBold(15))
-                            .foregroundColor(Theme.textPrimary(dark))
+                            .foregroundColor(Theme.ink)
                         ForEach(nutrientItems, id: \.word) { item in
                             legendRow(word: item.word, fg: item.fg, meaning: item.meaning)
                         }
@@ -1628,7 +1603,7 @@ struct LabelLegendSheet: View {
                     VStack(alignment: .leading, spacing: 10) {
                         Text("Additive risk")
                             .font(.sageBold(15))
-                            .foregroundColor(Theme.textPrimary(dark))
+                            .foregroundColor(Theme.ink)
                         ForEach(riskItems, id: \.0) { item in
                             legendRow(word: RiskStyle.label(item.0),
                                       fg: RiskStyle.fg(item.0),
@@ -1638,7 +1613,7 @@ struct LabelLegendSheet: View {
                 }
                 .padding(20)
             }
-            .background(Theme.bg(dark).ignoresSafeArea())
+            .background(Theme.background.ignoresSafeArea())
             .navigationTitle("What the labels mean")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -1659,7 +1634,7 @@ struct LabelLegendSheet: View {
                 .frame(minWidth: 72, alignment: .leading)
             Text(meaning)
                 .font(.sageRegular(13))
-                .foregroundColor(Theme.textSecondary(dark))
+                .foregroundColor(Theme.inkSecondary)
             Spacer(minLength: 0)
         }
         .accessibilityElement(children: .combine)
@@ -1701,12 +1676,12 @@ private struct AlternativeRow: View {
                     if let brand = formatted.brand {
                         Text(brand.uppercased())
                             .font(.sageBold(10)).tracking(1.2)
-                            .foregroundColor(Theme.textSecondary(dark))
+                            .foregroundColor(Theme.inkSecondary)
                             .lineLimit(1)
                     }
                     Text(formatted.name)
                         .font(.sageBold(14)).tracking(-0.2)
-                        .foregroundColor(Theme.textPrimary(dark))
+                        .foregroundColor(Theme.ink)
                         .lineLimit(1)
                     Text("+\(delta) vs. this")
                         .font(.sageBold(11))
@@ -1716,12 +1691,12 @@ private struct AlternativeRow: View {
                 YourScorePill(score: alt.score, isUnscored: false)
                 Image(systemName: "chevron.right")
                     .font(.sageBold(12))
-                    .foregroundColor(Theme.textSecondary(dark))
+                    .foregroundColor(Theme.inkSecondary)
             }
             .padding(.horizontal, 14).padding(.vertical, 12)
             .overlay(alignment: .top) {
                 if divider {
-                    Theme.divider(dark).frame(height: 0.5).padding(.horizontal, 12)
+                    Theme.hairline.frame(height: 0.5).padding(.horizontal, 12)
                 }
             }
             .accessibilityElement(children: .combine)

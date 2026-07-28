@@ -5,8 +5,6 @@ struct SearchView: View {
     /// Called with the barcode of the tapped hit — ContentView runs the same
     /// lookup → score → /explain pipeline as a camera scan.
     let onSelect: (String) -> Void
-    /// When set (Home overlay), shows a back control. Nil when Search is a root.
-    var onBack: (() -> Void)? = nil
 
     private enum Phase: Equatable {
         case idle          // under 2 chars typed
@@ -19,41 +17,69 @@ struct SearchView: View {
     @State private var query: String = ""
     @State private var phase: Phase = .idle
     @State private var searchTask: Task<Void, Never>? = nil
-    @FocusState private var focused: Bool
 
     private let backend = BackendService()
 
     var body: some View {
-        let dark = store.darkMode
-        ScrollView(showsIndicators: false) {
-            VStack(alignment: .leading, spacing: 0) {
-                if let onBack {
-                    SubHeader(title: "Search", onBack: onBack)
-                        .foregroundColor(Theme.textPrimary(dark))
-                } else {
-                    StaggeredAppear(index: 0) {
-                        Text("Search")
-                            .font(.sageBold(34)).tracking(-1)
-                            .foregroundColor(Theme.textPrimary(dark))
-                            // 12pt above the system safe-area; ContentView's
-                            // tabContent isn't ignoring it, so this is the only
-                            // breathing room we need below the Dynamic Island.
-                            .padding(.horizontal, 24).padding(.top, 12).padding(.bottom, 8)
+        List {
+            switch phase {
+            case .idle:
+                Section("Browse") {
+                    ForEach(Self.categories, id: \.name) { category in
+                        Button {
+                            query = category.name
+                        } label: {
+                            HStack(spacing: 12) {
+                                Text(category.emoji)
+                                    .font(.sageRegular(20))
+                                    .frame(width: 26)
+                                Text(category.name)
+                                    .font(.sageBold(15)).tracking(-0.2)
+                                    .foregroundColor(Theme.ink)
+                                Spacer()
+                            }
+                            .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityLabel("Browse \(category.name)")
                     }
                 }
-
-                StaggeredAppear(index: 1) {
-                    searchBar(dark: dark)
-                        .padding(.horizontal, 16).padding(.top, 12)
+            case .results(let hits):
+                ForEach(hits) { hit in
+                    SearchHitRow(hit: hit) { onSelect(hit.code) }
                 }
-
-                StaggeredAppear(index: 2) { phaseContent(dark: dark) }
-
-                Spacer().frame(height: 140)
+            case .searching, .empty, .failed:
+                EmptyView()
             }
         }
-        .background(Theme.bg(dark).ignoresSafeArea())
+        .sageListStyle()
+        .navigationTitle("Search")
+        .navigationBarTitleDisplayMode(.inline)
+        // The system search field: it lands in the navigation bar, brings its
+        // own cancel button, scroll-to-dismiss, and keyboard handling.
+        .searchable(text: $query, placement: .navigationBarDrawer(displayMode: .always),
+                    prompt: "Search by product or brand")
+        .autocorrectionDisabled()
+        .textInputAutocapitalization(.never)
+        .scrollDismissesKeyboard(.immediately)
+        .overlay { statusOverlay }
         .onChange(of: query) { _, newValue in scheduleSearch(for: newValue) }
+    }
+
+    @ViewBuilder private var statusOverlay: some View {
+        switch phase {
+        case .searching:
+            ProgressView("Searching…")
+                .tint(store.accent)
+                .font(.sageRegular(13))
+        case .empty:
+            ContentUnavailableView.search(text: query.trimmingCharacters(in: .whitespaces))
+        case .failed:
+            ContentUnavailableView("Search failed", systemImage: "wifi.exclamationmark",
+                                   description: Text("Check your connection and try again."))
+        case .idle, .results:
+            EmptyView()
+        }
     }
 
     // MARK: Debounced typeahead
@@ -83,99 +109,13 @@ struct SearchView: View {
         }
     }
 
-    // MARK: Search bar (unchanged design)
-
-    private func searchBar(dark: Bool) -> some View {
-        HStack(spacing: 10) {
-            Image(systemName: "magnifyingglass")
-                .foregroundColor(focused ? Theme.textPrimary(dark) : Theme.textSecondary(dark))
-                .animation(.easeOut(duration: 0.18), value: focused)
-            TextField("Search by product or brand", text: $query)
-                .focused($focused)
-                .font(.sageMedium(15))
-                .foregroundColor(Theme.textPrimary(dark))
-                .submitLabel(.search)
-                .autocorrectionDisabled()
-            // Contextual icon: cross-fade in/out instead of binary visibility
-            // toggling. Skill values: scale 0.25→1, opacity 0→1, blur 4→0.
-            if !query.isEmpty {
-                Button {
-                    query = ""; focused = true
-                } label: {
-                    Image(systemName: "xmark")
-                        .font(.sageBold(10))
-                        .foregroundColor(Theme.textPrimary(dark))
-                        .padding(5)
-                        .background(Circle().fill(dark ? Color.white.opacity(0.12)
-                                                         : Color.black.opacity(0.08)))
-                        .minHitArea(40) // visible ~22pt; lift hit area for thumbs
-                }
-                .buttonStyle(.pressable)
-                .transition(
-                    .scale(0.25)
-                    .combined(with: .opacity)
-                    .combined(with: .blurReplace)
-                )
-            }
-        }
-        .padding(.horizontal, 14).padding(.vertical, 12)
-        .background(
-            RoundedRectangle(cornerRadius: 14, style: .continuous).fill(Theme.surface(dark))
-        )
-        // Concentric: outer 14 + 1pt focus ring inset gives a clean nested look.
-        .overlay(
-            RoundedRectangle(cornerRadius: 14, style: .continuous)
-                .stroke(focused ? store.accent.opacity(0.35) : Color.clear, lineWidth: 1.5)
-        )
-        .cardShadow(dark)
-        .animation(.spring(response: 0.3, dampingFraction: 0.85), value: query.isEmpty)
-        .animation(.easeOut(duration: 0.2), value: focused)
-    }
-
-    // MARK: Phase content
-
-    @ViewBuilder private func phaseContent(dark: Bool) -> some View {
-        switch phase {
-        case .idle:
-            categoryGrid(dark: dark)
-        case .searching:
-            VStack(spacing: 12) {
-                ProgressView().tint(store.accent)
-                Text("Searching…")
-                    .font(.sageRegular(13))
-                    .foregroundColor(Theme.textSecondary(dark))
-            }
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 60)
-        case .results(let hits):
-            VStack(spacing: 8) {
-                ForEach(hits) { hit in
-                    SearchHitRow(hit: hit, dark: dark) {
-                        // Drop the keyboard before the result is pushed. If it's
-                        // still up when the overlay appears, iOS's tap-to-dismiss
-                        // gesture swallows the first tap on the new view — which
-                        // reads as the back button "not working" on first press.
-                        focused = false
-                        onSelect(hit.code)
-                    }
-                }
-            }
-            .padding(.horizontal, 16).padding(.top, 14)
-        case .empty:
-            hint(icon: "🤷", title: "Product not available.",
-                 body: "Nothing in the database matches “\(query.trimmingCharacters(in: .whitespaces))”. Try a shorter name or scan the barcode.",
-                 dark: dark)
-        case .failed:
-            hint(icon: "📡", title: "Search failed",
-                 body: "Check your connection and try again.",
-                 dark: dark)
-        }
-    }
-
     // MARK: Browse categories (idle opener)
 
-    /// Tapping a tile drops the term into the search field, which fires the same
-    /// debounced typeahead pipeline as manual typing.
+    /// Tapping a row drops its term into the search field, which fires the same
+    /// debounced typeahead pipeline as manual typing. Emoji rather than SF
+    /// Symbols: the symbol set has no honest glyph for "cereal" or "yogurt",
+    /// and a wrong-but-native icon reads worse than the right one. Matches the
+    /// Top Rated category list.
     private static let categories: [(emoji: String, name: String)] = [
         ("🥤", "Soda"),        ("💧", "Water"),
         ("🍫", "Chocolate"),   ("🍪", "Cookies"),
@@ -185,66 +125,12 @@ struct SearchView: View {
         ("☕", "Coffee"),      ("🍝", "Pasta"),
         ("🍦", "Ice cream"),   ("🍼", "Baby food"),
     ]
-
-    private func categoryGrid(dark: Bool) -> some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text("BROWSE")
-                .font(.sageBold(11)).tracking(1.3)
-                .foregroundColor(Theme.textSecondary(dark))
-                .padding(.horizontal, 8)
-
-            LazyVGrid(columns: [GridItem(.flexible(), spacing: 10),
-                                GridItem(.flexible(), spacing: 10)], spacing: 10) {
-                ForEach(Self.categories, id: \.name) { category in
-                    Button {
-                        focused = false
-                        query = category.name
-                    } label: {
-                        HStack(spacing: 10) {
-                            Text(category.name)
-                                .font(.sageBold(15)).tracking(-0.2)
-                                .foregroundColor(Theme.textPrimary(dark))
-                                .lineLimit(1)
-                            Spacer(minLength: 4)
-                            Text(category.emoji).font(.sageRegular(22))
-                        }
-                        .padding(.horizontal, 14).padding(.vertical, 18)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .background(
-                            RoundedRectangle(cornerRadius: 18, style: .continuous)
-                                .fill(Theme.surface(dark))
-                        )
-                        .cardShadow(dark)
-                    }
-                    .buttonStyle(.pressable)
-                    .accessibilityLabel("Browse \(category.name)")
-                }
-            }
-        }
-        .padding(.horizontal, 16).padding(.top, 14)
-    }
-
-    private func hint(icon: String, title: String, body: String, dark: Bool) -> some View {
-        VStack(spacing: 8) {
-            Text(icon).font(.sageRegular(32))
-            Text(title)
-                .font(.sageBold(16))
-                .foregroundColor(Theme.textPrimary(dark))
-            Text(body)
-                .font(.sageRegular(13))
-                .foregroundColor(Theme.textSecondary(dark))
-                .multilineTextAlignment(.center)
-        }
-        .frame(maxWidth: .infinity)
-        .padding(.horizontal, 24).padding(.vertical, 60)
-    }
 }
 
 // MARK: - Result row
 
 private struct SearchHitRow: View {
     let hit: BackendService.SearchHit
-    let dark: Bool
     let onTap: () -> Void
 
     var body: some View {
@@ -260,34 +146,30 @@ private struct SearchHitRow: View {
                     if let brand = formatted.brand {
                         Text(brand.uppercased())
                             .font(.sageBold(10)).tracking(1.2)
-                            .foregroundColor(Theme.textSecondary(dark))
+                            .foregroundColor(Theme.inkSecondary)
                     }
                     Text(formatted.name)
                         .font(.sageBold(14))
-                        .foregroundColor(Theme.textPrimary(dark))
+                        .foregroundColor(Theme.ink)
                         .lineLimit(2)
                         .multilineTextAlignment(.leading)
                     if let size = formatted.size {
                         Text(size)
                             .font(.sageRegular(11))
-                            .foregroundColor(Theme.textSecondary(dark))
+                            .foregroundColor(Theme.inkSecondary)
                             .lineLimit(1)
                     }
                 }
                 Spacer(minLength: 8)
                 Image(systemName: "chevron.right")
                     .font(.sageBold(12))
-                    .foregroundColor(Theme.textSecondary(dark))
+                    .foregroundColor(Theme.inkSecondary)
             }
-            .padding(12)
-            .background(
-                RoundedRectangle(cornerRadius: 18, style: .continuous).fill(Theme.surface(dark))
-            )
-            .cardShadow(dark)
+            .contentShape(Rectangle())
             .accessibilityElement(children: .combine)
             .accessibilityLabel(formatted.accessibilityLabel)
         }
-        .buttonStyle(.pressable)
+        .buttonStyle(.plain)
     }
 
     /// No score exists before the lookup, so this is a plain photo tile with

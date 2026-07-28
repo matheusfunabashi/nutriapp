@@ -41,9 +41,16 @@ enum Overlay: Identifiable, Hashable {
 
 struct ContentView: View {
     @EnvironmentObject var store: AppStore
+    @Environment(\.colorScheme) private var colorScheme
 
     @State private var tab: AppTab = .home
-    @State private var stack: [Overlay] = []
+    /// One navigation stack per tab — switching tabs preserves where you were,
+    /// which is the behavior every other iOS app has.
+    @State private var homePath: [Overlay] = []
+    @State private var topRatedPath: [Overlay] = []
+    @State private var pantryPath: [Overlay] = []
+    @State private var youPath: [Overlay] = []
+
     @State private var showCamera = false
     @State private var showFirstLaunch = false
     @State private var firstScanSeen = false
@@ -52,6 +59,10 @@ struct ContentView: View {
     @State private var showMethodModal = false
     @State private var isLookingUp = false
     @State private var lookupError: String? = nil
+    /// Bumped on every completed scan so `sensoryFeedback` has an edge to fire on.
+    @State private var scanFeedback: ScanOutcome? = nil
+
+    private enum ScanOutcome: Equatable { case found(String), failed }
 
     // First-launch onboarding: persisted across app relaunches so each user
     // sees the flow exactly once. Set to true the moment the user finishes
@@ -81,190 +92,182 @@ struct ContentView: View {
     }
 
     private var mainContent: some View {
-        ZStack {
-            // Keep tab content alive under overlays so Top Rated (and other tabs)
-            // retain their state when the user taps back from a product page.
-            tabContent
-                .ignoresSafeArea(.keyboard)
-
-            if !stack.isEmpty {
-                Theme.bg(store.darkMode).ignoresSafeArea()
-                if let screen = stack.last {
-                    overlayView(for: screen)
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
-                        .background(Theme.bg(store.darkMode).ignoresSafeArea())
-                        .clipped()
-                        .id(screen.id)
-                        .transition(.move(edge: .trailing).combined(with: .opacity))
+        TabView(selection: tabSelection) {
+            Tab(AppTab.home.label, systemImage: AppTab.home.icon, value: AppTab.home) {
+                stack($homePath) {
+                    ScannerHomeView(
+                        onTapScan: { startScan() },
+                        onTapHistory: { tab = .pantry },
+                        onTapSearch: { push(.search) },
+                        onOpenProduct: { id in openProduct(id) }
+                    )
                 }
             }
-
-            if !showCamera && stack.isEmpty && !showFirstLaunch {
-                VStack {
-                    Spacer()
-                    TabBar(tab: $tab, onScan: startScan)
+            Tab(AppTab.topRated.label, systemImage: AppTab.topRated.icon, value: AppTab.topRated) {
+                stack($topRatedPath) {
+                    TopRatedCategoriesView(
+                        onOpenCategory: { shelf in push(.topRatedCategory(shelf: shelf.rawValue)) }
+                    )
                 }
-                .zIndex(50)
             }
-
-            if showCamera {
-                ScanCameraView(
-                    onClose: { closeCamera() },
-                    onHistory: { closeCamera(); tab = .pantry },
-                    onScanComplete: { code in finishScan(barcode: code) }
-                )
-                .zIndex(60)
-                .transition(.move(edge: .bottom))
+            // Not a destination — selecting it opens the camera and the
+            // previously selected tab stays put (see `tabSelection`).
+            Tab(AppTab.scan.label, systemImage: AppTab.scan.icon, value: AppTab.scan) {
+                Color.clear
             }
-
-            if isLookingUp {
-                LookupOverlay()
-                    .zIndex(95)
-                    .transition(.opacity)
+            Tab(AppTab.pantry.label, systemImage: AppTab.pantry.icon, value: AppTab.pantry) {
+                stack($pantryPath) {
+                    HistoryView(onOpenProduct: { id in openProduct(id) })
+                }
             }
-
-            if let err = lookupError {
-                ErrorToast(message: err) { lookupError = nil }
-                    .zIndex(96)
-                    .transition(.move(edge: .bottom).combined(with: .opacity))
-            }
-
-            if showMethodModal {
-                MethodologyModal(
-                    onDismiss: { showMethodModal = false },
-                    onLearnMore: { showMethodModal = false; push(.methodology) }
-                )
-                .zIndex(85)
-            }
-
-            if showFirstLaunch {
-                DisclaimerModal(onAcknowledge: { acknowledgeFirstLaunch() })
-                    .zIndex(90)
+            Tab(AppTab.you.label, systemImage: AppTab.you.icon, value: AppTab.you) {
+                stack($youPath) {
+                    ProfileView(
+                        onOpenPersonal: { push(.personal) },
+                        onOpenPreferences: { push(.preferences) },
+                        onOpenNutritionGoals: { push(.nutritionGoals) },
+                        onOpenDietary: { push(.dietary) },
+                        onOpenMethodology: { push(.methodology) },
+                        onOpenDisclaimer: { showFirstLaunch = true }
+                    )
+                }
             }
         }
-        .background(Theme.bg(store.darkMode).ignoresSafeArea())
-        .animation(.spring(response: 0.35, dampingFraction: 0.85), value: stack)
-        .animation(.easeOut(duration: 0.3), value: showCamera)
-        .animation(.easeOut(duration: 0.2), value: showFirstLaunch)
-        .animation(.easeOut(duration: 0.2), value: showMethodModal)
+        .tint(store.accent)
+        .fullScreenCover(isPresented: $showCamera) {
+            ScanCameraView(
+                onClose: { closeCamera() },
+                onHistory: { closeCamera(); tab = .pantry },
+                onScanComplete: { code in finishScan(barcode: code) }
+            )
+        }
+        .sheet(isPresented: $showFirstLaunch, onDismiss: acknowledgeFirstLaunch) {
+            DisclaimerSheet(onAcknowledge: { showFirstLaunch = false })
+                .presentationDetents([.height(400)])
+                .presentationDragIndicator(.visible)
+        }
+        .sheet(isPresented: $showMethodModal) {
+            MethodologySheet(
+                onDismiss: { showMethodModal = false },
+                onLearnMore: { showMethodModal = false; push(.methodology) }
+            )
+            .presentationDetents([.height(320)])
+            .presentationDragIndicator(.visible)
+        }
+        .alert("Couldn't load that product",
+               isPresented: Binding(get: { lookupError != nil },
+                                    set: { if !$0 { lookupError = nil } })) {
+            Button("OK", role: .cancel) { lookupError = nil }
+        } message: {
+            Text(lookupError ?? "")
+        }
+        .overlay {
+            if isLookingUp { LookupOverlay().transition(.opacity) }
+        }
         .animation(.easeOut(duration: 0.2), value: isLookingUp)
-        .animation(.easeOut(duration: 0.2), value: lookupError)
-    }
-
-    @ViewBuilder private var tabContent: some View {
-        switch tab {
-        case .home:
-            ScannerHomeView(
-                onTapScan: { startScan() },
-                onTapHistory: { tab = .pantry },
-                onTapSearch: { push(.search) },
-                onOpenProduct: { id in openProduct(id) }
-            )
-        case .topRated:
-            TopRatedCategoriesView(
-                onOpenCategory: { shelf in push(.topRatedCategory(shelf: shelf.rawValue)) }
-            )
-        case .pantry:
-            HistoryView(onOpenProduct: { id in openProduct(id) })
-        case .you:
-            ProfileView(
-                onOpenPersonal: { push(.personal) },
-                onOpenPreferences: { push(.preferences) },
-                onOpenNutritionGoals: { push(.nutritionGoals) },
-                onOpenDietary: { push(.dietary) },
-                onOpenMethodology: { push(.methodology) },
-                onOpenDisclaimer: { showFirstLaunch = true }
-            )
+        // Scan result lands as a tap; a miss buzzes. This is the one moment in
+        // the app that should be felt, not just seen.
+        .sensoryFeedback(trigger: scanFeedback) { _, outcome in
+            switch outcome {
+            case .found:  return .success
+            case .failed: return .error
+            case .none:   return nil
+            }
         }
     }
 
-    @ViewBuilder private func overlayView(for screen: Overlay) -> some View {
+    /// A tab's navigation stack. Every destination in the app resolves through
+    /// the same `Overlay` enum, so all four stacks share one destination builder.
+    private func stack<Root: View>(_ path: Binding<[Overlay]>,
+                                   @ViewBuilder root: () -> Root) -> some View {
+        NavigationStack(path: path) {
+            root()
+                .navigationDestination(for: Overlay.self) { destination(for: $0) }
+        }
+    }
+
+    /// Routes tab selection. Picking "Scan" is an action, not a destination:
+    /// it opens the camera and leaves the current tab selected.
+    private var tabSelection: Binding<AppTab> {
+        Binding(
+            get: { tab },
+            set: { newValue in
+                guard newValue != .scan else { startScan(); return }
+                tab = newValue
+            }
+        )
+    }
+
+    @ViewBuilder private func destination(for screen: Overlay) -> some View {
         switch screen {
         case .result(let id, let fromScan):
             if let p = store.products[id] {
                 ResultView(
                     product: p,
                     fromScan: fromScan,
-                    onBack: dismissOverlay,
                     onCompare: { beginCompare(productId: id) },
                     onOpenMethodology: { showMethodModal = true },
                     onSelectAlternative: { alt in openAlternative(alt) }
                 )
             } else {
-                OverlayFallbackView(
-                    title: "Product unavailable",
-                    message: "This product couldn't be loaded.",
-                    onBack: dismissOverlay
-                )
+                UnavailableView(title: "Product unavailable",
+                                message: "This product couldn't be loaded.")
             }
         case .insufficientData(let id):
             if let p = store.products[id] {
-                InsufficientDataView(product: p, onBack: dismissOverlay)
+                InsufficientDataView(product: p)
             } else {
-                OverlayFallbackView(
-                    title: "Product unavailable",
-                    message: "This product couldn't be loaded.",
-                    onBack: dismissOverlay
-                )
+                UnavailableView(title: "Product unavailable",
+                                message: "This product couldn't be loaded.")
             }
         case .unsupported(let id):
             if let p = store.products[id] {
-                UnsupportedView(product: p, onBack: dismissOverlay)
+                UnsupportedView(product: p)
             } else {
-                OverlayFallbackView(
-                    title: "Product unavailable",
-                    message: "This product couldn't be loaded.",
-                    onBack: dismissOverlay
-                )
+                UnavailableView(title: "Product unavailable",
+                                message: "This product couldn't be loaded.")
             }
         case .compare(let aId, let bId):
             if let a = store.products[aId], let b = store.products[bId] {
-                CompareView(a: a, b: b, onBack: dismissOverlay)
+                CompareView(a: a, b: b)
             } else {
-                OverlayFallbackView(
-                    title: "Comparison unavailable",
-                    message: "One or both products couldn't be loaded.",
-                    onBack: dismissOverlay
-                )
+                UnavailableView(title: "Comparison unavailable",
+                                message: "One or both products couldn't be loaded.")
             }
         case .topRatedCategory(let raw):
             if let shelf = SageCategory(rawValue: raw) {
-                TopRatedListView(shelf: shelf, onBack: dismissOverlay,
+                TopRatedListView(shelf: shelf,
                                  onOpenProduct: { product in openAlternative(product) })
             } else {
-                OverlayFallbackView(title: "Category unavailable",
-                                    message: "This category couldn't be loaded.",
-                                    onBack: dismissOverlay)
+                UnavailableView(title: "Category unavailable",
+                                message: "This category couldn't be loaded.")
             }
         case .search:
-            SearchView(
-                onSelect: { code in openFromSearch(barcode: code) },
-                onBack: dismissOverlay
-            )
-        case .paywall:        PaywallView(onDismiss: dismissOverlay)
-        case .manual:         ManualEntryView(onCancel: dismissOverlay, onSubmit: dismissOverlay)
-        case .methodology:    MethodologyView(onBack: dismissOverlay)
-        case .personal:       PersonalDetailsView(onBack: dismissOverlay)
-        case .preferences:    PreferencesView(onBack: dismissOverlay)
-        case .nutritionGoals: NutritionGoalsView(onBack: dismissOverlay)
-        case .dietary:        DietaryView(onBack: dismissOverlay)
+            SearchView(onSelect: { code in openFromSearch(barcode: code) })
+        case .paywall:        PaywallView()
+        case .manual:         ManualEntryView()
+        case .methodology:    MethodologyView()
+        case .personal:       PersonalDetailsView()
+        case .preferences:    PreferencesView()
+        case .nutritionGoals: NutritionGoalsView()
+        case .dietary:        DietaryView()
         }
     }
 
-    private func push(_ s: Overlay) { stack.append(s) }
-
-    /// Pops the overlay stack and clears any modal that would block the back button.
-    private func dismissOverlay() {
-        showMethodModal = false
-        guard !stack.isEmpty else { return }
-        _ = stack.popLast()
+    /// The navigation stack belonging to the visible tab.
+    private var activePath: Binding<[Overlay]> {
+        switch tab {
+        case .home, .scan: return $homePath
+        case .topRated:    return $topRatedPath
+        case .pantry:      return $pantryPath
+        case .you:         return $youPath
+        }
     }
 
-    private func pop() { dismissOverlay() }
-    private func reset() { stack.removeAll() }
+    private func push(_ s: Overlay) { activePath.wrappedValue.append(s) }
 
     private func openProduct(_ id: String) {
-        if case .result(let topId, _) = stack.last, topId == id { return }
+        if case .result(let topId, _) = activePath.wrappedValue.last, topId == id { return }
         push(.result(productId: id, fromScan: false))
     }
 
@@ -286,12 +289,12 @@ struct ContentView: View {
         showCamera = true
     }
 
+    /// Runs when the disclaimer sheet closes — by button or by swipe-down, so
+    /// dismissing it still continues into the camera the user asked for.
     private func acknowledgeFirstLaunch() {
-        showFirstLaunch = false
-        if disclaimerFromScan {
-            disclaimerFromScan = false
-            showCamera = true
-        }
+        guard disclaimerFromScan else { return }
+        disclaimerFromScan = false
+        showCamera = true
     }
 
     private func closeCamera() {
@@ -309,6 +312,7 @@ struct ContentView: View {
             do {
                 let raw = try await backend.lookup(barcode: barcode)
                 isLookingUp = false
+                scanFeedback = .found(barcode)
                 guard let product = scoreForDisplay(raw) else { return }
                 if let a = compareWith {
                     store.saveProduct(product)
@@ -322,6 +326,7 @@ struct ContentView: View {
                 }
             } catch {
                 isLookingUp = false
+                scanFeedback = .failed
                 lookupError = Self.lookupMessage(for: error, barcode: barcode)
             }
         }
@@ -399,44 +404,54 @@ struct ContentView: View {
     }
 }
 
-// MARK: - Overlay fallback (missing product data — still needs a working back button)
+// MARK: - Empty / non-scorable states
 
-struct OverlayFallbackView: View {
+/// Generic "we couldn't load this" destination. `ContentUnavailableView` is the
+/// system component for exactly this, so it matches Mail, Files and Photos —
+/// including its own Dynamic Type and VoiceOver handling.
+struct UnavailableView: View {
     let title: String
     let message: String
-    let onBack: () -> Void
+
+    var body: some View {
+        ContentUnavailableView(title, systemImage: "questionmark.circle", description: Text(message))
+            .sageScreenBackground()
+            .navigationBarTitleDisplayMode(.inline)
+    }
+}
+
+/// Product identity block shared by the two non-scorable states.
+private struct ProductIdentity: View {
+    let product: Product
     @EnvironmentObject var store: AppStore
 
     var body: some View {
-        let dark = store.darkMode
-        ZStack {
-            Theme.bg(dark).ignoresSafeArea()
-            VStack(spacing: 0) {
-                HStack {
-                    CircleIconButton(systemName: "chevron.left", dark: dark,
-                                     accessibilityLabel: "Back", action: onBack)
-                    Spacer()
-                    Text("Sage")
-                        .font(.sageBold(18)).tracking(-0.4)
-                        .foregroundColor(Theme.textPrimary(dark))
-                    Spacer()
-                    Color.clear.frame(width: 42, height: 42)
+        let formatted = ProductNameFormatter.format(product)
+        VStack(spacing: 14) {
+            ProductThumb(glyph: product.glyph, score: 0,
+                         neutral: true, imageURL: product.detailImageURL,
+                         processCutout: product.shouldProcessCutout,
+                         isDetail: true)
+            VStack(spacing: 2) {
+                if let brand = formatted.brand {
+                    Text(brand.uppercased())
+                        .font(.sageBold(11)).tracking(1.2)
+                        .foregroundColor(store.accent)
                 }
-                .padding(.horizontal, 16).padding(.top, 8)
-
-                Spacer()
-                VStack(spacing: 8) {
-                    Text(title)
-                        .font(.sageBold(18))
-                        .foregroundColor(Theme.textPrimary(dark))
-                    Text(message)
+                Text(formatted.name)
+                    .font(.sageBold(22)).tracking(-0.5)
+                    .foregroundColor(Theme.ink)
+                    .multilineTextAlignment(.center)
+                    .lineLimit(3)
+                if let size = formatted.size {
+                    Text(size)
                         .font(.sageRegular(13))
-                        .foregroundColor(Theme.textSecondary(dark))
-                        .multilineTextAlignment(.center)
-                        .padding(.horizontal, 32)
+                        .foregroundColor(Theme.inkSecondary)
                 }
-                Spacer()
             }
+            .padding(.horizontal, 32)
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel(formatted.accessibilityLabel)
         }
     }
 }
@@ -448,92 +463,9 @@ struct OverlayFallbackView: View {
 /// render a score built purely from unknown-tier defaults.
 struct InsufficientDataView: View {
     let product: Product
-    let onBack: () -> Void
     @EnvironmentObject var store: AppStore
 
-    private var hasKnownNutrients: Bool {
-        let n = product.nutrients
-        return [n.sugar_g, n.sodium_mg, n.satFat_g, n.fiber_g, n.protein_g,
-                n.calcium_mg, n.kcal].contains { $0 != nil }
-    }
-
-    var body: some View {
-        let dark = store.darkMode
-        ZStack {
-            Theme.bg(dark).ignoresSafeArea()
-            VStack(spacing: 0) {
-                HStack {
-                    CircleIconButton(systemName: "chevron.left", dark: dark,
-                                     accessibilityLabel: "Back", action: onBack)
-                    Spacer()
-                    Text("Sage")
-                        .font(.sageBold(18)).tracking(-0.4)
-                        .foregroundColor(Theme.textPrimary(dark))
-                    Spacer()
-                    // Balances the back button so the title stays centered.
-                    Color.clear.frame(width: 42, height: 42)
-                }
-                .padding(.horizontal, 16).padding(.top, 8)
-
-                Spacer()
-
-                VStack(spacing: 14) {
-                    ProductThumb(glyph: product.glyph, score: 0,
-                                 neutral: true, imageURL: product.detailImageURL,
-                                 processCutout: product.shouldProcessCutout,
-                                 isDetail: true)
-                    let formatted = ProductNameFormatter.format(product)
-                    VStack(spacing: 2) {
-                        if let brand = formatted.brand {
-                            Text(brand.uppercased())
-                                .font(.sageBold(11)).tracking(1.2)
-                                .foregroundColor(store.accent)
-                        }
-                        Text(formatted.name)
-                            .font(.sageBold(22)).tracking(-0.5)
-                            .foregroundColor(Theme.textPrimary(dark))
-                            .multilineTextAlignment(.center)
-                            .lineLimit(3)
-                        if let size = formatted.size {
-                            Text(size)
-                                .font(.sageRegular(13))
-                                .foregroundColor(Theme.textSecondary(dark))
-                        }
-                    }
-                    .padding(.horizontal, 32)
-                    .accessibilityElement(children: .ignore)
-                    .accessibilityLabel(formatted.accessibilityLabel)
-
-                    VStack(spacing: 8) {
-                        Text("Not enough data to score")
-                            .font(.sageBold(16))
-                            .foregroundColor(Theme.textPrimary(dark))
-                        Text("This product isn't fully catalogued yet.")
-                            .font(.sageRegular(13))
-                            .foregroundColor(Theme.textSecondary(dark))
-                            .multilineTextAlignment(.center)
-                            .lineSpacing(2)
-                            .padding(.horizontal, 36)
-                    }
-                    .padding(.top, 8)
-
-                    if hasKnownNutrients {
-                        VStack(spacing: 0) {
-                            EyebrowLabel(text: "Per 100g / 100ml", dark: dark)
-                            insufficientNutrientsCard(dark: dark)
-                                .padding(.horizontal, 16)
-                        }
-                        .padding(.top, 12)
-                    }
-                }
-
-                Spacer()
-                Spacer()
-            }
-        }
-    }
-
-    private func insufficientNutrientsCard(dark: Bool) -> some View {
+    private var knownNutrients: [(String, String)] {
         let n = product.nutrients
         var rows: [(String, String)] = []
         if let v = n.protein_g { rows.append(("Protein", "\(fmt(v)) g")) }
@@ -543,30 +475,37 @@ struct InsufficientDataView: View {
         if let v = n.satFat_g { rows.append(("Saturated fat", "\(fmt(v)) g")) }
         if let v = n.fiber_g { rows.append(("Fiber", "\(fmt(v)) g")) }
         if let v = n.calcium_mg { rows.append(("Calcium", "\(fmt(v)) mg")) }
+        return rows
+    }
 
-        return CardView(dark: dark) {
-            VStack(spacing: 0) {
-                ForEach(Array(rows.enumerated()), id: \.offset) { i, row in
-                    HStack {
-                        Text(row.0)
+    var body: some View {
+        List {
+            Section {
+                ProductIdentity(product: product)
+                    .frame(maxWidth: .infinity)
+                    .listRowBackground(Color.clear)
+                    .listRowSeparator(.hidden)
+                ContentUnavailableView(
+                    "Not enough data to score",
+                    systemImage: "chart.bar.xaxis",
+                    description: Text("This product isn't fully catalogued yet.")
+                )
+                .listRowBackground(Color.clear)
+                .listRowSeparator(.hidden)
+            }
+            if !knownNutrients.isEmpty {
+                Section("Per 100g / 100ml") {
+                    ForEach(knownNutrients, id: \.0) { row in
+                        LabeledContent(row.0, value: row.1)
                             .font(.sageSemiBold(14))
-                            .foregroundColor(Theme.textPrimary(dark))
-                        Spacer()
-                        Text(row.1)
-                            .font(.sageBold(14))
                             .monospacedDigit()
-                            .foregroundColor(Theme.textPrimary(dark))
-                    }
-                    .padding(.horizontal, 14).padding(.vertical, 12)
-                    .overlay(alignment: .top) {
-                        if i > 0 {
-                            Theme.divider(dark).frame(height: 0.5).padding(.horizontal, 8)
-                        }
                     }
                 }
             }
-            .padding(.vertical, 4)
         }
+        .sageListStyle()
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar { SageToolbarTitle() }
     }
 }
 
@@ -577,7 +516,6 @@ struct InsufficientDataView: View {
 /// number for a category the model can't judge well.
 struct UnsupportedView: View {
     let product: Product
-    let onBack: () -> Void
     @EnvironmentObject var store: AppStore
 
     private var reason: String {
@@ -590,69 +528,17 @@ struct UnsupportedView: View {
     }
 
     var body: some View {
-        let dark = store.darkMode
-        ZStack {
-            Theme.bg(dark).ignoresSafeArea()
-            VStack(spacing: 0) {
-                HStack {
-                    CircleIconButton(systemName: "chevron.left", dark: dark,
-                                     accessibilityLabel: "Back", action: onBack)
-                    Spacer()
-                    Text("Sage")
-                        .font(.sageBold(18)).tracking(-0.4)
-                        .foregroundColor(Theme.textPrimary(dark))
-                    Spacer()
-                    Color.clear.frame(width: 42, height: 42)
-                }
-                .padding(.horizontal, 16).padding(.top, 8)
-
-                Spacer()
-
-                VStack(spacing: 14) {
-                    ProductThumb(glyph: product.glyph, score: 0,
-                                 neutral: true, imageURL: product.detailImageURL,
-                                 processCutout: product.shouldProcessCutout,
-                                 isDetail: true)
-                    let formatted = ProductNameFormatter.format(product)
-                    VStack(spacing: 2) {
-                        if let brand = formatted.brand {
-                            Text(brand.uppercased())
-                                .font(.sageBold(11)).tracking(1.2)
-                                .foregroundColor(store.accent)
-                        }
-                        Text(formatted.name)
-                            .font(.sageBold(22)).tracking(-0.5)
-                            .foregroundColor(Theme.textPrimary(dark))
-                            .multilineTextAlignment(.center)
-                            .lineLimit(3)
-                        if let size = formatted.size {
-                            Text(size)
-                                .font(.sageRegular(13))
-                                .foregroundColor(Theme.textSecondary(dark))
-                        }
-                    }
-                    .padding(.horizontal, 32)
-                    .accessibilityElement(children: .ignore)
-                    .accessibilityLabel(formatted.accessibilityLabel)
-
-                    VStack(spacing: 8) {
-                        Text("Not rated")
-                            .font(.sageBold(16))
-                            .foregroundColor(Theme.textPrimary(dark))
-                        Text(reason)
-                            .font(.sageRegular(13))
-                            .foregroundColor(Theme.textSecondary(dark))
-                            .multilineTextAlignment(.center)
-                            .lineSpacing(2)
-                            .padding(.horizontal, 36)
-                    }
-                    .padding(.top, 8)
-                }
-
-                Spacer()
-                Spacer()
+        ScrollView {
+            VStack(spacing: 20) {
+                ProductIdentity(product: product)
+                ContentUnavailableView("Not rated", systemImage: "minus.circle",
+                                       description: Text(reason))
             }
+            .padding(.top, 24)
         }
+        .sageScreenBackground()
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar { SageToolbarTitle() }
     }
 }
 
@@ -660,93 +546,37 @@ struct UnsupportedView: View {
 
 struct LookupOverlay: View {
     @EnvironmentObject var store: AppStore
+
     var body: some View {
-        let dark = store.darkMode
         ZStack {
             Color.black.opacity(0.35).ignoresSafeArea()
-            VStack(spacing: 14) {
-                ProgressView()
-                    .progressViewStyle(.circular)
-                    .tint(store.accent)
-                    .scaleEffect(1.3)
-                Text("Looking up product…")
-                    .font(.sageBold(14)).tracking(-0.2)
-                    .foregroundColor(Theme.textPrimary(dark))
-            }
-            .padding(28)
-            .background(
-                RoundedRectangle(cornerRadius: 22, style: .continuous).fill(Theme.surface(dark))
-            )
-            .cardShadow(dark)
+            ProgressView("Looking up product…")
+                .progressViewStyle(.circular)
+                .tint(store.accent)
+                .font(.sageBold(14))
+                .padding(28)
+                .background(.regularMaterial,
+                            in: RoundedRectangle(cornerRadius: 22, style: .continuous))
         }
-    }
-}
-
-struct ErrorToast: View {
-    let message: String
-    let onDismiss: () -> Void
-    @EnvironmentObject var store: AppStore
-
-    var body: some View {
-        let dark = store.darkMode
-        VStack {
-            Spacer()
-            HStack(alignment: .top, spacing: 12) {
-                Image(systemName: "exclamationmark.triangle.fill")
-                    .foregroundColor(Color(hex: "D4A02D"))
-                    .font(.sageRegular(16))
-                Text(message)
-                    .font(.sageSemiBold(13))
-                    .foregroundColor(Theme.textPrimary(dark))
-                    .fixedSize(horizontal: false, vertical: true)
-                Spacer(minLength: 8)
-                Button(action: onDismiss) {
-                    Image(systemName: "xmark")
-                        .font(.sageBold(11))
-                        .foregroundColor(Theme.textSecondary(dark))
-                        .padding(6)
-                        .background(Circle().fill(dark ? Color.white.opacity(0.12) : Color.black.opacity(0.06)))
-                }
-                .buttonStyle(.plain)
-            }
-            .padding(16)
-            .background(
-                RoundedRectangle(cornerRadius: 18, style: .continuous).fill(Theme.surface(dark))
-            )
-            .cardShadow(dark)
-            .padding(.horizontal, 16)
-            .padding(.bottom, 120)
-        }
-        .task {
-            try? await Task.sleep(nanoseconds: 4_000_000_000)
-            onDismiss()
-        }
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("Looking up product")
     }
 }
 
 // MARK: - Paywall / Manual (lightweight placeholders)
 
 struct PaywallView: View {
-    let onDismiss: () -> Void
+    @Environment(\.dismiss) private var dismiss
     @EnvironmentObject var store: AppStore
+
     var body: some View {
-        let dark = store.darkMode
-        ZStack(alignment: .top) {
+        ZStack {
             LinearGradient(
                 colors: [store.accent, Color.black.opacity(0.85)],
                 startPoint: .top, endPoint: .bottom
             ).ignoresSafeArea()
             VStack(spacing: 16) {
-                HStack {
-                    Spacer()
-                    Button(action: onDismiss) {
-                        Image(systemName: "xmark")
-                            .foregroundColor(.white)
-                            .padding(10)
-                            .background(Circle().fill(Color.white.opacity(0.15)))
-                    }
-                }.padding(.horizontal, 16).padding(.top, 60)
-                Spacer().frame(height: 60)
+                Spacer()
                 Image(systemName: "crown.fill").font(.system(size: 56)).foregroundColor(.yellow)
                 Text("Sage Premium").font(.sageBold(32)).foregroundColor(.white)
                 Text("Unlimited scans, AI ingredient analysis, and personalized insights.")
@@ -755,49 +585,43 @@ struct PaywallView: View {
                     .foregroundColor(.white.opacity(0.8))
                     .padding(.horizontal, 30)
                 Spacer()
-                PillButton(title: "Start free trial", variant: .primary, dark: dark,
-                           fullWidth: true, action: onDismiss)
-                    .padding(.horizontal, 20)
-                Button("Restore purchase", action: onDismiss)
+                Button("Start free trial") { dismiss() }
+                    .buttonStyle(.borderedProminent)
+                    .controlSize(.large)
+                    .tint(.white)
+                    .foregroundStyle(Theme.inkLight)
+                Button("Restore purchase") { dismiss() }
                     .font(.sageSemiBold(13))
                     .foregroundColor(.white.opacity(0.7))
-                    .padding(.bottom, 60)
+                    .padding(.bottom, 40)
             }
+            .padding(.horizontal, 20)
         }
+        .navigationBarTitleDisplayMode(.inline)
     }
 }
 
 struct ManualEntryView: View {
-    let onCancel: () -> Void
-    let onSubmit: () -> Void
+    @Environment(\.dismiss) private var dismiss
     @EnvironmentObject var store: AppStore
     @State private var brand = ""
     @State private var name = ""
+
     var body: some View {
-        let dark = store.darkMode
-        ZStack {
-            Theme.bg(dark).ignoresSafeArea()
-            VStack(spacing: 14) {
-                HStack {
-                    Button("Cancel", action: onCancel).foregroundColor(Theme.textPrimary(dark))
-                    Spacer()
-                    Text("Manual Entry").font(.sageBold(16))
-                        .foregroundColor(Theme.textPrimary(dark))
-                    Spacer()
-                    Button("Save", action: onSubmit)
-                        .foregroundColor(store.accent).fontWeight(.bold)
-                }.padding(.horizontal, 20).padding(.top, 60)
-                VStack(spacing: 10) {
-                    TextField("Brand", text: $brand)
-                    Divider()
-                    TextField("Product name", text: $name)
-                }
-                .padding(16)
-                .background(RoundedRectangle(cornerRadius: 18).fill(Theme.surface(dark)))
-                .padding(.horizontal, 16)
-                Spacer()
+        Form {
+            Section("Product") {
+                TextField("Brand", text: $brand)
+                TextField("Product name", text: $name)
+            }
+        }
+        .sageListStyle()
+        .navigationTitle("Manual Entry")
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .confirmationAction) {
+                Button("Save") { dismiss() }
+                    .disabled(name.trimmingCharacters(in: .whitespaces).isEmpty)
             }
         }
     }
 }
-

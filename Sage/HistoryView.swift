@@ -5,80 +5,93 @@ struct HistoryView: View {
     let onOpenProduct: (String) -> Void
 
     @State private var filter: Filter = .all
+    @State private var confirmingClear = false
 
-    enum Filter: String { case all, good, bad }
+    enum Filter: String, CaseIterable { case all, good, bad }
 
     var body: some View {
-        let dark = store.darkMode
-        ScrollView(showsIndicators: false) {
-            VStack(alignment: .leading, spacing: 0) {
-                StaggeredAppear(index: 0) {
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text("Library")
-                            .font(.sageSemiBold(13))
-                            .foregroundColor(Theme.textSecondary(dark))
-                        Text("History")
-                            .font(.sageBold(32)).tracking(-1)
-                            .foregroundColor(Theme.textPrimary(dark))
-                    }
-                    // 12pt above the system safe-area; ContentView's
-                    // tabContent isn't ignoring it, so this is the only
-                    // breathing room we need below the Dynamic Island.
-                    .padding(.horizontal, 24).padding(.top, 12).padding(.bottom, 8)
+        List {
+            // Segmented control, not a hand-rolled chip row: it gets the
+            // system's selection animation and VoiceOver treatment for free.
+            Picker("Filter", selection: $filter) {
+                ForEach(Filter.allCases, id: \.self) { f in
+                    Text(label(for: f)).tag(f)
                 }
+            }
+            .pickerStyle(.segmented)
+            .listRowBackground(Color.clear)
+            .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 8, trailing: 16))
 
-                StaggeredAppear(index: 1) {
-                    ScrollView(.horizontal, showsIndicators: false) {
-                        HStack(spacing: 6) {
-                            ForEach(filterItems, id: \.id) { f in
-                                FilterChip(label: f.label, count: f.count,
-                                           active: filter == f.id, dark: dark) {
-                                    // Spring keeps the chip transition interruptible
-                                    // if the user flicks between filters.
-                                    withAnimation(.spring(response: 0.3, dampingFraction: 0.85)) {
-                                        filter = f.id
-                                    }
+            ForEach(groupedDays, id: \.day) { entry in
+                Section(entry.day.uppercased()) {
+                    ForEach(entry.items) { h in
+                        if let p = store.products[h.productId] {
+                            HistoryRow(product: p, when: h.time) {
+                                onOpenProduct(p.id)
+                            }
+                            // Swipe-to-delete is the platform gesture for a
+                            // feed like this — no custom edit mode needed.
+                            .swipeActions {
+                                Button("Delete", systemImage: "trash", role: .destructive) {
+                                    store.deleteHistory(h)
                                 }
                             }
                         }
-                        .padding(.horizontal, 16).padding(.vertical, 8)
                     }
                 }
+            }
 
-                ForEach(Array(groupedDays.enumerated()), id: \.element.day) { (gIdx, entry) in
-                    // Stagger each day group so multi-day pantries reveal in
-                    // sequence rather than as one block.
-                    StaggeredAppear(index: gIdx + 2) {
-                        VStack(alignment: .leading, spacing: 0) {
-                            Text(entry.day.uppercased())
-                                .font(.sageBold(11)).tracking(1.4)
-                                .foregroundColor(Theme.textSecondary(dark))
-                                .padding(.horizontal, 24).padding(.top, 20).padding(.bottom, 8)
-
-                            CardView(dark: dark) {
-                                VStack(spacing: 0) {
-                                    ForEach(Array(entry.items.enumerated()), id: \.element.id) { (i, h) in
-                                        if let p = store.products[h.productId] {
-                                            HistoryRow(product: p, when: h.time,
-                                                       divider: i > 0, dark: dark) {
-                                                onOpenProduct(p.id)
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                            .padding(.horizontal, 16)
-                        }
-                    }
-                }
-
-                if groupedDays.isEmpty {
-                    StaggeredAppear(index: 2) { EmptyHistory(dark: dark) }
-                }
-                Spacer().frame(height: 120)
+            if groupedDays.isEmpty {
+                ContentUnavailableView(
+                    filter == .all ? "Nothing here yet" : "No matches",
+                    systemImage: "leaf",
+                    description: Text(filter == .all
+                                      ? "Scan a product to see it in your history."
+                                      : "No scans match this filter yet.")
+                )
+                .listRowBackground(Color.clear)
+                .listRowSeparator(.hidden)
             }
         }
-        .background(Theme.bg(dark).ignoresSafeArea())
+        .sageListStyle()
+        .navigationTitle("History")
+        .toolbar {
+            if !store.history.isEmpty {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Menu {
+                        Button("Clear History", systemImage: "trash", role: .destructive) {
+                            confirmingClear = true
+                        }
+                    } label: {
+                        Label("More", systemImage: "ellipsis.circle")
+                    }
+                }
+            }
+        }
+        // Clearing every scan can't be undone, so it goes through the system's
+        // destructive confirmation rather than firing straight from the menu.
+        .confirmationDialog("Clear all scan history?",
+                            isPresented: $confirmingClear, titleVisibility: .visible) {
+            Button("Clear History", role: .destructive) { store.clearHistory() }
+            Button("Cancel", role: .cancel) { }
+        } message: {
+            Text("Your saved products are kept — only the history feed is cleared.")
+        }
+    }
+
+    private func label(for f: Filter) -> String {
+        switch f {
+        case .all:  return "All (\(store.history.count))"
+        case .good: return "Good (\(count { $0 >= 50 }))"
+        case .bad:  return "Avoid (\(count { $0 < 50 }))"
+        }
+    }
+
+    private func count(_ predicate: (Int) -> Bool) -> Int {
+        store.history.filter {
+            guard let s = store.products[$0.productId]?.yourScore else { return false }
+            return predicate(s)
+        }.count
     }
 
     private var filtered: [HistoryEntry] {
@@ -101,63 +114,13 @@ struct HistoryView: View {
         }
         return order.map { ($0, groups[$0] ?? []) }
     }
-
-    private var filterItems: [(id: Filter, label: String, count: Int)] {
-        let goodCount = store.history.filter {
-            guard let s = store.products[$0.productId]?.yourScore else { return false }
-            return s >= 50
-        }.count
-        let badCount = store.history.filter {
-            guard let s = store.products[$0.productId]?.yourScore else { return false }
-            return s < 50
-        }.count
-        return [
-            (.all,  "All",           store.history.count),
-            (.good, "Good for you",  goodCount),
-            (.bad,  "Avoid",         badCount),
-        ]
-    }
-}
-
-private struct FilterChip: View {
-    let label: String
-    let count: Int
-    let active: Bool
-    let dark: Bool
-    let action: () -> Void
-    var body: some View {
-        Button(action: action) {
-            HStack(spacing: 6) {
-                Text(label)
-                    .font(.sageBold(13)).tracking(-0.1)
-                Text("\(count)")
-                    .font(.sageBold(11))
-                    .opacity(active ? 0.7 : 0.5)
-                    .monospacedDigit() // counts can shift as scans pile up
-                    .contentTransition(.numericText()) // smooth count updates
-            }
-            .foregroundColor(active ? (dark ? .black : .white)
-                              : Theme.textPrimary(dark))
-            .padding(.horizontal, 14).padding(.vertical, 9)
-            .background(
-                Capsule().fill(
-                    active ? (dark ? Color.white : Color.black)
-                           : (dark ? Color.white.opacity(0.06) : Color.white)
-                )
-            )
-            .cardShadow(!active && !dark)
-            .minHitArea(40) // chips are slim — keep thumb target healthy
-        }
-        .buttonStyle(.pressable)
-    }
 }
 
 private struct HistoryRow: View {
     let product: Product
     let when: String
-    let divider: Bool
-    let dark: Bool
     let onTap: () -> Void
+
     var body: some View {
         let formatted = ProductNameFormatter.format(product)
         let meta = [formatted.size, when].compactMap { $0 }.filter { !$0.isEmpty }.joined(separator: " · ")
@@ -170,49 +133,27 @@ private struct HistoryRow: View {
                     if let brand = formatted.brand {
                         Text(brand.uppercased())
                             .font(.sageBold(10)).tracking(1.2)
-                            .foregroundColor(Theme.textSecondary(dark))
+                            .foregroundColor(Theme.inkSecondary)
                     }
                     Text(formatted.name)
                         .font(.sageBold(14)).tracking(-0.2)
-                        .foregroundColor(Theme.textPrimary(dark))
+                        .foregroundColor(Theme.ink)
                         .lineLimit(1)
                     Text(meta)
                         .font(.sageRegular(11))
                         .monospacedDigit()
-                        .foregroundColor(Theme.textSecondary(dark))
+                        .foregroundColor(Theme.inkSecondary)
                 }
                 Spacer(minLength: 8)
                 YourScorePill(score: product.yourScore, isUnscored: product.isUnscored)
                 Image(systemName: "chevron.right")
                     .font(.sageBold(12))
-                    .foregroundColor(Theme.textSecondary(dark))
+                    .foregroundColor(Theme.inkSecondary)
             }
-            .padding(.horizontal, 14).padding(.vertical, 12)
-            .overlay(alignment: .top) {
-                if divider {
-                    Theme.divider(dark).frame(height: 0.5).padding(.horizontal, 12)
-                }
-            }
+            .contentShape(Rectangle())
             .accessibilityElement(children: .combine)
             .accessibilityLabel("\(formatted.accessibilityLabel), \(when)")
         }
-        .buttonStyle(.pressable)
-    }
-}
-
-private struct EmptyHistory: View {
-    let dark: Bool
-    var body: some View {
-        VStack(spacing: 8) {
-            Text("🌱").font(.sageRegular(32))
-            Text("Nothing here yet")
-                .font(.sageBold(16))
-                .foregroundColor(Theme.textPrimary(dark))
-            Text("Scan a product to see it in your history.")
-                .font(.sageRegular(13))
-                .foregroundColor(Theme.textSecondary(dark))
-        }
-        .frame(maxWidth: .infinity)
-        .padding(.horizontal, 24).padding(.vertical, 60)
+        .buttonStyle(.plain)
     }
 }
