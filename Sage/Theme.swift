@@ -4,6 +4,15 @@ import SwiftData
 // MARK: - Theme tokens
 
 extension Color {
+    /// A light/dark pair resolved at draw time by the trait system, so a single
+    /// token adapts to the environment instead of being picked by a `Bool` the
+    /// caller had to thread down by hand.
+    init(light: Color, dark: Color) {
+        self.init(uiColor: UIColor { traits in
+            traits.userInterfaceStyle == .dark ? UIColor(dark) : UIColor(light)
+        })
+    }
+
     init(hex: String) {
         var hex = hex.trimmingCharacters(in: .whitespacesAndNewlines)
         if hex.hasPrefix("#") { hex.removeFirst() }
@@ -31,18 +40,27 @@ enum Theme {
     static let bgDark = Color(hex: "0F0F0E")
     static let surfaceLight = Color.white
     static let surfaceDark = Color(hex: "1A1A1A")
+    static let inkLight = Color(hex: "111111")
 
-    static func bg(_ dark: Bool) -> Color { dark ? bgDark : bgLight }
-    static func surface(_ dark: Bool) -> Color { dark ? surfaceDark : surfaceLight }
-    static func textPrimary(_ dark: Bool) -> Color {
-        dark ? Color.white : Color(hex: "111111")
-    }
-    static func textSecondary(_ dark: Bool) -> Color {
-        dark ? Color.white.opacity(0.55) : Color(hex: "111111").opacity(0.55)
-    }
-    static func divider(_ dark: Bool) -> Color {
-        dark ? Color.white.opacity(0.06) : Color.black.opacity(0.06)
-    }
+    // MARK: Dynamic tokens
+    //
+    // Each token resolves itself from the environment, so no view has to know
+    // which scheme is active or thread a `dark` flag to its children. They also
+    // work inside UIKit-backed chrome — nav bars, tab bars, list separators —
+    // where a SwiftUI-only flag would never reach.
+
+    static let background = Color(light: bgLight, dark: bgDark)
+    static let card = Color(light: surfaceLight, dark: surfaceDark)
+    static let ink = Color(light: inkLight, dark: .white)
+    static let inkSecondary = Color(light: inkLight.opacity(0.55),
+                                    dark: Color.white.opacity(0.55))
+    static let hairline = Color(light: .black.opacity(0.06),
+                                dark: .white.opacity(0.06))
+    /// Card outline — only dark mode needs one; light mode uses the shadow.
+    static let cardEdge = Color(light: .clear, dark: .white.opacity(0.06))
+    /// Unfilled portion of a score ring.
+    static let ringTrack = Color(light: .black.opacity(0.06),
+                                 dark: .white.opacity(0.08))
 }
 
 // MARK: - Semantic score / alarm colors (product detail + shared UI)
@@ -127,10 +145,13 @@ func scoreTier(_ score: Int) -> ScoreTier {
 func scoreColor(_ s: Int) -> Color { scoreTier(s).fg }
 func scoreLabel(_ s: Int) -> String { scoreTier(s).label }
 
+/// Elevation for the one card per screen that should read as raised.
+/// Reads the scheme itself — shadows are invisible on a near-black background,
+/// so dark mode gets none.
 struct CardShadow: ViewModifier {
-    let dark: Bool
+    @Environment(\.colorScheme) private var colorScheme
     func body(content: Content) -> some View {
-        if dark {
+        if colorScheme == .dark {
             content
         } else {
             content
@@ -140,7 +161,7 @@ struct CardShadow: ViewModifier {
     }
 }
 extension View {
-    func cardShadow(_ dark: Bool) -> some View { modifier(CardShadow(dark: dark)) }
+    func cardShadow() -> some View { modifier(CardShadow()) }
 }
 
 // MARK: - App-wide store
@@ -150,7 +171,16 @@ extension View {
 @MainActor
 final class AppStore: ObservableObject {
     @Published var accent: Color = Theme.accent
-    @Published var darkMode: Bool = false
+
+    /// Scheme override for the whole app. `nil` means "follow the system",
+    /// which is what the Preferences → System tile has always promised.
+    var colorScheme: ColorScheme? {
+        switch user.appearance {
+        case "light": return .light
+        case "dark":  return .dark
+        default:      return nil
+        }
+    }
 
     /// Every mutation persists automatically.
     @Published var user: UserProfile { didSet { persistProfile() } }
@@ -199,7 +229,6 @@ final class AppStore: ObservableObject {
             // First launch: seed from the default profile.
             persistProfile()
         }
-        darkMode = (user.appearance == "dark")
     }
 
     private func loadProducts() {

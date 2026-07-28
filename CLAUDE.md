@@ -1,3 +1,78 @@
+# Session Changelog — 2026-07-27 — Native SwiftUI chrome pass
+
+Design review called the UI "a copy of Oasis" and asked for more default SwiftUI
+components. The app had rebuilt every piece of platform chrome by hand, which is
+what made it read as a template. This pass deletes the hand-rolled chrome and
+adopts the system equivalents. Net **−900 lines**.
+
+## Navigation — `NavigationStack` replaces the manual overlay stack
+**Files:** `ContentView.swift`, and every pushed screen
+
+`ContentView` drove a `ZStack` with `@State stack: [Overlay]` and a hand-written
+`.transition(.move(edge: .trailing))`. Now each tab owns a `NavigationStack(path:)`
+and every screen resolves through one `navigationDestination(for: Overlay.self)`.
+
+This restores interactive swipe-back, real push transitions, large-title collapse,
+and per-tab stack persistence. `SubHeader` plus four inline copies of a fake nav bar
+(each with a `Color.clear.frame(width: 42)` spacer to fake title centering) are gone,
+replaced by `.navigationTitle` / `.toolbar`. `onBack` closures deleted throughout.
+
+## Tab bar — `TabView` replaces `TabBar`
+**Files:** `ContentView.swift`, `Shared.swift`
+
+Native `TabView(selection:)` with iOS 18 `Tab` values. Scan is a pseudo-tab: the
+selection binding intercepts `.scan`, opens the camera, and leaves the current tab
+selected. `AppTab.activeIcon` is gone — the system owns filled/unfilled variants.
+
+## Lists — `List` / `Form` replace stacked `CardView`s
+**Files:** `ProfileView`, `ProfileSubScreens`, `HistoryView`, `TopRatedView`, `SearchView`
+
+Inset-grouped `List` on the brand background (`.scrollContentBackground(.hidden)`),
+so the beige/white look survives while the system supplies separators, row insets,
+press highlights, and swipe actions. Specifically:
+
+- `CustomToggle` → `Toggle` + `.tint`
+- appearance tiles → inline `Picker`
+- priority segmented control → `Picker(.segmented)`
+- objective radio circles → system checkmark
+- search field → `.searchable` in the nav bar
+- empty states → `ContentUnavailableView`
+- history delete → `.swipeActions`; clear-all → toolbar `Menu`
+- `MethodologyModal` / `DisclaimerModal` (z-indexed overlays) → `.sheet` + detents
+- `ErrorToast` → `.alert`
+- camera → `.fullScreenCover`
+- `PillButton` / `CircleIconButton` → `.borderedProminent` + toolbar buttons
+
+## Theming — dynamic colors, and "System" appearance actually works
+**File:** `Theme.swift` (+ ~25 views)
+
+Colors were picked by a `dark: Bool` threaded manually through every view.
+`Color(light:dark:)` wraps a `UIColor` dynamic provider, so `Theme.background`,
+`.card`, `.ink`, `.inkSecondary`, `.hairline`, `.ringTrack` resolve themselves —
+including inside UIKit-backed chrome where a SwiftUI flag never reaches. All ~196
+`Theme.foo(dark)` call sites migrated; the `Bool` overloads are deleted.
+
+`AppStore.darkMode` is replaced by `colorScheme: ColorScheme?`, which returns `nil`
+for "system". Previously `.preferredColorScheme(store.darkMode ? .dark : .light)`
+pinned the app to one scheme, so the System tile in Preferences never worked.
+
+## Typography — Dynamic Type
+**File:** `Typography.swift`
+
+`Font.custom(_:size:)` opts out of Dynamic Type entirely. Every sized variant now
+passes `relativeTo:`, mapped from the design point size to the nearest system text
+style. `sageFixedBold/Medium` opt out deliberately for numerals inside fixed
+geometry (score rings), which carry their own accessibility labels. The app clamps
+at `accessibility2` — past that the dials stop being readable rather than more so.
+
+## Haptics
+`.sensoryFeedback` on scan success/failure — the one moment that should be felt.
+
+### Superseded from the 2026-07-09/10 entry below
+- item 3's `topBar` → toolbar; item 5's browse-category card grid → `List` section.
+
+---
+
 # Session Changelog — 2026-07-09/10
 
 Summary of the UI/bug-fix changes made in this session. All changes build clean

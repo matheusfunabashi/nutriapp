@@ -82,7 +82,7 @@ private struct DevMenu: View {
                 }
             }
         }
-        .preferredColorScheme(store.darkMode ? .dark : .light)
+        .preferredColorScheme(store.colorScheme)
     }
 
     private func row(_ label: String, _ value: String) -> some View {

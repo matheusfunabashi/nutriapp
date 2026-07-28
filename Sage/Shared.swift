@@ -6,7 +6,6 @@ struct ScoreRing: View {
     let score: Int
     var size: CGFloat = 132
     var stroke: CGFloat = 11
-    var dark: Bool = false
     var sublabel: String? = nil
     /// When set, overrides the tier-derived arc color (e.g. muted Overall reference).
     var ringColor: Color? = nil
@@ -15,9 +14,8 @@ struct ScoreRing: View {
 
     var body: some View {
         let color = ringColor ?? scoreColor(score)
-        let track = dark ? Color.white.opacity(0.08) : Color.black.opacity(0.06)
         ZStack {
-            Circle().stroke(track, lineWidth: stroke)
+            Circle().stroke(Theme.ringTrack, lineWidth: stroke)
             Circle()
                 .trim(from: 0, to: CGFloat(animated) / 100)
                 .stroke(color, style: StrokeStyle(lineWidth: stroke, lineCap: .round))
@@ -25,18 +23,20 @@ struct ScoreRing: View {
                 .animation(.easeOut(duration: 1.1), value: animated)
             VStack(spacing: 2) {
                 Text("\(Int(animated.rounded()))")
-                    .font(.sageBold(size * 0.34))
+                    .font(.sageFixedBold(size * 0.34))
                     .monospacedDigit()
-                    .foregroundColor(Theme.textPrimary(dark))
+                    .foregroundColor(Theme.ink)
                 if let sub = sublabel {
                     Text(sub.uppercased())
-                        .font(.sageBold(10))
+                        .font(.sageFixedBold(10))
                         .tracking(1)
                         .foregroundColor(color)
                 }
             }
         }
         .frame(width: size, height: size)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(sublabel.map { "\(score), \($0)" } ?? "\(score)")
         .onAppear { animated = Double(score) }
     }
 }
@@ -47,7 +47,6 @@ struct ScoreRing: View {
 struct CompactScoreRing: View {
     let score: Int?
     var isUnscored: Bool = false
-    var dark: Bool = false
 
     private let size: CGFloat = 52
     private let stroke: CGFloat = 4.5
@@ -63,14 +62,12 @@ struct CompactScoreRing: View {
     }
 
     private var unscoredBadge: some View {
-        let track = dark ? Color.white.opacity(0.08) : Color.black.opacity(0.06)
-        let fg = Theme.textSecondary(dark)
-        return ZStack {
-            Circle().stroke(track, lineWidth: stroke)
+        ZStack {
+            Circle().stroke(Theme.ringTrack, lineWidth: stroke)
             Text("Unscored")
-                .font(.sageBold(9))
+                .font(.sageFixedBold(9))
                 .multilineTextAlignment(.center)
-                .foregroundColor(fg)
+                .foregroundColor(Theme.inkSecondary)
                 .padding(.horizontal, 4)
         }
         .frame(width: size, height: size)
@@ -79,25 +76,25 @@ struct CompactScoreRing: View {
 
     private func scoredRing(_ score: Int) -> some View {
         let style = Self.style(for: score)
-        let track = dark ? Color.white.opacity(0.08) : Color.black.opacity(0.06)
-
         return ZStack {
-            Circle().stroke(track, lineWidth: stroke)
+            Circle().stroke(Theme.ringTrack, lineWidth: stroke)
             Circle()
                 .trim(from: 0, to: CGFloat(score) / 100)
                 .stroke(style.color, style: StrokeStyle(lineWidth: stroke, lineCap: .round))
                 .rotationEffect(.degrees(-90))
             VStack(spacing: 1) {
                 Text("\(score)")
-                    .font(.sageBold(13))
+                    .font(.sageFixedBold(13))
                     .monospacedDigit()
-                    .foregroundColor(Theme.textPrimary(dark))
+                    .foregroundColor(Theme.ink)
                 Text(style.label)
-                    .font(.sageMedium(9))
-                    .foregroundColor(Theme.textSecondary(dark))
+                    .font(.sageFixedMedium(9))
+                    .foregroundColor(Theme.inkSecondary)
             }
         }
         .frame(width: size, height: size)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("\(score), \(style.label)")
     }
 
     private static func style(for score: Int) -> (color: Color, label: String) {
@@ -164,13 +161,12 @@ struct YourScorePill: View {
 
 struct EyebrowLabel: View {
     let text: String
-    let dark: Bool
     var horizontalPadding: CGFloat = 24
     var body: some View {
         Text(text)
             .font(.sageBold(12))
             .tracking(-0.1)
-            .foregroundColor(Theme.textSecondary(dark))
+            .foregroundColor(Theme.inkSecondary)
             .padding(.horizontal, horizontalPadding)
             .padding(.top, 14).padding(.bottom, 6)
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -180,18 +176,17 @@ struct EyebrowLabel: View {
 struct SectionTitle: View {
     let title: String
     var subtitle: String? = nil
-    let dark: Bool
     var horizontalPadding: CGFloat = 24
     var body: some View {
         VStack(alignment: .leading, spacing: 2) {
             Text(title)
                 .font(.sageBold(18))
                 .tracking(-0.4)
-                .foregroundColor(Theme.textPrimary(dark))
+                .foregroundColor(Theme.ink)
             if let sub = subtitle {
                 Text(sub)
                     .font(.sageRegular(12))
-                    .foregroundColor(Theme.textSecondary(dark))
+                    .foregroundColor(Theme.inkSecondary)
             }
         }
         .padding(.horizontal, horizontalPadding)
@@ -200,44 +195,20 @@ struct SectionTitle: View {
     }
 }
 
-// MARK: - Circle icon button
-
-struct CircleIconButton: View {
-    let systemName: String
-    let dark: Bool
-    var size: CGFloat = 42
-    var accessibilityLabel: String? = nil
-    var action: () -> Void = {}
-
-    var body: some View {
-        Button(action: action) {
-            ZStack {
-                Circle().fill(dark ? Color.white.opacity(0.08) : Color.white)
-                Image(systemName: systemName)
-                    .font(.sageSemiBold(16))
-                    .foregroundColor(Theme.textPrimary(dark))
-            }
-            .frame(width: size, height: size)
-            .contentShape(Circle())
-            .cardShadow(dark)
-        }
-        .buttonStyle(.borderless)
-        .accessibilityLabel(accessibilityLabel ?? systemName)
-    }
-}
-
 // MARK: - Tab bar
 
-/// Tab cases drive what's rendered in the main area. "Scan" isn't a tab
-/// because it triggers an action (open the camera) rather than swap a
-/// destination view.
+/// Tab cases drive `TabView` selection. `.scan` carries no destination —
+/// selecting it opens the camera and the previous tab stays selected
+/// (see `ContentView.tabSelection`). The system handles the selected/filled
+/// symbol variants, so there's no `activeIcon` to maintain.
 enum AppTab: String, CaseIterable {
-    case home, topRated, pantry, you
+    case home, topRated, scan, pantry, you
 
     var label: String {
         switch self {
         case .home:     return "Home"
         case .topRated: return "Top Rated"
+        case .scan:     return "Scan"
         case .pantry:   return "Pantry"
         case .you:      return "Profile"
         }
@@ -247,130 +218,10 @@ enum AppTab: String, CaseIterable {
         switch self {
         case .home:     return "house"
         case .topRated: return "trophy"
-        case .pantry:   return "line.3.horizontal"
+        case .scan:     return "barcode.viewfinder"
+        case .pantry:   return "list.bullet"
         case .you:      return "person"
         }
-    }
-
-    /// Filled variant for the active state; falls back to `icon` when no
-    /// filled symbol meaningfully differs.
-    var activeIcon: String {
-        switch self {
-        case .home:     return "house.fill"
-        case .topRated: return "trophy.fill"
-        case .you:      return "person.fill"
-        default:        return icon
-        }
-    }
-}
-
-struct TabBar: View {
-    @EnvironmentObject var store: AppStore
-    @Binding var tab: AppTab
-    /// Tapping the center hero opens the camera — it's an action, not a tab swap.
-    let onScan: () -> Void
-
-    var body: some View {
-        let dark = store.darkMode
-        HStack(spacing: 0) {
-            tabButton(.home)
-            tabButton(.topRated)
-            scanHero
-            tabButton(.pantry)
-            tabButton(.you)
-        }
-        .padding(.horizontal, 6)
-        .padding(.vertical, 10)
-        .background(
-            Capsule(style: .continuous)
-                .fill(dark ? Color(white: 0.10).opacity(0.92) : Color.white.opacity(0.96))
-                .background(.ultraThinMaterial, in: Capsule(style: .continuous))
-        )
-        .overlay(
-            Capsule(style: .continuous)
-                .stroke(dark ? Color.white.opacity(0.06) : Color.black.opacity(0.04),
-                        lineWidth: 0.5)
-        )
-        .shadow(color: Color.black.opacity(0.10), radius: 24, x: 0, y: 10)
-        .padding(.horizontal, 16)
-        // Sits closer to the safe-area edge so the bar feels anchored
-        // to the bottom rather than floating mid-air.
-        .padding(.bottom, 6)
-    }
-
-    // MARK: Standard tab slot
-
-    @ViewBuilder
-    private func tabButton(_ t: AppTab) -> some View {
-        let active = tab == t
-        let dark = store.darkMode
-        let primary = Theme.textPrimary(dark)
-        let dim = dark ? Color.white.opacity(0.42) : Color.black.opacity(0.38)
-        let c = active ? primary : dim
-
-        Button {
-            // Spring keeps the active-state transition interruptible — if
-            // the user taps a third tab mid-animation it retargets smoothly.
-            withAnimation(.spring(response: 0.32, dampingFraction: 0.85)) {
-                tab = t
-            }
-        } label: {
-            VStack(spacing: 4) {
-                // Contextual icon swap: cross-fade with scale + opacity
-                // instead of snapping between two symbols. iOS 17+ supports
-                // a symbol replace transition that does the spring for us.
-                Image(systemName: active ? t.activeIcon : t.icon)
-                    .font(.system(size: 22, weight: active ? .bold : .regular))
-                    .foregroundColor(c)
-                    .frame(height: 26)
-                    .contentTransition(.symbolEffect(.replace))
-                    .animation(.spring(response: 0.3, dampingFraction: 0.85), value: active)
-                Text(t.label)
-                    .font(.sageMedium(11))
-                    .tracking(-0.1)
-                    .foregroundColor(c)
-            }
-            .frame(maxWidth: .infinity, minHeight: 44) // ≥44pt hit area
-            .contentShape(Rectangle())
-        }
-        // Static — the tab slot already communicates press via its color
-        // change and active backdrop; scaling on top of that is fussy.
-        .buttonStyle(.pressableStatic)
-    }
-
-    // MARK: Center hero — circular accent, sitting in-line with the tabs
-    //
-    // Shares the tab slot's VStack(icon, label) structure so all five
-    // buttons land on the same vertical baseline; the accent-filled
-    // circle around the glyph is the only visual difference, keeping
-    // Scan as the primary action without it floating above the bar.
-
-    private var scanHero: some View {
-        let dark = store.darkMode
-        return Button(action: onScan) {
-            VStack(spacing: 4) {
-                ZStack {
-                    Circle()
-                        .fill(store.accent)
-                        .overlay(
-                            Circle().stroke(Color.white.opacity(0.18), lineWidth: 1)
-                        )
-                    Image(systemName: "viewfinder")
-                        .font(.sageBold(16))
-                        .foregroundColor(.white)
-                }
-                .frame(width: 30, height: 30)
-                .shadow(color: store.accent.opacity(0.30), radius: 6, x: 0, y: 3)
-
-                Text("Scan")
-                    .font(.sageMedium(11))
-                    .tracking(-0.1)
-                    .foregroundColor(Theme.textPrimary(dark))
-            }
-            .frame(maxWidth: .infinity, minHeight: 44) // ≥44pt hit area
-            .contentShape(Rectangle())
-        }
-        .buttonStyle(.pressable) // primary action — does want a press scale
     }
 }
 
@@ -379,9 +230,13 @@ struct TabBar: View {
 struct ChipView: View {
     let label: String
     let active: Bool
-    let dark: Bool
     let accent: Color
     var action: () -> Void = {}
+
+    private static let idle = Color(light: Theme.bgLight, dark: Color.white.opacity(0.05))
+    private static let idleStroke = Color(light: .black.opacity(0.08),
+                                          dark: .white.opacity(0.08))
+
     var body: some View {
         Button(action: action) {
             HStack(spacing: 5) {
@@ -393,20 +248,14 @@ struct ChipView: View {
                 Text(label)
                     .font(.sageBold(12))
                     .tracking(-0.1)
-                    .foregroundColor(active ? accent : Theme.textPrimary(dark))
+                    .foregroundColor(active ? accent : Theme.ink)
             }
             .padding(.horizontal, 13).padding(.vertical, 8)
-            .background(
-                Capsule().fill(active ? accent.opacity(0.10)
-                              : (dark ? Color.white.opacity(0.05) : Theme.bgLight))
-            )
-            .overlay(
-                Capsule().stroke(active ? accent
-                                : (dark ? Color.white.opacity(0.08) : Color.black.opacity(0.08)),
-                                lineWidth: 1)
-            )
+            .background(Capsule().fill(active ? accent.opacity(0.10) : Self.idle))
+            .overlay(Capsule().stroke(active ? accent : Self.idleStroke, lineWidth: 1))
         }
         .buttonStyle(.plain)
+        .accessibilityAddTraits(active ? .isSelected : [])
     }
 }
 
@@ -447,7 +296,6 @@ enum RiskStyle {
 // MARK: - Card wrapper
 
 struct CardView<Content: View>: View {
-    let dark: Bool
     var padding: EdgeInsets = EdgeInsets(top: 4, leading: 0, bottom: 4, trailing: 0)
     @ViewBuilder var content: Content
     var body: some View {
@@ -455,13 +303,13 @@ struct CardView<Content: View>: View {
             .padding(padding)
             .background(
                 RoundedRectangle(cornerRadius: 22, style: .continuous)
-                    .fill(Theme.surface(dark))
+                    .fill(Theme.card)
             )
             .overlay(
                 RoundedRectangle(cornerRadius: 22, style: .continuous)
-                    .stroke(dark ? Color.white.opacity(0.06) : .clear, lineWidth: 0.5)
+                    .stroke(Theme.cardEdge, lineWidth: 0.5)
             )
-            .cardShadow(dark)
+            .cardShadow()
     }
 }
 
@@ -483,90 +331,50 @@ struct SageMark: View {
 
 /// Cold-start splash: app background + centered logo mark (no wordmark).
 struct SplashView: View {
-    let dark: Bool
     var accent: Color = Theme.accent
 
     var body: some View {
         ZStack {
-            Theme.bg(dark).ignoresSafeArea()
+            Theme.background.ignoresSafeArea()
             SageMark(size: 88, color: accent)
         }
         .accessibilityHidden(true)
     }
 }
 
-// MARK: - Toggle
+// MARK: - Native chrome helpers
 
-struct CustomToggle: View {
-    @Binding var isOn: Bool
-    let dark: Bool
-    var body: some View {
-        Button {
-            withAnimation(.easeOut(duration: 0.2)) { isOn.toggle() }
-        } label: {
-            ZStack(alignment: isOn ? .trailing : .leading) {
-                Capsule()
-                    .fill(isOn ? Color.black : (dark ? Color.white.opacity(0.18) : Color.black.opacity(0.18)))
-                    .frame(width: 46, height: 28)
-                Circle()
-                    .fill(Color.white)
-                    .frame(width: 24, height: 24)
-                    .shadow(color: .black.opacity(0.2), radius: 1, x: 0, y: 1)
-                    .padding(2)
+/// The wordmark, shown centered in a pushed screen's navigation bar.
+/// `ToolbarContent` rather than a hand-built HStack, so the system owns the
+/// centering, the back button, and the scroll-edge treatment.
+struct SageToolbarTitle: ToolbarContent {
+    var body: some ToolbarContent {
+        ToolbarItem(placement: .principal) {
+            HStack(spacing: 7) {
+                SageMark(size: 20, color: Theme.accent)
+                Text("Sage")
+                    .font(.sageSemiBold(17)).tracking(-0.4)
+                    .foregroundStyle(Theme.ink)
             }
+            .accessibilityElement(children: .combine)
+            .accessibilityAddTraits(.isHeader)
+            .accessibilityLabel("Sage")
         }
-        .buttonStyle(.plain)
     }
 }
 
-// MARK: - Pill button
-
-struct PillButton: View {
-    enum Variant { case primary, secondary, ghost }
-    let title: String
-    let variant: Variant
-    let dark: Bool
-    var leadingSystemImage: String? = nil
-    var fullWidth: Bool = false
-    var action: () -> Void = {}
-
-    var body: some View {
-        Button(action: action) {
-            HStack(spacing: 8) {
-                if let n = leadingSystemImage {
-                    Image(systemName: n).font(.system(size: 15, weight: .bold))
-                }
-                Text(title)
-                    .font(.sageBold(15))
-                    .tracking(-0.2)
-            }
-            .foregroundColor(fg)
-            .padding(.horizontal, 22).padding(.vertical, 14)
-            .frame(maxWidth: fullWidth ? .infinity : nil)
-            .background(Capsule().fill(bg))
-            .overlay(Capsule().stroke(strokeC, lineWidth: 0.5))
-        }
-        .buttonStyle(.plain)
+extension View {
+    /// Brand page background behind non-List content.
+    func sageScreenBackground() -> some View {
+        background(Theme.background.ignoresSafeArea())
     }
 
-    private var bg: Color {
-        switch variant {
-        case .primary:   return dark ? .white : .black
-        case .secondary: return dark ? Color.white.opacity(0.08) : .white
-        case .ghost:     return .clear
-        }
-    }
-    private var fg: Color {
-        switch variant {
-        case .primary:   return dark ? .black : .white
-        case .secondary, .ghost: return dark ? .white : Color(hex: "111111")
-        }
-    }
-    private var strokeC: Color {
-        if variant == .secondary {
-            return dark ? Color.white.opacity(0.1) : Color.black.opacity(0.08)
-        }
-        return .clear
+    /// Inset-grouped `List` on the brand background: system row chrome,
+    /// separators, and swipe behavior, Sage's page color.
+    func sageListStyle() -> some View {
+        listStyle(.insetGrouped)
+            .scrollContentBackground(.hidden)
+            .background(Theme.background.ignoresSafeArea())
     }
 }
 

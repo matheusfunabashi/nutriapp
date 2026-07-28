@@ -8,59 +8,51 @@ struct ScannerHomeView: View {
     let onOpenProduct: (String) -> Void
 
     var body: some View {
-        let dark = store.darkMode
         ScrollView(showsIndicators: false) {
             VStack(spacing: 0) {
-                header(dark: dark)
+                wordmark
                 // Split + stagger: greeting → search → scan → recent.
-                StaggeredAppear(index: 0) { greeting(dark: dark) }
+                StaggeredAppear(index: 0) { greeting() }
                 StaggeredAppear(index: 1) {
-                    searchEntry(dark: dark)
+                    searchEntry()
                         .padding(.horizontal, 16).padding(.top, 4).padding(.bottom, 8)
                 }
                 StaggeredAppear(index: 2) {
-                    heroCard(dark: dark)
+                    heroCard()
                         .padding(.horizontal, 16).padding(.bottom, 6)
                 }
-                StaggeredAppear(index: 3) { recentSection(dark: dark) }
-                Spacer().frame(height: 120)
+                StaggeredAppear(index: 3) { recentSection() }
             }
         }
-        .background(Theme.bg(dark).ignoresSafeArea())
+        .sageScreenBackground()
+        // The brand lockup is the title here, so the system bar would only add
+        // an empty strip above it. Pushed screens still get their own bar.
+        .toolbar(.hidden, for: .navigationBar)
     }
 
-    private func header(dark: Bool) -> some View {
-        HStack {
-            HStack(spacing: 8) {
-                SageMark(size: 26, color: store.accent)
-                Text("Sage")
-                    .font(.sageSemiBold(22))
-                    .tracking(-0.6)
-                    .foregroundColor(Theme.textPrimary(dark))
-            }
-            .debugMenuTap()
-            Spacer()
-            Button(action: onTapHistory) {
-                ZStack {
-                    Circle().fill(dark ? Color.white.opacity(0.08) : Color.white)
-                    Image(systemName: "list.bullet")
-                        .foregroundColor(Theme.textPrimary(dark))
-                        .font(.sageSemiBold(15))
-                }
-                .frame(width: 38, height: 38)
-                .cardShadow(dark)
-                .minHitArea(44) // visible 38pt; tap target lifts to 44 (WCAG)
-            }
-            .buttonStyle(.pressable)
-            .accessibilityLabel("Scan history")
+    /// Mark and wordmark as one horizontal lockup, sitting directly on the
+    /// background — a toolbar item would wrap it in the system's glass capsule
+    /// and push it onto its own line above the title.
+    private var wordmark: some View {
+        HStack(spacing: 8) {
+            SageMark(size: 26, color: store.accent)
+            Text("Sage")
+                .font(.sageSemiBold(22))
+                .tracking(-0.6)
+                .foregroundColor(Theme.ink)
         }
+        .debugMenuTap()
+        .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.horizontal, 20).padding(.top, 12).padding(.bottom, 4)
+        .accessibilityElement(children: .combine)
+        .accessibilityAddTraits(.isHeader)
+        .accessibilityLabel("Sage")
     }
 
-    private func greeting(dark: Bool) -> some View {
+    private func greeting() -> some View {
         Text("\(timeGreeting), \(store.user.name)")
             .font(.sageMedium(15))
-            .foregroundColor(Theme.textSecondary(dark))
+            .foregroundColor(Theme.inkSecondary)
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.horizontal, 24).padding(.top, 16).padding(.bottom, 4)
     }
@@ -75,27 +67,27 @@ struct ScannerHomeView: View {
         }
     }
 
-    private func searchEntry(dark: Bool) -> some View {
+    private func searchEntry() -> some View {
         Button(action: onTapSearch) {
             HStack(spacing: 10) {
                 Image(systemName: "magnifyingglass")
-                    .foregroundColor(Theme.textSecondary(dark))
+                    .foregroundColor(Theme.inkSecondary)
                 Text("Search a product or brand")
                     .font(.sageMedium(15))
-                    .foregroundColor(Theme.textSecondary(dark))
+                    .foregroundColor(Theme.inkSecondary)
                 Spacer(minLength: 0)
             }
             .padding(.horizontal, 14).padding(.vertical, 12)
             .background(
-                RoundedRectangle(cornerRadius: 14, style: .continuous).fill(Theme.surface(dark))
+                RoundedRectangle(cornerRadius: 14, style: .continuous).fill(Theme.card)
             )
-            .cardShadow(dark)
+            .cardShadow()
         }
         .buttonStyle(.pressable)
         .accessibilityLabel("Search a product or brand")
     }
 
-    private func heroCard(dark: Bool) -> some View {
+    private func heroCard() -> some View {
         Button(action: onTapScan) {
             HStack(spacing: 14) {
                 VStack(alignment: .leading, spacing: 3) {
@@ -176,20 +168,20 @@ struct ScannerHomeView: View {
         return HistoryEntry.scannedAgoLabel(since: group.latestScannedAt)
     }
 
-    private func recentSection(dark: Bool) -> some View {
+    private func recentSection() -> some View {
         let recent = homeGroupedRecent()
         return VStack(spacing: 8) {
             HStack(alignment: .firstTextBaseline) {
                 Text("Recent scans")
                     .font(.sageSemiBold(18))
                     .tracking(-0.4)
-                    .foregroundColor(Theme.textPrimary(dark))
+                    .foregroundColor(Theme.ink)
                 Spacer()
                 if !recent.isEmpty {
                     Button(action: onTapHistory) {
                         Text("See all")
                             .font(.sageMedium(13))
-                            .foregroundColor(Theme.textSecondary(dark))
+                            .foregroundColor(Theme.inkSecondary)
                             .padding(.vertical, 8).padding(.leading, 12)
                     }
                     .buttonStyle(.pressable)
@@ -203,23 +195,23 @@ struct ScannerHomeView: View {
                     Text("No scans yet")
                         .font(.sageSemiBold(14))
                         .tracking(-0.2)
-                        .foregroundColor(Theme.textPrimary(dark))
+                        .foregroundColor(Theme.ink)
                     Text("Your scanned products will appear here.")
                         .font(.sageRegular(12))
-                        .foregroundColor(Theme.textSecondary(dark))
+                        .foregroundColor(Theme.inkSecondary)
                 }
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 28).padding(.horizontal, 16)
                 .background(
-                    RoundedRectangle(cornerRadius: 18, style: .continuous).fill(Theme.surface(dark))
+                    RoundedRectangle(cornerRadius: 18, style: .continuous).fill(Theme.card)
                 )
-                .cardShadow(dark)
+                .cardShadow()
                 .padding(.horizontal, 16)
             } else {
                 VStack(spacing: 8) {
                     ForEach(recent) { group in
                         if let p = store.products[group.productId] {
-                            RecentRow(product: p, subtitle: recentSubtitle(for: group), dark: dark) {
+                            RecentRow(product: p, subtitle: recentSubtitle(for: group)) {
                                 onOpenProduct(p.id)
                             }
                         }
@@ -234,7 +226,6 @@ struct ScannerHomeView: View {
 private struct RecentRow: View {
     let product: Product
     let subtitle: String
-    let dark: Bool
     let onTap: () -> Void
 
     var body: some View {
@@ -249,64 +240,31 @@ private struct RecentRow: View {
                     if let brand = formatted.brand {
                         Text(brand.uppercased())
                             .font(.sageBold(10)).tracking(1.2)
-                            .foregroundColor(Theme.textSecondary(dark))
+                            .foregroundColor(Theme.inkSecondary)
                             .lineLimit(1)
                     }
                     Text(formatted.name)
                         .font(.sageSemiBold(14))
-                        .foregroundColor(Theme.textPrimary(dark))
+                        .foregroundColor(Theme.ink)
                         .lineLimit(1)
                     Text(meta)
                         .font(.sageRegular(11))
-                        .foregroundColor(Theme.textSecondary(dark))
+                        .foregroundColor(Theme.inkSecondary)
                 }
                 Spacer(minLength: 8)
                 CompactScoreRing(score: product.yourScore,
-                                 isUnscored: product.isUnscored, dark: dark)
+                                 isUnscored: product.isUnscored)
                 Image(systemName: "chevron.right")
                     .font(.sageBold(12))
-                    .foregroundColor(Theme.textSecondary(dark))
+                    .foregroundColor(Theme.inkSecondary)
             }
             .padding(12)
             .background(
-                RoundedRectangle(cornerRadius: 18, style: .continuous).fill(Theme.surface(dark))
+                RoundedRectangle(cornerRadius: 18, style: .continuous).fill(Theme.card)
             )
-            .cardShadow(dark)
+            .cardShadow()
         }
         .buttonStyle(.pressable)
         .accessibilityLabel("\(formatted.accessibilityLabel), \(subtitle)")
-    }
-}
-
-struct ScanBrackets: View {
-    let color: Color
-    var body: some View {
-        GeometryReader { geo in
-            let w = geo.size.width, h = geo.size.height
-            Path { p in
-                p.move(to: CGPoint(x: 4, y: 18)); p.addLine(to: CGPoint(x: 4, y: 8))
-                p.addQuadCurve(to: CGPoint(x: 8, y: 4), control: CGPoint(x: 4, y: 4))
-                p.addLine(to: CGPoint(x: 18, y: 4))
-            }
-            .stroke(color, style: StrokeStyle(lineWidth: 3, lineCap: .round))
-            Path { p in
-                p.move(to: CGPoint(x: w - 4, y: 18)); p.addLine(to: CGPoint(x: w - 4, y: 8))
-                p.addQuadCurve(to: CGPoint(x: w - 8, y: 4), control: CGPoint(x: w - 4, y: 4))
-                p.addLine(to: CGPoint(x: w - 18, y: 4))
-            }
-            .stroke(color, style: StrokeStyle(lineWidth: 3, lineCap: .round))
-            Path { p in
-                p.move(to: CGPoint(x: 4, y: h - 18)); p.addLine(to: CGPoint(x: 4, y: h - 8))
-                p.addQuadCurve(to: CGPoint(x: 8, y: h - 4), control: CGPoint(x: 4, y: h - 4))
-                p.addLine(to: CGPoint(x: 18, y: h - 4))
-            }
-            .stroke(color, style: StrokeStyle(lineWidth: 3, lineCap: .round))
-            Path { p in
-                p.move(to: CGPoint(x: w - 4, y: h - 18)); p.addLine(to: CGPoint(x: w - 4, y: h - 8))
-                p.addQuadCurve(to: CGPoint(x: w - 8, y: h - 4), control: CGPoint(x: w - 4, y: h - 4))
-                p.addLine(to: CGPoint(x: w - 18, y: h - 4))
-            }
-            .stroke(color, style: StrokeStyle(lineWidth: 3, lineCap: .round))
-        }
     }
 }

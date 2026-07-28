@@ -10,78 +10,52 @@ struct ProfileView: View {
     let onOpenDisclaimer: () -> Void
 
     var body: some View {
-        let dark = store.darkMode
-        ScrollView(showsIndicators: false) {
-            VStack(alignment: .leading, spacing: 0) {
-                StaggeredAppear(index: 0) {
-                    Text("Profile")
-                        .font(.sageBold(34)).tracking(-1)
-                        .foregroundColor(Theme.textPrimary(dark))
-                        // 12pt above the system safe-area; ContentView's
-                        // tabContent isn't ignoring it, so this is the only
-                        // breathing room we need below the Dynamic Island.
-                        .padding(.horizontal, 24).padding(.top, 12).padding(.bottom, 12)
-                }
+        List {
+            Section {
+                Button(action: onOpenPersonal) { identityRow }
+                    .buttonStyle(.plain)
+            }
 
-                StaggeredAppear(index: 1) {
-                    identityCard(dark: dark).padding(.horizontal, 16).padding(.top, 8)
-                }
+            Section("Account") {
+                ProfileRow(systemImage: "person.text.rectangle",
+                           label: "Personal Details", action: onOpenPersonal)
+                ProfileRow(systemImage: "target", label: "Objective",
+                           value: store.user.objective.capitalized,
+                           action: onOpenNutritionGoals)
+                ProfileRow(systemImage: "wand.and.stars", label: "Personalize",
+                           action: onOpenDietary)
+                ProfileRow(systemImage: "character.book.closed", label: "Language",
+                           value: "English")
+                ProfileRow(systemImage: "slider.horizontal.3", label: "Preferences",
+                           action: onOpenPreferences)
+            }
 
-                StaggeredAppear(index: 2) {
-                    Group {
-                        sectionLabel("Account", dark: dark)
-                        CardView(dark: dark) {
-                            VStack(spacing: 0) {
-                                ProfileRow(systemImage: "person.text.rectangle",
-                                           label: "Personal Details", divider: false,
-                                           dark: dark, onTap: onOpenPersonal)
-                                ProfileRow(systemImage: "target", label: "Objective",
-                                           value: store.user.objective.capitalized,
-                                           divider: true, dark: dark, onTap: onOpenNutritionGoals)
-                                ProfileRow(systemImage: "wand.and.stars", label: "Personalize",
-                                           divider: true, dark: dark, onTap: onOpenDietary)
-                                ProfileRow(systemImage: "character.book.closed", label: "Language",
-                                           value: "English", divider: true, dark: dark)
-                                ProfileRow(systemImage: "slider.horizontal.3", label: "Preferences",
-                                           divider: true, dark: dark, onTap: onOpenPreferences)
-                            }
-                        }
-                        .padding(.horizontal, 16)
-                    }
-                }
+            Section("Help") {
+                ProfileRow(systemImage: "info.circle", label: "How we score",
+                           action: onOpenMethodology)
+                ProfileRow(systemImage: "shield", label: "Disclaimer",
+                           action: onOpenDisclaimer)
+                ProfileRow(systemImage: "lifepreserver", label: "Support")
+            }
 
-                StaggeredAppear(index: 3) {
-                    Group {
-                        sectionLabel("Help", dark: dark)
-                        CardView(dark: dark) {
-                            VStack(spacing: 0) {
-                                ProfileRow(systemImage: "info.circle", label: "How we score",
-                                           divider: false, dark: dark, onTap: onOpenMethodology)
-                                ProfileRow(systemImage: "shield", label: "Disclaimer",
-                                           divider: true, dark: dark, onTap: onOpenDisclaimer)
-                                ProfileRow(systemImage: "lifepreserver", label: "Support",
-                                           divider: true, dark: dark)
-                            }
-                        }
-                        .padding(.horizontal, 16)
-                    }
-                }
-
-                StaggeredAppear(index: 4) {
-                    Text("Sage v1.0.3 · Database from Open Food Facts")
-                        .font(.sageRegular(11))
-                        .foregroundColor(Theme.textSecondary(dark))
-                        .frame(maxWidth: .infinity, alignment: .center)
-                        .padding(.horizontal, 24).padding(.top, 32).padding(.bottom, 24)
-                }
-
-                Spacer().frame(height: 120)
+            Section {
+                Text("Sage \(Self.appVersion) · Database from Open Food Facts")
+                    .font(.sageRegular(11))
+                    .foregroundColor(Theme.inkSecondary)
+                    .frame(maxWidth: .infinity, alignment: .center)
+                    .listRowBackground(Color.clear)
             }
         }
-        .background(Theme.bg(dark).ignoresSafeArea())
+        .sageListStyle()
+        .navigationTitle("Profile")
     }
 
-    private func identityCard(dark: Bool) -> some View {
+    private static var appVersion: String {
+        let v = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String
+        return "v\(v ?? "1.0")"
+    }
+
+    private var identityRow: some View {
         let isPremium = store.user.subscriptionStatus != "expired"
         let subLabel: String = {
             switch store.user.subscriptionStatus {
@@ -90,100 +64,83 @@ struct ProfileView: View {
             default:       return "Expired"
             }
         }()
-        return Button(action: onOpenPersonal) {
-            HStack(spacing: 14) {
-                ZStack {
-                    Circle().fill(LinearGradient(
-                        colors: [store.accent, store.accent.opacity(0.6)],
-                        startPoint: .topLeading, endPoint: .bottomTrailing))
-                    Text(initials(store.user.name))
-                        .font(.sageBold(19)).tracking(-0.5)
-                        .foregroundColor(.white)
-                }
-                .frame(width: 56, height: 56)
-
-                VStack(alignment: .leading, spacing: 2) {
-                    if isPremium {
-                        HStack(spacing: 5) {
-                            Image(systemName: "crown.fill")
-                                .foregroundColor(Color(hex: "D4A437"))
-                                .font(.sageRegular(11))
-                            Text(subLabel)
-                                .font(.sageBold(11))
-                                .monospacedDigit() // "5d" countdown stays aligned
-                                .foregroundColor(Theme.textSecondary(dark))
-                        }
-                    }
-                    Text(store.user.name)
-                        .font(.sageBold(17)).tracking(-0.4)
-                        .foregroundColor(Theme.textPrimary(dark))
-                }
-                Spacer()
-                Image(systemName: "chevron.right")
-                    .foregroundColor(Theme.textSecondary(dark))
-                    .font(.sageBold(12))
+        return HStack(spacing: 14) {
+            ZStack {
+                Circle().fill(LinearGradient(
+                    colors: [store.accent, store.accent.opacity(0.6)],
+                    startPoint: .topLeading, endPoint: .bottomTrailing))
+                Text(initials(store.user.name))
+                    .font(.sageBold(19)).tracking(-0.5)
+                    .foregroundColor(.white)
             }
-            .padding(14)
-            .background(
-                RoundedRectangle(cornerRadius: 22, style: .continuous).fill(Theme.surface(dark))
-            )
-            .cardShadow(dark)
-        }
-        .buttonStyle(.pressable)
-    }
+            .frame(width: 56, height: 56)
 
-    private func sectionLabel(_ text: String, dark: Bool) -> some View {
-        Text(text)
-            .font(.sageSemiBold(13))
-            .foregroundColor(Theme.textSecondary(dark))
-            .padding(.horizontal, 24).padding(.top, 22).padding(.bottom, 8)
-            .frame(maxWidth: .infinity, alignment: .leading)
+            VStack(alignment: .leading, spacing: 2) {
+                if isPremium {
+                    HStack(spacing: 5) {
+                        Image(systemName: "crown.fill")
+                            .foregroundColor(Color(hex: "D4A437"))
+                            .font(.sageRegular(11))
+                        Text(subLabel)
+                            .font(.sageBold(11))
+                            .monospacedDigit() // "5d" countdown stays aligned
+                            .foregroundColor(Theme.inkSecondary)
+                    }
+                }
+                Text(store.user.name)
+                    .font(.sageBold(17)).tracking(-0.4)
+                    .foregroundColor(Theme.ink)
+            }
+            Spacer()
+            Image(systemName: "chevron.right")
+                .foregroundColor(Theme.inkSecondary)
+                .font(.sageBold(12))
+        }
+        .padding(.vertical, 6)
+        .contentShape(Rectangle())
     }
 }
 
+/// A settings row. Inside a `List` the system supplies the separator, the press
+/// highlight, and the full-width hit area — so this only describes content.
 struct ProfileRow: View {
     let systemImage: String?
     let label: String
     var value: String? = nil
-    let divider: Bool
-    let dark: Bool
-    var onTap: (() -> Void)? = nil
+    var action: (() -> Void)? = nil
 
     var body: some View {
-        Button(action: { onTap?() }) {
-            HStack(spacing: 12) {
-                if let n = systemImage {
-                    Image(systemName: n)
-                        .foregroundColor(Theme.textPrimary(dark))
-                        .frame(width: 22)
-                }
-                Text(label)
-                    .font(.sageBold(15)).tracking(-0.2)
-                    .foregroundColor(Theme.textPrimary(dark))
-                Spacer()
-                if let v = value {
-                    Text(v)
-                        .font(.sageSemiBold(13))
-                        .foregroundColor(Theme.textSecondary(dark))
-                }
-                if onTap != nil {
-                    Image(systemName: "chevron.right")
-                        .font(.sageBold(12))
-                        .foregroundColor(Theme.textSecondary(dark))
-                }
+        if let action {
+            Button(action: action) { content }
+                .buttonStyle(.plain)
+        } else {
+            content
+        }
+    }
+
+    private var content: some View {
+        HStack(spacing: 12) {
+            if let n = systemImage {
+                Image(systemName: n)
+                    .foregroundColor(Theme.ink)
+                    .frame(width: 22)
             }
-            .padding(.horizontal, 16).padding(.vertical, 14)
-            .contentShape(Rectangle()) // full row tappable, not just text
-            .overlay(alignment: .top) {
-                if divider {
-                    // Border (not shadow) — purely layout separation.
-                    Theme.divider(dark).frame(height: 0.5).padding(.horizontal, 12)
-                }
+            Text(label)
+                .font(.sageBold(15)).tracking(-0.2)
+                .foregroundColor(Theme.ink)
+            Spacer()
+            if let v = value {
+                Text(v)
+                    .font(.sageSemiBold(13))
+                    .foregroundColor(Theme.inkSecondary)
+            }
+            if action != nil {
+                Image(systemName: "chevron.right")
+                    .font(.sageBold(12))
+                    .foregroundColor(Theme.inkSecondary)
             }
         }
-        // Skip scale on rows that aren't actionable (no onTap).
-        .buttonStyle(onTap == nil ? PressableButtonStyle(isStatic: true) : PressableButtonStyle())
-        .disabled(onTap == nil)
+        .contentShape(Rectangle())
     }
 }
 

@@ -39,7 +39,7 @@ struct OnboardingHeader: View {
             Button(action: onBack) {
                 Image(systemName: "chevron.left")
                     .font(.sageSemiBold(15))
-                    .foregroundColor(Theme.textPrimary(dark))
+                    .foregroundColor(Theme.ink)
                     .frame(width: 36, height: 36)
                     .background(
                         Circle().fill(dark ? Color.white.opacity(0.08) : Color.black.opacity(0.05))
@@ -56,7 +56,7 @@ struct OnboardingHeader: View {
                 Button(action: onSkip) {
                     Text("Skip")
                         .font(.sageSemiBold(14))
-                        .foregroundColor(Theme.textSecondary(dark))
+                        .foregroundColor(Theme.inkSecondary)
                         .padding(.vertical, 10).padding(.leading, 10)
                         .minHitArea(44)
                 }
@@ -83,14 +83,14 @@ struct OnboardingTitle: View {
         VStack(alignment: .leading, spacing: 10) {
             Text(title)
                 .font(.sageBold(28)).tracking(-0.7)
-                .foregroundColor(Theme.textPrimary(dark))
+                .foregroundColor(Theme.ink)
                 .fixedSize(horizontal: false, vertical: true)
                 .multilineTextAlignment(.leading)
             if let subtitle {
                 Text(subtitle)
                     .font(.sageRegular(15))
                     .lineSpacing(3)
-                    .foregroundColor(Theme.textSecondary(dark))
+                    .foregroundColor(Theme.inkSecondary)
                     .fixedSize(horizontal: false, vertical: true)
             }
         }
@@ -109,7 +109,7 @@ struct OnboardingEyebrow: View {
     var body: some View {
         Text(text.uppercased())
             .font(.sageBold(11)).tracking(1.4)
-            .foregroundColor(Theme.textSecondary(dark))
+            .foregroundColor(Theme.inkSecondary)
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.horizontal, 24)
     }
@@ -155,7 +155,7 @@ struct OnboardingGhostButton: View {
         Button(action: action) {
             Text(title)
                 .font(.sageSemiBold(14))
-                .foregroundColor(Theme.textSecondary(dark))
+                .foregroundColor(Theme.inkSecondary)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 10) // bumped from 6 → 10 for thumb reach
                 .contentShape(Rectangle())
@@ -205,12 +205,12 @@ struct OnboardingSelectionCard: View {
                 }
                 Text(title)
                     .font(.sageBold(15)).tracking(-0.2)
-                    .foregroundColor(Theme.textPrimary(dark))
+                    .foregroundColor(Theme.ink)
                     .multilineTextAlignment(.leading)
                 if let subtitle {
                     Text(subtitle)
                         .font(.sageRegular(12))
-                        .foregroundColor(Theme.textSecondary(dark))
+                        .foregroundColor(Theme.inkSecondary)
                         .multilineTextAlignment(.leading)
                 }
             }
@@ -219,13 +219,13 @@ struct OnboardingSelectionCard: View {
             .background(
                 // Concentric: outer card is 18 → keep stroke/overlay matching.
                 RoundedRectangle(cornerRadius: 18, style: .continuous)
-                    .fill(Theme.surface(dark))
+                    .fill(Theme.card)
             )
             .overlay(
                 RoundedRectangle(cornerRadius: 18, style: .continuous)
                     .stroke(selected ? accent : Color.clear, lineWidth: 2)
             )
-            .cardShadow(dark)
+            .cardShadow()
         }
         .buttonStyle(.pressable)
         .animation(.easeOut(duration: 0.18), value: selected)
@@ -246,10 +246,10 @@ struct OnboardingDietPill: View {
         Button(action: action) {
             Text(label)
                 .font(.sageBold(14)).tracking(-0.2)
-                .foregroundColor(selected ? .white : Theme.textPrimary(dark))
+                .foregroundColor(selected ? .white : Theme.ink)
                 .padding(.horizontal, 16).padding(.vertical, 11)
                 .background(
-                    Capsule().fill(selected ? OnboardingBrandGreen : Theme.surface(dark))
+                    Capsule().fill(selected ? OnboardingBrandGreen : Theme.card)
                 )
                 .overlay(
                     Capsule().stroke(
@@ -274,7 +274,7 @@ struct OnboardingAllergenCell: View {
         Button(action: action) {
             Text(label)
                 .font(.sageBold(14)).tracking(-0.2)
-                .foregroundColor(selected ? .white : Theme.textPrimary(dark))
+                .foregroundColor(selected ? .white : Theme.ink)
                 .multilineTextAlignment(.center)
                 .lineLimit(2)
                 .minimumScaleFactor(0.85)
@@ -283,7 +283,7 @@ struct OnboardingAllergenCell: View {
                 .padding(.horizontal, 8)
                 .background(
                     RoundedRectangle(cornerRadius: 10, style: .continuous)
-                        .fill(selected ? OnboardingBrandGreen : Theme.surface(dark))
+                        .fill(selected ? OnboardingBrandGreen : Theme.card)
                 )
                 .overlay(
                     RoundedRectangle(cornerRadius: 10, style: .continuous)
@@ -308,7 +308,7 @@ struct OnboardingChip: View {
         Button(action: action) {
             Text(label)
                 .font(.sageBold(14)).tracking(-0.2)
-                .foregroundColor(selected ? .white : Theme.textPrimary(dark))
+                .foregroundColor(selected ? .white : Theme.ink)
                 .padding(.horizontal, 16).padding(.vertical, 11)
                 .background(
                     Capsule().fill(selected
@@ -321,7 +321,7 @@ struct OnboardingChip: View {
                         lineWidth: 1
                     )
                 )
-                .cardShadow(dark)
+                .cardShadow()
                 .animation(.easeOut(duration: 0.18), value: selected)
         }
         .buttonStyle(.pressable)
@@ -405,7 +405,7 @@ struct OnboardingHeroImage: View {
                             Text("Add \(assetName).png")
                                 .font(.sageSemiBold(12))
                         }
-                        .foregroundColor(Theme.textSecondary(dark))
+                        .foregroundColor(Theme.inkSecondary)
                     )
             }
         }
