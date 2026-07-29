@@ -152,7 +152,8 @@ enum AlternativesOutcome: Equatable {
     case unscored
 }
 
-/// Market region for alternatives preference (GS1 → coarse region).
+/// Market region helper (GS1 → coarse region). Kept for barcode diagnostics /
+/// tests; suggestion selection is US-only and no longer prefers by scan region.
 enum AlternativesRegion: String, Equatable {
     case us, br
 
@@ -243,10 +244,12 @@ enum Alternatives {
                             ruleset: RulesetV4) -> AlternativesOutcome {
         guard let baseline = scanned.overallScore else { return .unscored }
         let scannedKey = dedupeKey(brand: scanned.brand, name: scanned.name)
-        let preferred = AlternativesRegion.from(barcode: scanned.id)
 
+        // US-only: the alternatives dataset mixes `us` + `br`, but suggestions
+        // (and empty-reason peers) are US-market only — same rule as Top Rated.
         var pool: [Alternative] = []
         for cand in candidates {
+            guard (cand.countries ?? []).contains("us") else { continue }
             if cand.barcode == scanned.id { continue }
             guard let (p, score) = scored(cand, profile: profile, ruleset: ruleset) else { continue }
             if dedupeKey(brand: p.brand, name: p.name) == scannedKey { continue }
@@ -256,7 +259,7 @@ enum Alternatives {
                                     countries: countries))
         }
 
-        let picks = select(baseline: baseline, from: pool, preferred: preferred)
+        let picks = select(baseline: baseline, from: pool)
         if !picks.isEmpty { return .suggestions(picks) }
 
         guard let maxPeer = pool.map(\.score).max() else { return .noBetterPeers }
@@ -296,21 +299,10 @@ enum Alternatives {
 
     /// Pure selection over already-scored candidates (§3.5–3.6): margin gate,
     /// "Good" preference with a margin-only fallback, same-subtype first, top N.
-    /// Same-region first; top up from the other region when under `maxResults`.
-    static func select<T: RankableAlternative>(baseline: Int, from pool: [T],
-                                               preferred: AlternativesRegion = .us) -> [T] {
-        let preferredCode = preferred.rawValue
-        let same = pool.filter { $0.countries.isEmpty || $0.countries.contains(preferredCode) }
-        let other = pool.filter { !$0.countries.isEmpty && !$0.countries.contains(preferredCode) }
-
-        var picks = selectMargin(baseline: baseline, from: same)
-        if picks.count < maxResults {
-            let fillers = selectMargin(baseline: baseline, from: other)
-            for f in fillers where picks.count < maxResults {
-                picks.append(f)
-            }
-        }
-        return picks
+    /// US-only — Brazilian (and other non-US) peers are never suggested.
+    static func select<T: RankableAlternative>(baseline: Int, from pool: [T]) -> [T] {
+        let us = pool.filter { $0.countries.contains("us") }
+        return selectMargin(baseline: baseline, from: us)
     }
 
     /// Brand + name, alphanumerics only — collapses size/region SKUs of one product.
@@ -336,6 +328,10 @@ enum Alternatives {
 // user). Reuses the Alternatives dataset + scoring — no new data or pipeline;
 // candidates are re-scored on-device so the list matches the detail screen and
 // the current ruleset.
+//
+// Spec §8: US-only. The alternatives dataset is multi-market (`us` + `br`) so
+// we must filter here — ranking every candidate would surface Brazilian
+// products (often the top of a shelf) in a US-facing browse tab.
 
 enum TopRated {
     static let maxItems = 20
@@ -351,6 +347,7 @@ enum TopRated {
     static func items(from candidates: [AlternativeCandidate],
                       profile: UserProfile, ruleset: RulesetV4) -> [Alternative] {
         candidates
+            .filter { ($0.countries ?? []).contains("us") }
             .compactMap { c -> Alternative? in
                 guard let (p, s) = Alternatives.scored(c, profile: profile, ruleset: ruleset)
                 else { return nil }

@@ -17,6 +17,7 @@ struct TopRatedTests {
         let entries = (0..<22).map { i in
             """
             {"barcode":"B\(i)","name":"Soda \(i)","brand":"Br\(i)",
+             "countries":["us"],
              "categories_tags":["en:beverages","en:sodas"],
              "ingredients_text":"carbonated water, sugar","nova_group":4,
              "nutriments":{"sugars_100g":\(i),"added-sugars_100g":\(i),"energy-kcal_100g":40}}
@@ -40,5 +41,29 @@ struct TopRatedTests {
         #expect(!items.isEmpty)
         #expect(items.count <= TopRated.maxItems)
         #expect(items.map(\.score) == items.map(\.score).sorted(by: >))
+    }
+
+    @Test func itemsAreUSOnly() {
+        // Alternatives shelves mix `us` + `br`. Top Rated must drop non-US
+        // candidates even when they outscore US peers (TOPRATED_SPEC §8).
+        let pool = candidates("""
+        [
+          {"barcode":"BR1","name":"Guarana Zero","brand":"Antarctica",
+           "countries":["br"],"categories_tags":["en:sodas"],
+           "ingredients_text":"water, sweetener","nova_group":4,
+           "nutriments":{"sugars_100g":0,"energy-kcal_100g":1}},
+          {"barcode":"US1","name":"Diet Cola","brand":"ColaCo",
+           "countries":["us"],"categories_tags":["en:sodas"],
+           "ingredients_text":"water, sweetener","nova_group":4,
+           "nutriments":{"sugars_100g":0,"energy-kcal_100g":1}},
+          {"barcode":"BOTH","name":"Shared Cola","brand":"Global",
+           "countries":["us","br"],"categories_tags":["en:sodas"],
+           "ingredients_text":"water, sweetener","nova_group":4,
+           "nutriments":{"sugars_100g":0,"energy-kcal_100g":1}}
+        ]
+        """)
+        let items = TopRated.items(from: pool, profile: MockData.user, ruleset: .bundled)
+        #expect(items.map(\.product.id).sorted() == ["BOTH", "US1"])
+        #expect(items.allSatisfy { $0.countries.contains("us") })
     }
 }

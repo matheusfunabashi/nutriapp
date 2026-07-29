@@ -205,7 +205,7 @@ Implemented in `TopRatedBuilder/`:
 - **Compare axis** — Overall for v1 (`yourScore` is v2).
 - **Empty-reason contract** — `Alternatives.suggest` returns
   `AlternativesOutcome`:
-  - `.suggestions` — up to 3 peers clearing the +10 margin (region-preferring).
+  - `.suggestions` — up to 3 peers clearing the +10 margin (US-market only).
   - `.alreadyTopOfShelf` — live peers exist, but none are ≥ `baseline + 10`
     *and* `baseline + 10 > max(peer scores)` (product is at/near the top).
   - `.noBetterPeers` — shelf exists / has candidates, but nothing clears the
@@ -217,9 +217,8 @@ Implemented in `TopRatedBuilder/`:
   The older §5 gate ("already Good **and** shelf top-3") is **not** implemented;
   already-top is purely the margin vs max-peer comparison above.
 - **Multi-country** — candidates carry `countries: ["us"]` / `["br"]` (or both).
-  Selection prefers the scanned product's GS1 region (789/790 → `br`, else `us`)
-  and tops up from the other region when fewer than 3 same-region peers clear
-  the margin.
+  Selection is **US-only** (same as Top Rated): Brazilian-only peers are never
+  suggested, even when they outscore US peers or the scan is a Brazilian EAN.
 - **No-alternative categories** — coffee (shelf-excluded), water/alcohol
   (unsupported), table sweeteners (unscored) correctly hide the row via
   `.noShelf` / `.unscored`.
@@ -241,7 +240,7 @@ tail.
 
 - **v1 (this spec):** curated precomputed shelves (US+BR), on-device re-score on
   **Overall**, margin gate with preferred floor, shared-tag preference,
-  region preference, bundle+refresh delivery. Instrument scan→shelf hit-rate.
+  **US-only** suggestions, bundle+refresh delivery. Instrument scan→shelf hit-rate.
 - **v1.5 (coverage):** on-demand OFF-tag anchoring + backend cache for scans
   outside curated shelves — coverage grows to real demand.
 - **v2:** `yourScore` personalization · finer within-shelf sub-tag clustering ·

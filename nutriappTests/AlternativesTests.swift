@@ -42,18 +42,18 @@ struct AlternativesTests {
         #expect(Alternatives.select(baseline: 70, from: [M(72), M(75)]).isEmpty)
     }
 
-    @Test func selectPrefersSameRegionThenTopsUp() {
-        // Preferred US: only one clears margin; BR peers fill the remaining slots.
+    @Test func selectIsUSOnly() {
+        // Only one US peer clears margin; higher-scoring BR peers must not fill slots.
         let pool = [
             M(60, countries: ["us"]),
             M(70, countries: ["br"]),
             M(65, countries: ["br"]),
             M(55, countries: ["br"]),
+            M(58, countries: ["us", "br"]),
         ]
-        let r = Alternatives.select(baseline: 40, from: pool, preferred: .us)
-        #expect(r.count == 3)
-        #expect(r.first?.countries == ["us"])
-        #expect(r.dropFirst().allSatisfy { $0.countries == ["br"] })
+        let r = Alternatives.select(baseline: 40, from: pool)
+        #expect(r.map(\.score) == [60, 58])
+        #expect(r.allSatisfy { $0.countries.contains("us") })
     }
 
     @Test func regionFromBarcodeBrazil() {
