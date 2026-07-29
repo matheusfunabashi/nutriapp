@@ -112,18 +112,16 @@ struct SearchView: View {
     // MARK: Browse categories (idle opener)
 
     /// Tapping a row drops its term into the search field, which fires the same
-    /// debounced typeahead pipeline as manual typing. Emoji rather than SF
-    /// Symbols: the symbol set has no honest glyph for "cereal" or "yogurt",
-    /// and a wrong-but-native icon reads worse than the right one. Matches the
-    /// Top Rated category list.
+    /// debounced typeahead pipeline as manual typing. Kept in sync with
+    /// `SageCategory.topRatedBrowse` — no Water / Coffee / etc., since those
+    /// either can't score or aren't in Top Rated yet.
     private static let categories: [(emoji: String, name: String)] = [
-        ("🥤", "Soda"),        ("💧", "Water"),
-        ("🍫", "Chocolate"),   ("🍪", "Cookies"),
-        ("🥣", "Cereal"),      ("🧀", "Cheese"),
-        ("🥛", "Yogurt"),      ("🍞", "Bread"),
-        ("🧃", "Juice"),       ("🍟", "Chips"),
-        ("☕", "Coffee"),      ("🍝", "Pasta"),
-        ("🍦", "Ice cream"),   ("🍼", "Baby food"),
+        ("🥤", "Soda"),        ("🧃", "Juice"),
+        ("🥛", "Milk"),        ("🥛", "Yogurt"),
+        ("🧀", "Cheese"),      ("🍦", "Ice cream"),
+        ("🥣", "Cereal"),      ("🍞", "Bread"),
+        ("🍝", "Pasta"),       ("🍟", "Chips"),
+        ("▣", "Snack bars"),  ("🍫", "Chocolate"),
     ]
 }
 

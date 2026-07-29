@@ -182,6 +182,18 @@ final class AppStore: ObservableObject {
         }
     }
 
+    /// Temporary scheme forced by a screen that owns its own background
+    /// regardless of the user's preference — the dark-green onboarding steps.
+    ///
+    /// This has to live here because `preferredColorScheme` is resolved at the
+    /// `WindowGroup`, so an inner application of it (inside `OnboardingFlow`)
+    /// never reaches the status bar. Without it, the system clock renders in
+    /// dark-mode-off glyphs on a near-black background.
+    @Published var schemeOverride: ColorScheme? = nil
+
+    /// What the root actually applies.
+    var effectiveColorScheme: ColorScheme? { schemeOverride ?? colorScheme }
+
     /// Every mutation persists automatically.
     @Published var user: UserProfile { didSet { persistProfile() } }
 

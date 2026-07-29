@@ -2,54 +2,64 @@ import SwiftUI
 
 // MARK: - Top Rated (TOPRATED_SPEC.md)
 
-/// Category grid: Sage categories. Water and coffee have no data (TOPRATED_SPEC
-/// §2) and are shown greyed out and disabled.
+/// Two-up category grid. Only shelves with a hero pack shot appear here —
+/// water / coffee / cookies / etc. stay in `SageCategory` for scan routing
+/// but are hidden from browse until they have an asset.
 struct TopRatedCategoriesView: View {
     @EnvironmentObject var store: AppStore
     let onOpenCategory: (SageCategory) -> Void
 
+    private let columns = [
+        GridItem(.flexible(), spacing: 12),
+        GridItem(.flexible(), spacing: 12),
+    ]
+
     var body: some View {
-        List {
-            Section {
-                ForEach(SageCategory.allCases) { category in
-                    row(category)
+        ScrollView(showsIndicators: false) {
+            LazyVGrid(columns: columns, spacing: 12) {
+                ForEach(SageCategory.topRatedBrowse) { category in
+                    categoryCard(category)
                 }
-            } footer: {
-                Text("The best-scoring products in each category.")
             }
+            .padding(.horizontal, 16)
+            .padding(.top, 8)
+            .padding(.bottom, 24)
         }
-        .sageListStyle()
+        .background(Theme.background.ignoresSafeArea())
         .navigationTitle("Top Rated")
     }
 
-    @ViewBuilder private func row(_ category: SageCategory) -> some View {
-        let enabled = category.hasTopRated
+    private func categoryCard(_ category: SageCategory) -> some View {
         Button { onOpenCategory(category) } label: {
-            HStack(spacing: 12) {
-                Text(category.emoji)
-                    .font(.sageRegular(22))
-                    .opacity(enabled ? 1 : 0.45)
+            HStack(spacing: 8) {
                 Text(category.displayName)
                     .font(.sageBold(15)).tracking(-0.2)
-                    .foregroundColor(enabled ? Theme.ink : Theme.inkSecondary)
-                    .lineLimit(1)
-                Spacer(minLength: 8)
-                if enabled {
-                    Image(systemName: "chevron.right")
-                        .font(.sageBold(12))
-                        .foregroundColor(Theme.inkSecondary)
-                } else {
-                    Text("Not rated")
-                        .font(.sageRegular(12))
-                        .foregroundColor(Theme.inkSecondary)
+                    .foregroundStyle(Theme.ink)
+                    .lineLimit(2)
+                    .multilineTextAlignment(.leading)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+
+                if let asset = category.topRatedHeroAsset {
+                    Image(asset)
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 56, height: 56)
+                        .accessibilityHidden(true)
                 }
             }
-            .contentShape(Rectangle())
+            .padding(.leading, 14)
+            .padding(.trailing, 10)
+            .padding(.vertical, 12)
+            .frame(maxWidth: .infinity, minHeight: 76, alignment: .center)
+            .background(
+                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                    .fill(Theme.card)
+            )
+            .cardShadow()
+            .contentShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
         }
-        .buttonStyle(.plain)
-        .disabled(!enabled)
-        .accessibilityLabel(enabled ? "Top rated \(category.displayName)"
-                                    : "\(category.displayName), not rated")
+        .buttonStyle(.pressable)
+        .accessibilityLabel("Top rated \(category.displayName)")
     }
 }
 

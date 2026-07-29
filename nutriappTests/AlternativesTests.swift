@@ -227,4 +227,44 @@ struct AlternativesTests {
                                            profile: MockData.user, ruleset: .bundled)
         #expect(outcome == .noShelf)
     }
+
+    // MARK: Top Rated image URLs
+
+    @Test func imageURLPrefersCandidateOFFURL() {
+        let c = candidates("""
+        [{"barcode":"7891991000833","name":"Soda Antarctica","brand":"Antarctica",
+          "image_url":"https://images.openfoodfacts.org/images/products/789/199/100/0833/front_pt.20.400.jpg",
+          "categories_tags":["en:sodas"],"nova_group":4,
+          "nutriments":{"sugars_100g":10,"energy-kcal_100g":40}}]
+        """)[0]
+        let url = Alternatives.imageURL(for: c)
+        #expect(url.contains("openfoodfacts.org"))
+        #expect(!url.contains("sage-backend"))
+    }
+
+    @Test func imageURLFallsBackToWorkerWhenMissing() {
+        let c = candidates("""
+        [{"barcode":"7891991000833","name":"Soda Antarctica","brand":"Antarctica",
+          "categories_tags":["en:sodas"],"nova_group":4,
+          "nutriments":{"sugars_100g":10,"energy-kcal_100g":40}}]
+        """)[0]
+        #expect(c.imageURL == nil)
+        let url = Alternatives.imageURL(for: c)
+        #expect(url == BackendService.productImageURL(barcode: "7891991000833"))
+    }
+
+    @Test func scoredKeepsOFFImageForBrazilianBarcode() {
+        let c = candidates("""
+        [{"barcode":"7891991000833","name":"Soda Antarctica","brand":"Antarctica",
+          "image_url":"https://images.openfoodfacts.org/images/products/789/199/100/0833/front_pt.20.400.jpg",
+          "categories_tags":["en:sodas","en:sweetened-beverages"],
+          "ingredients_text":"water, sugar","nova_group":4,"countries":["br"],
+          "nutriments":{"sugars_100g":10,"proteins_100g":0,"energy-kcal_100g":40,
+                        "sodium_100g":0.01,"saturated-fat_100g":0,"fiber_100g":0}}]
+        """)[0]
+        let scored = Alternatives.scored(c, profile: MockData.user, ruleset: .bundled)
+        #expect(scored != nil)
+        #expect(scored?.product.imageURL?.contains("openfoodfacts.org") == true)
+        #expect(scored?.product.listImageURL != nil)
+    }
 }

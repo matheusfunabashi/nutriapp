@@ -9,6 +9,8 @@
 //   POST /admin/curated-images/{barcode} → curated override (ADMIN_TOKEN).
 //   GET  /alternatives → Top Rated candidates; image_url enriched to /images/…
 //   POST /explain  → bucketed LLM explanation (KV-cached by version+barcode+class).
+//   POST /attribution → onboarding "how did you hear about us" (D1).
+//   GET  /attribution/summary → channel counts (D1).
 //   GET  /health   → liveness.
 //
 // Scores are computed on-device (the Swift ScoringEngine is the single source of
@@ -22,7 +24,7 @@ import {
   getSearch, putSearch,
   explanationKey, getExplanation, putExplanation,
 } from "./cache";
-import { bumpScanCount, logFetch } from "./db";
+import { bumpScanCount, logFetch, recordAttribution, attributionSummary, isAttributionSource } from "./db";
 import { fetchUSDA, mergeUSDA, plausiblyUS } from "./usda";
 import { generateExplanation, buildTemplateOverview } from "./explanation";
 import { resolveProductImage, serveCachedImage, enrichAlternativesImages, IMAGE_CACHE_VERSION } from "./imageResolver.ts";
@@ -47,6 +49,8 @@ const requireKey: MiddlewareHandler<{ Bindings: Env }> = async (c, next) => {
 app.use("/lookup", requireKey);
 app.use("/explain", requireKey);
 app.use("/search", requireKey);
+app.use("/attribution", requireKey);
+app.use("/attribution/summary", requireKey);
 
 app.get("/health", (c) => c.json({ ok: true, service: "sage-backend" }));
 
@@ -233,6 +237,54 @@ app.post("/explain", async (c) => {
   c.executionCtx.waitUntil(putExplanation(c.env.CACHE, key, text));
   c.executionCtx.waitUntil(logFetch(c.env.DB, "llm", body.barcode, "generate"));
   return c.json({ source: "overview", explanation: text });
+});
+
+// --- Onboarding attribution ------------------------------------------------
+// Fire-and-forget from the iOS client when the user picks "How did you hear
+// about Sage?". Stored in D1 for channel analytics; never used for scoring.
+
+interface AttributionRequest {
+  source?: string;
+  clientTag?: string;
+  appVersion?: string;
+}
+
+app.post("/attribution", async (c) => {
+  const body = await c.req.json<AttributionRequest>().catch(() => null);
+  const source = body?.source?.trim() ?? "";
+  if (!source) return c.json({ error: "missing_source" }, 400);
+  if (!isAttributionSource(source)) {
+    return c.json({ error: "invalid_source", allowed: [
+      "TikTok", "Instagram", "From a friend", "App Store", "Other",
+    ] }, 400);
+  }
+
+  const clientTag = body?.clientTag?.trim() || null;
+  const appVersion = body?.appVersion?.trim() || null;
+  try {
+    await recordAttribution(c.env.DB, source, clientTag, appVersion);
+  } catch (err) {
+    console.log(JSON.stringify({
+      event: "attribution_error",
+      message: err instanceof Error ? err.message : String(err),
+    }));
+    return c.json({ error: "db_error" }, 500);
+  }
+  return c.json({ ok: true });
+});
+
+app.get("/attribution/summary", async (c) => {
+  try {
+    const rows = await attributionSummary(c.env.DB);
+    const total = rows.reduce((n, r) => n + Number(r.count), 0);
+    return c.json({ total, sources: rows });
+  } catch (err) {
+    console.log(JSON.stringify({
+      event: "attribution_summary_error",
+      message: err instanceof Error ? err.message : String(err),
+    }));
+    return c.json({ error: "db_error" }, 500);
+  }
 });
 
 export default app;

@@ -7,22 +7,36 @@ import SwiftUI
 // without bookkeeping.
 
 enum OnboardingStep: Int, CaseIterable, Identifiable {
+    // Act 1 — hook. The problem lands first, then motivation is collected
+    // before any friction, so every later screen can be framed as a
+    // consequence of the user's own answers.
     case welcome
-    case marketing
-    case scores
+    case marketing           // "What's marketed as healthy often isn't"
+    case goals               // "What should Sage weigh for you?" → healthGoals
+    case avoids              // "Anything you want flagged?"      → avoidList
+
+    // Act 2 — the argument. Ends on the two-score explainer, which is now
+    // captioned with the picks made in Act 1.
+    case howItWorks          // inverted: Scan → Your Score → Swap
+    case pledge              // inverted: no brand ever pays for a score
+    case scores              // the Your Score differentiator
     case alternatives
-    case profileName     // "What should we call you?"
-    case profileBody     // "Your body stats"
-    case profileDetails  // "A bit more about you" (DOB / gender / life stage)
-    case dietaryRestrictions // "Any dietary restrictions?"
-    case allergens             // "Any allergies or intolerances?"
+
+    // Act 3 — the asks.
+    case attribution         // "How did you hear about Sage?"
+    case dietaryRestrictions
+    case allergens
+
+    // Act 4 — payoff.
+    case demo                // a real product, scored live against their answers
     case reviews
     case loading
     case results
 
     var id: Int { rawValue }
 
-    /// Welcome has no chrome; results uses its own dark layout.
+    /// Welcome has no chrome; results uses its own dark layout. The demo
+    /// hides the bar too — it reads as a product moment, not a wizard step.
     var showsChrome: Bool {
         switch self {
         case .welcome, .results: return false
@@ -32,18 +46,28 @@ enum OnboardingStep: Int, CaseIterable, Identifiable {
 
     /// Progress 0…1 across the "chromed" portion of the flow.
     /// Welcome reports 0 (it doesn't show the bar anyway). The first
-    /// chromed step shows ~10% so the bar is never empty.
+    /// chromed step shows ~6% so the bar is never empty.
     var progress: Double {
         guard rawValue > 0 else { return 0 }
         let total = Double(OnboardingStep.allCases.count - 1) // exclude welcome
         return Double(rawValue) / total
     }
 
-    /// Skip lives in the header row for dietary and allergen steps.
-    /// Profile name/body/details use a ghost Skip under the CTA instead.
+    /// Steps whose answers are genuinely optional get a Skip in the toolbar.
     var allowsSkip: Bool {
         switch self {
-        case .dietaryRestrictions, .allergens: return true
+        case .avoids, .attribution, .dietaryRestrictions, .allergens:
+            return true
+        default:
+            return false
+        }
+    }
+
+    /// Inverted (dark green) steps. These keep white-on-green chrome
+    /// regardless of the active color scheme.
+    var isInverted: Bool {
+        switch self {
+        case .howItWorks, .pledge, .results: return true
         default: return false
         }
     }
@@ -72,6 +96,76 @@ enum OnboardingAllergenOptions {
     ]
 }
 
+// MARK: - Your Score inputs
+//
+// These two lists are the only onboarding answers that actually move Your
+// Score, so their labels must match `DietaryView`'s vocabulary exactly —
+// ScoringV4 looks goals and avoid-list entries up by string. Adding a nice-
+// sounding option here that isn't in the ruleset would silently do nothing.
+
+enum OnboardingGoalOptions {
+    struct Goal: Identifiable {
+        /// Must match `DietaryView.goals` / `UserProfile.healthGoals`.
+        let id: String
+        let symbol: String
+        let blurb: String
+    }
+
+    static let all: [Goal] = [
+        .init(id: "Blood sugar",  symbol: "chart.line.downtrend.xyaxis",
+              blurb: "Added sugars and refined carbs weigh heavier"),
+        .init(id: "Heart",        symbol: "heart.fill",
+              blurb: "Sodium and saturated fat weigh heavier"),
+        .init(id: "Gut health",   symbol: "leaf.fill",
+              blurb: "Emulsifiers and sweeteners weigh heavier"),
+        .init(id: "Pregnancy",    symbol: "figure.and.child.holdinghands",
+              blurb: "Caffeine and additive limits tighten"),
+        .init(id: "Young child",  symbol: "teddybear.fill",
+              blurb: "Portion limits scale down, dyes get flagged"),
+    ]
+}
+
+enum OnboardingAvoidOptions {
+    struct Avoid: Identifiable {
+        /// Must match `DietaryView.avoids` / `UserProfile.avoidList`.
+        let id: String
+        let symbol: String
+    }
+
+    static let all: [Avoid] = [
+        .init(id: "Seed oils",         symbol: "drop.fill"),
+        .init(id: "HFCS",              symbol: "cube.fill"),
+        .init(id: "Sucralose",         symbol: "sparkles"),
+        .init(id: "Aspartame",         symbol: "flask.fill"),
+        .init(id: "Artificial colors", symbol: "paintpalette.fill"),
+        .init(id: "Carrageenan",       symbol: "waveform.path"),
+        .init(id: "Palm oil",          symbol: "tree.fill"),
+        .init(id: "Titanium dioxide",  symbol: "circle.hexagongrid.fill"),
+        .init(id: "Added phosphates",  symbol: "bolt.fill"),
+        .init(id: "Caffeine",          symbol: "cup.and.saucer.fill"),
+    ]
+}
+
+// MARK: - Attribution
+//
+// Marketing-only; never read by scoring. Stored verbatim on
+// `UserProfile.acquisitionSource`.
+
+enum OnboardingAttributionOptions {
+    struct Source: Identifiable {
+        let id: String
+        let symbol: String
+    }
+
+    static let all: [Source] = [
+        .init(id: "TikTok",         symbol: "music.note"),
+        .init(id: "Instagram",      symbol: "camera.fill"),
+        .init(id: "From a friend",  symbol: "person.2.fill"),
+        .init(id: "App Store",      symbol: "magnifyingglass"),
+        .init(id: "Other",          symbol: "ellipsis"),
+    ]
+}
+
 // MARK: - Selectable models
 //
 // Each option exposes its own copy (title/subtitle/emoji) so the screen
@@ -81,21 +175,6 @@ enum BiologicalSex: String, CaseIterable, Identifiable, Codable {
     case female, male, other
     var id: String { rawValue }
     var label: String { rawValue.capitalized }
-}
-
-enum LifeStage: String, CaseIterable, Identifiable, Codable {
-    case none, pregnant, breastfeeding, condition
-
-    var id: String { rawValue }
-
-    var label: String {
-        switch self {
-        case .none:          return "None"
-        case .pregnant:      return "Pregnant"
-        case .breastfeeding: return "Breastfeeding"
-        case .condition:     return "Managing a condition"
-        }
-    }
 }
 
 // MARK: - State container
@@ -113,34 +192,43 @@ final class OnboardingState: ObservableObject {
     @Published var step: OnboardingStep = .welcome
     @Published var direction: Direction = .none
 
-    // MARK: - Profile (split across 3 screens)
-    //
-    // Body stats are stored in *both* imperial and metric: the units
-    // toggle on the body-stats screen converts between them in-place
-    // so the user never sees stale numbers.
-
-    /// Screen 1
-    @Published var firstName: String = ""
-
-    /// Screen 2
-    @Published var useImperial: Bool = true
-    @Published var heightFt: Int = 5
-    @Published var heightIn: Int = 7
-    @Published var heightCm: Int = 170
-    @Published var weightLb: Int = 147
-    @Published var weightKg: Int = 67
-
-    /// Screen 3
-    @Published var dobMonth: Int = 1
-    @Published var dobDay: Int = 1
-    @Published var dobYear: Int = 1995
-    @Published var sex: BiologicalSex? = nil
-    @Published var lifeStages: Set<LifeStage> = []
-
     /// Dietary hard rules + soft score signals from the restrictions screen.
     @Published var dietaryRestrictions: Set<String> = []
     @Published var foodPreferences: Set<String> = []
     @Published var selectedAllergens: [String] = []
+
+    // MARK: - Your Score inputs (Act 1)
+    //
+    // Collected before anything else, so by the time the demo step runs the
+    // engine has real personalization to apply and the Overall/Your Score
+    // split lands on the user's own answers rather than a canned number.
+
+    @Published var healthGoals: Set<String> = []
+    @Published var avoidList: Set<String> = []
+
+    /// Marketing attribution (Act 3). Nil when skipped.
+    @Published var acquisitionSource: String? = nil
+
+    /// A profile carrying *only* what's been answered so far. The demo step
+    /// scores against this so the reveal reflects the real ruleset rather
+    /// than a hand-written delta.
+    ///
+    /// The personalization fields are cleared before applying: `AppStore`
+    /// seeds `user` from `MockData.user`, which ships with a low-sugar
+    /// restriction and high-protein/low-sodium preferences. Inheriting those
+    /// would make the reveal cite reasons the user never chose — the one
+    /// thing this screen cannot afford to get wrong.
+    func previewProfile(basedOn base: UserProfile) -> UserProfile {
+        var p = base
+        p.restrictions = []
+        p.preferences = []
+        p.healthGoals = []
+        p.avoidList = []
+        p.allergies = nil
+        p.personalizeScoring = true
+        apply(to: &p)
+        return p
+    }
 
     func advance() {
         guard let next = OnboardingStep(rawValue: step.rawValue + 1) else { return }
@@ -161,48 +249,30 @@ final class OnboardingState: ObservableObject {
             user.preferences = Array(foodPreferences)
         }
 
-        // Name — leave the existing value alone if the user skipped.
-        let trimmedName = firstName.trimmingCharacters(in: .whitespacesAndNewlines)
-        if !trimmedName.isEmpty {
-            user.name = trimmedName
-        }
+        // Name, body stats, DOB and sex are deliberately *not* collected
+        // here. Onboarding used to gather them across three screens, which
+        // was the highest-friction stretch of the flow and bought nothing
+        // the user could see. Whatever the profile already holds is left
+        // untouched; Profile › Edit is where those live now.
 
-        // Body stats — always store in imperial in the profile (its
-        // canonical unit). Convert from metric only when the user
-        // finished the flow with the metric toggle on.
-        user.heightIn = useImperial ? (heightFt * 12 + heightIn)
-                                    : Int((Double(heightCm) / 2.54).rounded())
-        user.weightLb = useImperial ? weightLb
-                                    : Int((Double(weightKg) * 2.20462).rounded())
-        user.unitSystem = useImperial ? "Imperial" : "Metric"
-
-        // DOB — formatted MM/dd/yyyy with the locale-agnostic en_US_POSIX
-        // formatter so we don't accidentally pull region order.
-        let comps = DateComponents(year: dobYear, month: dobMonth, day: dobDay)
-        if let dobDate = Calendar(identifier: .gregorian).date(from: comps) {
-            let fmt = DateFormatter()
-            fmt.locale = Locale(identifier: "en_US_POSIX")
-            fmt.dateFormat = "MM/dd/yyyy"
-            user.dob = fmt.string(from: dobDate)
-
-            let years = Calendar(identifier: .gregorian)
-                .dateComponents([.year], from: dobDate, to: Date()).year ?? 0
-            user.age = max(0, years)
-        }
-
-        if let sex { user.sex = sex.rawValue }
-
-        // Dietary hard rules + life stage share `restrictions`.
-        var restrictions = Array(dietaryRestrictions)
-        for stage in lifeStages where stage != .none {
-            restrictions.append(stage.label)
-        }
-        if !restrictions.isEmpty {
-            user.restrictions = restrictions
+        if !dietaryRestrictions.isEmpty {
+            user.restrictions = Array(dietaryRestrictions)
         }
 
         if !selectedAllergens.isEmpty {
             user.allergies = selectedAllergens
+        }
+
+        // Your Score inputs. Written only when non-empty so a skipped step
+        // leaves any previously-saved value alone rather than clearing it.
+        if !healthGoals.isEmpty {
+            user.healthGoals = Array(healthGoals)
+        }
+        if !avoidList.isEmpty {
+            user.avoidList = Array(avoidList)
+        }
+        if let acquisitionSource {
+            user.acquisitionSource = acquisitionSource
         }
     }
 }

@@ -26,6 +26,12 @@ export interface SearchRequest {
   query: string;
 }
 
+export interface AttributionRequest {
+  source: string;
+  clientTag?: string;
+  appVersion?: string;
+}
+
 export interface ExplainMultiplierSource {
   source: string;
   selection: string;

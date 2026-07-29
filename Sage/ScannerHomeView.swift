@@ -49,8 +49,10 @@ struct ScannerHomeView: View {
         .accessibilityLabel("Sage")
     }
 
+    /// Name-free: onboarding no longer asks for one, so the profile default
+    /// would leak a placeholder name the user never entered.
     private func greeting() -> some View {
-        Text("\(timeGreeting), \(store.user.name)")
+        Text(timeGreeting)
             .font(.sageMedium(15))
             .foregroundColor(Theme.inkSecondary)
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -230,7 +232,8 @@ private struct RecentRow: View {
 
     var body: some View {
         let formatted = ProductNameFormatter.format(product)
-        let meta = [formatted.size, subtitle].compactMap { $0 }.filter { !$0.isEmpty }.joined(separator: " · ")
+        // Size is deliberately not shown: the row already carries brand, name
+        // and score, and "350 g" was the least useful of the four at a glance.
         return Button(action: onTap) {
             HStack(spacing: 12) {
                 ProductThumb(glyph: product.glyph, score: product.yourScore, size: 48,
@@ -238,8 +241,11 @@ private struct RecentRow: View {
                              processCutout: product.shouldProcessCutout)
                 VStack(alignment: .leading, spacing: 1) {
                     if let brand = formatted.brand {
-                        Text(brand.uppercased())
-                            .font(.sageBold(10)).tracking(1.2)
+                        // `ProductNameFormatter` already canonicalizes casing
+                        // ("COCA-COLA" → "Coca-Cola"); uppercasing it again
+                        // threw that away.
+                        Text(brand)
+                            .font(.sageBold(11)).tracking(0.2)
                             .foregroundColor(Theme.inkSecondary)
                             .lineLimit(1)
                     }
@@ -247,7 +253,7 @@ private struct RecentRow: View {
                         .font(.sageSemiBold(14))
                         .foregroundColor(Theme.ink)
                         .lineLimit(1)
-                    Text(meta)
+                    Text(subtitle)
                         .font(.sageRegular(11))
                         .foregroundColor(Theme.inkSecondary)
                 }

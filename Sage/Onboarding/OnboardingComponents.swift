@@ -7,60 +7,54 @@ import SwiftUI
 /// chrome rather than competing with active accents inside the screens.
 let OnboardingBrandGreen = Color(hex: "2D6A4F")
 
-struct OnboardingProgressBar: View {
-    let progress: Double // 0...1
-    let dark: Bool
-
-    var body: some View {
-        GeometryReader { geo in
-            ZStack(alignment: .leading) {
-                Capsule()
-                    .fill(dark ? Color.white.opacity(0.10) : Color.black.opacity(0.08))
-                Capsule()
-                    .fill(OnboardingBrandGreen)
-                    .frame(width: geo.size.width * max(0, min(1, CGFloat(progress))))
-                    .animation(.easeInOut(duration: 0.35), value: progress)
-            }
-        }
-        .frame(height: 6)
-    }
-}
-
 // MARK: - Chromed header (back + progress + optional skip)
+//
+// The bar itself is a stock `ProgressView` — it gets the system's easing,
+// its accessibility value, and Reduce Motion handling for free. Only the
+// surrounding row is ours, because it has to invert on the dark steps.
 
 struct OnboardingHeader: View {
     let step: OnboardingStep
-    let dark: Bool
     let onBack: () -> Void
     let onSkip: (() -> Void)?
+
+    /// White-on-green for the inverted steps, normal ink elsewhere.
+    private var tint: Color { step.isInverted ? .white : Theme.ink }
+    private var secondary: Color {
+        step.isInverted ? Color.white.opacity(0.6) : Theme.inkSecondary
+    }
 
     var body: some View {
         HStack(spacing: 14) {
             Button(action: onBack) {
                 Image(systemName: "chevron.left")
                     .font(.sageSemiBold(15))
-                    .foregroundColor(Theme.ink)
+                    .foregroundStyle(tint)
                     .frame(width: 36, height: 36)
                     .background(
-                        Circle().fill(dark ? Color.white.opacity(0.08) : Color.black.opacity(0.05))
+                        Circle().fill(step.isInverted ? Color.white.opacity(0.12)
+                                                      : Color.black.opacity(0.05))
                     )
                     .minHitArea(44) // visible 36, lift to 44 for WCAG
             }
             .buttonStyle(.pressable)
             .opacity(step.rawValue > 1 ? 1 : 0.45)
             .disabled(step.rawValue <= 1)
+            .accessibilityLabel("Back")
 
-            OnboardingProgressBar(progress: step.progress, dark: dark)
+            ProgressView(value: max(0, min(1, step.progress)))
+                .progressViewStyle(.linear)
+                .tint(step.isInverted ? .white : OnboardingBrandGreen)
+                .animation(.easeInOut(duration: 0.35), value: step.progress)
+                .accessibilityLabel("Onboarding progress")
 
             if step.allowsSkip, let onSkip {
-                Button(action: onSkip) {
-                    Text("Skip")
-                        .font(.sageSemiBold(14))
-                        .foregroundColor(Theme.inkSecondary)
-                        .padding(.vertical, 10).padding(.leading, 10)
-                        .minHitArea(44)
-                }
-                .buttonStyle(.pressable)
+                Button("Skip", action: onSkip)
+                    .font(.sageSemiBold(14))
+                    .foregroundStyle(secondary)
+                    .padding(.vertical, 10).padding(.leading, 10)
+                    .minHitArea(44)
+                    .buttonStyle(.pressable)
             }
         }
         .padding(.horizontal, 20)
@@ -76,8 +70,7 @@ struct OnboardingHeader: View {
 
 struct OnboardingTitle: View {
     let title: String
-    let subtitle: String?
-    let dark: Bool
+    var subtitle: String? = nil
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
@@ -96,22 +89,7 @@ struct OnboardingTitle: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.horizontal, 24)
-        .padding(.bottom, 18)
-    }
-}
-
-// MARK: - Section eyebrow used by interactive steps
-
-struct OnboardingEyebrow: View {
-    let text: String
-    let dark: Bool
-
-    var body: some View {
-        Text(text.uppercased())
-            .font(.sageBold(11)).tracking(1.4)
-            .foregroundColor(Theme.inkSecondary)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.horizontal, 24)
+        .padding(.bottom, 12)
     }
 }
 
@@ -119,250 +97,185 @@ struct OnboardingEyebrow: View {
 
 struct OnboardingCTAButton: View {
     let title: String
-    let dark: Bool
     var enabled: Bool = true
+    /// Inverted steps flip to a white pill with dark text so the CTA keeps
+    /// the same visual weight against the dark-green background.
+    var inverted: Bool = false
     let action: () -> Void
 
     var body: some View {
         Button(action: action) {
             Text(title)
                 .font(.sageBold(16)).tracking(-0.2)
-                // Locked to white on black across the entire onboarding,
-                // regardless of dark mode. Onboarding's CTA must read as
-                // the same neutral primary action on every step — not flip
-                // to a white pill mid-flow.
-                .foregroundColor(.white)
                 .frame(maxWidth: .infinity)
-                .padding(.vertical, 18)
-                .background(
-                    Capsule().fill(Color.black)
-                )
-                .opacity(enabled ? 1 : 0.45)
-                .animation(.easeOut(duration: 0.18), value: enabled) // soft enable/disable
+                .padding(.vertical, 4)
         }
-        // Static when disabled — pressing a disabled CTA shouldn't react.
-        .buttonStyle(enabled ? PressableButtonStyle() : PressableButtonStyle(isStatic: true))
+        .buttonStyle(.borderedProminent)
+        .buttonBorderShape(.capsule)
+        .controlSize(.large)
+        // Locked to black (or white when inverted) across the whole flow,
+        // regardless of color scheme — onboarding's CTA must read as the
+        // same neutral primary action on every step, not flip mid-flow.
+        .tint(inverted ? .white : .black)
+        .foregroundStyle(inverted ? Color.black : Color.white)
         .disabled(!enabled)
+        .opacity(enabled ? 1 : 0.45)
+        .animation(.easeOut(duration: 0.18), value: enabled) // soft enable/disable
+        .sensoryFeedback(.selection, trigger: enabled)
     }
 }
 
 struct OnboardingGhostButton: View {
     let title: String
-    let dark: Bool
+    var inverted: Bool = false
     let action: () -> Void
 
     var body: some View {
-        Button(action: action) {
-            Text(title)
-                .font(.sageSemiBold(14))
-                .foregroundColor(Theme.inkSecondary)
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 10) // bumped from 6 → 10 for thumb reach
-                .contentShape(Rectangle())
-        }
-        .buttonStyle(.pressable)
+        Button(title, action: action)
+            .font(.sageSemiBold(14))
+            .foregroundStyle(inverted ? Color.white.opacity(0.7) : Theme.inkSecondary)
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 10) // bumped from 6 → 10 for thumb reach
+            .contentShape(Rectangle())
+            .buttonStyle(.pressable)
     }
 }
 
-// MARK: - Selectable grid card (preferences, symptoms)
+// MARK: - Selectable list row
+//
+// The workhorse of the new question steps. Competitors all converge on the
+// same shape — symbol in a tinted circle, label, trailing state — and it's
+// what a `List` row wants to be anyway, so this stays a plain `Label`-ish
+// row and lets the enclosing `List` supply insets, separators and the
+// press highlight.
 
-struct OnboardingSelectionCard: View {
-    let emoji: String?
+struct OnboardingChoiceRow: View {
+    let symbol: String
     let title: String
-    let subtitle: String?
+    var subtitle: String? = nil
     let selected: Bool
-    let dark: Bool
+    /// Multi-select rows show a checkmark; single-select rows that advance
+    /// on tap show a chevron instead, which reads as "this goes somewhere".
+    var showsChevron: Bool = false
     let accent: Color
     let action: () -> Void
 
     var body: some View {
         Button(action: action) {
-            VStack(alignment: .leading, spacing: 8) {
-                HStack(alignment: .top) {
-                    if let emoji {
-                        Text(emoji).font(.sageRegular(24))
+            HStack(spacing: 14) {
+                Image(systemName: symbol)
+                    .font(.sageSemiBold(15))
+                    .foregroundStyle(selected ? .white : accent)
+                    .frame(width: 34, height: 34)
+                    .background(
+                        Circle().fill(selected ? accent : accent.opacity(0.12))
+                    )
+
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(title)
+                        .font(.sageBold(15)).tracking(-0.2)
+                        .foregroundStyle(Theme.ink)
+                        .multilineTextAlignment(.leading)
+                    if let subtitle {
+                        Text(subtitle)
+                            .font(.sageRegular(12))
+                            .foregroundStyle(Theme.inkSecondary)
+                            .multilineTextAlignment(.leading)
+                            .fixedSize(horizontal: false, vertical: true)
                     }
-                    Spacer(minLength: 0)
-                    // Contextual icon: empty ring → filled check with a smooth
-                    // scale+opacity swap. Reads as a single icon morphing rather
-                    // than two views snapping in/out.
-                    ZStack {
-                        Circle()
-                            .stroke(dark ? Color.white.opacity(0.18) : Color.black.opacity(0.12), lineWidth: 1.4)
-                            .frame(width: 22, height: 22)
-                            .opacity(selected ? 0 : 1)
-                            .scaleEffect(selected ? 0.7 : 1)
-                        ZStack {
-                            Circle().fill(accent).frame(width: 22, height: 22)
-                            Image(systemName: "checkmark")
-                                .font(.sageBold(11))
-                                .foregroundColor(.white)
-                        }
+                }
+
+                Spacer(minLength: 8)
+
+                if showsChevron {
+                    Image(systemName: "chevron.right")
+                        .font(.sageSemiBold(13))
+                        .foregroundStyle(Theme.inkSecondary)
+                } else {
+                    // The system checkmark is how iOS shows a chosen row;
+                    // a custom radio would only look foreign here.
+                    Image(systemName: "checkmark")
+                        .font(.sageBold(14))
+                        .foregroundStyle(accent)
                         .opacity(selected ? 1 : 0)
                         .scaleEffect(selected ? 1 : 0.6)
-                    }
-                    .animation(.spring(response: 0.32, dampingFraction: 0.7), value: selected)
-                }
-                Text(title)
-                    .font(.sageBold(15)).tracking(-0.2)
-                    .foregroundColor(Theme.ink)
-                    .multilineTextAlignment(.leading)
-                if let subtitle {
-                    Text(subtitle)
-                        .font(.sageRegular(12))
-                        .foregroundColor(Theme.inkSecondary)
-                        .multilineTextAlignment(.leading)
+                        .animation(.spring(response: 0.3, dampingFraction: 0.7),
+                                   value: selected)
                 }
             }
-            .frame(maxWidth: .infinity, minHeight: 96, alignment: .topLeading)
-            .padding(14)
-            .background(
-                // Concentric: outer card is 18 → keep stroke/overlay matching.
-                RoundedRectangle(cornerRadius: 18, style: .continuous)
-                    .fill(Theme.card)
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: 18, style: .continuous)
-                    .stroke(selected ? accent : Color.clear, lineWidth: 2)
-            )
-            .cardShadow()
+            .padding(.vertical, 4)
+            .contentShape(Rectangle())
         }
-        .buttonStyle(.pressable)
-        .animation(.easeOut(duration: 0.18), value: selected)
+        .buttonStyle(.plain)
+        .accessibilityAddTraits(selected ? .isSelected : [])
     }
 }
 
-// MARK: - Diet & allergen pills (onboarding-specific styling)
+// MARK: - List styling for question steps
 
-/// Pill used on the dietary-restrictions screen. Selected = brand green,
-/// no border; unselected = white + light gray stroke.
-struct OnboardingDietPill: View {
-    let label: String
-    let selected: Bool
-    let dark: Bool
-    let action: () -> Void
+extension View {
+    /// `sageListStyle` plus room to scroll clear of the pinned CTA.
+    ///
+    /// The flow lays the footer out *below* the screen body, so a `List` that
+    /// ends flush with its own bounds leaves the last section footer tucked
+    /// under the Continue pill with no way to scroll it into view.
+    ///
+    /// Top margin is zeroed so a section-header title sits flush with the
+    /// chrome above instead of floating in the default inset-grouped band.
+    func onboardingListStyle() -> some View {
+        sageListStyle()
+            .contentMargins(.top, 0, for: .scrollContent)
+            .contentMargins(.bottom, 16, for: .scrollContent)
+            .listSectionSpacing(12)
+    }
+
+    /// Strip the system section-header chrome (uppercase, secondary tint,
+    /// extra vertical padding) so an `OnboardingTitle` can live inside a
+    /// `Section` header without a dead band above the rows.
+    func onboardingListHeader() -> some View {
+        self
+            .textCase(nil)
+            // List headers inherit the row's leading inset; the title already
+            // pads itself to 24pt, so undo the double inset.
+            .listRowInsets(EdgeInsets(top: 4, leading: 0, bottom: 8, trailing: 0))
+            .frame(maxWidth: .infinity, alignment: .leading)
+    }
+}
+
+// MARK: - Inverted-step scaffolding
+//
+// `howItWorks` and `pledge` sit on the same dark green the results screen
+// already uses, so white text and a translucent surface are hard-coded
+// rather than resolved from the color scheme.
+
+enum OnboardingInverted {
+    static let background = Color(hex: "0B2A1F")
+    static let surface = Color(hex: "133A2C")
+    static let ink = Color.white
+    static let inkSecondary = Color.white.opacity(0.65)
+}
+
+struct OnboardingInvertedTitle: View {
+    let title: String
+    var subtitle: String? = nil
 
     var body: some View {
-        Button(action: action) {
-            Text(label)
-                .font(.sageBold(14)).tracking(-0.2)
-                .foregroundColor(selected ? .white : Theme.ink)
-                .padding(.horizontal, 16).padding(.vertical, 11)
-                .background(
-                    Capsule().fill(selected ? OnboardingBrandGreen : Theme.card)
-                )
-                .overlay(
-                    Capsule().stroke(
-                        selected ? Color.clear : Color.black.opacity(0.10),
-                        lineWidth: 1
-                    )
-                )
-                .animation(.easeOut(duration: 0.18), value: selected)
-        }
-        .buttonStyle(.pressable)
-    }
-}
-
-/// Grid cell for the allergens screen — rounded rect, not a pill.
-struct OnboardingAllergenCell: View {
-    let label: String
-    let selected: Bool
-    let dark: Bool
-    let action: () -> Void
-
-    var body: some View {
-        Button(action: action) {
-            Text(label)
-                .font(.sageBold(14)).tracking(-0.2)
-                .foregroundColor(selected ? .white : Theme.ink)
-                .multilineTextAlignment(.center)
-                .lineLimit(2)
-                .minimumScaleFactor(0.85)
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 16)
-                .padding(.horizontal, 8)
-                .background(
-                    RoundedRectangle(cornerRadius: 10, style: .continuous)
-                        .fill(selected ? OnboardingBrandGreen : Theme.card)
-                )
-                .overlay(
-                    RoundedRectangle(cornerRadius: 10, style: .continuous)
-                        .stroke(selected ? Color.clear : Color.black.opacity(0.10), lineWidth: 1)
-                )
-                .animation(.easeOut(duration: 0.18), value: selected)
-        }
-        .buttonStyle(.pressable)
-    }
-}
-
-// MARK: - Selectable chip (age range, sex, life stage)
-
-struct OnboardingChip: View {
-    let label: String
-    let selected: Bool
-    let dark: Bool
-    let accent: Color
-    let action: () -> Void
-
-    var body: some View {
-        Button(action: action) {
-            Text(label)
-                .font(.sageBold(14)).tracking(-0.2)
-                .foregroundColor(selected ? .white : Theme.ink)
-                .padding(.horizontal, 16).padding(.vertical, 11)
-                .background(
-                    Capsule().fill(selected
-                                   ? accent
-                                   : (dark ? Color.white.opacity(0.06) : Color.white))
-                )
-                .overlay(
-                    Capsule().stroke(
-                        selected ? accent : (dark ? Color.white.opacity(0.08) : Color.black.opacity(0.06)),
-                        lineWidth: 1
-                    )
-                )
-                .cardShadow()
-                .animation(.easeOut(duration: 0.18), value: selected)
-        }
-        .buttonStyle(.pressable)
-    }
-}
-
-// MARK: - Flow layout that wraps chips onto multiple lines
-
-struct ChipFlowLayout: Layout {
-    var spacing: CGFloat = 8
-    var runSpacing: CGFloat = 8
-
-    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
-        let maxWidth = proposal.width ?? .infinity
-        var x: CGFloat = 0
-        var y: CGFloat = 0
-        var rowHeight: CGFloat = 0
-        for sub in subviews {
-            let size = sub.sizeThatFits(.unspecified)
-            if x + size.width > maxWidth, x > 0 {
-                x = 0; y += rowHeight + runSpacing; rowHeight = 0
+        VStack(alignment: .leading, spacing: 10) {
+            Text(title)
+                .font(.sageBold(28)).tracking(-0.7)
+                .foregroundStyle(OnboardingInverted.ink)
+                .fixedSize(horizontal: false, vertical: true)
+            if let subtitle {
+                Text(subtitle)
+                    .font(.sageRegular(15))
+                    .lineSpacing(3)
+                    .foregroundStyle(OnboardingInverted.inkSecondary)
+                    .fixedSize(horizontal: false, vertical: true)
             }
-            x += size.width + spacing
-            rowHeight = max(rowHeight, size.height)
         }
-        return CGSize(width: maxWidth.isFinite ? maxWidth : x, height: y + rowHeight)
-    }
-
-    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
-        var x: CGFloat = bounds.minX
-        var y: CGFloat = bounds.minY
-        var rowHeight: CGFloat = 0
-        for sub in subviews {
-            let size = sub.sizeThatFits(.unspecified)
-            if x + size.width > bounds.maxX, x > bounds.minX {
-                x = bounds.minX; y += rowHeight + runSpacing; rowHeight = 0
-            }
-            sub.place(at: CGPoint(x: x, y: y), proposal: ProposedViewSize(size))
-            x += size.width + spacing
-            rowHeight = max(rowHeight, size.height)
-        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.horizontal, 24)
+        .padding(.bottom, 18)
     }
 }
 
@@ -381,7 +294,6 @@ enum OnboardingAssets {
 /// add your PNG to the matching imageset in Assets.xcassets.
 struct OnboardingHeroImage: View {
     let assetName: String
-    let dark: Bool
     var scale: CGFloat = 1
     var horizontalPadding: CGFloat = 8
 
@@ -416,7 +328,6 @@ struct OnboardingHeroImage: View {
 // MARK: - Phone illustration used on the welcome screen
 
 struct PhoneShowcase: View {
-    let dark: Bool
     let accent: Color
 
     var body: some View {

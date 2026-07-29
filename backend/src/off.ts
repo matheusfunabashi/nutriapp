@@ -58,35 +58,62 @@ export function hasImage(p: OFFProduct | null): boolean {
 // server-side (full-text over name/brand). NOTE: it is rate-limited harder
 // than product reads (~10 req/min/IP), which is why /search sits behind the
 // Worker's KV cache and the app debounces keystrokes.
+//
+// Results are post-filtered to:
+//   • US market only (`countries_tags` must include en:united-states)
+//   • Scoreable products (enough nutrition / ingredient signal for the
+//     on-device engine — empty shells that open to "insufficient data" are
+//     dropped so the typeahead never teases a dead end)
 
-const SEARCH_FIELDS = "code,product_name,brands,quantity,image_front_small_url,image_front_url";
+const SEARCH_FIELDS = [
+  "code", "product_name", "brands", "quantity",
+  "image_front_small_url", "image_front_url",
+  "countries_tags", "nutriments", "nova_group",
+  "additives_tags", "categories_tags",
+].join(",");
 const SEARCH_UA = { "User-Agent": "Sage/1.0 (backend proxy; contact@sage.app)" };
+const US_COUNTRY_TAG = "en:united-states";
+/** Bare OFF category tags Sage routes to `unsupported` (language prefix stripped). */
+const UNSUPPORTED_BARE_TAGS = new Set([
+  "waters", "mineral-waters", "spring-waters", "flavored-waters",
+  "natural-mineral-waters", "table-waters", "drinking-water", "drinking-waters",
+  "alcoholic-beverages", "beers", "wines", "spirits", "ciders",
+]);
 
-export async function searchOFF(query: string, pageSize = 20): Promise<SearchHit[]> {
-  // Primary: search-a-licious (fast, powers the OFF website). Fallback: the
-  // legacy CGI search, which is slower and 503s under load.
-  const raw = (await searchModern(query, pageSize).catch(() => null))
-           ?? (await searchLegacy(query, pageSize));
+/** Core per-100g fields that mirror `Product.hasNutritionData` on iOS. */
+const CORE_NUTRIMENT_KEYS = [
+  "energy-kcal_100g",
+  "sugars_100g",
+  "saturated-fat_100g",
+  "sodium_100g",
+  "proteins_100g",
+  "fiber_100g",
+] as const;
 
-  // Collapse size/regional/case variants of the same product (same brand +
-  // name, different barcodes — e.g. 400g vs 750g Nutella). Per-100g nutrition
-  // is the same across pack sizes, so one row represents them all. We
-  // over-fetch then trim so dedup doesn't leave a sparse list.
+export async function searchOFF(query: string, pageSize = 12): Promise<SearchHit[]> {
+  // Over-fetch: US + scorability filters drop a chunk of OFF hits.
+  const fetchSize = Math.min(Math.max(pageSize * 4, 40), 60);
+  const raw = (await searchModern(query, fetchSize).catch(() => null))
+           ?? (await searchLegacy(query, fetchSize));
+
   const seen = new Set<string>();
-  const deduped = raw.filter((h) => {
-    const key = `${h.brand.toLowerCase()}|${h.name.toLowerCase()}`;
-    if (seen.has(key)) return false;
+  const out: SearchHit[] = [];
+  for (const p of raw) {
+    if (!isUSProduct(p)) continue;
+    if (isUnsupportedCategory(p)) continue;
+    if (!isScorableForSearch(p)) continue;
+    const hit = toSearchHit(p);
+    if (!hit) continue;
+    const key = `${hit.brand.toLowerCase()}|${hit.name.toLowerCase()}`;
+    if (seen.has(key)) continue;
     seen.add(key);
-    return true;
-  });
-  return deduped.slice(0, 12);
+    out.push(hit);
+    if (out.length >= pageSize) break;
+  }
+  return out;
 }
 
-// Sage targets the US market, so search is filtered to US products — otherwise
-// a generic term like "cheese" surfaces globally-popular non-US items.
-const US_COUNTRY_TAG = "en:united-states";
-
-async function searchModern(query: string, pageSize: number): Promise<SearchHit[]> {
+async function searchModern(query: string, pageSize: number): Promise<Record<string, unknown>[]> {
   // search-a-licious combines full-text + field filters in `q` (implicit AND).
   const q = `${query} countries_tags:"${US_COUNTRY_TAG}"`;
   const url =
@@ -95,10 +122,10 @@ async function searchModern(query: string, pageSize: number): Promise<SearchHit[
   const res = await fetch(url, { headers: SEARCH_UA });
   if (!res.ok) throw new Error(`OFF search-a-licious ${res.status}`);
   const data = (await res.json()) as { hits?: Record<string, unknown>[] };
-  return mapHits(data.hits ?? []);
+  return data.hits ?? [];
 }
 
-async function searchLegacy(query: string, pageSize: number): Promise<SearchHit[]> {
+async function searchLegacy(query: string, pageSize: number): Promise<Record<string, unknown>[]> {
   const url =
     "https://world.openfoodfacts.org/cgi/search.pl?action=process&json=1&search_simple=1" +
     `&search_terms=${encodeURIComponent(query)}&page_size=${pageSize}&fields=${SEARCH_FIELDS}` +
@@ -106,28 +133,75 @@ async function searchLegacy(query: string, pageSize: number): Promise<SearchHit[
   const res = await fetch(url, { headers: SEARCH_UA });
   if (!res.ok) throw new Error(`OFF search ${res.status}`);
   const data = (await res.json()) as { products?: Record<string, unknown>[] };
-  return mapHits(data.products ?? []);
+  return data.products ?? [];
+}
+
+function tagList(value: unknown): string[] {
+  if (Array.isArray(value)) return value.map((t) => String(t).toLowerCase());
+  if (typeof value === "string" && value.trim()) {
+    return value.split(/[,|]/).map((t) => t.trim().toLowerCase()).filter(Boolean);
+  }
+  return [];
+}
+
+function bareCategoryTags(p: Record<string, unknown>): string[] {
+  return tagList(p["categories_tags"]).map((t) => {
+    const i = t.lastIndexOf(":");
+    return i >= 0 ? t.slice(i + 1) : t;
+  });
+}
+
+/** Strict US market check — OFF's query filter leaks non-US hits occasionally. */
+export function isUSProduct(p: Record<string, unknown>): boolean {
+  return tagList(p["countries_tags"]).includes(US_COUNTRY_TAG);
+}
+
+export function isUnsupportedCategory(p: Record<string, unknown>): boolean {
+  return bareCategoryTags(p).some((t) => UNSUPPORTED_BARE_TAGS.has(t));
+}
+
+/**
+ * Mirrors `Product.hasMinimumData`: ≥3 core nutrients / 100g, or a known
+ * NOVA group, or at least one additive tag. Ingredient text alone is never
+ * enough (same rule as the iOS engine).
+ */
+export function isScorableForSearch(p: Record<string, unknown>): boolean {
+  const nut = (p["nutriments"] && typeof p["nutriments"] === "object")
+    ? (p["nutriments"] as Record<string, unknown>)
+    : {};
+  let core = 0;
+  for (const key of CORE_NUTRIMENT_KEYS) {
+    const v = nut[key];
+    if (typeof v === "number" && Number.isFinite(v)) core += 1;
+  }
+  if (core >= 3) return true;
+
+  const nova = p["nova_group"];
+  const novaN = typeof nova === "number" ? nova : Number(nova);
+  if (Number.isFinite(novaN) && novaN >= 1 && novaN <= 4) return true;
+
+  const additives = tagList(p["additives_tags"]);
+  return additives.length > 0;
 }
 
 /// Both endpoints share field names, but search-a-licious returns `brands`
 /// as an array while the CGI returns a comma-joined string.
-function mapHits(items: Record<string, unknown>[]): SearchHit[] {
-  return items
-    .filter((p) => typeof p["code"] === "string" && p["code"] !== "" && p["product_name"])
-    .map((p) => {
-      const brands = p["brands"];
-      const brand = Array.isArray(brands)
-        ? String(brands[0] ?? "").trim()
-        : typeof brands === "string" ? brands.split(",")[0].trim() : "";
-      return {
-        code: p["code"] as string,
-        name: String(p["product_name"]).trim(),
-        brand,
-        quantity: typeof p["quantity"] === "string" && p["quantity"] !== ""
-          ? (p["quantity"] as string).trim() : null,
-        imageURL: upgradeOFFThumbURL(
-          (p["image_front_small_url"] ?? p["image_front_url"] ?? null) as string | null
-        ),
-      };
-    });
+function toSearchHit(p: Record<string, unknown>): SearchHit | null {
+  const code = typeof p["code"] === "string" ? p["code"] : "";
+  const name = p["product_name"] != null ? String(p["product_name"]).trim() : "";
+  if (!code || !name) return null;
+  const brands = p["brands"];
+  const brand = Array.isArray(brands)
+    ? String(brands[0] ?? "").trim()
+    : typeof brands === "string" ? brands.split(",")[0]!.trim() : "";
+  return {
+    code,
+    name,
+    brand,
+    quantity: typeof p["quantity"] === "string" && p["quantity"] !== ""
+      ? (p["quantity"] as string).trim() : null,
+    imageURL: upgradeOFFThumbURL(
+      (p["image_front_small_url"] ?? p["image_front_url"] ?? null) as string | null
+    ),
+  };
 }
