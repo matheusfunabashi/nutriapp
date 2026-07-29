@@ -43,3 +43,50 @@ export async function logFetch(
     .bind(api, barcode, reason, new Date().toISOString())
     .run();
 }
+
+/// Allowed onboarding attribution labels — must stay in sync with
+/// `OnboardingAttributionOptions` in the iOS app.
+export const ATTRIBUTION_SOURCES = [
+  "TikTok",
+  "Instagram",
+  "From a friend",
+  "App Store",
+  "Other",
+] as const;
+
+export type AttributionSource = (typeof ATTRIBUTION_SOURCES)[number];
+
+export function isAttributionSource(value: string): value is AttributionSource {
+  return (ATTRIBUTION_SOURCES as readonly string[]).includes(value);
+}
+
+/// Append one onboarding attribution event.
+export async function recordAttribution(
+  db: D1Database,
+  source: AttributionSource,
+  clientTag: string | null,
+  appVersion: string | null,
+): Promise<void> {
+  await db
+    .prepare(
+      `INSERT INTO attribution (source, client_tag, app_version, created_at)
+       VALUES (?, ?, ?, ?)`,
+    )
+    .bind(source, clientTag, appVersion, new Date().toISOString())
+    .run();
+}
+
+/// Counts by source for a quick channel breakdown.
+export async function attributionSummary(
+  db: D1Database,
+): Promise<Array<{ source: string; count: number; last_at: string }>> {
+  const res = await db
+    .prepare(
+      `SELECT source, COUNT(*) AS count, MAX(created_at) AS last_at
+       FROM attribution
+       GROUP BY source
+       ORDER BY count DESC`,
+    )
+    .all<{ source: string; count: number; last_at: string }>();
+  return res.results ?? [];
+}

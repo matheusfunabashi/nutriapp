@@ -352,6 +352,29 @@ struct BackendService {
         return (data, file)
     }
 
+    // MARK: /attribution
+
+    private struct AttributionBody: Encodable {
+        let source: String
+        let clientTag: String
+        let appVersion: String?
+    }
+
+    /// Fire-and-forget channel report from onboarding. Failures are silent —
+    /// local `UserProfile.acquisitionSource` is the source of truth on-device;
+    /// this only feeds the D1 analytics table.
+    func reportAttribution(source: String) async {
+        let trimmed = source.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return }
+        let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String
+        let body = AttributionBody(
+            source: trimmed,
+            clientTag: Self.clientTag,
+            appVersion: version
+        )
+        _ = try? await post(path: "attribution", body: body)
+    }
+
     // MARK: Transport
 
     private func get(path: String) async throws -> (Data, Int) {

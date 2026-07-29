@@ -10,19 +10,21 @@ import SwiftUI
 //
 // Individual screens stay value-typed and unaware of navigation —
 // they receive bindings/closures and nothing else.
+//
+// Flow shape (see `OnboardingStep`): motivation is collected in Act 1 so
+// that the Your Score explainer in Act 2 and the live demo in Act 4 both
+// have real personalization to show. Personal data comes last, and is
+// skippable.
 
 struct OnboardingFlow: View {
     @EnvironmentObject var store: AppStore
-    @Environment(\.colorScheme) private var colorScheme
     @StateObject private var state = OnboardingState()
     @State private var awaitingReviewPrompt = false
     let onFinish: () -> Void
 
     var body: some View {
-        let dark = colorScheme == .dark
-
         ZStack {
-            background(dark: dark).ignoresSafeArea()
+            background.ignoresSafeArea()
 
             VStack(spacing: 0) {
                 if state.step.showsChrome {
@@ -31,22 +33,29 @@ struct OnboardingFlow: View {
                         : nil
                     OnboardingHeader(
                         step: state.step,
-                        dark: dark,
                         onBack: { state.goBack() },
                         onSkip: skip
                     )
                 }
 
-                screenBody(dark: dark)
+                screenBody
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
                     .id(state.step) // re-trigger transitions per step
                     .transition(stepTransition)
 
-                if let footer = footer(dark: dark) {
+                if let footer {
                     footer.padding(.horizontal, 20).padding(.bottom, 36)
                 }
             }
         }
+        // The inverted steps are white-on-dark-green in both schemes, so the
+        // status bar has to follow them. `preferredColorScheme` resolves at
+        // the `WindowGroup`, so applying it here would be ignored — the
+        // store carries the override up to the scene root instead.
+        .onChange(of: state.step, initial: true) { _, step in
+            store.schemeOverride = step.isInverted ? .dark : nil
+        }
+        .onDisappear { store.schemeOverride = nil }
     }
 
     // MARK: Step transition
@@ -71,12 +80,12 @@ struct OnboardingFlow: View {
 
     // MARK: Background
     //
-    // The results step is dark themed regardless of color scheme; every
-    // other step uses the app's normal background.
+    // The inverted steps carry the dark-green brand surface regardless of
+    // color scheme; every other step uses the app's normal background.
     @ViewBuilder
-    private func background(dark: Bool) -> some View {
-        if state.step == .results {
-            Color(hex: "0B2A1F")
+    private var background: some View {
+        if state.step.isInverted {
+            OnboardingInverted.background
         } else {
             Theme.background
         }
@@ -85,68 +94,73 @@ struct OnboardingFlow: View {
     // MARK: Screen bodies
 
     @ViewBuilder
-    private func screenBody(dark: Bool) -> some View {
+    private var screenBody: some View {
         switch state.step {
         case .welcome:
             OnboardingWelcomeScreen(
-                dark: dark, accent: store.accent,
+                accent: store.accent,
                 onContinue: state.advance,
                 onSignIn: complete  // placeholder until auth lands
             )
+
         case .marketing:
-            OnboardingMarketingScreen(dark: dark)
+            OnboardingMarketingScreen()
+
+        case .goals:
+            OnboardingGoalsScreen(accent: store.accent, selection: $state.healthGoals)
+
+        case .avoids:
+            OnboardingAvoidsScreen(accent: store.accent, selection: $state.avoidList)
+
+        case .howItWorks:
+            OnboardingHowItWorksScreen(accent: store.accent)
+
+        case .pledge:
+            OnboardingPledgeScreen(accent: store.accent)
+
         case .scores:
-            OnboardingScoresScreen(dark: dark, accent: store.accent)
+            OnboardingScoresScreen(accent: store.accent, goals: state.healthGoals,
+                                   avoids: state.avoidList)
+
         case .alternatives:
-            OnboardingAlternativesScreen(dark: dark, accent: store.accent)
-        case .profileName:
-            OnboardingNameScreen(
-                dark: dark,
-                firstName: $state.firstName
+            OnboardingAlternativesScreen(accent: store.accent)
+
+        case .attribution:
+            OnboardingAttributionScreen(
+                accent: store.accent,
+                selection: $state.acquisitionSource,
+                onPick: state.advance
             )
-        case .profileBody:
-            OnboardingBodyStatsScreen(
-                dark: dark,
-                useImperial: $state.useImperial,
-                heightFt: $state.heightFt,
-                heightIn: $state.heightIn,
-                heightCm: $state.heightCm,
-                weightLb: $state.weightLb,
-                weightKg: $state.weightKg
-            )
-        case .profileDetails:
-            OnboardingPersonalDetailsScreen(
-                dark: dark,
-                dobMonth: $state.dobMonth,
-                dobDay: $state.dobDay,
-                dobYear: $state.dobYear,
-                sex: $state.sex,
-                lifeStages: $state.lifeStages
-            )
+
         case .dietaryRestrictions:
             OnboardingDietaryRestrictionsScreen(
-                dark: dark,
                 restrictions: $state.dietaryRestrictions,
                 preferences: $state.foodPreferences
             )
+
         case .allergens:
-            OnboardingAllergensScreen(
-                dark: dark,
-                allergies: $state.selectedAllergens
+            OnboardingAllergensScreen(allergies: $state.selectedAllergens)
+
+        case .demo:
+            OnboardingDemoScreen(
+                accent: store.accent,
+                profile: state.previewProfile(basedOn: store.user),
+                onContinue: state.advance
             )
+
         case .reviews:
-            OnboardingReviewsScreen(dark: dark)
+            OnboardingReviewsScreen()
+
         case .loading:
-            OnboardingLoadingScreen(
-                dark: dark, accent: store.accent,
-                onComplete: state.advance
-            )
+            OnboardingLoadingScreen(accent: store.accent, onComplete: state.advance)
+
         case .results:
             OnboardingResultsScreen(
                 accent: store.accent,
                 dietaryRestrictions: state.dietaryRestrictions,
                 foodPreferences: state.foodPreferences,
-                lifeStages: state.lifeStages,
+                healthGoals: state.healthGoals,
+                avoidList: state.avoidList,
                 onStart: complete
             )
         }
@@ -154,68 +168,45 @@ struct OnboardingFlow: View {
 
     // MARK: Footer (CTA + ghost)
     //
-    // The welcome / loading / results screens render their own footers
-    // because their copy and chrome are bespoke. Everything else uses
-    // the standard "Continue" pill + optional secondary ghost.
-    private func footer(dark: Bool) -> AnyView? {
+    // Screens that own their footer return nil here: welcome and results
+    // have bespoke chrome, loading advances itself, the demo commits from
+    // inside its reveal sheet, and attribution auto-advances on tap.
+    private var footer: AnyView? {
         switch state.step {
-        case .welcome, .loading, .results:
+        case .welcome, .loading, .results, .demo, .attribution:
             return nil
 
-        case .profileName:
-            // Name + Skip. CTA enabled once anything is typed; Skip
-            // simply advances without saving.
-            return AnyView(VStack(spacing: 8) {
-                OnboardingCTAButton(
-                    title: "Continue",
-                    dark: dark,
-                    enabled: !state.firstName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
-                    action: state.advance
-                )
-                OnboardingGhostButton(title: "Skip", dark: dark, action: state.advance)
-            })
-
-        case .profileBody:
-            // Body stats default to sensible values, so CTA is always
-            // enabled. Skip is offered for users who'd rather not say.
-            return AnyView(VStack(spacing: 8) {
-                OnboardingCTAButton(title: "Continue", dark: dark, action: state.advance)
-                OnboardingGhostButton(title: "Skip", dark: dark, action: state.advance)
-            })
-
-        case .profileDetails:
-            // CTA enabled once a gender is picked (DOB and life stage
-            // both default to valid values). Skip bypasses entirely.
-            return AnyView(VStack(spacing: 8) {
-                OnboardingCTAButton(
-                    title: "Continue",
-                    dark: dark,
-                    enabled: state.sex != nil,
-                    action: state.advance
-                )
-                OnboardingGhostButton(title: "Skip", dark: dark, action: state.advance)
-            })
-
-        case .dietaryRestrictions, .allergens:
-            // Selection is optional — Skip lives in the header row.
+        case .goals:
+            // The one step we gate: Your Score is the product, and it needs
+            // at least one input to mean anything.
             return AnyView(
-                OnboardingCTAButton(title: "Continue", dark: dark, action: state.advance)
+                OnboardingCTAButton(
+                    title: "Continue",
+                    enabled: !state.healthGoals.isEmpty,
+                    action: state.advance
+                )
+            )
+
+        case .howItWorks, .pledge:
+            return AnyView(
+                OnboardingCTAButton(title: "Continue", inverted: true,
+                                    action: state.advance)
             )
 
         case .reviews:
             return AnyView(VStack(spacing: 8) {
                 OnboardingCTAButton(
                     title: "Continue",
-                    dark: dark,
                     enabled: !awaitingReviewPrompt,
                     action: requestReviewThenAdvance
                 )
-                OnboardingGhostButton(title: "Maybe later", dark: dark, action: state.advance)
+                OnboardingGhostButton(title: "Maybe later", action: state.advance)
             })
 
-        case .marketing, .scores, .alternatives:
+        case .avoids, .marketing, .scores, .alternatives,
+             .dietaryRestrictions, .allergens:
             return AnyView(
-                OnboardingCTAButton(title: "Continue", dark: dark, action: state.advance)
+                OnboardingCTAButton(title: "Continue", action: state.advance)
             )
         }
     }
@@ -236,6 +227,18 @@ struct OnboardingFlow: View {
         var u = store.user
         state.apply(to: &u)
         store.user = u
+        // Results is an inverted step, so drop the override explicitly rather
+        // than relying on `onDisappear` racing the swap to main content.
+        store.schemeOverride = nil
+
+        // Ship the marketing answer to D1 so we can see channel mix later.
+        // Local profile already holds it; this is analytics-only and must not
+        // block finishing onboarding if the network is down.
+        if let source = state.acquisitionSource {
+            let backend = BackendService()
+            Task { await backend.reportAttribution(source: source) }
+        }
+
         onFinish()
     }
 }

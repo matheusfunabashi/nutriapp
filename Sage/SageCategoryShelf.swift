@@ -121,7 +121,9 @@ extension SageCategory {
 
     /// Whether this category has a Top Rated / alternatives list. False for the
     /// two categories with no data — water (unsupported) and coffee (deliberately
-    /// shelf-excluded) — which the Top Rated grid shows greyed out (TOPRATED_SPEC §2).
+    /// shelf-excluded). The browse grid only shows shelves with a hero asset
+    /// (`SageCategory.topRatedBrowse`); this flag is still used by tests /
+    /// deep links that ask whether a shelf can rank.
     @MainActor var hasTopRated: Bool {
         !AlternativesStore.candidates(for: self).isEmpty
     }

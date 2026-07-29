@@ -56,8 +56,12 @@ struct SageApp: App {
                 }
             }
             // nil when the user picked "System" — the app then follows the
-            // device instead of being pinned to one scheme.
-            .preferredColorScheme(store.colorScheme)
+            // device instead of being pinned to one scheme. Screens that own
+            // a dark background regardless of preference (the inverted
+            // onboarding steps) raise `schemeOverride` so the status bar
+            // follows them; `preferredColorScheme` only takes effect here, at
+            // the scene root, so they cannot apply it themselves.
+            .preferredColorScheme(store.effectiveColorScheme)
             // Type scales with the user's setting up to accessibility2. Past
             // that, score dials and nutrient tables stop being readable rather
             // than more readable, so the ceiling is deliberate.

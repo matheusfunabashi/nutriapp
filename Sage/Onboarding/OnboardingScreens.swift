@@ -3,7 +3,6 @@ import SwiftUI
 // MARK: - 1. Welcome
 
 struct OnboardingWelcomeScreen: View {
-    let dark: Bool
     let accent: Color
     let onContinue: () -> Void
     let onSignIn: () -> Void
@@ -25,7 +24,7 @@ struct OnboardingWelcomeScreen: View {
             Spacer().frame(height: 20)
 
             StaggeredAppear(index: 1) {
-                PhoneShowcase(dark: dark, accent: accent)
+                PhoneShowcase(accent: accent)
             }
 
             Spacer().frame(height: 28)
@@ -59,7 +58,7 @@ struct OnboardingWelcomeScreen: View {
 
             StaggeredAppear(index: 5) {
                 VStack(spacing: 0) {
-                    OnboardingCTAButton(title: "Get Started", dark: dark, action: onContinue)
+                    OnboardingCTAButton(title: "Get Started", action: onContinue)
                         .padding(.horizontal, 20)
                     Button(action: onSignIn) {
                         (Text("Already have an account? ")
@@ -105,22 +104,18 @@ struct OnboardingWelcomeScreen: View {
 // MARK: - 2. Marketing
 
 struct OnboardingMarketingScreen: View {
-    let dark: Bool
-
     var body: some View {
         VStack(spacing: 0) {
             StaggeredAppear(index: 0) {
                 OnboardingTitle(
                     title: "What's marketed as\nhealthy often isn't",
-                    subtitle: "Labels and marketing hide what's really in your food. “Natural,” “healthy,” and “lightly sweetened” aren't regulated.",
-                    dark: dark
+                    subtitle: "Labels and marketing hide what's really in your food. “Natural,” “healthy,” and “lightly sweetened” aren't regulated."
                 )
             }
 
             StaggeredAppear(index: 1) {
                 OnboardingHeroImage(
                     assetName: OnboardingAssets.marketingHero,
-                    dark: dark,
                     scale: 1.0,
                     horizontalPadding: 12
                 )
@@ -134,28 +129,75 @@ struct OnboardingMarketingScreen: View {
 
 // MARK: - 3. Two scores
 
+// The pivot of the whole flow: this is the one thing Sage does that the
+// competitors don't. It runs *after* the goals/avoids steps so the
+// deduction rows can name the user's own picks — the difference between
+// "we personalize scores" and "here is your personalization".
+
 struct OnboardingScoresScreen: View {
-    let dark: Bool
     let accent: Color
+    let goals: Set<String>
+    let avoids: Set<String>
+
+    /// Up to three deductions, phrased against what the user actually
+    /// chose. Falls back to representative examples when they picked
+    /// nothing (only reachable if goals were somehow skipped).
+    private var deductions: [(delta: Int, ingredient: String, reason: String)] {
+        var rows: [(Int, String, String)] = []
+
+        // Avoid-list entries are the most legible: the user named the exact
+        // ingredient, so we can show it being caught.
+        for item in avoids.sorted().prefix(2) {
+            rows.append((-12, "Contains \(item.lowercased())", "You asked us to flag this"))
+        }
+
+        // Goals re-weight rather than cap, so they read as softer nudges.
+        for goal in goals.sorted() where rows.count < 3 {
+            switch goal {
+            case "Blood sugar":
+                rows.append((-9, "28g added sugar", "Weighs heavier for blood sugar"))
+            case "Heart":
+                rows.append((-7, "660mg sodium", "Weighs heavier for heart"))
+            case "Gut health":
+                rows.append((-6, "Emulsifiers", "Weighs heavier for gut health"))
+            case "Pregnancy":
+                rows.append((-8, "Caffeine", "Tighter limit during pregnancy"))
+            case "Young child":
+                rows.append((-8, "Artificial colors", "Flagged for young children"))
+            default:
+                break
+            }
+        }
+
+        if rows.isEmpty {
+            rows = [(-8, "Contains Yellow 5", "You avoid dyes"),
+                    (-6, "Sucralose", "Flagged for your goal"),
+                    (-4, "Maltodextrin", "Affects blood sugar")]
+        }
+        return Array(rows.prefix(3)).map { (delta: $0.0, ingredient: $0.1, reason: $0.2) }
+    }
+
+    /// Your Score falls by the deductions we're showing, so the two dials
+    /// and the rows underneath always add up.
+    private var yourScore: Int { max(0, 72 + deductions.reduce(0) { $0 + $1.delta }) }
 
     var body: some View {
         VStack(spacing: 0) {
             StaggeredAppear(index: 0) {
                 OnboardingTitle(
                     title: "Two scores, not one",
-                    subtitle: "Everyone sees the same Overall score. But Sage also gives you Your Score, recalculated from your goals, age, and body.",
-                    dark: dark
+                    subtitle: "Everyone sees the same Overall score. Only you see Your Score: the same product, re-scored against what you just told us."
                 )
             }
 
             StaggeredAppear(index: 1) {
                 HStack(spacing: 14) {
-                    scoreCard(label: "OVERALL", score: 72, footnote: "The overall score",
+                    scoreCard(label: "OVERALL", score: 72, footnote: "What everyone sees",
                               highlighted: false)
                     Image(systemName: "arrow.right")
                         .font(.sageBold(14))
                         .foregroundColor(Theme.inkSecondary)
-                    scoreCard(label: "YOUR SCORE", score: 58, footnote: "Tuned to you",
+                    scoreCard(label: "YOUR SCORE", score: yourScore, footnote: "Tuned to you",
                               highlighted: true)
                 }
                 .padding(.horizontal, 24)
@@ -164,17 +206,11 @@ struct OnboardingScoresScreen: View {
 
             StaggeredAppear(index: 2) {
                 VStack(alignment: .leading, spacing: 14) {
-                    reasonRow(delta: -8,
-                              ingredient: "Contains Yellow 5",
-                              reason: "You avoid dyes")
-                    reasonRow(delta: -6,
-                              ingredient: "Sucralose",
-                              reason: "Flagged for your goal")
-                    // Third row keeps the card balanced — two rows left a
-                    // lot of vertical air below the second item.
-                    reasonRow(delta: -4,
-                              ingredient: "Maltodextrin",
-                              reason: "Affects blood sugar")
+                    ForEach(Array(deductions.enumerated()), id: \.offset) { _, row in
+                        reasonRow(delta: row.delta,
+                                  ingredient: row.ingredient,
+                                  reason: row.reason)
+                    }
                 }
                 .padding(20)
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -193,13 +229,10 @@ struct OnboardingScoresScreen: View {
 
     private func scoreCard(label: String, score: Int, footnote: String,
                             highlighted: Bool) -> some View {
-        let ring = highlighted ? Color(hex: "D4A02D") : Color.gray.opacity(0.55)
-        // Both cards now carry a stroke — non-highlighted gets a hairline
+        // Both cards carry a stroke — non-highlighted gets a hairline
         // neutral border so it doesn't read as visually lighter than the
         // highlighted "Your Score" card, which keeps its 2pt accent ring.
-        let borderColor: Color = highlighted
-            ? accent
-            : (dark ? Color.white.opacity(0.10) : Color.black.opacity(0.08))
+        let borderColor: Color = highlighted ? accent : Theme.hairline
         let borderWidth: CGFloat = highlighted ? 2 : 1
 
         return VStack(spacing: 12) {
@@ -207,19 +240,10 @@ struct OnboardingScoresScreen: View {
                 .font(.sageBold(11)).tracking(1.4)
                 .foregroundColor(highlighted ? accent : Theme.inkSecondary)
 
-            ZStack {
-                Circle()
-                    .stroke(dark ? Color.white.opacity(0.08) : Color.black.opacity(0.06),
-                            lineWidth: 8)
-                Circle()
-                    .trim(from: 0, to: CGFloat(score) / 100)
-                    .stroke(ring, style: StrokeStyle(lineWidth: 8, lineCap: .round))
-                    .rotationEffect(.degrees(-90))
-                Text("\(score)")
-                    .font(.sageBold(28)).monospacedDigit()
-                    .foregroundColor(Theme.ink)
-            }
-            .frame(width: 86, height: 86)
+            // Shared ring — same component the product detail uses, so the
+            // band colors here always match what a real scan will show.
+            ScoreRing(score: score, size: 86, stroke: 8,
+                      ringColor: highlighted ? nil : Color.gray.opacity(0.55))
 
             Text(footnote)
                 .font(.sageRegular(11))
@@ -242,7 +266,7 @@ struct OnboardingScoresScreen: View {
     /// on the right with a subtle "why" tag underneath.
     private func reasonRow(delta: Int, ingredient: String,
                             reason: String) -> some View {
-        let red = Color(hex: "C9442B")
+        let red = Color.scoreBad
         return HStack(alignment: .top, spacing: 12) {
             Text("\(delta)")
                 .font(.sageBold(13)).monospacedDigit()
@@ -258,10 +282,7 @@ struct OnboardingScoresScreen: View {
                     .font(.sageSemiBold(11))
                     .foregroundColor(Theme.inkSecondary)
                     .padding(.horizontal, 8).padding(.vertical, 3)
-                    .background(
-                        Capsule().fill(dark ? Color.white.opacity(0.06)
-                                              : Color.black.opacity(0.05))
-                    )
+                    .background(Capsule().fill(Theme.hairline))
             }
             Spacer(minLength: 0)
         }
@@ -284,7 +305,6 @@ struct OnboardingAlternativesScreen: View {
         let score: Int
     }
 
-    let dark: Bool
     let accent: Color
 
     private let items: [Alternative] = [
@@ -301,8 +321,7 @@ struct OnboardingAlternativesScreen: View {
             StaggeredAppear(index: 0) {
                 OnboardingTitle(
                     title: "Discover the healthiest\nalternatives",
-                    subtitle: "Instantly find the cleanest option in every category with scores ranked for you.",
-                    dark: dark
+                    subtitle: "Instantly find the cleanest option in every category with scores ranked for you."
                 )
             }
 
@@ -380,9 +399,7 @@ struct OnboardingAlternativesScreen: View {
 
     private func ringBadge(score: Int) -> some View {
         ZStack {
-            Circle()
-                .stroke(dark ? Color.white.opacity(0.08) : Color.black.opacity(0.07),
-                        lineWidth: 4)
+            Circle().stroke(Theme.ringTrack, lineWidth: 4)
             Circle()
                 .trim(from: 0, to: CGFloat(score) / 100)
                 .stroke(accent, style: StrokeStyle(lineWidth: 4, lineCap: .round))
@@ -395,459 +412,15 @@ struct OnboardingAlternativesScreen: View {
     }
 }
 
-// MARK: - 6a. Profile · Name
-//
-// First of the three split "Tell us about you" screens. Single text
-// field with the keyboard auto-presented so users land typing.
-
-struct OnboardingNameScreen: View {
-    let dark: Bool
-    @Binding var firstName: String
-
-    @FocusState private var focused: Bool
-
-    var body: some View {
-        VStack(spacing: 0) {
-            OnboardingTitle(
-                title: "What should we\ncall you?",
-                subtitle: "This is how Sage will address you in the app.",
-                dark: dark
-            )
-
-            VStack(alignment: .leading, spacing: 10) {
-                Text("FIRST NAME")
-                    .font(.sageBold(11)).tracking(1.4)
-                    .foregroundColor(Theme.inkSecondary)
-
-                TextField("", text: $firstName)
-                    .focused($focused)
-                    .textInputAutocapitalization(.words)
-                    .autocorrectionDisabled(true)
-                    .submitLabel(.done)
-                    .font(.sageSemiBold(17))
-                    .foregroundColor(Theme.ink)
-                    .padding(.horizontal, 14).padding(.vertical, 14)
-                    .background(
-                        RoundedRectangle(cornerRadius: 12, style: .continuous)
-                            .fill(Theme.card)
-                    )
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 12, style: .continuous)
-                            .stroke(focused ? OnboardingBrandGreen
-                                            : Color.black.opacity(0.08),
-                                    lineWidth: focused ? 1.5 : 1)
-                    )
-                    .animation(.easeOut(duration: 0.18), value: focused)
-            }
-            .padding(.horizontal, 24)
-
-            Spacer()
-        }
-        .onAppear {
-            // Wait for the step slide to finish before raising the keyboard —
-            // avoids layout + animation fighting on first paint.
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.34) {
-                focused = true
-            }
-        }
-    }
-}
-
-// MARK: - 6b. Profile · Body stats
-//
-// Height + weight via native wheel pickers, with a single toggle that
-// converts both readings in-place between imperial and metric so the
-// numbers always reflect the active unit.
-
-struct OnboardingBodyStatsScreen: View {
-    let dark: Bool
-    @Binding var useImperial: Bool
-    @Binding var heightFt: Int
-    @Binding var heightIn: Int
-    @Binding var heightCm: Int
-    @Binding var weightLb: Int
-    @Binding var weightKg: Int
-
-    var body: some View {
-        VStack(spacing: 0) {
-            StaggeredAppear(index: 0) {
-                OnboardingTitle(
-                    title: "Your body stats",
-                    subtitle: "Used to adjust serving sizes and nutrient limits for you.",
-                    dark: dark
-                )
-            }
-
-            ScrollView(showsIndicators: false) {
-                VStack(spacing: 14) {
-                    StaggeredAppear(index: 1) { unitsCard }
-                    StaggeredAppear(index: 2) { heightCard }
-                    StaggeredAppear(index: 3) { weightCard }
-                }
-                .padding(.horizontal, 24)
-                .padding(.bottom, 24)
-            }
-        }
-    }
-
-    // MARK: Units toggle
-
-    private var unitsCard: some View {
-        HStack {
-            Text("Imperial units")
-                .font(.sageBold(15)).tracking(-0.2)
-                .foregroundColor(Theme.ink)
-            Spacer()
-            Toggle("", isOn: Binding(
-                get: { useImperial },
-                set: { toggleUnits(to: $0) }
-            ))
-            .labelsHidden()
-            .tint(OnboardingBrandGreen)
-        }
-        .padding(.horizontal, 16).padding(.vertical, 12)
-        .background(cardBackground)
-    }
-
-    // MARK: Height
-
-    private var heightCard: some View {
-        sectionCard(label: "HEIGHT") {
-            if useImperial {
-                HStack(spacing: 0) {
-                    pickerColumn(label: "FT", selection: $heightFt, range: 3...8)
-                    pickerColumn(label: "IN", selection: $heightIn, range: 0...11)
-                }
-                .frame(height: 130)
-            } else {
-                pickerColumn(label: "CM", selection: $heightCm, range: 90...250)
-                    .frame(height: 130)
-            }
-        }
-    }
-
-    // MARK: Weight
-
-    private var weightCard: some View {
-        sectionCard(label: "WEIGHT") {
-            if useImperial {
-                pickerColumn(label: "LB", selection: $weightLb, range: 50...500)
-                    .frame(height: 130)
-            } else {
-                pickerColumn(label: "KG", selection: $weightKg, range: 25...250)
-                    .frame(height: 130)
-            }
-        }
-    }
-
-    // MARK: Building blocks
-
-    @ViewBuilder
-    private func sectionCard<C: View>(label: String,
-                                       @ViewBuilder content: () -> C) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text(label)
-                .font(.sageBold(11)).tracking(1.4)
-                .foregroundColor(Theme.inkSecondary)
-                .padding(.leading, 4)
-            content()
-                .frame(maxWidth: .infinity)
-                .background(cardBackground)
-        }
-    }
-
-    @ViewBuilder
-    private func pickerColumn(label: String, selection: Binding<Int>,
-                               range: ClosedRange<Int>) -> some View {
-        VStack(spacing: 0) {
-            Text(label)
-                .font(.sageBold(10)).tracking(1.4)
-                .foregroundColor(Theme.inkSecondary)
-                .padding(.top, 10)
-            Picker(label, selection: selection) {
-                ForEach(range, id: \.self) { v in
-                    Text("\(v)")
-                        .font(.sageBold(22))
-                        .monospacedDigit()
-                        .tag(v)
-                }
-            }
-            .pickerStyle(.wheel)
-            .frame(maxWidth: .infinity)
-            .clipped() // wheels render outside their bounds on some sizes
-        }
-    }
-
-    private var cardBackground: some View {
-        RoundedRectangle(cornerRadius: 12, style: .continuous)
-            .fill(Theme.card)
-            .overlay(
-                RoundedRectangle(cornerRadius: 12, style: .continuous)
-                    .stroke(Color.black.opacity(0.08), lineWidth: 1)
-            )
-    }
-
-    // MARK: Unit conversion
-    //
-    // Recomputes the *other* unit's reading whenever the toggle flips
-    // so both stored values stay aligned and the wheels always show
-    // the equivalent figure.
-
-    private func toggleUnits(to imperial: Bool) {
-        guard imperial != useImperial else { return }
-        if imperial {
-            // metric → imperial
-            let totalInches = Int((Double(heightCm) / 2.54).rounded())
-            heightFt = max(3, min(8, totalInches / 12))
-            heightIn = max(0, min(11, totalInches % 12))
-            weightLb = max(50, min(500, Int((Double(weightKg) * 2.20462).rounded())))
-        } else {
-            // imperial → metric
-            heightCm = max(90, min(250,
-                Int((Double(heightFt * 12 + heightIn) * 2.54).rounded())
-            ))
-            weightKg = max(25, min(250, Int((Double(weightLb) / 2.20462).rounded())))
-        }
-        useImperial = imperial
-    }
-}
-
-// MARK: - 6c. Profile · Personal details
-//
-// DOB (3 tappable mini-cards opening wheel-picker sheets), gender
-// segmented control, and a multi-select life-stage pill grid where
-// "None" is mutually exclusive with the rest.
-
-struct OnboardingPersonalDetailsScreen: View {
-    let dark: Bool
-    @Binding var dobMonth: Int
-    @Binding var dobDay: Int
-    @Binding var dobYear: Int
-    @Binding var sex: BiologicalSex?
-    @Binding var lifeStages: Set<LifeStage>
-
-    @State private var pickerField: DOBField? = nil
-
-    enum DOBField: String, Identifiable {
-        case month, day, year
-        var id: String { rawValue }
-        var label: String { rawValue.capitalized }
-    }
-
-    var body: some View {
-        VStack(spacing: 0) {
-            StaggeredAppear(index: 0) {
-                OnboardingTitle(
-                    title: "A bit more\nabout you",
-                    subtitle: "Helps us personalize your score more accurately.",
-                    dark: dark
-                )
-            }
-
-            ScrollView(showsIndicators: false) {
-                VStack(alignment: .leading, spacing: 22) {
-                    StaggeredAppear(index: 1) { dobSection }
-                    StaggeredAppear(index: 2) { genderSection }
-                }
-                .padding(.horizontal, 24)
-                .padding(.bottom, 24)
-            }
-        }
-        .sheet(item: $pickerField) { field in
-            dobPickerSheet(field)
-        }
-    }
-
-    // MARK: DOB
-
-    private var dobSection: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Text("DATE OF BIRTH")
-                .font(.sageBold(11)).tracking(1.4)
-                .foregroundColor(Theme.inkSecondary)
-
-            HStack(spacing: 10) {
-                dobCard(label: "Month",
-                        value: monthLabel(dobMonth),
-                        field: .month)
-                dobCard(label: "Day",
-                        value: String(format: "%02d", dobDay),
-                        field: .day)
-                dobCard(label: "Year",
-                        value: "\(dobYear)",
-                        field: .year)
-            }
-        }
-    }
-
-    private func dobCard(label: String, value: String, field: DOBField) -> some View {
-        Button {
-            pickerField = field
-        } label: {
-            VStack(spacing: 4) {
-                Text(label)
-                    .font(.sageBold(11)).tracking(1.0)
-                    .foregroundColor(Theme.inkSecondary)
-                Text(value)
-                    .font(.sageBold(22)).monospacedDigit()
-                    .foregroundColor(Theme.ink)
-                    .contentTransition(.numericText())
-            }
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 14)
-            .background(
-                RoundedRectangle(cornerRadius: 12, style: .continuous)
-                    .fill(Theme.card)
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: 12, style: .continuous)
-                    .stroke(Color.black.opacity(0.08), lineWidth: 1)
-            )
-        }
-        .buttonStyle(.pressable)
-    }
-
-    @ViewBuilder
-    private func dobPickerSheet(_ field: DOBField) -> some View {
-        VStack(spacing: 0) {
-            HStack {
-                Spacer()
-                Button("Done") { pickerField = nil }
-                    .font(.sageBold(16))
-                    .foregroundColor(OnboardingBrandGreen)
-                    .padding(.horizontal, 20).padding(.vertical, 14)
-            }
-            switch field {
-            case .month:
-                Picker("Month", selection: $dobMonth) {
-                    ForEach(1...12, id: \.self) { m in
-                        Text(monthLabel(m)).tag(m)
-                    }
-                }
-                .pickerStyle(.wheel)
-            case .day:
-                Picker("Day", selection: $dobDay) {
-                    ForEach(1...daysInMonth(dobMonth, year: dobYear), id: \.self) { d in
-                        Text("\(d)").tag(d)
-                    }
-                }
-                .pickerStyle(.wheel)
-            case .year:
-                // Clamp years so the wheel doesn't go decades into the
-                // future or the 1800s. 13 years old is the floor.
-                let currentYear = Calendar(identifier: .gregorian)
-                    .component(.year, from: Date())
-                Picker("Year", selection: $dobYear) {
-                    ForEach((currentYear - 100)...(currentYear - 13), id: \.self) { y in
-                        Text("\(String(y))").tag(y)
-                    }
-                }
-                .pickerStyle(.wheel)
-            }
-        }
-        .presentationDetents([.height(300)])
-        .presentationDragIndicator(.visible)
-    }
-
-    private func monthLabel(_ m: Int) -> String {
-        let fmt = DateFormatter()
-        fmt.locale = Locale(identifier: "en_US_POSIX")
-        return fmt.shortMonthSymbols[max(0, min(11, m - 1))]
-    }
-
-    private func daysInMonth(_ month: Int, year: Int) -> Int {
-        var c = DateComponents(); c.year = year; c.month = month
-        let cal = Calendar(identifier: .gregorian)
-        guard let date = cal.date(from: c),
-              let range = cal.range(of: .day, in: .month, for: date) else { return 31 }
-        return range.count
-    }
-
-    // MARK: Gender — custom 3-button segmented control
-
-    private var genderSection: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Text("GENDER")
-                .font(.sageBold(11)).tracking(1.4)
-                .foregroundColor(Theme.inkSecondary)
-
-            HStack(spacing: 6) {
-                ForEach(BiologicalSex.allCases) { option in
-                    genderButton(option)
-                }
-            }
-            .padding(4)
-            .background(
-                Capsule().fill(Theme.card)
-            )
-            .overlay(
-                Capsule().stroke(Color.black.opacity(0.08), lineWidth: 1)
-            )
-        }
-    }
-
-    private func genderButton(_ option: BiologicalSex) -> some View {
-        let isSelected = sex == option
-        return Button {
-            withAnimation(.spring(response: 0.3, dampingFraction: 0.85)) {
-                sex = option
-            }
-        } label: {
-            Text(option.label)
-                .font(.sageBold(14)).tracking(-0.2)
-                .foregroundColor(isSelected ? .white : Theme.ink)
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 10)
-                .background(
-                    Capsule().fill(isSelected ? OnboardingBrandGreen : Color.clear)
-                )
-        }
-        .buttonStyle(.pressable)
-    }
-
-    // MARK: Life stage — multi-select with "None" as mutex
-
-    private var lifeStageSection: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Text("LIFE STAGE")
-                .font(.sageBold(11)).tracking(1.4)
-                .foregroundColor(Theme.inkSecondary)
-
-            ChipFlowLayout(spacing: 8, runSpacing: 8) {
-                ForEach(LifeStage.allCases) { stage in
-                    OnboardingChip(
-                        label: stage.label,
-                        selected: lifeStages.contains(stage),
-                        dark: dark,
-                        accent: OnboardingBrandGreen,
-                        action: { toggleLifeStage(stage) }
-                    )
-                }
-            }
-        }
-    }
-
-    /// Tapping `.none` clears every other selection and selects only None.
-    /// Tapping anything else drops `.none` first, then toggles. Empty set
-    /// means the user hasn't picked a life stage (including None).
-    private func toggleLifeStage(_ stage: LifeStage) {
-        if stage == .none {
-            lifeStages = [.none]
-            return
-        }
-        lifeStages.remove(.none)
-        if lifeStages.contains(stage) {
-            lifeStages.remove(stage)
-        } else {
-            lifeStages.insert(stage)
-        }
-    }
-}
-
 // MARK: - 6d. Dietary restrictions (hard rules + soft preferences)
+//
+// Native inset-grouped `List` on the brand background, reusing the app's
+// shared `ChipView` + `FlowLayout` rather than an onboarding-only pill —
+// so a restriction picked here looks identical to the same restriction in
+// Profile › Dietary, which is where the user will edit it later.
 
 struct OnboardingDietaryRestrictionsScreen: View {
-    let dark: Bool
+    @EnvironmentObject var store: AppStore
     @Binding var restrictions: Set<String>
     @Binding var preferences: Set<String>
 
@@ -856,70 +429,55 @@ struct OnboardingDietaryRestrictionsScreen: View {
             StaggeredAppear(index: 0) {
                 OnboardingTitle(
                     title: "Any dietary\nrestrictions?",
-                    subtitle: "We'll flag conflicts on every scan.",
-                    dark: dark
+                    subtitle: "Hard rules get flagged. Preferences only nudge Your Score."
                 )
             }
 
-            ScrollView(showsIndicators: false) {
-                VStack(alignment: .leading, spacing: 22) {
-                    StaggeredAppear(index: 1) {
-                        section(
-                            title: "Restrictions",
-                            description: "Hard rules — flagged as warnings on every scan."
-                        ) {
-                            pillWrap(items: DietaryOptions.restrictions, selection: $restrictions)
-                        }
-                    }
+            List {
+                chipSection(
+                    "Restrictions",
+                    "Hard rules. We warn on every scan.",
+                    items: DietaryOptions.restrictions,
+                    selection: $restrictions
+                )
+                chipSection(
+                    "Preferences",
+                    "Soft signals that nudge Your Score.",
+                    items: DietaryOptions.preferences,
+                    selection: $preferences
+                )
+            }
+            .onboardingListStyle()
+            .sensoryFeedback(.selection, trigger: restrictions)
+            .sensoryFeedback(.selection, trigger: preferences)
+        }
+    }
 
-                    Rectangle()
-                        .fill(Theme.hairline)
-                        .frame(height: 1)
-                        .padding(.horizontal, 4)
-
-                    StaggeredAppear(index: 2) {
-                        section(
-                            title: "Preferences",
-                            description: "Soft signals. Most nudge Your Score; Organic shows a label check."
-                        ) {
-                            pillWrap(items: DietaryOptions.preferences, selection: $preferences)
-                        }
+    private func chipSection(_ title: String, _ desc: String, items: [String],
+                             selection: Binding<Set<String>>) -> some View {
+        Section {
+            FlowLayout(spacing: 8) {
+                ForEach(items, id: \.self) { item in
+                    ChipView(label: item,
+                             active: selection.wrappedValue.contains(item),
+                             accent: store.accent) {
+                        toggle(item, in: selection)
                     }
                 }
-                .padding(.horizontal, 24)
-                .padding(.bottom, 24)
             }
-        }
-    }
-
-    @ViewBuilder
-    private func section<C: View>(
-        title: String,
-        description: String,
-        @ViewBuilder content: () -> C
-    ) -> some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Text(title.uppercased())
-                .font(.sageBold(11)).tracking(1.4)
-                .foregroundColor(Theme.ink)
-            Text(description)
-                .font(.sageRegular(12))
-                .foregroundColor(Theme.inkSecondary)
-                .lineSpacing(2)
-            content()
-        }
-    }
-
-    private func pillWrap(items: [String], selection: Binding<Set<String>>) -> some View {
-        ChipFlowLayout(spacing: 8, runSpacing: 8) {
-            ForEach(items, id: \.self) { item in
-                OnboardingDietPill(
-                    label: item,
-                    selected: selection.wrappedValue.contains(item),
-                    dark: dark,
-                    action: { toggle(item, in: selection) }
-                )
+            .padding(.vertical, 8)
+        } header: {
+            VStack(alignment: .leading, spacing: 4) {
+                Text(title)
+                    .font(.sageBold(13))
+                    .foregroundStyle(Theme.inkSecondary)
+                Text(desc)
+                    .font(.sageRegular(13))
+                    .foregroundStyle(Theme.inkSecondary.opacity(0.85))
+                    .fixedSize(horizontal: false, vertical: true)
             }
+            .textCase(nil)
+            .padding(.bottom, 4)
         }
     }
 
@@ -932,136 +490,49 @@ struct OnboardingDietaryRestrictionsScreen: View {
     }
 }
 
-// MARK: - 6e. Allergens (grid + custom entry)
+// MARK: - 6e. Allergens
 
 struct OnboardingAllergensScreen: View {
-    let dark: Bool
+    @EnvironmentObject var store: AppStore
     @Binding var allergies: [String]
 
-    @State private var customInput = ""
-    @FocusState private var customFocused: Bool
-
     private var presetLabels: [String] { OnboardingAllergenOptions.presets }
-
-    private var customAllergies: [String] {
-        let presets = Set(presetLabels.map { $0.lowercased() })
-        return allergies.filter { !presets.contains($0.lowercased()) }
-    }
 
     var body: some View {
         VStack(spacing: 0) {
             StaggeredAppear(index: 0) {
                 OnboardingTitle(
                     title: "Any allergies or\nintolerances?",
-                    subtitle: "We'll warn you whenever a scanned product may contain these.",
-                    dark: dark
+                    subtitle: "We'll warn you whenever a scanned product may contain these."
                 )
             }
 
-            ScrollView(showsIndicators: false) {
-                VStack(spacing: 16) {
-                    StaggeredAppear(index: 1) {
-                        LazyVGrid(
-                            columns: [
-                                GridItem(.flexible(), spacing: 10),
-                                GridItem(.flexible(), spacing: 10),
-                            ],
-                            spacing: 10
-                        ) {
-                            ForEach(presetLabels, id: \.self) { label in
-                                OnboardingAllergenCell(
-                                    label: label,
-                                    selected: isSelected(label),
-                                    dark: dark,
-                                    action: { toggleAllergen(label) }
-                                )
+            List {
+                Section {
+                    FlowLayout(spacing: 6) {
+                        ForEach(presetLabels, id: \.self) { label in
+                            ChipView(label: label, active: isSelected(label),
+                                     accent: store.accent) {
+                                toggleAllergen(label)
                             }
                         }
                     }
-
-                    StaggeredAppear(index: 2) { addAllergyRow }
-
-                    if !customAllergies.isEmpty {
-                        StaggeredAppear(index: 3) {
-                            ChipFlowLayout(spacing: 8, runSpacing: 8) {
-                                ForEach(customAllergies, id: \.self) { label in
-                                    customPill(label)
-                                }
-                            }
-                        }
-                    }
-
-                    StaggeredAppear(index: 4) { disclaimer }
+                    .padding(.vertical, 4)
+                } header: {
+                    Text("Common allergens")
+                } footer: {
+                    Label("Ingredient data can be incomplete, so always check the packaging.",
+                          systemImage: "exclamationmark.triangle.fill")
+                        .font(.sageRegular(12))
                 }
-                .padding(.horizontal, 24)
-                .padding(.bottom, 24)
             }
+            .onboardingListStyle()
+            .sensoryFeedback(.selection, trigger: allergies)
         }
-    }
-
-    private var addAllergyRow: some View {
-        HStack(spacing: 10) {
-            Image(systemName: "plus.square")
-                .font(.sageMedium(16))
-                .foregroundColor(Theme.inkSecondary)
-            TextField("Add another allergy", text: $customInput)
-                .focused($customFocused)
-                .font(.sageMedium(14))
-                .foregroundColor(Theme.ink)
-                .submitLabel(.done)
-                .onSubmit { addCustomAllergy() }
-            if !customInput.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                Button("Add", action: addCustomAllergy)
-                    .font(.sageBold(13))
-                    .foregroundColor(OnboardingBrandGreen)
-            }
-        }
-        .padding(.horizontal, 14).padding(.vertical, 14)
-        .background(
-            RoundedRectangle(cornerRadius: 10, style: .continuous)
-                .fill(Theme.card)
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 10, style: .continuous)
-                .stroke(style: StrokeStyle(lineWidth: 1, dash: [5, 4]))
-                .foregroundColor(Color.black.opacity(0.12))
-        )
-        .onTapGesture { customFocused = true }
-    }
-
-    private func customPill(_ label: String) -> some View {
-        Button { removeAllergy(label) } label: {
-            HStack(spacing: 5) {
-                Text(label)
-                    .font(.sageBold(12)).tracking(-0.1)
-                    .foregroundColor(OnboardingBrandGreen)
-                Image(systemName: "xmark")
-                    .font(.sageBold(9))
-                    .foregroundColor(OnboardingBrandGreen)
-            }
-            .padding(.horizontal, 12).padding(.vertical, 8)
-            .background(Capsule().fill(OnboardingBrandGreen.opacity(0.10)))
-            .overlay(Capsule().stroke(OnboardingBrandGreen, lineWidth: 1))
-        }
-        .buttonStyle(.pressable)
-    }
-
-    private var disclaimer: some View {
-        HStack(alignment: .top, spacing: 6) {
-            Image(systemName: "exclamationmark.triangle.fill")
-                .font(.sageRegular(11))
-            Text("Data may be incomplete — always check the packaging.")
-                .font(.sageRegular(11))
-                .lineSpacing(2)
-                .multilineTextAlignment(.center)
-        }
-        .foregroundColor(Theme.inkSecondary)
-        .frame(maxWidth: .infinity)
-        .padding(.top, 4)
     }
 
     private func isSelected(_ label: String) -> Bool {
-        allergies.contains(where: { $0.caseInsensitiveCompare(label) == .orderedSame })
+        allergies.contains { $0.caseInsensitiveCompare(label) == .orderedSame }
     }
 
     private func toggleAllergen(_ label: String) {
@@ -1070,20 +541,6 @@ struct OnboardingAllergensScreen: View {
         } else {
             allergies.append(label)
         }
-    }
-
-    private func addCustomAllergy() {
-        let trimmed = customInput.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmed.isEmpty else { return }
-        if !allergies.contains(where: { $0.caseInsensitiveCompare(trimmed) == .orderedSame }) {
-            allergies.append(trimmed)
-        }
-        customInput = ""
-        customFocused = false
-    }
-
-    private func removeAllergy(_ label: String) {
-        allergies.removeAll { $0.caseInsensitiveCompare(label) == .orderedSame }
     }
 }
 
@@ -1099,8 +556,6 @@ struct OnboardingReviewsScreen: View {
         let color: Color
     }
 
-    let dark: Bool
-
     private let reviews: [Review] = [
         .init(initial: "F", name: "Felipe",   location: "Miami, FL",
               body: "\"I scanned my whole pantry and the scores were genuinely shocking. Threw out half my snacks.\"",
@@ -1109,7 +564,7 @@ struct OnboardingReviewsScreen: View {
               body: "\"Finally an app that adjusts the score for pregnancy. Caught additives I'd never have spotted.\"",
               color: Color(hex: "6E5AC6")),
         .init(initial: "M", name: "Matthew", location: "Denver, CO",
-              body: "\"The 'Your Score' vs overall thing is brilliant — it actually knows what I care about.\"",
+              body: "\"The 'Your Score' vs overall thing is brilliant. It actually knows what I care about.\"",
               color: Color(hex: "C95A2B"))
     ]
 
@@ -1196,7 +651,6 @@ struct OnboardingReviewsScreen: View {
 // MARK: - 10. Loading
 
 struct OnboardingLoadingScreen: View {
-    let dark: Bool
     let accent: Color
     let onComplete: () -> Void
 
@@ -1229,16 +683,12 @@ struct OnboardingLoadingScreen: View {
             }
 
             StaggeredAppear(index: 2) {
-                GeometryReader { geo in
-                    ZStack(alignment: .leading) {
-                        Capsule().fill(dark ? Color.white.opacity(0.08) : Color.black.opacity(0.06))
-                        Capsule().fill(accent)
-                            .frame(width: geo.size.width * CGFloat(percent) / 100)
-                            .animation(.linear(duration: 0.05), value: percent)
-                    }
-                }
-                .frame(height: 8)
-                .padding(.horizontal, 32).padding(.top, 32)
+                ProgressView(value: Double(percent), total: 100)
+                    .progressViewStyle(.linear)
+                    .tint(accent)
+                    .animation(.linear(duration: 0.05), value: percent)
+                    .padding(.horizontal, 32).padding(.top, 32)
+                    .accessibilityLabel("Setup progress")
             }
 
             StaggeredAppear(index: 3) {
@@ -1312,16 +762,28 @@ struct OnboardingResultsScreen: View {
     let accent: Color
     let dietaryRestrictions: Set<String>
     let foodPreferences: Set<String>
-    let lifeStages: Set<LifeStage>
+    let healthGoals: Set<String>
+    let avoidList: Set<String>
     let onStart: () -> Void
 
-    private let bg = Color(hex: "0B2A1F")
-    private let surface = Color(hex: "133A2C")
+    private let bg = OnboardingInverted.background
+    private let surface = OnboardingInverted.surface
 
     /// Pair each "watched" item with whether it's currently active for
     /// this user (we light up the ones they picked during onboarding).
+    /// Act 1's goals and avoid-list lead, since those are the answers that
+    /// actually drive Your Score.
     private var watchedItems: [(title: String, isOn: Bool)] {
-        [
+        var rows: [(String, Bool)] = []
+
+        for goal in healthGoals.sorted() {
+            rows.append((goal, true))
+        }
+        for avoid in avoidList.sorted() {
+            rows.append((avoid, true))
+        }
+
+        rows.append(contentsOf: [
             ("Low added sugar",
              foodPreferences.contains("Low sugar") || dietaryRestrictions.contains("Low-sugar diet")),
             ("Low sodium",
@@ -1329,9 +791,34 @@ struct OnboardingResultsScreen: View {
             ("High protein", foodPreferences.contains("High protein")),
             ("Gluten-free", dietaryRestrictions.contains("Gluten-free")),
             ("Minimally processed", foodPreferences.contains("Minimally processed")),
-            ("Pregnancy-safe limits", lifeStages.contains(.pregnant)),
-        ]
+        ])
+
+        // Anything already covered by an Act 1 pick would read as a
+        // duplicate row, so drop the later generic version.
+        var seen = Set<String>()
+        return rows.compactMap { title, isOn in
+            guard seen.insert(title.lowercased()).inserted else { return nil }
+            return (title: title, isOn: isOn)
+        }
     }
+
+    /// Forward-looking close. Ends the flow on momentum rather than on a
+    /// static number — the single most-copied idea from the competitor
+    /// results screens.
+    private let plan: [(week: String, title: String, blurb: String, symbol: String)] = [
+        ("This week", "Just look",
+         "Scan what's already in your kitchen. Nothing to change yet. You're building a baseline.",
+         "play.circle.fill"),
+        ("Week 2", "Start swapping",
+         "Replace two or three staples with the better version of the same thing.",
+         "arrow.triangle.swap"),
+        ("Week 3", "Read on instinct",
+         "You'll start clocking seed oils and dyes before you've opened the app.",
+         "eye.fill"),
+        ("Week 4", "It's just how you shop",
+         "Cleaner picks stop feeling like work and start feeling like defaults.",
+         "checkmark.seal.fill"),
+    ]
 
     var body: some View {
         ZStack {
@@ -1349,7 +836,7 @@ struct OnboardingResultsScreen: View {
                             Text("Here's where you stand")
                                 .font(.sageBold(28)).tracking(-0.6)
                                 .foregroundColor(.white)
-                            Text("Based on your goals, here's how your current pantry scores — and where Sage users land.")
+                            Text("Based on your goals, here's how your current pantry scores, and where Sage users land.")
                                 .font(.sageRegular(15))
                                 .foregroundColor(Color.white.opacity(0.65))
                                 .lineSpacing(3)
@@ -1363,15 +850,30 @@ struct OnboardingResultsScreen: View {
                             .padding(.horizontal, 16).padding(.top, 20)
                     }
 
+                    // The plan leads: it's the forward-looking half, and it
+                    // reads better right after the score comparison than the
+                    // settings-like checklist does.
                     StaggeredAppear(index: 2) {
+                        Text("YOUR FIRST 30 DAYS")
+                            .font(.sageBold(11)).tracking(1.4)
+                            .foregroundColor(Color.white.opacity(0.55))
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(.horizontal, 24).padding(.top, 26).padding(.bottom, 10)
+                    }
+
+                    StaggeredAppear(index: 3) {
+                        planCard.padding(.horizontal, 16)
+                    }
+
+                    StaggeredAppear(index: 4) {
                         Text("WE'LL WATCH FOR")
                             .font(.sageBold(11)).tracking(1.4)
                             .foregroundColor(Color.white.opacity(0.55))
                             .frame(maxWidth: .infinity, alignment: .leading)
-                            .padding(.horizontal, 24).padding(.top, 26).padding(.bottom, 8)
+                            .padding(.horizontal, 24).padding(.top, 30).padding(.bottom, 8)
                     }
 
-                    StaggeredAppear(index: 3) {
+                    StaggeredAppear(index: 5) {
                         VStack(spacing: 0) {
                             ForEach(Array(watchedItems.enumerated()), id: \.offset) { idx, item in
                                 watchedRow(title: item.title, isOn: item.isOn)
@@ -1390,19 +892,58 @@ struct OnboardingResultsScreen: View {
 
             VStack {
                 Spacer()
-                Button(action: onStart) {
-                    Text("Start scanning")
-                        .font(.sageBold(16)).tracking(-0.2)
-                        .foregroundColor(.white)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 18)
-                        .background(Capsule().fill(Color.black))
-                }
-                .buttonStyle(.pressable)
-                .padding(.horizontal, 20)
-                .padding(.bottom, 36)
+                OnboardingCTAButton(title: "Start scanning", action: onStart)
+                    .padding(.horizontal, 20)
+                    .padding(.bottom, 36)
             }
         }
+    }
+
+    private var planCard: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            ForEach(Array(plan.enumerated()), id: \.offset) { idx, step in
+                HStack(alignment: .top, spacing: 14) {
+                    // Connector rail: the dot marks the step, the line ties
+                    // it to the next one so the four rows read as a path.
+                    VStack(spacing: 0) {
+                        Image(systemName: step.symbol)
+                            .font(.sageSemiBold(13))
+                            .foregroundColor(idx == 0 ? accent : Color.white.opacity(0.5))
+                            .frame(width: 26, height: 26)
+                            .background(
+                                Circle().fill(idx == 0 ? accent.opacity(0.18)
+                                                       : Color.white.opacity(0.06))
+                            )
+                        if idx < plan.count - 1 {
+                            Rectangle()
+                                .fill(Color.white.opacity(0.12))
+                                .frame(width: 1.5)
+                                .frame(maxHeight: .infinity)
+                        }
+                    }
+
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("\(step.week) · \(step.title)")
+                            .font(.sageBold(14)).tracking(-0.2)
+                            .foregroundColor(.white)
+                        Text(step.blurb)
+                            .font(.sageRegular(13))
+                            .lineSpacing(2)
+                            .foregroundColor(Color.white.opacity(0.6))
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                    .padding(.bottom, idx < plan.count - 1 ? 18 : 0)
+
+                    Spacer(minLength: 0)
+                }
+                .fixedSize(horizontal: false, vertical: true)
+            }
+        }
+        .padding(18)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(
+            RoundedRectangle(cornerRadius: 18, style: .continuous).fill(surface)
+        )
     }
 
     private var statsCard: some View {

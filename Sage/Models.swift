@@ -360,6 +360,11 @@ struct UserProfile: Codable {
     var dietPattern: String? = nil
     /// Fixed-vocabulary ingredients to avoid (caps Your Score when present).
     var avoidList: [String]? = nil
+    /// Where the user says they found Sage, captured once during onboarding.
+    /// Free-form marketing attribution — never read by scoring. Optional so
+    /// profiles saved before the attribution step decode unchanged.
+    var acquisitionSource: String? = nil
+
     /// Priority sliders, 0 = de-emphasize · 1 = balanced (default) · 2 = emphasize.
     var sliderCleanIngredients: Int? = nil
     var sliderNutrition: Int? = nil

@@ -273,11 +273,28 @@ enum Alternatives {
             barcode: c.barcode, name: c.name, brands: c.brand,
             ingredientsText: c.ingredientsText, additivesTags: c.additivesTags,
             nutriments: c.nutriments, nutriscoreGrade: c.nutriscoreGrade,
-            novaGroup: c.novaGroup, imageURL: BackendService.productImageURL(barcode: c.barcode),
+            novaGroup: c.novaGroup, imageURL: Self.imageURL(for: c),
             categoriesTags: c.categoriesTags, labelsTags: c.labelsTags)
         guard case .scored(let p) = ScoringEngineV4.scoreProduct(raw, for: profile, ruleset: ruleset),
               let score = p.overallScore else { return nil }
         return (p, score)
+    }
+
+    /// Prefer the candidate's own `image_url` (OFF CDN from the bundled
+    /// dataset, or a Worker `/images/…` URL after enrichment). Only fall
+    /// back to inventing a Worker URL when the dataset has nothing — that
+    /// path lazy-resolves on the backend (Kroger → OFF).
+    ///
+    /// Always forcing the Worker URL used to blank out every non-US pack
+    /// shot on Top Rated: Brazilian EANs skip Kroger, lazy-resolve had no
+    /// OFF product, and the perfectly good OFF URL in `alternatives.json`
+    /// was thrown away.
+    static func imageURL(for c: AlternativeCandidate) -> String {
+        if let url = c.imageURL?.trimmingCharacters(in: .whitespacesAndNewlines),
+           !url.isEmpty {
+            return url
+        }
+        return BackendService.productImageURL(barcode: c.barcode)
     }
 
     /// Pure selection over already-scored candidates (§3.5–3.6): margin gate,

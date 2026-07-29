@@ -9,6 +9,7 @@
 
 import type { Env } from "./types.ts";
 import type { OFFProduct } from "./off.ts";
+import { fetchOFF } from "./off.ts";
 import { resolveOFFFrontImage } from "./offImage.ts";
 import { fetchKrogerImage, type KrogerDeps, DEFAULT_KROGER_BASE_URL } from "./kroger.ts";
 import { shouldAttemptKroger } from "./barcode.ts";
@@ -357,11 +358,24 @@ export async function serveCachedImage(
   }
 
   // Top Rated / alternatives hit /images/{barcode} without a prior /lookup —
-  // resolve once so Kroger/curated/OFF land in R2.
+  // resolve once so Kroger/curated/OFF land in R2. Without an OFF product the
+  // chain used to miss every non-UPC barcode (Kroger skip + null OFF → 404),
+  // even when Open Food Facts had a perfectly good front image.
   if (!obj && opts?.lazyResolve) {
     const origin = opts.origin
       ?? "https://sage-backend.sage-app1710.workers.dev";
-    await resolveAndStore(env, trimmed, null, {
+    // Clear a prior miss so a previous broken lazy attempt (no OFF fetch)
+    // doesn't poison this retry for a week.
+    await env.CACHE.delete(missKey(trimmed)).catch(() => {});
+    const offProduct = await fetchOFF(trimmed).catch((err) => {
+      console.log(JSON.stringify({
+        event: "image_lazy_off_error",
+        barcode: trimmed,
+        error: String(err),
+      }));
+      return null;
+    });
+    await resolveAndStore(env, trimmed, offProduct, {
       origin,
       waitUntil: opts.waitUntil ?? (() => {}),
     }).catch((err) => {

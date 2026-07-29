@@ -55,4 +55,33 @@ enum SageCategory: String, CaseIterable, Identifiable, Hashable {
         case .instantNoodles:         return "🍜"
         }
     }
+
+    /// Asset-catalog imageset for the Top Rated browse card. Only shelves
+    /// with a hero photo appear in the grid — everything else stays in the
+    /// enum for scan→shelf routing / alternatives, but is hidden from browse.
+    var topRatedHeroAsset: String? {
+        switch self {
+        case .bread:     return "bread-tr"
+        case .cereal:    return "cereal-tr"
+        case .cheese:    return "cheese-tr"
+        case .chips:     return "chips-tr"
+        case .chocolate: return "chocolate-tr"
+        case .iceCream:  return "ice-cream-tr"
+        case .juice:     return "juice-tr"
+        case .milks:     return "milk-tr"
+        case .pasta:     return "pasta-tr"
+        case .snackBars: return "snackbar-tr"
+        case .soda:      return "soda-tr"
+        case .yogurt:    return "yogurt-tr"
+        default:         return nil
+        }
+    }
+
+    /// Browse order for the Top Rated grid (two-up cards). Only categories
+    /// with `topRatedHeroAsset` are included.
+    static let topRatedBrowse: [SageCategory] = [
+        .soda, .juice, .milks, .yogurt,
+        .cheese, .iceCream, .cereal, .bread,
+        .pasta, .chips, .snackBars, .chocolate,
+    ]
 }

@@ -102,6 +102,29 @@ to the upstream CDN URL stored in KV (stable Worker URL still works).
 | POST | `/lookup` | `{ barcode, deviceId?, isPremium?, clientTag? }` | OFF (+ USDA) lookup + image resolution; KV-cached |
 | POST | `/search` | `{ query }` | free-text OFF name/brand search (typeahead); KV-cached 24h |
 | POST | `/explain` | `{ barcode, classHash, overall, your, … }` | bucketed LLM overview; cache-first |
+| POST | `/attribution` | `{ source, clientTag?, appVersion? }` | onboarding "how did you hear about Sage?" (D1) |
+| GET | `/attribution/summary` | — | `{ total, sources: [{ source, count, last_at }] }` (keyed) |
+
+### Onboarding attribution
+The iOS app POSTs once when onboarding finishes (if the user picked a source).
+Rows land in D1 `attribution`. View the mix:
+
+```bash
+# Quick JSON summary (needs SAGE_API_KEY)
+curl -sS -H "X-Sage-Key: $SAGE_API_KEY" \
+  https://sage-backend.sage-app1710.workers.dev/attribution/summary | jq
+
+# Or raw SQL
+npx wrangler d1 execute sage --remote --command \
+  "SELECT source, COUNT(*) AS n FROM attribution GROUP BY source ORDER BY n DESC"
+```
+
+Apply the migration before the endpoint can write:
+
+```bash
+npm run migrate:remote   # applies backend/migrations/0004_attribution.sql
+npx wrangler deploy
+```
 
 ## First-time setup
 ```bash
