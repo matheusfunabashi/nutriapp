@@ -60,7 +60,7 @@ export function hasImage(p: OFFProduct | null): boolean {
 // Worker's KV cache and the app debounces keystrokes.
 //
 // Results are post-filtered to:
-//   • US market only (`countries_tags` must include en:united-states)
+//   • English-speaking markets only (US, UK, or Canada in `countries_tags`)
 //   • Scoreable products (enough nutrition / ingredient signal for the
 //     on-device engine — empty shells that open to "insufficient data" are
 //     dropped so the typeahead never teases a dead end)
@@ -72,7 +72,8 @@ const SEARCH_FIELDS = [
   "additives_tags", "categories_tags",
 ].join(",");
 const SEARCH_UA = { "User-Agent": "Sage/1.0 (backend proxy; contact@sage.app)" };
-const US_COUNTRY_TAG = "en:united-states";
+// Sage targets English-speaking markets; search is filtered to these three.
+const ALLOWED_COUNTRY_TAGS = ["en:united-states", "en:united-kingdom", "en:canada"];
 /** Bare OFF category tags Sage routes to `unsupported` (language prefix stripped). */
 const UNSUPPORTED_BARE_TAGS = new Set([
   "waters", "mineral-waters", "spring-waters", "flavored-waters",
@@ -99,7 +100,7 @@ export async function searchOFF(query: string, pageSize = 12): Promise<SearchHit
   const seen = new Set<string>();
   const out: SearchHit[] = [];
   for (const p of raw) {
-    if (!isUSProduct(p)) continue;
+    if (!isAllowedMarket(p)) continue;
     if (isUnsupportedCategory(p)) continue;
     if (!isScorableForSearch(p)) continue;
     const hit = toSearchHit(p);
@@ -114,8 +115,10 @@ export async function searchOFF(query: string, pageSize = 12): Promise<SearchHit
 }
 
 async function searchModern(query: string, pageSize: number): Promise<Record<string, unknown>[]> {
-  // search-a-licious combines full-text + field filters in `q` (implicit AND).
-  const q = `${query} countries_tags:"${US_COUNTRY_TAG}"`;
+  // search-a-licious combines full-text + field filters in `q` (implicit AND);
+  // the market filter is an OR across the allowed countries.
+  const countries = ALLOWED_COUNTRY_TAGS.map((t) => `"${t}"`).join(" OR ");
+  const q = `${query} countries_tags:(${countries})`;
   const url =
     "https://search.openfoodfacts.org/search" +
     `?q=${encodeURIComponent(q)}&page_size=${pageSize}&fields=${SEARCH_FIELDS}`;
@@ -127,9 +130,10 @@ async function searchModern(query: string, pageSize: number): Promise<Record<str
 
 async function searchLegacy(query: string, pageSize: number): Promise<Record<string, unknown>[]> {
   const url =
+    // The CGI can't OR multiple countries, so this rare fallback fetches
+    // unfiltered and relies on the isAllowedMarket post-filter (over-fetched).
     "https://world.openfoodfacts.org/cgi/search.pl?action=process&json=1&search_simple=1" +
-    `&search_terms=${encodeURIComponent(query)}&page_size=${pageSize}&fields=${SEARCH_FIELDS}` +
-    "&tagtype_0=countries&tag_contains_0=contains&tag_0=united-states";
+    `&search_terms=${encodeURIComponent(query)}&page_size=${pageSize}&fields=${SEARCH_FIELDS}`;
   const res = await fetch(url, { headers: SEARCH_UA });
   if (!res.ok) throw new Error(`OFF search ${res.status}`);
   const data = (await res.json()) as { products?: Record<string, unknown>[] };
@@ -151,9 +155,10 @@ function bareCategoryTags(p: Record<string, unknown>): string[] {
   });
 }
 
-/** Strict US market check — OFF's query filter leaks non-US hits occasionally. */
-export function isUSProduct(p: Record<string, unknown>): boolean {
-  return tagList(p["countries_tags"]).includes(US_COUNTRY_TAG);
+/** Strict market check — OFF's query filter leaks other-market hits occasionally. */
+export function isAllowedMarket(p: Record<string, unknown>): boolean {
+  const tags = tagList(p["countries_tags"]);
+  return ALLOWED_COUNTRY_TAGS.some((t) => tags.includes(t));
 }
 
 export function isUnsupportedCategory(p: Record<string, unknown>): boolean {

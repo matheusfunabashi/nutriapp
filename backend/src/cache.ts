@@ -36,9 +36,9 @@ export interface SearchHit {
 }
 
 export function searchKey(query: string): string {
-  // v4: US post-filter + drop insufficient-data shells. Prior v3 entries could
-  // still include non-US leaks or products that open to an empty score screen.
-  return `search:v4:${query}`;
+  // v5: market widened from US-only to US/UK/CA — new prefix so stale v4
+  // (US-only) entries aren't served during the TTL window.
+  return `search:v5:${query}`;
 }
 
 export async function getSearch(kv: KVNamespace, query: string): Promise<SearchHit[] | null> {
