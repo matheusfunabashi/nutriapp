@@ -1,17 +1,19 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 import {
-  isUSProduct,
+  isAllowedMarket,
   isUnsupportedCategory,
   isScorableForSearch,
 } from "./off.ts";
 
 describe("search filters", () => {
-  it("requires en:united-states", () => {
-    assert.equal(isUSProduct({ countries_tags: ["en:united-states"] }), true);
-    assert.equal(isUSProduct({ countries_tags: ["en:brazil"] }), false);
-    assert.equal(isUSProduct({ countries_tags: ["en:france", "en:united-states"] }), true);
-    assert.equal(isUSProduct({}), false);
+  it("requires an English-speaking market (US, UK, or Canada)", () => {
+    assert.equal(isAllowedMarket({ countries_tags: ["en:united-states"] }), true);
+    assert.equal(isAllowedMarket({ countries_tags: ["en:united-kingdom"] }), true);
+    assert.equal(isAllowedMarket({ countries_tags: ["en:canada"] }), true);
+    assert.equal(isAllowedMarket({ countries_tags: ["en:brazil"] }), false);
+    assert.equal(isAllowedMarket({ countries_tags: ["en:france", "en:united-states"] }), true);
+    assert.equal(isAllowedMarket({}), false);
   });
 
   it("rejects water and alcohol categories", () => {

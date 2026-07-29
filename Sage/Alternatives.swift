@@ -280,18 +280,15 @@ enum Alternatives {
         return (p, score)
     }
 
-    /// Prefer the candidate's own `image_url` (OFF CDN from the bundled
-    /// dataset, or a Worker `/images/…` URL after enrichment). Only fall
-    /// back to inventing a Worker URL when the dataset has nothing — that
-    /// path lazy-resolves on the backend (Kroger → OFF).
-    ///
-    /// Always forcing the Worker URL used to blank out every non-US pack
-    /// shot on Top Rated: Brazilian EANs skip Kroger, lazy-resolve had no
-    /// OFF product, and the perfectly good OFF URL in `alternatives.json`
-    /// was thrown away.
+    /// US products resolve to the good backend pack shot (`/images/…`,
+    /// Kroger → OFF), the same source the scan detail uses — so Top Rated and
+    /// Alternatives match it. Non-US products (e.g. Brazilian EANs) blank on the
+    /// backend (Kroger skips them, lazy-resolve finds no OFF product), so they
+    /// keep the perfectly good OFF url from `alternatives.json`.
     static func imageURL(for c: AlternativeCandidate) -> String {
-        if let url = c.imageURL?.trimmingCharacters(in: .whitespacesAndNewlines),
-           !url.isEmpty {
+        let isUS = (c.countries ?? []).contains("us")
+        if !isUS,
+           let url = c.imageURL?.trimmingCharacters(in: .whitespacesAndNewlines), !url.isEmpty {
             return url
         }
         return BackendService.productImageURL(barcode: c.barcode)

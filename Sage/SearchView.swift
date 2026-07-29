@@ -171,11 +171,12 @@ private struct SearchHitRow: View {
     }
 
     /// No score exists before the lookup, so this is a plain photo tile with
-    /// the generic glyph as loading/failure/no-image fallback.
+    /// the generic glyph as loading/failure/no-image fallback. Search is
+    /// US-only, so the backend `/images/{barcode}` pack shot (Kroger → OFF)
+    /// resolves — the same good image the scan detail shows.
     private var thumb: some View {
         ProductImageView(
-            url: OFFImageResolver.upgradeToDisplaySize(hit.imageURL)
-                .flatMap(URL.init(string:)),
+            url: URL(string: BackendService.productImageURL(barcode: hit.code)),
             style: .fixed(44),
             glyph: "🛒",
             processCutout: true
