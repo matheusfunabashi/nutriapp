@@ -24,6 +24,7 @@ enum OnboardingStep: Int, CaseIterable, Identifiable {
 
     // Act 3 — the asks.
     case attribution         // "How did you hear about Sage?"
+    case aboutYou            // optional name + sex
     case dietaryRestrictions
     case allergens
 
@@ -56,7 +57,7 @@ enum OnboardingStep: Int, CaseIterable, Identifiable {
     /// Steps whose answers are genuinely optional get a Skip in the toolbar.
     var allowsSkip: Bool {
         switch self {
-        case .avoids, .attribution, .dietaryRestrictions, .allergens:
+        case .avoids, .attribution, .aboutYou, .dietaryRestrictions, .allergens:
             return true
         default:
             return false
@@ -87,12 +88,57 @@ enum DietaryOptions {
         "Low sugar", "Low sodium", "Low fat",
         "High protein", "High fiber", "Organic", "Minimally processed",
     ]
+
+    /// Unified chip grid for the onboarding preferences step. Labels must
+    /// stay in sync with `restrictions` / `preferences` above (and DietaryView).
+    struct Chip: Identifiable {
+        enum Kind { case restriction, preference }
+        let id: String
+        let symbol: String
+        let kind: Kind
+    }
+
+    static let onboardingChips: [Chip] = [
+        .init(id: "Vegan",                symbol: "leaf.fill",              kind: .restriction),
+        .init(id: "Vegetarian",           symbol: "carrot.fill",            kind: .restriction),
+        .init(id: "Pescatarian",          symbol: "fish.fill",              kind: .restriction),
+        .init(id: "High protein",         symbol: "bolt.fill",              kind: .preference),
+        .init(id: "Gluten-free",          symbol: "nosign",                 kind: .restriction),
+        .init(id: "Dairy-free",           symbol: "cup.and.saucer.fill",    kind: .restriction),
+        .init(id: "Low-sugar diet",       symbol: "cube.fill",              kind: .restriction),
+        .init(id: "Low-sodium diet",      symbol: "drop.fill",              kind: .restriction),
+        .init(id: "Low sugar",            symbol: "cube",                   kind: .preference),
+        .init(id: "Low sodium",           symbol: "drop",                   kind: .preference),
+        .init(id: "Low fat",              symbol: "chart.bar.fill",         kind: .preference),
+        .init(id: "High fiber",           symbol: "circle.hexagongrid.fill", kind: .preference),
+        .init(id: "Organic",              symbol: "leaf.circle.fill",       kind: .preference),
+        .init(id: "Minimally processed",  symbol: "sparkles",               kind: .preference),
+    ]
 }
 
 enum OnboardingAllergenOptions {
     static let presets = [
         "Milk", "Eggs", "Peanuts", "Tree nuts", "Soy",
         "Wheat / gluten", "Fish", "Shellfish", "Sesame", "Mustard",
+    ]
+
+    struct Chip: Identifiable {
+        let id: String
+        let symbol: String
+    }
+
+    /// Same labels as `presets`, with icons for the onboarding pill grid.
+    static let chips: [Chip] = [
+        .init(id: "Milk",           symbol: "cup.and.saucer.fill"),
+        .init(id: "Eggs",           symbol: "oval.fill"),
+        .init(id: "Peanuts",        symbol: "circle.hexagongrid.fill"),
+        .init(id: "Tree nuts",      symbol: "leaf.fill"),
+        .init(id: "Soy",            symbol: "leaf.circle"),
+        .init(id: "Wheat / gluten", symbol: "nosign"),
+        .init(id: "Fish",           symbol: "fish.fill"),
+        .init(id: "Shellfish",      symbol: "fork.knife"),
+        .init(id: "Sesame",         symbol: "circle.dotted"),
+        .init(id: "Mustard",        symbol: "flame.fill"),
     ]
 }
 
@@ -209,6 +255,11 @@ final class OnboardingState: ObservableObject {
     /// Marketing attribution (Act 3). Nil when skipped.
     @Published var acquisitionSource: String? = nil
 
+    /// Optional identity (Act 3). Empty / nil when skipped — never fall back
+    /// to a fake placeholder name like "Jamie Rivera".
+    @Published var firstName: String = ""
+    @Published var sex: BiologicalSex? = nil
+
     /// A profile carrying *only* what's been answered so far. The demo step
     /// scores against this so the reveal reflects the real ruleset rather
     /// than a hand-written delta.
@@ -249,11 +300,11 @@ final class OnboardingState: ObservableObject {
             user.preferences = Array(foodPreferences)
         }
 
-        // Name, body stats, DOB and sex are deliberately *not* collected
-        // here. Onboarding used to gather them across three screens, which
-        // was the highest-friction stretch of the flow and bought nothing
-        // the user could see. Whatever the profile already holds is left
-        // untouched; Profile › Edit is where those live now.
+        let trimmedName = firstName.trimmingCharacters(in: .whitespacesAndNewlines)
+        // Always write — an empty/skipped answer must not leave a seeded
+        // placeholder like "Jamie Rivera" on the profile.
+        user.name = trimmedName
+        user.sex = sex?.rawValue ?? ""
 
         if !dietaryRestrictions.isEmpty {
             user.restrictions = Array(dietaryRestrictions)

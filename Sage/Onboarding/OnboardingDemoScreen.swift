@@ -244,7 +244,11 @@ struct OnboardingDemoRevealSheet: View {
     let onContinue: () -> Void
 
     @State private var swap: Alternative?
-    @State private var didRequestSwap = false
+    /// Prefetched so the button never has to score the cereal shelf on tap —
+    /// that work was freezing the first press and making it feel like the
+    /// button needed several clicks before anything appeared.
+    @State private var pendingSwap: Alternative?
+    @State private var swapReady = false
 
     private var overall: Int { product.overallScore ?? 0 }
     private var yours: Int { product.yourScore ?? overall }
@@ -311,6 +315,11 @@ struct OnboardingDemoRevealSheet: View {
                 .padding(.top, 10)
                 .padding(.bottom, 20)
                 .background(.regularMaterial)
+        }
+        .task {
+            guard !swapReady else { return }
+            pendingSwap = Self.bestSwap(for: product, profile: profile)
+            swapReady = true
         }
     }
 
@@ -470,8 +479,12 @@ struct OnboardingDemoRevealSheet: View {
                 .cardShadow()
             }
             .transition(.opacity.combined(with: .move(edge: .bottom)))
-        } else if !didRequestSwap {
-            Button("Show me a better one", action: findSwap)
+        } else if !swapReady {
+            ProgressView()
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 16)
+        } else if pendingSwap != nil {
+            Button("Show me a better one", action: revealSwap)
                 .font(.sageBold(15))
                 .foregroundStyle(accent)
                 .frame(maxWidth: .infinity)
@@ -482,19 +495,26 @@ struct OnboardingDemoRevealSheet: View {
                 )
                 .buttonStyle(.pressable)
         }
+        // No pending swap → shelf can't beat this product; omit the button
+        // rather than inventing one (same rule as the live Alternatives row).
     }
 
-    /// Pulls a real alternative off the bundled shelf. When the shelf can't
-    /// beat the demo product we simply say nothing rather than inventing a
-    /// swap — the same rule the live Alternatives row follows.
-    private func findSwap() {
-        didRequestSwap = true
-        if case .suggestions(let list) = Alternatives.suggest(for: product, profile: profile),
-           let best = list.first {
-            withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
-                swap = best
-            }
+    /// Instant reveal — the heavy `Alternatives.suggest` work already ran in
+    /// `.task`, so a single tap always shows the card.
+    private func revealSwap() {
+        guard let pendingSwap else { return }
+        withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
+            swap = pendingSwap
         }
+    }
+
+    /// Pulls a real alternative off the bundled shelf, or nil when nothing
+    /// clears the +10 margin.
+    private static func bestSwap(for product: Product, profile: UserProfile) -> Alternative? {
+        if case .suggestions(let list) = Alternatives.suggest(for: product, profile: profile) {
+            return list.first
+        }
+        return nil
     }
 }
 

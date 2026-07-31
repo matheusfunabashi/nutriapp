@@ -237,6 +237,17 @@ final class AppStore: ObservableObject {
         if let rec = try? context.fetch(FetchDescriptor<ProfileRecord>()).first,
            let p = try? decoder.decode(UserProfile.self, from: rec.data) {
             user = p
+            // Drop the old mock seed so a never-entered name doesn't show as real.
+            if user.name == "Jamie Rivera" {
+                user.name = ""
+                if user.handle == "@jamier" { user.handle = "" }
+                if user.sex == "female", user.dob == "3/14/1993" {
+                    user.sex = ""
+                    user.dob = ""
+                    user.age = 0
+                }
+                persistProfile()
+            }
         } else {
             // First launch: seed from the default profile.
             persistProfile()

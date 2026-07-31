@@ -359,6 +359,21 @@ struct ScoringV4Tests {
         #expect(ScoringEngineV4.route(beer) == "unsupported")
     }
 
+    @Test func waterWithoutNutritionIsUnsupportedNotInsufficient() {
+        // Many OFF water entries lack a full nutrition table. Routing must
+        // win over the minimum-data gate so the UI shows "we don't score
+        // water" instead of "not enough data".
+        let bare = product(nova: 0, name: "Spring Water", ingredientsText: nil,
+                           categories: ["beverages", "waters", "spring-waters"])
+        #expect(bare.hasMinimumData == false)
+        #expect(ScoringEngineV4.route(bare) == "unsupported")
+        if case .unsupported = ScoringEngineV4.scoreProduct(bare, for: MockData.user) {
+            // expected
+        } else {
+            Issue.record("expected .unsupported for bare water product")
+        }
+    }
+
     @Test func activatedCategoriesScoreViaOwnProfile() {
         #expect(ScoringEngineV4.score(wholeMilk)!.profileId == "dairy_milk")
         #expect(ScoringEngineV4.score(oatMilk)!.profileId == "plant_milk")

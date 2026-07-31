@@ -115,4 +115,26 @@ struct OnboardingDemoTests {
         #expect(preview.preferences.isEmpty)
         #expect(preview.healthGoals == ["Heart"])
     }
+
+    @Test func skippedIdentityDoesNotKeepPlaceholderName() {
+        let state = OnboardingState()
+        // Simulate a profile that still carries the old seed name.
+        var user = MockData.user
+        user.name = "Jamie Rivera"
+        user.sex = "female"
+
+        state.apply(to: &user)
+        #expect(user.name.isEmpty)
+        #expect(user.sex.isEmpty)
+    }
+
+    @Test func aboutYouWritesNameAndSex() {
+        let state = OnboardingState()
+        state.firstName = "  Alex  "
+        state.sex = .male
+        var user = MockData.user
+        state.apply(to: &user)
+        #expect(user.name == "Alex")
+        #expect(user.sex == "male")
+    }
 }

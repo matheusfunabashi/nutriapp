@@ -9,11 +9,11 @@ enum MockData {
     static let history: [HistoryEntry] = []
 
     static let user: UserProfile = UserProfile(
-        name: "Jamie Rivera",
-        handle: "@jamier",
-        age: 32,
-        sex: "female",
-        dob: "3/14/1993",
+        name: "",
+        handle: "",
+        age: 0,
+        sex: "",
+        dob: "",
         heightIn: 67,
         weightLb: 147,
         goalWeightLb: 140,

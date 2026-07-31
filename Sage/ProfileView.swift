@@ -87,7 +87,7 @@ struct ProfileView: View {
                             .foregroundColor(Theme.inkSecondary)
                     }
                 }
-                Text(store.user.name)
+                Text(displayName(store.user.name))
                     .font(.sageBold(17)).tracking(-0.4)
                     .foregroundColor(Theme.ink)
             }
@@ -144,6 +144,16 @@ struct ProfileRow: View {
     }
 }
 
+func displayName(_ s: String) -> String {
+    let trimmed = s.trimmingCharacters(in: .whitespacesAndNewlines)
+    return trimmed.isEmpty ? "You" : trimmed
+}
+
 func initials(_ s: String) -> String {
-    s.split(separator: " ").prefix(2).map { $0.first.map(String.init) ?? "" }.joined().uppercased()
+    let trimmed = s.trimmingCharacters(in: .whitespacesAndNewlines)
+    guard !trimmed.isEmpty else { return "?" }
+    return trimmed.split(separator: " ").prefix(2)
+        .map { $0.first.map(String.init) ?? "" }
+        .joined()
+        .uppercased()
 }

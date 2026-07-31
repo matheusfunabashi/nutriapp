@@ -133,3 +133,100 @@ struct OnboardingAttributionScreen: View {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.18, execute: onPick)
     }
 }
+
+// MARK: - Act 3 · About you (name + sex)
+//
+// Optional identity. Skip leaves the profile on the generic seed ("You")
+// rather than inventing a fake person. Kept light — no body stats / DOB.
+
+struct OnboardingAboutYouScreen: View {
+    let accent: Color
+    @Binding var firstName: String
+    @Binding var sex: BiologicalSex?
+
+    @FocusState private var nameFocused: Bool
+
+    var body: some View {
+        ScrollView(showsIndicators: false) {
+            VStack(alignment: .leading, spacing: 22) {
+                OnboardingTitle(
+                    title: "A bit about you",
+                    subtitle: "Optional — skip anytime. Sage works the same either way."
+                )
+                .padding(.horizontal, 20)
+
+                VStack(alignment: .leading, spacing: 10) {
+                    Text("FIRST NAME")
+                        .font(.sageBold(11)).tracking(1.4)
+                        .foregroundStyle(Theme.inkSecondary)
+
+                    TextField("What should we call you?", text: $firstName)
+                        .focused($nameFocused)
+                        .textInputAutocapitalization(.words)
+                        .autocorrectionDisabled(true)
+                        .submitLabel(.done)
+                        .font(.sageSemiBold(17))
+                        .foregroundStyle(Theme.ink)
+                        .padding(.horizontal, 14).padding(.vertical, 14)
+                        .background(
+                            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                                .fill(Theme.card)
+                        )
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                                .stroke(nameFocused ? accent : Color.black.opacity(0.08),
+                                        lineWidth: nameFocused ? 1.5 : 1)
+                        )
+                        .animation(.easeOut(duration: 0.18), value: nameFocused)
+                }
+                .padding(.horizontal, 20)
+
+                VStack(alignment: .leading, spacing: 10) {
+                    Text("SEX")
+                        .font(.sageBold(11)).tracking(1.4)
+                        .foregroundStyle(Theme.inkSecondary)
+
+                    HStack(spacing: 6) {
+                        ForEach(BiologicalSex.allCases) { option in
+                            sexButton(option)
+                        }
+                    }
+                    .padding(4)
+                    .background(Capsule().fill(Theme.card))
+                    .overlay(Capsule().stroke(Color.black.opacity(0.08), lineWidth: 1))
+                }
+                .padding(.horizontal, 20)
+
+                Spacer(minLength: 40)
+            }
+            .padding(.top, 4)
+            .padding(.bottom, 24)
+        }
+        .onAppear {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.34) {
+                nameFocused = true
+            }
+        }
+    }
+
+    private func sexButton(_ option: BiologicalSex) -> some View {
+        let isSelected = sex == option
+        return Button {
+            withAnimation(.spring(response: 0.3, dampingFraction: 0.85)) {
+                sex = option
+            }
+        } label: {
+            Text(option.label)
+                .font(.sageBold(14)).tracking(-0.2)
+                .foregroundStyle(isSelected ? .white : Theme.ink)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 10)
+                .background(
+                    Capsule().fill(isSelected ? accent : Color.clear)
+                )
+        }
+        .buttonStyle(.pressable)
+        .accessibilityLabel(option.label)
+        .accessibilityAddTraits(isSelected ? .isSelected : [])
+    }
+}
