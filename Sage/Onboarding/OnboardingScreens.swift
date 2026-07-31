@@ -412,123 +412,198 @@ struct OnboardingAlternativesScreen: View {
     }
 }
 
-// MARK: - 6d. Dietary restrictions (hard rules + soft preferences)
+// MARK: - 6d. Dietary restrictions + preferences
 //
-// Native inset-grouped `List` on the brand background, reusing the app's
-// shared `ChipView` + `FlowLayout` rather than an onboarding-only pill —
-// so a restriction picked here looks identical to the same restriction in
-// Profile › Dietary, which is where the user will edit it later.
+// Competitor-style 2-column pill grid (icon + label). Visually one "select
+// your preferences" surface; under the hood each chip still writes into
+// either `restrictions` (hard flags) or `preferences` (soft score nudges)
+// so Profile › Dietary stays the source of truth later.
 
 struct OnboardingDietaryRestrictionsScreen: View {
-    @EnvironmentObject var store: AppStore
+    let accent: Color
     @Binding var restrictions: Set<String>
     @Binding var preferences: Set<String>
 
+    private let columns = [
+        GridItem(.flexible(), spacing: 10),
+        GridItem(.flexible(), spacing: 10),
+    ]
+
+    private var selectionFingerprint: Int {
+        restrictions.hashValue ^ preferences.hashValue
+    }
+
     var body: some View {
-        VStack(spacing: 0) {
-            StaggeredAppear(index: 0) {
-                OnboardingTitle(
-                    title: "Any dietary\nrestrictions?",
-                    subtitle: "Hard rules get flagged. Preferences only nudge Your Score."
-                )
-            }
-
-            List {
-                chipSection(
-                    "Restrictions",
-                    "Hard rules. We warn on every scan.",
-                    items: DietaryOptions.restrictions,
-                    selection: $restrictions
-                )
-                chipSection(
-                    "Preferences",
-                    "Soft signals that nudge Your Score.",
-                    items: DietaryOptions.preferences,
-                    selection: $preferences
-                )
-            }
-            .onboardingListStyle()
-            .sensoryFeedback(.selection, trigger: restrictions)
-            .sensoryFeedback(.selection, trigger: preferences)
-        }
-    }
-
-    private func chipSection(_ title: String, _ desc: String, items: [String],
-                             selection: Binding<Set<String>>) -> some View {
-        Section {
-            FlowLayout(spacing: 8) {
-                ForEach(items, id: \.self) { item in
-                    ChipView(label: item,
-                             active: selection.wrappedValue.contains(item),
-                             accent: store.accent) {
-                        toggle(item, in: selection)
-                    }
+        ScrollView(showsIndicators: false) {
+            VStack(alignment: .leading, spacing: 0) {
+                StaggeredAppear(index: 0) {
+                    OnboardingTitle(
+                        title: "Select your\npreferences",
+                        subtitle: "Hard rules get flagged on every scan. Soft preferences only nudge Your Score."
+                    )
+                    .padding(.horizontal, 20)
                 }
+
+                StaggeredAppear(index: 1) {
+                    LazyVGrid(columns: columns, spacing: 10) {
+                        ForEach(DietaryOptions.onboardingChips) { chip in
+                            preferencePill(chip)
+                        }
+                    }
+                    .padding(.horizontal, 20)
+                    .padding(.top, 18)
+                }
+
+                Spacer(minLength: 24)
             }
-            .padding(.vertical, 8)
-        } header: {
-            VStack(alignment: .leading, spacing: 4) {
-                Text(title)
-                    .font(.sageBold(13))
-                    .foregroundStyle(Theme.inkSecondary)
-                Text(desc)
-                    .font(.sageRegular(13))
-                    .foregroundStyle(Theme.inkSecondary.opacity(0.85))
-                    .fixedSize(horizontal: false, vertical: true)
+            .padding(.bottom, 16)
+        }
+        .sensoryFeedback(.selection, trigger: selectionFingerprint)
+    }
+
+    private func preferencePill(_ chip: DietaryOptions.Chip) -> some View {
+        let selected = isSelected(chip)
+        return Button {
+            toggle(chip)
+        } label: {
+            HStack(spacing: 8) {
+                Image(systemName: chip.symbol)
+                    .font(.sageSemiBold(13))
+                    .foregroundStyle(selected ? accent : Theme.inkSecondary)
+                    .frame(width: 18, alignment: .center)
+                Text(chip.id)
+                    .font(.sageSemiBold(13)).tracking(-0.2)
+                    .foregroundStyle(Theme.ink)
+                    .lineLimit(2)
+                    .minimumScaleFactor(0.85)
+                    .multilineTextAlignment(.leading)
+                Spacer(minLength: 0)
             }
-            .textCase(nil)
-            .padding(.bottom, 4)
+            .padding(.horizontal, 12)
+            .padding(.vertical, 14)
+            .frame(maxWidth: .infinity, minHeight: 52, alignment: .leading)
+            .background(
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    .fill(selected ? accent.opacity(0.10) : Theme.card)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    .stroke(selected ? accent : Color.black.opacity(0.08),
+                            lineWidth: selected ? 1.5 : 1)
+            )
+            .cardShadow()
+        }
+        .buttonStyle(.pressable)
+        .accessibilityLabel(chip.id)
+        .accessibilityAddTraits(selected ? .isSelected : [])
+    }
+
+    private func isSelected(_ chip: DietaryOptions.Chip) -> Bool {
+        switch chip.kind {
+        case .restriction: return restrictions.contains(chip.id)
+        case .preference:  return preferences.contains(chip.id)
         }
     }
 
-    private func toggle(_ value: String, in selection: Binding<Set<String>>) {
-        if selection.wrappedValue.contains(value) {
-            selection.wrappedValue.remove(value)
-        } else {
-            selection.wrappedValue.insert(value)
+    private func toggle(_ chip: DietaryOptions.Chip) {
+        switch chip.kind {
+        case .restriction:
+            if restrictions.contains(chip.id) { restrictions.remove(chip.id) }
+            else { restrictions.insert(chip.id) }
+        case .preference:
+            if preferences.contains(chip.id) { preferences.remove(chip.id) }
+            else { preferences.insert(chip.id) }
         }
     }
 }
 
 // MARK: - 6e. Allergens
+//
+// Same 2-column pill grid as the preferences step. Labels stay in sync with
+// `OnboardingAllergenOptions.presets` / Profile › Dietary.
 
 struct OnboardingAllergensScreen: View {
-    @EnvironmentObject var store: AppStore
+    let accent: Color
     @Binding var allergies: [String]
 
-    private var presetLabels: [String] { OnboardingAllergenOptions.presets }
+    private let columns = [
+        GridItem(.flexible(), spacing: 10),
+        GridItem(.flexible(), spacing: 10),
+    ]
 
     var body: some View {
-        VStack(spacing: 0) {
-            StaggeredAppear(index: 0) {
-                OnboardingTitle(
-                    title: "Any allergies or\nintolerances?",
-                    subtitle: "We'll warn you whenever a scanned product may contain these."
-                )
-            }
+        ScrollView(showsIndicators: false) {
+            VStack(alignment: .leading, spacing: 0) {
+                StaggeredAppear(index: 0) {
+                    OnboardingTitle(
+                        title: "Any allergies or\nintolerances?",
+                        subtitle: "We'll warn you whenever a scanned product may contain these."
+                    )
+                    .padding(.horizontal, 20)
+                }
 
-            List {
-                Section {
-                    FlowLayout(spacing: 6) {
-                        ForEach(presetLabels, id: \.self) { label in
-                            ChipView(label: label, active: isSelected(label),
-                                     accent: store.accent) {
-                                toggleAllergen(label)
-                            }
+                StaggeredAppear(index: 1) {
+                    LazyVGrid(columns: columns, spacing: 10) {
+                        ForEach(OnboardingAllergenOptions.chips) { chip in
+                            allergenPill(chip)
                         }
                     }
-                    .padding(.vertical, 4)
-                } header: {
-                    Text("Common allergens")
-                } footer: {
+                    .padding(.horizontal, 20)
+                    .padding(.top, 18)
+                }
+
+                StaggeredAppear(index: 2) {
                     Label("Ingredient data can be incomplete, so always check the packaging.",
                           systemImage: "exclamationmark.triangle.fill")
                         .font(.sageRegular(12))
+                        .foregroundStyle(Theme.inkSecondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .padding(.horizontal, 24)
+                        .padding(.top, 16)
                 }
+
+                Spacer(minLength: 24)
             }
-            .onboardingListStyle()
-            .sensoryFeedback(.selection, trigger: allergies)
+            .padding(.bottom, 16)
         }
+        .sensoryFeedback(.selection, trigger: allergies)
+    }
+
+    private func allergenPill(_ chip: OnboardingAllergenOptions.Chip) -> some View {
+        let selected = isSelected(chip.id)
+        return Button {
+            toggleAllergen(chip.id)
+        } label: {
+            HStack(spacing: 8) {
+                Image(systemName: chip.symbol)
+                    .font(.sageSemiBold(13))
+                    .foregroundStyle(selected ? accent : Theme.inkSecondary)
+                    .frame(width: 18, alignment: .center)
+                Text(chip.id)
+                    .font(.sageSemiBold(13)).tracking(-0.2)
+                    .foregroundStyle(Theme.ink)
+                    .lineLimit(2)
+                    .minimumScaleFactor(0.85)
+                    .multilineTextAlignment(.leading)
+                Spacer(minLength: 0)
+            }
+            .padding(.horizontal, 12)
+            .padding(.vertical, 14)
+            .frame(maxWidth: .infinity, minHeight: 52, alignment: .leading)
+            .background(
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    .fill(selected ? accent.opacity(0.10) : Theme.card)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    .stroke(selected ? accent : Color.black.opacity(0.08),
+                            lineWidth: selected ? 1.5 : 1)
+            )
+            .cardShadow()
+        }
+        .buttonStyle(.pressable)
+        .accessibilityLabel(chip.id)
+        .accessibilityAddTraits(selected ? .isSelected : [])
     }
 
     private func isSelected(_ label: String) -> Bool {
@@ -836,7 +911,7 @@ struct OnboardingResultsScreen: View {
                             Text("Here's where you stand")
                                 .font(.sageBold(28)).tracking(-0.6)
                                 .foregroundColor(.white)
-                            Text("Based on your goals, here's how your current pantry scores, and where Sage users land.")
+                            Text("Based on your goals, here's a rough sense of where a typical pantry starts — and where Sage users land after a few weeks.")
                                 .font(.sageRegular(15))
                                 .foregroundColor(Color.white.opacity(0.65))
                                 .lineSpacing(3)
@@ -952,6 +1027,11 @@ struct OnboardingResultsScreen: View {
                     color: Color(hex: "D4A02D"))
             statRow(title: "Avg Sage user (30 days)", score: 88,
                     color: Color(hex: "3FBF7B"))
+            Text("Illustrative estimate — not your actual pantry.")
+                .font(.sageRegular(11))
+                .foregroundColor(Color.white.opacity(0.40))
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.top, 2)
         }
         .padding(20)
         .background(

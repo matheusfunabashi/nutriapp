@@ -518,20 +518,31 @@ struct UnsupportedView: View {
     let product: Product
     @EnvironmentObject var store: AppStore
 
-    private var reason: String {
-        let cats = Set(product.categories ?? [])
+    private var isAlcohol: Bool {
         let alcohol: Set = ["alcoholic-beverages", "beers", "wines", "spirits", "ciders"]
-        if !cats.isDisjoint(with: alcohol) {
-            return "Sage doesn't rate alcoholic drinks — their health impact isn't something a nutrition score can capture responsibly."
+        return !Set(product.categories ?? []).isDisjoint(with: alcohol)
+    }
+
+    private var title: String {
+        isAlcohol ? "We don't score alcohol" : "We don't score water"
+    }
+
+    private var symbol: String {
+        isAlcohol ? "nosign" : "drop.fill"
+    }
+
+    private var reason: String {
+        if isAlcohol {
+            return "Alcohol's health impact isn't something a nutrition score can capture responsibly — so Sage leaves it unscored rather than invent a number."
         }
-        return "Sage doesn't rate bottled water. Without lab data we can't judge it fairly, so we'd rather show nothing than a misleading number."
+        return "Plain water isn't something a food score can judge fairly. Without lab data on minerals or contaminants, any number would be guesswork — so we'd rather show nothing than a misleading score."
     }
 
     var body: some View {
         ScrollView {
             VStack(spacing: 20) {
                 ProductIdentity(product: product)
-                ContentUnavailableView("Not rated", systemImage: "minus.circle",
+                ContentUnavailableView(title, systemImage: symbol,
                                        description: Text(reason))
             }
             .padding(.top, 24)

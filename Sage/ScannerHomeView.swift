@@ -49,10 +49,12 @@ struct ScannerHomeView: View {
         .accessibilityLabel("Sage")
     }
 
-    /// Name-free: onboarding no longer asks for one, so the profile default
-    /// would leak a placeholder name the user never entered.
+    /// Uses the first name when the user shared one; otherwise a time-of-day
+    /// greeting only — never a placeholder like "Jamie".
     private func greeting() -> some View {
-        Text(timeGreeting)
+        let name = store.user.name.trimmingCharacters(in: .whitespacesAndNewlines)
+        let text = name.isEmpty ? timeGreeting : "\(timeGreeting), \(name)"
+        return Text(text)
             .font(.sageMedium(15))
             .foregroundColor(Theme.inkSecondary)
             .frame(maxWidth: .infinity, alignment: .leading)

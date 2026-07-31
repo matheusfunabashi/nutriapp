@@ -19,8 +19,14 @@ struct PersonalDetailsView: View {
             Section {
                 LabeledContent("Current weight", value: "\(store.user.weightLb) lb")
                 LabeledContent("Height", value: formatHeight(inches: store.user.heightIn))
-                LabeledContent("Date of birth", value: store.user.dob)
-                LabeledContent("Gender", value: store.user.sex.capitalized)
+                LabeledContent("Date of birth", value: {
+                    let d = store.user.dob.trimmingCharacters(in: .whitespacesAndNewlines)
+                    return d.isEmpty ? "Not set" : d
+                }())
+                LabeledContent("Gender", value: {
+                    let s = store.user.sex.trimmingCharacters(in: .whitespacesAndNewlines)
+                    return s.isEmpty ? "Not set" : s.capitalized
+                }())
                 LabeledContent("Objective", value: store.user.objective.capitalized)
                 LabeledContent("Units", value: store.user.unitSystem.capitalized)
             }

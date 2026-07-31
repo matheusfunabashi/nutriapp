@@ -132,14 +132,25 @@ struct OnboardingFlow: View {
                 onPick: state.advance
             )
 
+        case .aboutYou:
+            OnboardingAboutYouScreen(
+                accent: store.accent,
+                firstName: $state.firstName,
+                sex: $state.sex
+            )
+
         case .dietaryRestrictions:
             OnboardingDietaryRestrictionsScreen(
+                accent: store.accent,
                 restrictions: $state.dietaryRestrictions,
                 preferences: $state.foodPreferences
             )
 
         case .allergens:
-            OnboardingAllergensScreen(allergies: $state.selectedAllergens)
+            OnboardingAllergensScreen(
+                accent: store.accent,
+                allergies: $state.selectedAllergens
+            )
 
         case .demo:
             OnboardingDemoScreen(
@@ -204,7 +215,7 @@ struct OnboardingFlow: View {
             })
 
         case .avoids, .marketing, .scores, .alternatives,
-             .dietaryRestrictions, .allergens:
+             .aboutYou, .dietaryRestrictions, .allergens:
             return AnyView(
                 OnboardingCTAButton(title: "Continue", action: state.advance)
             )

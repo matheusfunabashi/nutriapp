@@ -301,9 +301,12 @@ enum ScoringEngineV4 {
                              ruleset rs: RulesetV4 = .bundled) -> Outcome {
         let originalProduct = p
         let p = applyingInferredFVN(to: p)
-        guard p.hasMinimumData else { return .insufficientData }
+        // Route before the minimum-data gate: water/alcohol often lack a full
+        // nutrition table, and would otherwise be mis-labeled "not enough data"
+        // instead of the deliberate unsupported explanation.
         let profileId = route(p, ruleset: rs)
         if profileId == "unsupported" { return .unsupported }
+        guard p.hasMinimumData else { return .insufficientData }
 
         // Diet / avoid flags still run for unscored sweeteners — there is just
         // no number to cap.
