@@ -42,18 +42,17 @@ struct AlternativesTests {
         #expect(Alternatives.select(baseline: 70, from: [M(72), M(75)]).isEmpty)
     }
 
-    @Test func selectIsUSOnly() {
-        // Only one US peer clears margin; higher-scoring BR peers must not fill slots.
+    @Test func selectFiltersToAllowedMarkets() {
+        // US / UK / CA peers qualify; BR is filtered out even when higher-scoring.
         let pool = [
             M(60, countries: ["us"]),
-            M(70, countries: ["br"]),
-            M(65, countries: ["br"]),
-            M(55, countries: ["br"]),
-            M(58, countries: ["us", "br"]),
+            M(70, countries: ["br"]),        // excluded despite the top score
+            M(58, countries: ["uk"]),
+            M(55, countries: ["ca"]),
         ]
         let r = Alternatives.select(baseline: 40, from: pool)
-        #expect(r.map(\.score) == [60, 58])
-        #expect(r.allSatisfy { $0.countries.contains("us") })
+        #expect(r.map(\.score) == [60, 58, 55])            // us, uk, ca — best first
+        #expect(!r.contains { $0.countries == ["br"] })
     }
 
     @Test func regionFromBarcodeBrazil() {
@@ -112,6 +111,18 @@ struct AlternativesTests {
         #expect(SageCategory.shelf(for: mapped([
             "en:meals", "en:dried-products", "en:noodles"
         ])) == .instantNoodles)
+    }
+
+    @Test func energyDrinksRouteToOwnShelf() {
+        // Plain energy drink → energyDrinks.
+        #expect(SageCategory.shelf(for: mapped(["en:beverages", "en:energy-drinks"])) == .energyDrinks)
+        // Cross-tagged en:sodas (like some Red Bulls) still route to energyDrinks
+        // because its def is matched before soda — so a Red Bull always gets peers.
+        #expect(SageCategory.shelf(for: mapped([
+            "en:beverages", "en:carbonated-drinks", "en:soft-drinks", "en:sodas", "en:energy-drinks",
+        ])) == .energyDrinks)
+        // A regular soda (no energy-drinks tag) stays on the soda shelf.
+        #expect(SageCategory.shelf(for: mapped(["en:beverages", "en:sodas", "en:colas"])) == .soda)
     }
 
     @Test func anchorTagNilWhenOnlyRootTagMatched() {

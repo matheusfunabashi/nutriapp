@@ -27,7 +27,7 @@ import {
 import { bumpScanCount, logFetch, recordAttribution, attributionSummary, isAttributionSource } from "./db";
 import { fetchUSDA, mergeUSDA, plausiblyUS } from "./usda";
 import { generateExplanation, buildTemplateOverview } from "./explanation";
-import { resolveProductImage, serveCachedImage, enrichAlternativesImages, IMAGE_CACHE_VERSION } from "./imageResolver.ts";
+import { resolveProductImage, serveCachedImage, IMAGE_CACHE_VERSION } from "./imageResolver.ts";
 import { putCuratedImage } from "./curatedImages.ts";
 // Scoring-v4 ruleset served to clients (SCORING_V4.md §10). Keep in sync:
 // `cp Sage/RulesetV5.json backend/src/ruleset.json` before deploying — the
@@ -125,18 +125,13 @@ app.get("/alternatives/version", (c) => {
   return c.json({ generated_at: (alternatives as { generated_at: string | null }).generated_at });
 });
 
-app.get("/alternatives", async (c) => {
-  c.header("Cache-Control", "public, max-age=60");
-  const origin = new URL(c.req.url).origin;
-  const enriched = await enrichAlternativesImages(
-    c.env,
-    alternatives as { shelves?: Record<string, Array<{ barcode?: string; image_url?: string | null }>> },
-    {
-      origin,
-      waitUntil: (p) => c.executionCtx.waitUntil(p),
-    },
-  );
-  return c.json(enriched);
+app.get("/alternatives", (c) => {
+  c.header("Cache-Control", "public, max-age=300");
+  // Served raw. The client resolves images itself (`/images/{barcode}` for
+  // US/UK/CA candidates), so per-candidate enrichment here is redundant — and a
+  // KV read + R2 HEAD per candidate does not scale to the full multi-market
+  // dataset (it timed the endpoint out).
+  return c.json(alternatives);
 });
 
 // --- Product lookup -------------------------------------------------------

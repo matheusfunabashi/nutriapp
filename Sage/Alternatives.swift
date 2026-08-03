@@ -201,6 +201,14 @@ enum Alternatives {
     static let goodFloor = 55
     static let maxResults = 3
 
+    /// Markets Sage surfaces in Top Rated + Better Options — mirrors the search
+    /// filter. The dataset may also carry other markets (e.g. `br`) that are
+    /// filtered out here.
+    static let allowedMarkets: Set<String> = ["us", "uk", "ca"]
+    static func isAllowedMarket(_ countries: [String]?) -> Bool {
+        !allowedMarkets.isDisjoint(with: countries ?? [])
+    }
+
     /// Convenience entry point for the UI (reads the shared stores on the main actor).
     @MainActor
     static func suggest(for scanned: Product, profile: UserProfile) -> AlternativesOutcome {
@@ -245,11 +253,11 @@ enum Alternatives {
         guard let baseline = scanned.overallScore else { return .unscored }
         let scannedKey = dedupeKey(brand: scanned.brand, name: scanned.name)
 
-        // US-only: the alternatives dataset mixes `us` + `br`, but suggestions
-        // (and empty-reason peers) are US-market only — same rule as Top Rated.
+        // Market-filtered (US/UK/CA): the dataset may carry other markets, but
+        // suggestions (and empty-reason peers) stay in-market — same as Top Rated.
         var pool: [Alternative] = []
         for cand in candidates {
-            guard (cand.countries ?? []).contains("us") else { continue }
+            guard isAllowedMarket(cand.countries) else { continue }
             if cand.barcode == scanned.id { continue }
             guard let (p, score) = scored(cand, profile: profile, ruleset: ruleset) else { continue }
             if dedupeKey(brand: p.brand, name: p.name) == scannedKey { continue }
@@ -289,8 +297,9 @@ enum Alternatives {
     /// backend (Kroger skips them, lazy-resolve finds no OFF product), so they
     /// keep the perfectly good OFF url from `alternatives.json`.
     static func imageURL(for c: AlternativeCandidate) -> String {
-        let isUS = (c.countries ?? []).contains("us")
-        if !isUS,
+        // US/UK/CA all resolve on the backend; other markets (e.g. BR) blank
+        // there, so keep their OFF url.
+        if !isAllowedMarket(c.countries),
            let url = c.imageURL?.trimmingCharacters(in: .whitespacesAndNewlines), !url.isEmpty {
             return url
         }
@@ -299,10 +308,10 @@ enum Alternatives {
 
     /// Pure selection over already-scored candidates (§3.5–3.6): margin gate,
     /// "Good" preference with a margin-only fallback, same-subtype first, top N.
-    /// US-only — Brazilian (and other non-US) peers are never suggested.
+    /// Market-filtered (US/UK/CA) — other-market peers are never suggested.
     static func select<T: RankableAlternative>(baseline: Int, from pool: [T]) -> [T] {
-        let us = pool.filter { $0.countries.contains("us") }
-        return selectMargin(baseline: baseline, from: us)
+        let inMarket = pool.filter { isAllowedMarket($0.countries) }
+        return selectMargin(baseline: baseline, from: inMarket)
     }
 
     /// Brand + name, alphanumerics only — collapses size/region SKUs of one product.
@@ -347,7 +356,7 @@ enum TopRated {
     static func items(from candidates: [AlternativeCandidate],
                       profile: UserProfile, ruleset: RulesetV4) -> [Alternative] {
         candidates
-            .filter { ($0.countries ?? []).contains("us") }
+            .filter { Alternatives.isAllowedMarket($0.countries) }
             .compactMap { c -> Alternative? in
                 guard let (p, s) = Alternatives.scored(c, profile: profile, ruleset: ruleset)
                 else { return nil }

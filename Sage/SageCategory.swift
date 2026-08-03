@@ -5,6 +5,7 @@ enum SageCategory: String, CaseIterable, Identifiable, Hashable {
     case soda, water, chocolate, cookies, cereal, cheese, yogurt, bread
     case juice, chips, coffee, pasta, iceCream, babyFood
     case nutButtersAndSpreads, snackBars, milks, fatsAndOils, instantNoodles
+    case energyDrinks
 
     var id: String { rawValue }
 
@@ -29,6 +30,7 @@ enum SageCategory: String, CaseIterable, Identifiable, Hashable {
         case .milks:                  return "Milk"
         case .fatsAndOils:            return "Fats & oils"
         case .instantNoodles:         return "Instant noodles"
+        case .energyDrinks:           return "Energy drinks"
         }
     }
 
@@ -53,6 +55,7 @@ enum SageCategory: String, CaseIterable, Identifiable, Hashable {
         case .milks:                  return "🥛"
         case .fatsAndOils:            return "🫒"
         case .instantNoodles:         return "🍜"
+        case .energyDrinks:           return "⚡"
         }
     }
 
@@ -77,10 +80,11 @@ enum SageCategory: String, CaseIterable, Identifiable, Hashable {
         }
     }
 
-    /// Browse order for the Top Rated grid (two-up cards). Only categories
-    /// with `topRatedHeroAsset` are included.
+    /// Browse order for the Top Rated grid (two-up cards). Most have a
+    /// `topRatedHeroAsset` pack shot; `energyDrinks` has none yet and falls back
+    /// to its emoji in the card until an asset is added.
     static let topRatedBrowse: [SageCategory] = [
-        .soda, .juice, .milks, .yogurt,
+        .soda, .energyDrinks, .juice, .milks, .yogurt,
         .cheese, .iceCream, .cereal, .bread,
         .pasta, .chips, .snackBars, .chocolate,
     ]

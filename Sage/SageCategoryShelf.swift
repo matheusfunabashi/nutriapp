@@ -90,6 +90,14 @@ extension SageCategory {
                  subTags: ["orange-juices", "apple-juices", "grape-juices", "pineapple-juices",
                            "multifruit-juices", "cranberry-juices", "tomato-juices",
                            "smoothies", "fruit-nectars"]),
+        // Energy drinks BEFORE soda: some are cross-tagged en:sodas in OFF, so
+        // matching energy-drinks first keeps them on their own shelf (regular
+        // sodas lack en:energy-drinks, so nothing legit is stolen).
+        ShelfDef(shelf: .energyDrinks,
+                 rootTags: ["energy-drinks"],
+                 subTags: ["energy-drink-with-sugar",
+                           "energy-drink-without-sugar-and-with-artificial-sweeteners",
+                           "energy-shots"]),
         ShelfDef(shelf: .soda,
                  rootTags: ["sodas", "soft-drinks", "carbonated-drinks"],
                  subTags: ["colas", "lemonades", "orange-sodas", "ginger-ales",
