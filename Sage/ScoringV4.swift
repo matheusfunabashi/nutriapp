@@ -51,6 +51,14 @@ struct RulesetV4: Codable {
     let router: [RouterEntry]
     /// Human labels + driverKind for overview prose (fail closed when missing).
     var ruleMeta: [String: RuleMeta]? = nil
+    /// Remote feature flags (V5.1.0+). Optional for older downloaded rulesets.
+    struct Flags: Codable {
+        let rulesetV510Enabled: Bool?
+    }
+    var flags: Flags? = nil
+
+    /// True when this ruleset is the v5.1.0 Real Food engine (not the frozen 5.0.9).
+    var isV510: Bool { version.contains("v5.1.0") }
 
     // Category rules — optional so an older downloaded ruleset can't crash
     // decoding; evaluators fall back to unknown credit when absent.
@@ -175,6 +183,19 @@ struct RulesetV4: Codable {
         }
         return rs
     }()
+
+    /// Frozen v5.0.9 — kill-switch fallback (RulesetStore.v510Enabled == false).
+    static let bundledV509: RulesetV4 = {
+        let bundle = Bundle(for: BundleToken.self)
+        guard let url = bundle.url(forResource: "RulesetV509", withExtension: "json")
+                ?? Bundle.main.url(forResource: "RulesetV509", withExtension: "json"),
+              let data = try? Data(contentsOf: url),
+              let rs = try? JSONDecoder().decode(RulesetV4.self, from: data)
+        else {
+            fatalError("RulesetV509.json missing or malformed — kill switch cannot fall back")
+        }
+        return rs
+    }()
 }
 
 // MARK: Engine output
@@ -186,6 +207,8 @@ struct V4RuleResult {
     /// False when the rule fell back to its Tier-2 "unknown" credit — feeds
     /// the weight-backed Data Confidence (§3.2).
     let hadData: Bool
+    /// Optional debug note (e.g. isolate discount).
+    var note: String? = nil
 }
 
 struct V4Result {
@@ -261,25 +284,21 @@ enum ScoringEngineV4 {
         if profileId == "unsupported" || profileId == "unscored_sweetener" { return nil }
         guard let profile = rs.profiles[profileId] else { return nil }
 
-        var results: [V4RuleResult] = []
-        for pr in profile {
-            let (f, had) = evaluate(pr.rule, variant: pr.variant, product: p, rs: rs)
-            results.append(V4RuleResult(rule: pr.rule, weight: pr.w,
-                                        fraction: f, hadData: had))
-        }
-
-        let totalW = results.reduce(0) { $0 + $1.weight }
+        let (results, _) = evaluatedRules(profile: profile, profileId: profileId, product: p, rs: rs)
+        let usable = activeWeightResults(results)
+        let totalW = usable.reduce(0) { $0 + $1.weight }
         guard totalW > 0 else { return nil }
-        let earned = results.reduce(0) { $0 + $1.weight * $1.fraction }
-        let backed = results.filter(\.hadData).reduce(0) { $0 + $1.weight }
+        let earned = usable.reduce(0) { $0 + $1.weight * $1.fraction }
+        let backed = usable.filter(\.hadData).reduce(0) { $0 + $1.weight }
 
         let raw = earned / totalW * 100
         var base = max(floorScore, Int(raw.rounded()))
         base = applyBaseCaps(base: base, product: p, rs: rs).capped
+        let conf = adjustedConfidence(base: backed / totalW, product: p, results: usable)
         return V4Result(rulesetVersion: rs.version,
                         profileId: profileId,
                         base: base,
-                        confidence: backed / totalW,
+                        confidence: conf,
                         rules: results)
     }
 
@@ -328,6 +347,7 @@ enum ScoringEngineV4 {
             out.bindingCap = nil
             out.overallFiredCaps = nil
             out.overallBindingCap = nil
+            out.overallBandCap = nil
             out.overview = nil
             out.overviewStale = false
             out.restrictions = restrictions
@@ -337,14 +357,12 @@ enum ScoringEngineV4 {
         guard let ruleList = rs.profiles[profileId] else { return .insufficientData }
 
         // Evaluate every rule once; reuse for Overall and Your Score.
-        let results = ruleList.map { pr -> V4RuleResult in
-            let (f, had) = evaluate(pr.rule, variant: pr.variant, product: p, rs: rs)
-            return V4RuleResult(rule: pr.rule, weight: pr.w, fraction: f, hadData: had)
-        }
-        let totalW = results.reduce(0) { $0 + $1.weight }
+        let (results, _) = evaluatedRules(profile: ruleList, profileId: profileId, product: p, rs: rs)
+        let usable = activeWeightResults(results)
+        let totalW = usable.reduce(0) { $0 + $1.weight }
         guard totalW > 0 else { return .insufficientData }
         var overall = max(floorScore,
-                          Int((results.reduce(0) { $0 + $1.weight * $1.fraction } / totalW * 100).rounded()))
+                          Int((usable.reduce(0) { $0 + $1.weight * $1.fraction } / totalW * 100).rounded()))
         // Health hard gates on Overall (trans fat, free-sugar ceiling, NNS).
         let baseGate = applyBaseCaps(base: overall, product: p, rs: rs)
         overall = baseGate.capped
@@ -357,6 +375,8 @@ enum ScoringEngineV4 {
         out.bonuses = nutrientBonuses(p.nutrients)
         out.overallFiredCaps = baseGate.fired.isEmpty ? nil : baseGate.fired
         out.overallBindingCap = baseGate.binding
+        // Band color/label follow the number only — no display-only band caps.
+        out.overallBandCap = nil
         out.restrictions = restrictions
 
         guard profile.personalizeScoring else {
@@ -373,7 +393,7 @@ enum ScoringEngineV4 {
         // health goals, and priority sliders (§7.2).
         let mult = ruleMultipliers(profile, rs: rs)
         var yEarned = 0.0, yTotal = 0.0
-        for r in results {
+        for r in usable {
             let m = mult[r.rule] ?? 1.0
             yEarned += r.weight * m * r.fraction
             yTotal += r.weight * m
@@ -451,7 +471,8 @@ enum ScoringEngineV4 {
         guard let ruleList = rs.profiles[profileId] else { return factors }
         let mult = ruleMultipliers(profile, rs: rs)
         let scored = ruleList.map { pr -> (rule: String, f: Double, m: Double) in
-            let (f, _) = evaluate(pr.rule, variant: pr.variant, product: p, rs: rs)
+            let (f, _, _) = evaluate(pr.rule, variant: pr.variant, product: p, rs: rs,
+                                     profileId: profileId)
             return (pr.rule, f, mult[pr.rule] ?? 1.0)
         }
         // Emphasized rules first (biggest |m−1|·weight), then plain strong drivers.
@@ -908,33 +929,138 @@ enum ScoringEngineV4 {
         return "general"
     }
 
+    // MARK: V5.0.9 / V5.1.0 — integrity helpers
+
+    /// Drink-like profiles skip food-only v5.1.0 axes (sweetener cap / isolate / S15 foods).
+    private static let drinkLikeProfiles: Set<String> = ["drinks", "unscored_sweetener"]
+
+    private static func isFoodProfile(_ id: String) -> Bool {
+        !drinkLikeProfiles.contains(id)
+    }
+
+    /// Evaluate profile rules, then apply isolate discount (v5.0.9 ice_cream / v5.1.0 all foods).
+    private static func evaluatedRules(
+        profile: [RulesetV4.ProfileRule], profileId: String, product p: Product, rs: RulesetV4
+    ) -> (results: [V4RuleResult], s12IsolateDiscount: Bool) {
+        var results = profile.map { pr -> V4RuleResult in
+            let (f, had, note) = evaluate(pr.rule, variant: pr.variant, product: p, rs: rs,
+                                          profileId: profileId)
+            return V4RuleResult(rule: pr.rule, weight: pr.w, fraction: f, hadData: had, note: note)
+        }
+        var discounted = false
+        let isolateProfiles: Set<String> = rs.isV510
+            ? Set(rs.profiles.keys.filter(isFoodProfile))
+            : ["ice_cream"]
+        if isolateProfiles.contains(profileId),
+           IngredientIntegrity.hasIsolateProtein(ingredientsText: p.ingredientsText),
+           let idx = results.firstIndex(where: { $0.rule == "S12" }) {
+            let r = results[idx]
+            let match = IngredientIntegrity.evaluate(ingredientsText: p.ingredientsText)
+                .isolateMatches.first ?? "isolate"
+            results[idx] = V4RuleResult(
+                rule: r.rule, weight: r.weight, fraction: r.fraction * 0.5,
+                hadData: r.hadData,
+                note: "S12 isolate discount ×0.5 (\(match))"
+            )
+            discounted = true
+        }
+        return (results, discounted)
+    }
+
+    /// S14/S15 with no usable ingredient signal drop out of Σw (weight redistributed).
+    private static func activeWeightResults(_ results: [V4RuleResult]) -> [V4RuleResult] {
+        results.filter { r in
+            if (r.rule == "S14" || r.rule == "S15"), !r.hadData { return false }
+            return true
+        }
+    }
+
+    /// Missing nutrition inputs used by the profile haircut confidence.
+    private static func adjustedConfidence(
+        base: Double, product p: Product, results: [V4RuleResult]
+    ) -> Double {
+        let byRule = Dictionary(uniqueKeysWithValues: results.map { ($0.rule, $0.weight) })
+        var haircutPP = 0.0
+        let n = p.nutrients
+        if n.sugar_g == nil, let w = byRule["S3"] { haircutPP += w / 2 }
+        if n.satFat_g == nil, let w = byRule["S5"] { haircutPP += w / 2 }
+        if n.sodium_mg == nil, let w = byRule["S4"] { haircutPP += w / 2 }
+        if n.fiber_g == nil, let w = byRule["S12"] { haircutPP += w / 2 }
+        if n.protein_g == nil, let w = byRule["S12"] { haircutPP += w / 2 }
+        if n.kcal == nil, let w = byRule["S12"] { haircutPP += w / 2 }
+        let pct = max(60.0, base * 100 - haircutPP)
+        return pct / 100.0
+    }
+
+    /// Formerly capped NOVA 4 / Nutri-Score E to OK without changing the number.
+    /// Removed: band color and label always match the numeric score.
+    static func displayBandCap(for p: Product) -> ScoreCap? { nil }
+
+    /// Band label for UI — always the natural band for `score`.
+    static func displayBandLabel(score: Int, product: Product,
+                                 ruleset rs: RulesetV4 = .bundled) -> String {
+        _ = product
+        return rs.bandLabel(score)
+    }
+
+    static func displayScoreTier(score: Int, product: Product,
+                                 ruleset rs: RulesetV4 = .bundled) -> ScoreTier {
+        _ = product
+        return rs.scoreTier(for: score)
+    }
+
     // MARK: Rule dispatch
 
     private static func evaluate(_ rule: String, variant: String?,
-                                 product p: Product, rs: RulesetV4) -> (Double, Bool) {
+                                 product p: Product, rs: RulesetV4,
+                                 profileId: String = "general") -> (Double, Bool, String?) {
         switch rule {
-        case "S1":  return s1(p, rs: rs)
-        case "S2":  return s2(p)
-        case "S3":  return s3(p, variant: variant ?? "foods", rs: rs)
-        case "S4":  return stepped(p.nutrients.sodium_mg, thresholds: rs.s4Thresholds,
-                                   unknownCredit: 0.30)
-        case "S5":  return stepped(p.nutrients.satFat_g,
-                                   thresholds: rs.s5Thresholds[variant ?? "standard"]
-                                       ?? rs.s5Thresholds["standard"] ?? [3, 8, 15],
-                                   unknownCredit: 0.40)
-        case "S10": return s10(p, rs: rs)
-        case "S12": return s12(p, variant: variant)
-        case "S13": return s13(p, rs: rs)
-        case "contaminantRisk":    return contaminantRisk(p, rs: rs)
-        case "dairyProcessing":    return dairyProcessing(p, rs: rs)
-        case "brewMaterial":       return brewMaterial(p, rs: rs)
-        case "sweetenerType":      return kwLookup(haystack(p), rs.sweetenerType,
-                                                   fallback: rs.sweetenerTypeDefault ?? 0.3)
-        case "authenticity":       return authenticity(p, rs: rs)
-        case "sweetenerProcessing": return kwLookup(haystack(p), rs.sweetenerProcessing,
-                                                    fallback: rs.sweetenerProcessingDefault ?? 0.6)
-        case "wholeGrain":         return wholeGrain(p, rs: rs)
-        default:    return (0, false)   // unknown / removed rule id → earns nothing
+        case "S1":
+            let r = s1(p, rs: rs); return (r.0, r.1, nil)
+        case "S2":
+            let r = s2(p); return (r.0, r.1, nil)
+        case "S3":
+            return s3(p, variant: variant ?? "foods", rs: rs, profileId: profileId)
+        case "S4":
+            let r = stepped(p.nutrients.sodium_mg, thresholds: rs.s4Thresholds,
+                            unknownCredit: 0.30)
+            return (r.0, r.1, nil)
+        case "S5":
+            let r = stepped(p.nutrients.satFat_g,
+                            thresholds: rs.s5Thresholds[variant ?? "standard"]
+                                ?? rs.s5Thresholds["standard"] ?? [3, 8, 15],
+                            unknownCredit: 0.40)
+            return (r.0, r.1, nil)
+        case "S10":
+            let r = s10(p, rs: rs); return (r.0, r.1, nil)
+        case "S12":
+            let r = s12(p, variant: variant); return (r.0, r.1, nil)
+        case "S13":
+            let r = s13(p, rs: rs); return (r.0, r.1, nil)
+        case "S14":
+            let r = s14(p); return (r.0, r.1, nil)
+        case "S15":
+            return s15(p)
+        case "contaminantRisk":
+            let r = contaminantRisk(p, rs: rs); return (r.0, r.1, nil)
+        case "dairyProcessing":
+            let r = dairyProcessing(p, rs: rs); return (r.0, r.1, nil)
+        case "brewMaterial":
+            let r = brewMaterial(p, rs: rs); return (r.0, r.1, nil)
+        case "sweetenerType":
+            let r = kwLookup(haystack(p), rs.sweetenerType,
+                             fallback: rs.sweetenerTypeDefault ?? 0.3)
+            return (r.0, r.1, nil)
+        case "authenticity":
+            let r = authenticity(p, rs: rs); return (r.0, r.1, nil)
+        case "sweetenerProcessing":
+            let r = kwLookup(haystack(p), rs.sweetenerProcessing,
+                             fallback: rs.sweetenerProcessingDefault ?? 0.6)
+            return (r.0, r.1, nil)
+        case "wholeGrain":
+            let r = wholeGrain(p, rs: rs); return (r.0, r.1, nil)
+        default:
+            return (0, false, nil)
         }
     }
 
@@ -1014,19 +1140,19 @@ enum ScoringEngineV4 {
     static func sweetenerQualityNotes(_ p: Product, ruleset rs: RulesetV4 = .bundled) -> [String] {
         var notes: [String] = []
 
-        let (typeF, _) = evaluate("sweetenerType", variant: nil, product: p, rs: rs)
+        let (typeF, _, _) = evaluate("sweetenerType", variant: nil, product: p, rs: rs)
         if let typeNote = sweetenerTypeNote(for: p, fraction: typeF, rs: rs) {
             notes.append(typeNote)
         }
 
-        let (procF, _) = evaluate("sweetenerProcessing", variant: nil, product: p, rs: rs)
+        let (procF, _, _) = evaluate("sweetenerProcessing", variant: nil, product: p, rs: rs)
         if procF >= 0.95 {
             notes.append("Minimally processed")
         } else if procF <= 0.25 {
             notes.append("Refined")
         }
 
-        let (authF, _) = evaluate("authenticity", variant: nil, product: p, rs: rs)
+        let (authF, _, _) = evaluate("authenticity", variant: nil, product: p, rs: rs)
         if authF >= 0.95 {
             notes.append("Single-ingredient product")
         } else if authF <= 0.05 {
@@ -1184,31 +1310,22 @@ enum ScoringEngineV4 {
         return nnsTextMarkers.contains { hay.contains($0) }
     }
 
-    private static func s3(_ p: Product, variant: String, rs: RulesetV4) -> (Double, Bool) {
+    private static func s3(_ p: Product, variant: String, rs: RulesetV4,
+                           profileId: String) -> (Double, Bool, String?) {
         let thresholds = rs.s3Thresholds[variant] ?? rs.s3Thresholds["foods"]!
         let fvn = p.nutrients.fvn ?? 0
         let isDrinks = variant == "drinks"
 
         let result: (Double, Bool)
-        // Only trust added-sugars when it's > 0. OFF frequently reports a bogus
-        // `added-sugars_100g: 0` on plainly-sweetened products (e.g. cola: 10.6 g
-        // total, 0 g "added"), which would otherwise earn full sugar credit. A
-        // genuine 0 falls through to the total-sugars path, which credits
-        // intrinsic fruit/dairy sugar via the FVN discount and still penalises
-        // free sugar (low FVN). See ALTERNATIVES_SPEC §7 / the added-sugars issue.
         if let added = p.nutrients.addedSugar_g, added > 0 {
             let effective: Double
             if isDrinks, fvn >= 80, let total = p.nutrients.sugar_g {
-                // ≥80% juice: treat at least 70% of total sugar as free sugar.
                 effective = max(added, total * 0.70)
             } else {
                 effective = added
             }
             result = stepped(effective, thresholds: thresholds, unknownCredit: 0.25)
         } else if let total = p.nutrients.sugar_g {
-            // Total-sugar fallback, discounted by fruit/veg/nuts content so
-            // intrinsic fruit/dairy sugar isn't scored like a soda's.
-            // Drinks: FVN discount capped at 30% (WHO free-sugar for juice).
             let discount: Double
             if isDrinks {
                 discount = min(0.30, fvn / 100)
@@ -1221,11 +1338,47 @@ enum ScoringEngineV4 {
             result = (0.25, false)
         }
 
-        // Diet drinks: NNS floor so zero-sugar sodas don't score as Excellent.
+        var f = result.0
+        var note: String? = nil
+
+        // Drinks NNS floor — leave as-is; do not stack with foods sweetener cap.
         if isDrinks, hasNonNutritiveSweetener(p) {
-            return (min(result.0, 0.30), result.1)
+            return (min(f, 0.30), result.1, nil)
         }
-        return result
+
+        // V5.1.0 — sweetener-substitution cap (foods only).
+        if rs.isV510, isFoodProfile(profileId), !isDrinks {
+            let sweets = IngredientIntegrity.sweetenerSystemMatches(
+                ingredientsText: p.ingredientsText)
+            if !sweets.isEmpty {
+                let before = f
+                f = min(f, 0.50)
+                if f < before - 1e-9 {
+                    note = String(
+                        format: "S3 sweetenerSubstitutionCap: f %.3f → %.3f (%@)",
+                        before, f, sweets.joined(separator: ", ")
+                    )
+                }
+            }
+        }
+
+        // V5.1.0 — intrinsic sugar discount for simple whole foods (dairy/fruit/honey).
+        if rs.isV510, isFoodProfile(profileId), !isDrinks {
+            let q = IngredientIntegrity.qualifiesForIntrinsicSugarDiscount(
+                ingredientsText: p.ingredientsText,
+                additivesEmpty: p.additives.isEmpty
+            )
+            if q.ok, let reason = q.reason {
+                let before = f
+                f = 1 - 0.7 * (1 - f)
+                f = min(1, max(0, f))
+                let intrinsicNote = "S3 intrinsicDiscount ×0.7 (\(reason))"
+                note = note.map { $0 + " · " + intrinsicNote } ?? intrinsicNote
+                _ = before
+            }
+        }
+
+        return (f, result.1, note)
     }
 
     // MARK: S12 — nutrient quality
@@ -1249,6 +1402,18 @@ enum ScoringEngineV4 {
             f = 0.40 * protDens + 0.35 * fiber + 0.25 * fvn
         }
         return (f, n.kcal != nil || n.fiber_g != nil || n.fvn != nil)
+    }
+
+    /// S14 — Real Food (ingredient integrity).
+    private static func s14(_ p: Product) -> (Double, Bool) {
+        let b = IngredientIntegrity.evaluate(ingredientsText: p.ingredientsText)
+        return (b.fraction, b.hadData)
+    }
+
+    /// S15 — Fat Quality (ingredient-list fat sources).
+    private static func s15(_ p: Product) -> (Double, Bool, String?) {
+        let b = FatQuality.evaluate(product: p)
+        return (b.fraction, b.hadData, b.hadData ? b.note : nil)
     }
 
     // MARK: S13 — beneficial micronutrient credit (positive-only)
@@ -1412,40 +1577,38 @@ enum ScoringEngineV4 {
         guard let ruleList = rs.profiles[profileId] else { return nil }
 
         let multDetail = profile.personalizeScoring ? ruleMultiplierBreakdown(profile, rs: rs) : [:]
+        let (evalResults, _) = evaluatedRules(
+            profile: ruleList, profileId: profileId, product: product, rs: rs)
+        let usable = activeWeightResults(evalResults)
         var rules: [OverviewRuleInput] = []
-        for pr in ruleList {
-            let (f, had) = evaluate(pr.rule, variant: pr.variant, product: product, rs: rs)
-            guard let display = rs.displayName(for: pr.rule) else {
-                print("overview: missing displayName for rule \(pr.rule); excluded from prose payload")
+        for r in evalResults {
+            guard let display = rs.displayName(for: r.rule) else {
+                print("overview: missing displayName for rule \(r.rule); excluded from prose payload")
                 continue
             }
-            let detail = multDetail[pr.rule]
+            let detail = multDetail[r.rule]
             let sources = detail?.factors.map {
                 OverviewMultiplierSource(source: $0.source, selection: $0.selection, factor: $0.factor)
             }
+            // Redistributed S14 (no ingredient list) keeps weight 0 in the prose table.
+            let weight = usable.contains(where: { $0.rule == r.rule }) ? r.weight : 0
             rules.append(OverviewRuleInput(
-                rule: pr.rule,
+                rule: r.rule,
                 topic: display,
-                weight: pr.w,
-                fraction: f,
-                contribution: pr.w * f,
+                weight: weight,
+                fraction: r.fraction,
+                contribution: weight * r.fraction,
                 multiplier: detail.map(\.product),
                 multiplierSources: sources,
-                evidenceTier: had ? "data" : "unknown-tier",
-                driverKind: rs.isMerit(pr.rule) ? "merit" : "hygiene"
+                evidenceTier: r.hadData ? "data" : "unknown-tier",
+                driverKind: rs.isMerit(r.rule) ? "merit" : "hygiene"
             ))
         }
 
-        let totalW = ruleList.reduce(0) { $0 + $1.w }
-        let backed: Double = {
-            var sum = 0.0
-            for pr in ruleList {
-                let (_, had) = evaluate(pr.rule, variant: pr.variant, product: product, rs: rs)
-                if had { sum += pr.w }
-            }
-            return sum
-        }()
-        let confidence = totalW > 0 ? backed / totalW : 0
+        let totalW = usable.reduce(0) { $0 + $1.weight }
+        let backed = usable.filter(\.hadData).reduce(0) { $0 + $1.weight }
+        let confidence = adjustedConfidence(
+            base: totalW > 0 ? backed / totalW : 0, product: product, results: usable)
 
         // Positives: merit rules only (never praise "hazard absent" hygiene rules).
         // Exclude S3/S4/S5 when the displayed nutrient badge is HIGH (V5.0.6).
@@ -1514,7 +1677,8 @@ enum ScoringEngineV4 {
             // Use full rule list contributions for mean (including unnamed rules).
             var earned = 0.0
             for pr in ruleList {
-                let (f, _) = evaluate(pr.rule, variant: pr.variant, product: product, rs: rs)
+                let (f, _, _) = evaluate(pr.rule, variant: pr.variant, product: product, rs: rs,
+                                         profileId: profileId)
                 earned += pr.w * f
             }
             return earned / totalW
@@ -1716,7 +1880,8 @@ enum ScoringEngineV4 {
         var totalW = 0.0, backed = 0.0
         var heavyUnknown = false
         for pr in ruleList {
-            let (_, had) = evaluate(pr.rule, variant: pr.variant, product: product, rs: rs)
+            let (_, had, _) = evaluate(pr.rule, variant: pr.variant, product: product, rs: rs,
+                                       profileId: profileId)
             totalW += pr.w
             if had { backed += pr.w }
             else if pr.w >= 10 { heavyUnknown = true }
@@ -1802,25 +1967,42 @@ extension ScoringEngineV4 {
         lines.append("  categories: \((product.categories ?? []).joined(separator: ", "))")
         lines.append("")
 
-        let results = ruleList.map { pr -> V4RuleResult in
-            let (f, had) = evaluate(pr.rule, variant: pr.variant, product: product, rs: rs)
-            return V4RuleResult(rule: pr.rule, weight: pr.w, fraction: f, hadData: had)
-        }
-        let totalW = results.reduce(0) { $0 + $1.weight }
-        let earned = results.reduce(0) { $0 + $1.weight * $1.fraction }
-        let backed = results.filter(\.hadData).reduce(0) { $0 + $1.weight }
+        let (results, _) = evaluatedRules(profile: ruleList, profileId: profileId,
+                                          product: product, rs: rs)
+        let usable = activeWeightResults(results)
+        let totalW = usable.reduce(0) { $0 + $1.weight }
+        let earned = usable.reduce(0) { $0 + $1.weight * $1.fraction }
+        let backed = usable.filter(\.hadData).reduce(0) { $0 + $1.weight }
         let overall = totalW > 0
             ? max(floorScore, Int((earned / totalW * 100).rounded()))
             : floorScore
-        let confidence = totalW > 0 ? backed / totalW : 0
+        let rawConfidence = totalW > 0 ? backed / totalW : 0
+        let confidence = adjustedConfidence(base: rawConfidence, product: product, results: usable)
 
         lines.append("RULES (profile \(profileId), Σw=\(String(format: "%.0f", totalW)))")
         for r in results {
-            let contrib = r.weight * r.fraction
+            let inSum = usable.contains(where: { $0.rule == r.rule })
+            let contrib = inSum ? r.weight * r.fraction : 0
             let data = r.hadData ? "data" : "unknown-tier"
-            lines.append("  · \(r.rule): w \(String(format: "%.0f", r.weight)) × f \(String(format: "%.3f", r.fraction)) = \(String(format: "%.2f", contrib)) (\(data))")
+            var line = "  · \(r.rule): w \(String(format: "%.0f", r.weight)) × f \(String(format: "%.3f", r.fraction)) = \(String(format: "%.2f", contrib)) (\(data))"
+            if !inSum { line += " [redistributed]" }
+            if let note = r.note { line += " — \(note)" }
+            lines.append(line)
         }
-        lines.append("  confidence: \(String(format: "%.1f%%", confidence * 100))")
+        let s14 = IngredientIntegrity.evaluate(ingredientsText: product.ingredientsText)
+        if s14.hadData {
+            lines.append("  S14 breakdown: wholeFood \(String(format: "%.2f", s14.wholeFoodRatio)) · count \(String(format: "%.2f", s14.countScore)) · sweetener \(String(format: "%.2f", s14.sweetenerScore)) · isolate \(String(format: "%.2f", s14.isolateScore)) · n=\(s14.ingredientCount)")
+            if !s14.sweetenerMatches.isEmpty {
+                lines.append("  sweetener system: \(s14.sweetenerMatches.joined(separator: ", "))")
+            }
+        }
+        let s15 = FatQuality.evaluate(product: product)
+        if s15.hadData {
+            lines.append("  \(s15.note)")
+        } else if results.contains(where: { $0.rule == "S15" }) {
+            lines.append("  S15 fatQuality: no data (weight redistributed)")
+        }
+        lines.append("  confidence: \(String(format: "%.1f%%", confidence * 100)) (raw \(String(format: "%.1f%%", rawConfidence * 100)))")
         let baseGate = applyBaseCaps(base: overall, product: product, rs: rs)
         let cappedOverall = baseGate.capped
         lines.append("  overall (base): \(overall)  [raw \(String(format: "%.2f", earned / max(totalW, 1) * 100))]")
@@ -1887,7 +2069,7 @@ extension ScoringEngineV4 {
 
         var yEarned = 0.0, yTotal = 0.0
         lines.append("YOUR SCORE — Σ(w·m·f) / Σ(w·m)")
-        for r in results {
+        for r in usable {
             let m = mult[r.rule] ?? 1.0
             let contrib = r.weight * m * r.fraction
             yEarned += contrib

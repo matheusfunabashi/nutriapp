@@ -138,6 +138,8 @@ struct Product: Identifiable, Hashable, Codable {
     var overallFiredCaps: [ScoreCap]? = nil
     /// Overall-score binding health cap, if it actually limited Overall.
     var overallBindingCap: ScoreCap? = nil
+    /// Display-only band ceiling (e.g. NOVA 4 → band ≤ OK). Does NOT clamp the number.
+    var overallBandCap: ScoreCap? = nil
     /// Normalized dietary signals from Open Food Facts (e.g. "non-vegan", "gluten",
     /// "milk"), used by the ScoringEngine to flag profile restrictions. Optional for
     /// backward-compatible decoding of older snapshots.

@@ -132,6 +132,87 @@ enum OverviewValidator {
             return claim
         }
 
+        // V5.0.9 — nutrient badge / additive phrasing must match structured input.
+        if let bad = nutrientBadgeContradiction(in: lower, ctx: ctx) {
+            return bad
+        }
+        if lower.contains("beneficial additive") || lower.contains("beneficial additives") {
+            return "beneficial additives"
+        }
+        // V5.1.0 — redistributed S15 must not be described as a measured deficiency.
+        if ctx.rules.contains(where: { $0.rule == "S15" && $0.evidenceTier == "unknown-tier" }) {
+            if lower.contains("held back by fat quality")
+                || lower.contains("poor fat quality")
+                || lower.contains("refined seed oil") && !lower.contains("missing") {
+                return "S15 unknown-tier"
+            }
+        }
+
+        return nil
+    }
+
+    /// Catches "high sugar" when badge is OK/GOOD, "low protein" when OK/GOOD, etc.
+    private static func nutrientBadgeContradiction(
+        in lower: String, ctx: ScoringEngineV4.OverviewContext
+    ) -> String? {
+        // nutrientLevels lines look like "sugar: high (22g)" / "protein: ok".
+        var badge: [String: String] = [:]
+        for line in ctx.nutrientLevels {
+            let parts = line.split(separator: ":", maxSplits: 1).map {
+                $0.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+            }
+            guard parts.count == 2 else { continue }
+            let name = parts[0]
+            let rest = parts[1]
+            if rest.hasPrefix("high") { badge[name] = "high" }
+            else if rest.hasPrefix("low") { badge[name] = "low" }
+            else if rest.hasPrefix("good") { badge[name] = "good" }
+            else if rest.hasPrefix("ok") || rest.hasPrefix("mod") { badge[name] = "ok" }
+        }
+
+        func contradicts(_ nutrient: String, claimed: String) -> Bool {
+            guard let b = badge[nutrient] else { return false }
+            switch claimed {
+            case "high":
+                return b == "ok" || b == "good" || b == "low"
+            case "low":
+                return b == "ok" || b == "good" || b == "high"
+            case "moderate", "mod":
+                return b == "high" || b == "low" || b == "good"
+            default:
+                return false
+            }
+        }
+
+        let claims: [(String, String, [String])] = [
+            ("sugar", "high", ["high sugar", "sugar is high", "high in sugar"]),
+            ("sugar", "moderate", ["moderate sugar", "moderately sugary", "moderate sugar content"]),
+            ("sugar", "low", ["low sugar", "sugar is low"]),
+            ("protein", "low", ["low protein", "lower protein", "limited protein", "protein levels"]),
+            ("protein", "high", ["high protein"]),
+            ("saturated fat", "low", ["low saturated", "low sat fat"]),
+        ]
+        // "lower protein levels" is ambiguous — flag when protein badge is ok/good.
+        if let b = badge["protein"], (b == "ok" || b == "good" || b == "high"),
+           lower.contains("lower protein") || lower.contains("low protein")
+            || (lower.contains("limited protein") && !lower.contains("diluted")) {
+            return "protein badge contradiction"
+        }
+        if let b = badge["sugar"], (b == "ok" || b == "good" || b == "low"),
+           lower.contains("moderate sugar") {
+            return "sugar badge contradiction"
+        }
+        if let b = badge["sugar"], b == "high",
+           lower.contains("moderate sugar") {
+            return "sugar badge contradiction"
+        }
+        for (nutrient, claimed, phrases) in claims {
+            for phrase in phrases where lower.contains(phrase) {
+                if contradicts(nutrient, claimed: claimed) {
+                    return "\(nutrient) badge contradiction"
+                }
+            }
+        }
         return nil
     }
 

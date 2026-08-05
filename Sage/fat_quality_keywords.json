@@ -1,0 +1,44 @@
+{
+  "tier_high": [
+    "extra virgin olive oil", "extra-virgin olive oil", "olive oil",
+    "azeite de oliva extravirgem", "azeite de oliva extra virgem", "azeite",
+    "olio extravergine di oliva", "olio di oliva",
+    "avocado oil", "óleo de abacate", "olio di avocado",
+    "virgin coconut oil", "coconut oil", "óleo de coco", "olio di cocco",
+    "butter", "unsalted butter", "salted butter", "manteiga", "burro",
+    "cream", "creme de leite", "nata", "panna",
+    "ghee", "clarified butter", "manteiga ghee",
+    "tallow", "beef tallow", "sebo",
+    "lard", "banha", "strutto",
+    "duck fat",
+    "cocoa butter", "manteiga de cacau", "burro di cacao",
+    "palm fruit oil",
+    "almond", "walnut", "hazelnut", "cashew", "pistachio", "peanut",
+    "amêndoa", "nozes", "avelã", "castanha", "pistache",
+    "mandorla", "nocciola", "pistacchio",
+    "sesame", "chia", "flax", "linseed", "sunflower seed", "pumpkin seed"
+  ],
+  "tier_low": [
+    "soybean oil", "soya oil", "óleo de soja", "olio di soia",
+    "canola oil", "rapeseed oil", "óleo de canola", "óleo de colza", "olio di colza",
+    "corn oil", "óleo de milho", "olio di mais", "olio di mais",
+    "sunflower oil", "óleo de girassol", "olio di girasole",
+    "safflower oil",
+    "cottonseed oil", "óleo de algodão",
+    "grapeseed oil", "óleo de semente de uva",
+    "rice bran oil",
+    "vegetable oil", "óleo vegetal", "olio vegetale", "olio di semi",
+    "shortening", "gordura vegetal"
+  ],
+  "tier_zero": [
+    "partially hydrogenated", "parcialmente hidrogenad", "parzialmente idrogenat",
+    "hydrogenated", "hidrogenad", "idrogenat",
+    "interesterified", "interesterificad", "interesterificat"
+  ],
+  "refining_markers": [
+    "refined", "refinado", "raffinato",
+    "bleached", "branqueado", "sbiancato",
+    "deodorized", "desodorizado", "deodorato",
+    "rbd"
+  ]
+}

@@ -30,6 +30,29 @@ enum ProductImageStyle: Equatable {
     }
 }
 
+// MARK: - Decoded-image memory cache
+
+/// Keeps recently decoded originals in RAM so list/search rows that scroll
+/// off-screen (or reappear after a re-query) don't pay URLSession + UIImage
+/// decode again. URLCache still owns the bytes on disk.
+enum ProductImageMemoryCache {
+    private static let cache: NSCache<NSString, UIImage> = {
+        let c = NSCache<NSString, UIImage>()
+        c.countLimit = 150
+        c.totalCostLimit = 40 * 1024 * 1024
+        return c
+    }()
+
+    static func image(for url: URL) -> UIImage? {
+        cache.object(forKey: url.absoluteString as NSString)
+    }
+
+    static func store(_ image: UIImage, for url: URL) {
+        let cost = image.cgImage.map { $0.bytesPerRow * $0.height } ?? 0
+        cache.setObject(image, forKey: url.absoluteString as NSString, cost: cost)
+    }
+}
+
 // MARK: - ProductImageView
 
 /// Shared product photo: glyph placeholder → URLCache original → crossfade cutout.
@@ -140,6 +163,29 @@ struct ProductImageView: View {
                 return
             }
 
+            // Decoded original already in RAM (scroll-off / re-search).
+            if let cached = ProductImageMemoryCache.image(for: url) {
+                if Task.isCancelled { return }
+                await MainActor.run {
+                    withAnimation(.easeInOut(duration: 0.18)) {
+                        original = cached
+                    }
+                }
+                guard processCutout else {
+                    await MainActor.run { settled = true }
+                    return
+                }
+                let processed = await ProductImageProcessor.shared.process(cached, url: url)
+                if Task.isCancelled { return }
+                await MainActor.run {
+                    withAnimation(.easeInOut(duration: 0.22)) {
+                        cutout = processed
+                        settled = true
+                    }
+                }
+                return
+            }
+
             do {
                 let (data, response) = try await URLSession.shared.data(from: url)
                 if Task.isCancelled { return }
@@ -148,6 +194,7 @@ struct ProductImageView: View {
                     await MainActor.run { settled = true }
                     return
                 }
+                ProductImageMemoryCache.store(image, for: url)
                 await MainActor.run {
                     withAnimation(.easeInOut(duration: 0.18)) {
                         original = image

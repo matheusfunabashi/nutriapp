@@ -5,6 +5,7 @@ struct SearchView: View {
     /// Called with the barcode of the tapped hit — ContentView runs the same
     /// lookup → score → /explain pipeline as a camera scan.
     let onSelect: (String) -> Void
+    var onTapScan: (() -> Void)? = nil
 
     private enum Phase: Equatable {
         case idle          // under 2 chars typed
@@ -73,10 +74,23 @@ struct SearchView: View {
                 .tint(store.accent)
                 .font(.sageRegular(13))
         case .empty:
-            ContentUnavailableView.search(text: query.trimmingCharacters(in: .whitespaces))
+            ContentUnavailableView {
+                Label("No products found", systemImage: "magnifyingglass")
+            } description: {
+                Text("Try another name or brand — or scan the label instead.")
+            } actions: {
+                if let onTapScan {
+                    Button("Scan a product", action: onTapScan)
+                        .buttonStyle(.borderedProminent)
+                        .tint(store.accent)
+                }
+            }
         case .failed:
-            ContentUnavailableView("Search failed", systemImage: "wifi.exclamationmark",
-                                   description: Text("Check your connection and try again."))
+            ContentUnavailableView {
+                Label("Couldn't reach the catalog", systemImage: "wifi.exclamationmark")
+            } description: {
+                Text("Check your connection and try again.")
+            }
         case .idle, .results:
             EmptyView()
         }
@@ -170,16 +184,19 @@ private struct SearchHitRow: View {
         .buttonStyle(.plain)
     }
 
-    /// No score exists before the lookup, so this is a plain photo tile with
-    /// the generic glyph as loading/failure/no-image fallback. Search is
-    /// US-only, so the backend `/images/{barcode}` pack shot (Kroger → OFF)
-    /// resolves — the same good image the scan detail shows.
+    /// Prefer the OFF thumb already on the search hit — it's a small CDN URL
+    /// that arrives with the typeahead payload. Falling back to `/images/{barcode}`
+    /// only when OFF has no photo; that path is a Worker lazy-resolve and is
+    /// too slow to fire for every row. No Vision cutout on 44pt tiles.
     private var thumb: some View {
-        ProductImageView(
-            url: URL(string: BackendService.productImageURL(barcode: hit.code)),
+        let offThumb = hit.imageURL?.trimmingCharacters(in: .whitespacesAndNewlines)
+        let urlString = (offThumb?.isEmpty == false ? offThumb : nil)
+            ?? BackendService.productImageURL(barcode: hit.code)
+        return ProductImageView(
+            url: URL(string: urlString),
             style: .fixed(44),
             glyph: "🛒",
-            processCutout: true
+            processCutout: false
         )
     }
 }
