@@ -3,9 +3,13 @@ import SwiftUI
 struct HistoryView: View {
     @EnvironmentObject var store: AppStore
     let onOpenProduct: (String) -> Void
+    var onTapScan: (() -> Void)? = nil
 
     @State private var filter: Filter = .all
     @State private var confirmingClear = false
+    /// Edges for `.sensoryFeedback` — bumped on clear-all and swipe-delete.
+    @State private var clearedTick = 0
+    @State private var deletedTick = 0
 
     enum Filter: String, CaseIterable { case all, good, bad }
 
@@ -34,26 +38,39 @@ struct HistoryView: View {
                             .swipeActions {
                                 Button("Delete", systemImage: "trash", role: .destructive) {
                                     store.deleteHistory(h)
+                                    deletedTick &+= 1
                                 }
                             }
                         }
                     }
                 }
             }
-
-            if groupedDays.isEmpty {
-                ContentUnavailableView(
-                    filter == .all ? "Nothing here yet" : "No matches",
-                    systemImage: "leaf",
-                    description: Text(filter == .all
-                                      ? "Scan a product to see it in your history."
-                                      : "No scans match this filter yet.")
-                )
-                .listRowBackground(Color.clear)
-                .listRowSeparator(.hidden)
-            }
         }
         .sageListStyle()
+        .overlay {
+            if groupedDays.isEmpty {
+                ContentUnavailableView {
+                    Label(filter == .all ? "Nothing here yet" : "Nothing in this filter",
+                          systemImage: "leaf")
+                } description: {
+                    Text(filter == .all
+                         ? "Scan a food label and it'll show up here."
+                         : "Try All, or scan something new.")
+                } actions: {
+                    if filter == .all {
+                        if let onTapScan {
+                            Button("Scan a product", action: onTapScan)
+                                .buttonStyle(.borderedProminent)
+                                .tint(store.accent)
+                        }
+                    } else {
+                        Button("Show all") { filter = .all }
+                            .buttonStyle(.borderedProminent)
+                            .tint(store.accent)
+                    }
+                }
+            }
+        }
         .navigationTitle("History")
         .toolbar {
             if !store.history.isEmpty {
@@ -72,11 +89,16 @@ struct HistoryView: View {
         // destructive confirmation rather than firing straight from the menu.
         .confirmationDialog("Clear all scan history?",
                             isPresented: $confirmingClear, titleVisibility: .visible) {
-            Button("Clear History", role: .destructive) { store.clearHistory() }
+            Button("Clear History", role: .destructive) {
+                store.clearHistory()
+                clearedTick &+= 1
+            }
             Button("Cancel", role: .cancel) { }
         } message: {
             Text("Your saved products are kept — only the history feed is cleared.")
         }
+        .sensoryFeedback(.warning, trigger: clearedTick)
+        .sensoryFeedback(.impact(weight: .light), trigger: deletedTick)
     }
 
     private func label(for f: Filter) -> String {

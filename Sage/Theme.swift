@@ -87,10 +87,10 @@ enum ScoreBandColor {
     /// Excellent — deep green (brand / nutrient-good family).
     static let excellent = "1F8A5B"
     static let excellentMid = "2BA66D"
-    /// Good — lighter, less-saturated green (readable at ~20pt ring).
-    static let good = "3FA870"
-    static let goodMid = "55BC84"
-    /// OK — amber/gold formerly used for Good.
+    /// Good — solid mid green (must read as green, not amber).
+    static let good = "2F9E66"
+    static let goodMid = "3FB87A"
+    /// OK — amber/gold.
     static let ok = "B0832A"
     static let okMid = "D4A02D"
     /// Bad — saturated red.
@@ -261,6 +261,8 @@ final class AppStore: ObservableObject {
         }
         invalidateAndRescoreForV506IfNeeded()
         invalidateAndRescoreForV507IfNeeded()
+        invalidateAndRescoreForV509IfNeeded()
+        invalidateAndRescoreForV510IfNeeded()
     }
 
     /// Decode a stored snapshot, migrating legacy `deltaReason` → `overview`.
@@ -306,6 +308,25 @@ final class AppStore: ObservableObject {
         guard !UserDefaults.standard.bool(forKey: key) else { return }
         rescoreAll()
         UserDefaults.standard.set(true, forKey: key)
+    }
+
+    /// One-shot V5.0.9 — ice_cream ingredient integrity + UPF band display caps.
+    private func invalidateAndRescoreForV509IfNeeded() {
+        let key = "rulesetV509Rescored"
+        guard !UserDefaults.standard.bool(forKey: key) else { return }
+        rescoreAll()
+        UserDefaults.standard.set(true, forKey: key)
+        UserDefaults.standard.set(true, forKey: "overviewExpV9Invalidated")
+    }
+
+    /// One-shot V5.1.0 — Real Food / Fat Quality axes.
+    private func invalidateAndRescoreForV510IfNeeded() {
+        let key = "rulesetV510Rescored"
+        guard !UserDefaults.standard.bool(forKey: key) else { return }
+        guard RulesetStore.v510Enabled else { return }
+        rescoreAll()
+        UserDefaults.standard.set(true, forKey: key)
+        UserDefaults.standard.set(true, forKey: "overviewExpV9Invalidated")
     }
 
     private func loadHistory() {
@@ -355,6 +376,7 @@ final class AppStore: ObservableObject {
                 unscored.bindingCap = nil
                 unscored.overallFiredCaps = nil
                 unscored.overallBindingCap = nil
+                unscored.overallBandCap = nil
                 unscored.bonuses = []
                 updated = unscored
             case .unsupported, .insufficientData:

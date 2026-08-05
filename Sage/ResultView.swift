@@ -195,14 +195,14 @@ struct ResultView: View {
                     .accessibilityLabel("Organic certified")
             }
             HStack(alignment: .top, spacing: 12) {
+                // Band color/label always follow the number — same cuts everywhere.
                 scorePanel(title: "OVERALL",
                            score: liveProduct.overallScore ?? 0,
                            ringColor: scoreColor(liveProduct.overallScore ?? 0),
                            emphasized: false, dark: dark)
                 scorePanel(title: "YOUR SCORE",
                            score: liveProduct.yourScore ?? 0,
-                           ringColor: yourScoreIsWorstSignal ? Color.scoreBad
-                                                             : scoreColor(liveProduct.yourScore ?? 0),
+                           ringColor: scoreColor(liveProduct.yourScore ?? 0),
                            emphasized: true, dark: dark,
                            bindingCap: liveProduct.bindingCap)
             }
@@ -274,8 +274,12 @@ struct ResultView: View {
 
     private func scorePanel(title: String, score: Int, ringColor: Color,
                             emphasized: Bool, dark: Bool,
-                            bindingCap: ScoreCap? = nil) -> some View {
-        let label = scoreLabel(score)
+                            bindingCap: ScoreCap? = nil,
+                            bandLabelOverride: String? = nil) -> some View {
+        let label = bandLabelOverride ?? scoreLabel(score)
+        // Cap chips only under YOUR SCORE (diet/avoid). Band color/label always
+        // follow the number via scoreLabel / scoreColor.
+        let showCapChip = emphasized && bindingCap != nil
         let panelFill: Color = emphasized
             ? ringColor.opacity(dark ? 0.14 : 0.06)
             : (dark ? Color.white.opacity(0.04) : Color.black.opacity(0.03))
@@ -289,7 +293,7 @@ struct ResultView: View {
                 .foregroundColor(.white)
                 .padding(.horizontal, 12).padding(.vertical, 5)
                 .background(Capsule().fill(ringColor))
-            if emphasized, let cap = bindingCap {
+            if showCapChip, let cap = bindingCap {
                 Text("Capped: \(cap.shortLabel)")
                     .font(.sageSemiBold(10))
                     .foregroundColor(Color.cautionMuted)
@@ -596,7 +600,9 @@ struct ResultView: View {
     }
 
     private func additivesCard(dark: Bool) -> some View {
-        CardView() {
+        let sweeteners = IngredientIntegrity.sweetenerSystemMatches(
+            ingredientsText: liveProduct.ingredientsText)
+        return CardView() {
             VStack(spacing: 0) {
                 if product.additiveIngredientTextMissing == true {
                     HStack(spacing: 10) {
@@ -606,7 +612,7 @@ struct ResultView: View {
                             .foregroundColor(Theme.inkSecondary)
                     }
                     .padding(.horizontal, 16).padding(.vertical, 14)
-                } else if product.additives.isEmpty {
+                } else if product.additives.isEmpty && sweeteners.isEmpty {
                     HStack(spacing: 10) {
                         RiskDot(risk: .low)
                         Text("No additives detected")
@@ -615,19 +621,53 @@ struct ResultView: View {
                     }
                     .padding(.horizontal, 16).padding(.vertical, 14)
                 } else {
-                    SeverityBar(additives: product.additives, allowAlarmRed: !yourScoreIsWorstSignal)
-                        .padding(.horizontal, 16).padding(.vertical, 12)
-                        .overlay(alignment: .bottom) {
+                    if !product.additives.isEmpty {
+                        SeverityBar(additives: product.additives, allowAlarmRed: !yourScoreIsWorstSignal)
+                            .padding(.horizontal, 16).padding(.vertical, 12)
+                            .overlay(alignment: .bottom) {
+                                Theme.hairline.frame(height: 0.5)
+                            }
+                        ForEach(Array(product.additives.enumerated()), id: \.element.id) { (i, a) in
+                            Button {
+                                selectedAdditive = a
+                            } label: {
+                                AdditiveRow(additive: a, divider: i > 0, dark: dark,
+                                            allowAlarmRed: !yourScoreIsWorstSignal)
+                            }
+                            .buttonStyle(.plain)
+                        }
+                    }
+                    if !sweeteners.isEmpty {
+                        if !product.additives.isEmpty {
                             Theme.hairline.frame(height: 0.5)
+                                .padding(.horizontal, 16)
                         }
-                    ForEach(Array(product.additives.enumerated()), id: \.element.id) { (i, a) in
-                        Button {
-                            selectedAdditive = a
-                        } label: {
-                            AdditiveRow(additive: a, divider: i > 0, dark: dark,
-                                        allowAlarmRed: !yourScoreIsWorstSignal)
+                        HStack(alignment: .top, spacing: 10) {
+                            Image(systemName: "info.circle.fill")
+                                .font(.sageSemiBold(14))
+                                .foregroundColor(Theme.inkSecondary)
+                            VStack(alignment: .leading, spacing: 4) {
+                                HStack(spacing: 8) {
+                                    Text("Sweetener system · \(sweeteners.count) detected")
+                                        .font(.sageSemiBold(14))
+                                        .foregroundColor(Theme.ink)
+                                    Text("INFO")
+                                        .font(.sageBold(9)).tracking(0.6)
+                                        .foregroundColor(Theme.inkSecondary)
+                                        .padding(.horizontal, 7).padding(.vertical, 3)
+                                        .background(
+                                            Capsule().fill(Theme.inkSecondary.opacity(0.12))
+                                        )
+                                }
+                                Text(sweeteners.map { $0.capitalized }.joined(separator: ", "))
+                                    .font(.sageRegular(12))
+                                    .foregroundColor(Theme.inkSecondary)
+                            }
+                            Spacer(minLength: 0)
                         }
-                        .buttonStyle(.plain)
+                        .padding(.horizontal, 16).padding(.vertical, 12)
+                        .accessibilityElement(children: .combine)
+                        .accessibilityLabel("Sweetener system, \(sweeteners.count) detected: \(sweeteners.joined(separator: ", "))")
                     }
                 }
             }

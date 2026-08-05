@@ -69,6 +69,7 @@ struct TopRatedListView: View {
     @EnvironmentObject var store: AppStore
     let shelf: SageCategory
     let onOpenProduct: (Product) -> Void
+    var onTapScan: (() -> Void)? = nil
 
     @State private var items: [Alternative] = []
     @State private var loaded = false
@@ -85,9 +86,17 @@ struct TopRatedListView: View {
         .overlay {
             if items.isEmpty {
                 if loaded {
-                    ContentUnavailableView("No rated products yet",
-                                           systemImage: "trophy",
-                                           description: Text("Nothing in this category has enough data to rank."))
+                    ContentUnavailableView {
+                        Label("Nothing to rank yet", systemImage: "trophy")
+                    } description: {
+                        Text("This category doesn't have enough scored products yet.")
+                    } actions: {
+                        if let onTapScan {
+                            Button("Scan a product", action: onTapScan)
+                                .buttonStyle(.borderedProminent)
+                                .tint(store.accent)
+                        }
+                    }
                 } else {
                     ProgressView().tint(store.accent)
                 }

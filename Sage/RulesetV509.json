@@ -1,5 +1,5 @@
 {
-  "version": "2026.07-v5.1.0",
+  "version": "2026.07-v5.0.9",
   "bands": {
     "excellent": 75,
     "good": 55,
@@ -162,15 +162,15 @@
     "general": [
       {
         "rule": "S1",
-        "w": 20
+        "w": 24
       },
       {
         "rule": "S2",
-        "w": 22
+        "w": 28
       },
       {
         "rule": "S3",
-        "w": 8,
+        "w": 14,
         "variant": "foods"
       },
       {
@@ -179,62 +179,46 @@
       },
       {
         "rule": "S5",
-        "w": 4
+        "w": 8
       },
       {
         "rule": "S12",
-        "w": 11
+        "w": 13
       },
       {
         "rule": "S13",
         "w": 5
-      },
-      {
-        "rule": "S14",
-        "w": 14
-      },
-      {
-        "rule": "S15",
-        "w": 8
       }
     ],
     "snacks": [
       {
         "rule": "S1",
-        "w": 20
+        "w": 26
       },
       {
         "rule": "S2",
-        "w": 24
+        "w": 28
       },
       {
         "rule": "S3",
-        "w": 10,
+        "w": 12,
         "variant": "foods"
       },
       {
         "rule": "S4",
-        "w": 12
+        "w": 16
       },
       {
         "rule": "S5",
-        "w": 6
+        "w": 10
       },
       {
         "rule": "S12",
-        "w": 4
+        "w": 5
       },
       {
         "rule": "S13",
-        "w": 2
-      },
-      {
-        "rule": "S14",
-        "w": 14
-      },
-      {
-        "rule": "S15",
-        "w": 8
+        "w": 3
       }
     ],
     "drinks": [
@@ -271,11 +255,11 @@
     "tea_coffee": [
       {
         "rule": "S1",
-        "w": 28
+        "w": 34
       },
       {
         "rule": "S2",
-        "w": 24
+        "w": 28
       },
       {
         "rule": "brewMaterial",
@@ -283,26 +267,22 @@
       },
       {
         "rule": "S3",
-        "w": 8,
+        "w": 12,
         "variant": "foods"
       },
       {
         "rule": "S12",
-        "w": 14
-      },
-      {
-        "rule": "S14",
         "w": 14
       }
     ],
     "plant_milk": [
       {
         "rule": "S1",
-        "w": 20
+        "w": 26
       },
       {
         "rule": "S10",
-        "w": 16
+        "w": 18
       },
       {
         "rule": "contaminantRisk",
@@ -310,47 +290,39 @@
       },
       {
         "rule": "S3",
-        "w": 10,
+        "w": 16,
         "variant": "drinks"
       },
       {
         "rule": "S5",
-        "w": 4
+        "w": 6
       },
       {
         "rule": "S12",
-        "w": 12
-      },
-      {
-        "rule": "S2",
-        "w": 10
-      },
-      {
-        "rule": "S14",
         "w": 14
       },
       {
-        "rule": "S15",
-        "w": 6
+        "rule": "S2",
+        "w": 12
       }
     ],
     "dairy_milk": [
       {
         "rule": "S1",
-        "w": 24
+        "w": 28
       },
       {
         "rule": "dairyProcessing",
-        "w": 10
+        "w": 12
       },
       {
         "rule": "S3",
-        "w": 6,
+        "w": 12,
         "variant": "foods"
       },
       {
         "rule": "S5",
-        "w": 6
+        "w": 10
       },
       {
         "rule": "S2",
@@ -358,64 +330,48 @@
       },
       {
         "rule": "S12",
-        "w": 20
+        "w": 22
       },
       {
         "rule": "S13",
-        "w": 8
-      },
-      {
-        "rule": "S14",
-        "w": 14
-      },
-      {
-        "rule": "S15",
-        "w": 6
+        "w": 10
       }
     ],
     "yogurt_cheese": [
       {
         "rule": "S1",
-        "w": 24
+        "w": 28
       },
       {
         "rule": "dairyProcessing",
-        "w": 8
+        "w": 10
       },
       {
         "rule": "S3",
-        "w": 10,
+        "w": 16,
         "variant": "yogurt"
       },
       {
         "rule": "S4",
-        "w": 8
+        "w": 10
       },
       {
         "rule": "S5",
-        "w": 8
+        "w": 12
       },
       {
         "rule": "S12",
-        "w": 14
+        "w": 16
       },
       {
         "rule": "S13",
         "w": 8
-      },
-      {
-        "rule": "S14",
-        "w": 14
-      },
-      {
-        "rule": "S15",
-        "w": 6
       }
     ],
     "breads": [
       {
         "rule": "S1",
-        "w": 18
+        "w": 24
       },
       {
         "rule": "wholeGrain",
@@ -423,129 +379,47 @@
       },
       {
         "rule": "S3",
-        "w": 8,
+        "w": 14,
         "variant": "bread"
-      },
-      {
-        "rule": "S4",
-        "w": 8
-      },
-      {
-        "rule": "S2",
-        "w": 16
-      },
-      {
-        "rule": "S12",
-        "w": 12
-      },
-      {
-        "rule": "S13",
-        "w": 4
-      },
-      {
-        "rule": "S14",
-        "w": 14
-      },
-      {
-        "rule": "S15",
-        "w": 8
-      }
-    ],
-    "ice_cream": [
-      {
-        "rule": "S1",
-        "w": 20
-      },
-      {
-        "rule": "S3",
-        "w": 16,
-        "variant": "icecream"
-      },
-      {
-        "rule": "S5",
-        "w": 10,
-        "variant": "soft"
-      },
-      {
-        "rule": "S2",
-        "w": 20
-      },
-      {
-        "rule": "S12",
-        "w": 6
-      },
-      {
-        "rule": "S13",
-        "w": 4
-      },
-      {
-        "rule": "S14",
-        "w": 16
-      },
-      {
-        "rule": "S15",
-        "w": 8
-      }
-    ],
-    "meat": [
-      {
-        "rule": "S1",
-        "w": 30
-      },
-      {
-        "rule": "S2",
-        "w": 14
       },
       {
         "rule": "S4",
         "w": 10
       },
       {
-        "rule": "S5",
-        "w": 6
-      },
-      {
-        "rule": "S12",
-        "w": 14
-      },
-      {
-        "rule": "S13",
-        "w": 4
-      },
-      {
-        "rule": "S14",
-        "w": 14
-      },
-      {
-        "rule": "S15",
-        "w": 8
-      }
-    ],
-    "whole_foods": [
-      {
         "rule": "S2",
         "w": 20
       },
       {
         "rule": "S12",
-        "w": 22,
-        "variant": "produce"
+        "w": 14
+      },
+      {
+        "rule": "S13",
+        "w": 6
+      }
+    ],
+    "ice_cream": [
+      {
+        "rule": "S1",
+        "w": 26
       },
       {
         "rule": "S3",
-        "w": 14,
-        "variant": "foods"
-      },
-      {
-        "rule": "S1",
-        "w": 8
-      },
-      {
-        "rule": "S4",
-        "w": 6
+        "w": 20,
+        "variant": "icecream"
       },
       {
         "rule": "S5",
+        "w": 14,
+        "variant": "soft"
+      },
+      {
+        "rule": "S2",
+        "w": 22
+      },
+      {
+        "rule": "S12",
         "w": 8
       },
       {
@@ -554,38 +428,88 @@
       },
       {
         "rule": "S14",
-        "w": 16
+        "w": 4
       }
     ],
-    "fats": [
+    "meat": [
       {
-        "rule": "S15",
-        "w": 34
-      },
-      {
-        "rule": "S5",
-        "w": 18,
-        "variant": "fats"
+        "rule": "S1",
+        "w": 40
       },
       {
         "rule": "S2",
-        "w": 14
-      },
-      {
-        "rule": "S1",
-        "w": 12
-      },
-      {
-        "rule": "S14",
-        "w": 12
+        "w": 16
       },
       {
         "rule": "S4",
-        "w": 6
+        "w": 14
+      },
+      {
+        "rule": "S5",
+        "w": 10
+      },
+      {
+        "rule": "S12",
+        "w": 16
       },
       {
         "rule": "S13",
         "w": 4
+      }
+    ],
+    "whole_foods": [
+      {
+        "rule": "S2",
+        "w": 24
+      },
+      {
+        "rule": "S12",
+        "w": 24,
+        "variant": "produce"
+      },
+      {
+        "rule": "S3",
+        "w": 18,
+        "variant": "foods"
+      },
+      {
+        "rule": "S1",
+        "w": 10
+      },
+      {
+        "rule": "S4",
+        "w": 8
+      },
+      {
+        "rule": "S5",
+        "w": 10
+      },
+      {
+        "rule": "S13",
+        "w": 6
+      }
+    ],
+    "fats": [
+      {
+        "rule": "S5",
+        "w": 54,
+        "variant": "fats"
+      },
+      {
+        "rule": "S2",
+        "w": 16
+      },
+      {
+        "rule": "S1",
+        "w": 12
+      },
+      {
+        "rule": "S4",
+        "w": 10
+      },
+      {
+        "rule": "S13",
+        "w": 8
       }
     ]
   },
@@ -792,22 +716,6 @@
     },
     {
       "match": "sunflower-oils",
-      "profile": "fats"
-    },
-    {
-      "match": "rapeseed-oils",
-      "profile": "fats"
-    },
-    {
-      "match": "canola-oils",
-      "profile": "fats"
-    },
-    {
-      "match": "soybean-oils",
-      "profile": "fats"
-    },
-    {
-      "match": "seed-oils",
       "profile": "fats"
     },
     {
@@ -1760,7 +1668,7 @@
       "driverKind": "merit"
     },
     "S14": {
-      "displayName": "real food",
+      "displayName": "ingredient integrity",
       "driverKind": "merit"
     },
     "authenticity": {
@@ -1790,16 +1698,12 @@
     "wholeGrain": {
       "displayName": "whole grain content",
       "driverKind": "merit"
-    },
-    "S15": {
-      "displayName": "fat quality",
-      "driverKind": "merit"
     }
   },
   "contaminantRisk": {
     "riceCap": 0.4
   },
   "flags": {
-    "rulesetV510Enabled": true
+    "rulesetV510Enabled": false
   }
 }

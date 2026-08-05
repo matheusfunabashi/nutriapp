@@ -44,6 +44,10 @@ struct ContentView: View {
     @Environment(\.colorScheme) private var colorScheme
 
     @State private var tab: AppTab = .home
+    /// Last tab that actually has content. `.scan` is an action, not a page —
+    /// we keep this so we can snap selection back when TabView briefly lands
+    /// on the empty Scan slot (which otherwise shows a blank white screen).
+    @State private var lastContentTab: AppTab = .home
     /// One navigation stack per tab — switching tabs preserves where you were,
     /// which is the behavior every other iOS app has.
     @State private var homePath: [Overlay] = []
@@ -61,6 +65,8 @@ struct ContentView: View {
     @State private var lookupError: String? = nil
     /// Bumped on every completed scan so `sensoryFeedback` has an edge to fire on.
     @State private var scanFeedback: ScanOutcome? = nil
+    /// Success haptic for non-scan milestones (search open, onboarding done).
+    @State private var confirmTick = 0
 
     private enum ScanOutcome: Equatable { case found(String), failed }
 
@@ -72,27 +78,31 @@ struct ContentView: View {
     private let backend = BackendService()
 
     var body: some View {
-        if !hasCompletedOnboarding {
-            OnboardingFlow {
-                withAnimation(.easeInOut(duration: 0.3)) {
-                    hasCompletedOnboarding = true
+        Group {
+            if !hasCompletedOnboarding {
+                OnboardingFlow {
+                    withAnimation(.easeInOut(duration: 0.3)) {
+                        hasCompletedOnboarding = true
+                    }
+                    confirmTick &+= 1
                 }
-            }
-            .transition(.opacity)
-        } else {
-            mainContent
                 .transition(.opacity)
-                // Fire-and-forget ruleset refresh (SCORING_V4.md §11): never
-                // blocks anything; offline silently keeps the current tables.
-                .task {
-                    RulesetStore.refreshInBackground(backend: backend)
-                    AlternativesStore.refreshInBackground(backend: backend)
-                }
+            } else {
+                mainContent
+                    .transition(.opacity)
+                    // Fire-and-forget ruleset refresh (SCORING_V4.md §11): never
+                    // blocks anything; offline silently keeps the current tables.
+                    .task {
+                        RulesetStore.refreshInBackground(backend: backend)
+                        AlternativesStore.refreshInBackground(backend: backend)
+                    }
+            }
         }
+        .sensoryFeedback(.success, trigger: confirmTick)
     }
 
     private var mainContent: some View {
-        TabView(selection: tabSelection) {
+        TabView(selection: $tab) {
             Tab(AppTab.home.label, systemImage: AppTab.home.icon, value: AppTab.home) {
                 stack($homePath) {
                     ScannerHomeView(
@@ -110,14 +120,20 @@ struct ContentView: View {
                     )
                 }
             }
-            // Not a destination — selecting it opens the camera and the
-            // previously selected tab stays put (see `tabSelection`).
+            // Action slot, not a destination. Content is a safety net: if
+            // TabView still shows this page (binding races / cover dismiss),
+            // `onAppear` snaps back to the last real tab.
             Tab(AppTab.scan.label, systemImage: AppTab.scan.icon, value: AppTab.scan) {
                 Color.clear
+                    .ignoresSafeArea()
+                    .onAppear { restoreContentTab() }
             }
             Tab(AppTab.pantry.label, systemImage: AppTab.pantry.icon, value: AppTab.pantry) {
                 stack($pantryPath) {
-                    HistoryView(onOpenProduct: { id in openProduct(id) })
+                    HistoryView(
+                        onOpenProduct: { id in openProduct(id) },
+                        onTapScan: { startScan() }
+                    )
                 }
             }
             Tab(AppTab.you.label, systemImage: AppTab.you.icon, value: AppTab.you) {
@@ -132,6 +148,16 @@ struct ContentView: View {
                     )
                 }
             }
+        }
+        // Let TabView select `.scan`, then immediately bounce back — rejecting
+        // the value in a custom Binding leaves the bar on Scan with a blank page.
+        .onChange(of: tab) { _, newValue in
+            guard newValue == .scan else {
+                lastContentTab = newValue
+                return
+            }
+            startScan()
+            restoreContentTab()
         }
         .tint(store.accent)
         .fullScreenCover(isPresented: $showCamera) {
@@ -154,7 +180,7 @@ struct ContentView: View {
             .presentationDetents([.height(320)])
             .presentationDragIndicator(.visible)
         }
-        .alert("Couldn't load that product",
+        .alert("Couldn't find that product",
                isPresented: Binding(get: { lookupError != nil },
                                     set: { if !$0 { lookupError = nil } })) {
             Button("OK", role: .cancel) { lookupError = nil }
@@ -162,11 +188,13 @@ struct ContentView: View {
             Text(lookupError ?? "")
         }
         .overlay {
-            if isLookingUp { LookupOverlay().transition(.opacity) }
+            if isLookingUp {
+                LookupOverlay()
+                    .transition(.opacity)
+            }
         }
         .animation(.easeOut(duration: 0.2), value: isLookingUp)
-        // Scan result lands as a tap; a miss buzzes. This is the one moment in
-        // the app that should be felt, not just seen.
+        // Scan success/failure, plus confirmTick for search open + onboarding done.
         .sensoryFeedback(trigger: scanFeedback) { _, outcome in
             switch outcome {
             case .found:  return .success
@@ -186,16 +214,17 @@ struct ContentView: View {
         }
     }
 
-    /// Routes tab selection. Picking "Scan" is an action, not a destination:
-    /// it opens the camera and leaves the current tab selected.
-    private var tabSelection: Binding<AppTab> {
-        Binding(
-            get: { tab },
-            set: { newValue in
-                guard newValue != .scan else { startScan(); return }
-                tab = newValue
+    /// Routes tab selection. Picking "Scan" is an action, not a destination —
+    /// handled by `.onChange(of: tab)` so TabView never stays on the empty slot.
+    private func restoreContentTab() {
+        let restore = lastContentTab == .scan ? .home : lastContentTab
+        // Async so we run after TabView finishes applying `.scan`; a same-runloop
+        // write is ignored when the bar has already committed to the blank page.
+        DispatchQueue.main.async {
+            if tab == .scan {
+                tab = restore
             }
-        )
+        }
     }
 
     @ViewBuilder private func destination(for screen: Overlay) -> some View {
@@ -210,40 +239,46 @@ struct ContentView: View {
                     onSelectAlternative: { alt in openAlternative(alt) }
                 )
             } else {
-                UnavailableView(title: "Product unavailable",
-                                message: "This product couldn't be loaded.")
+                UnavailableView(title: "Couldn't open this product",
+                                message: "It may have been removed from your library.")
             }
         case .insufficientData(let id):
             if let p = store.products[id] {
                 InsufficientDataView(product: p)
             } else {
-                UnavailableView(title: "Product unavailable",
-                                message: "This product couldn't be loaded.")
+                UnavailableView(title: "Couldn't open this product",
+                                message: "It may have been removed from your library.")
             }
         case .unsupported(let id):
             if let p = store.products[id] {
                 UnsupportedView(product: p)
             } else {
-                UnavailableView(title: "Product unavailable",
-                                message: "This product couldn't be loaded.")
+                UnavailableView(title: "Couldn't open this product",
+                                message: "It may have been removed from your library.")
             }
         case .compare(let aId, let bId):
             if let a = store.products[aId], let b = store.products[bId] {
                 CompareView(a: a, b: b)
             } else {
-                UnavailableView(title: "Comparison unavailable",
-                                message: "One or both products couldn't be loaded.")
+                UnavailableView(title: "Couldn't open this comparison",
+                                message: "One or both products are no longer available.")
             }
         case .topRatedCategory(let raw):
             if let shelf = SageCategory(rawValue: raw) {
-                TopRatedListView(shelf: shelf,
-                                 onOpenProduct: { product in openAlternative(product) })
+                TopRatedListView(
+                    shelf: shelf,
+                    onOpenProduct: { product in openAlternative(product) },
+                    onTapScan: { startScan() }
+                )
             } else {
-                UnavailableView(title: "Category unavailable",
-                                message: "This category couldn't be loaded.")
+                UnavailableView(title: "Couldn't open this category",
+                                message: "Try going back and picking another one.")
             }
         case .search:
-            SearchView(onSelect: { code in openFromSearch(barcode: code) })
+            SearchView(
+                onSelect: { code in openFromSearch(barcode: code) },
+                onTapScan: { startScan() }
+            )
         case .paywall:        PaywallView()
         case .manual:         ManualEntryView()
         case .methodology:    MethodologyView()
@@ -300,10 +335,13 @@ struct ContentView: View {
     private func closeCamera() {
         showCamera = false
         pendingCompareA = nil
+        // Cover dismiss can leave TabView parked on the empty Scan page.
+        if tab == .scan { restoreContentTab() }
     }
 
     private func finishScan(barcode: String) {
         showCamera = false
+        if tab == .scan { restoreContentTab() }
         let compareWith = pendingCompareA
         pendingCompareA = nil
         isLookingUp = true
@@ -375,6 +413,7 @@ struct ContentView: View {
                 isLookingUp = false
                 guard let product = scoreForDisplay(raw) else { return }
                 store.saveProduct(product)
+                confirmTick &+= 1
                 push(.result(productId: product.id, fromScan: false))
                 if !product.isUnscored {
                     store.requestOverview(for: product.id)
@@ -391,10 +430,14 @@ struct ContentView: View {
             return "Something went wrong. Please try again."
         }
         switch e {
-        case .notFound: return "No match for barcode \(barcode). It may not be in the database yet — try manual entry."
-        case .unauthorized: return "Couldn't authenticate with the Sage server. Please update the app."
-        case .network:  return "Network error. Check your connection and try again."
-        case .decoding: return "We found the product but couldn't read its data."
+        case .notFound:
+            return "Barcode \(barcode) isn't in the catalog yet — try searching by name, or enter it manually."
+        case .unauthorized:
+            return "Couldn't authenticate with the Sage server. Please update the app."
+        case .network:
+            return "Couldn't reach the catalog. Check your connection and try again."
+        case .decoding:
+            return "We found the product but couldn't read its data."
         }
     }
 
@@ -485,11 +528,11 @@ struct InsufficientDataView: View {
                     .frame(maxWidth: .infinity)
                     .listRowBackground(Color.clear)
                     .listRowSeparator(.hidden)
-                ContentUnavailableView(
-                    "Not enough data to score",
-                    systemImage: "chart.bar.xaxis",
-                    description: Text("This product isn't fully catalogued yet.")
-                )
+                ContentUnavailableView {
+                    Label("Not enough data to score", systemImage: "chart.bar.xaxis")
+                } description: {
+                    Text("This listing isn't complete enough yet — Sage won't invent a score.")
+                }
                 .listRowBackground(Color.clear)
                 .listRowSeparator(.hidden)
             }
@@ -555,22 +598,70 @@ struct UnsupportedView: View {
 
 // MARK: - Scan lookup feedback
 
+/// Compact branded spinner while `/lookup` runs. Soft veil + rotating accent
+/// arc around the Sage mark — intentional motion only on this one wait.
 struct LookupOverlay: View {
     @EnvironmentObject var store: AppStore
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var spinning = false
+
+    private let ringSize: CGFloat = 72
+    private let lineWidth: CGFloat = 3.5
 
     var body: some View {
         ZStack {
-            Color.black.opacity(0.35).ignoresSafeArea()
-            ProgressView("Looking up product…")
-                .progressViewStyle(.circular)
-                .tint(store.accent)
-                .font(.sageBold(14))
-                .padding(28)
-                .background(.regularMaterial,
-                            in: RoundedRectangle(cornerRadius: 22, style: .continuous))
+            Rectangle()
+                .fill(.ultraThinMaterial)
+                .ignoresSafeArea()
+            Theme.background.opacity(0.45)
+                .ignoresSafeArea()
+
+            VStack(spacing: 18) {
+                if reduceMotion {
+                    ProgressView()
+                        .controlSize(.large)
+                        .tint(store.accent)
+                        .frame(width: ringSize, height: ringSize)
+                } else {
+                    ZStack {
+                        Circle()
+                            .stroke(Theme.ringTrack, lineWidth: lineWidth)
+                            .frame(width: ringSize, height: ringSize)
+
+                        Circle()
+                            .trim(from: 0.08, to: 0.42)
+                            .stroke(
+                                store.accent,
+                                style: StrokeStyle(lineWidth: lineWidth, lineCap: .round)
+                            )
+                            .frame(width: ringSize, height: ringSize)
+                            .rotationEffect(.degrees(spinning ? 360 : 0))
+
+                        SageMark(size: 28, color: store.accent)
+                    }
+                    .frame(width: ringSize, height: ringSize)
+                }
+
+                Text("Finding product…")
+                    .font(.sageBold(14))
+                    .foregroundColor(Theme.inkSecondary)
+            }
+            .padding(.horizontal, 28)
+            .padding(.vertical, 26)
+            .background(
+                RoundedRectangle(cornerRadius: 22, style: .continuous)
+                    .fill(Theme.card)
+            )
+            .cardShadow()
+        }
+        .onAppear {
+            guard !reduceMotion else { return }
+            withAnimation(.linear(duration: 0.85).repeatForever(autoreverses: false)) {
+                spinning = true
+            }
         }
         .accessibilityElement(children: .combine)
-        .accessibilityLabel("Looking up product")
+        .accessibilityLabel("Finding product")
     }
 }
 

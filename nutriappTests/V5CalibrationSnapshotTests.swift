@@ -197,32 +197,59 @@ struct V5CalibrationSnapshotTests {
             #expect(scores[name] == nil)
         }
 
-        // Band / score movers vs V5.0.6 (v5.0.8 cap tweak).
-        var bandChanges: [(name: String, from: Int, to: Int, fromBand: String, toBand: String)] = []
-        for (name, previous) in v506 {
-            let expected = v508Overrides[name] ?? previous
-            #expect(scores[name] == expected,
-                    "snapshot drifted: \(name) expected \(expected) (v5.0.6=\(previous)) now \(scores[name] as Any)")
-            if let live = scores[name], live != previous {
-                bandChanges.append((
-                    name,
-                    previous,
-                    live,
-                    RulesetV4.bundled.bandLabel(previous), // label under same cuts
-                    RulesetV4.bundled.bandLabel(live)
-                ))
+        // V5.1.0 — compare live scores to frozen v5.0.9 baselines.
+        let rs509 = RulesetV4.bundledV509
+        var v509Scores: [String: Int] = [:]
+        print("V5.1.0 vs v5.0.9 calibration:")
+        print("| Product | v5.1.0 | v5.0.9 | Δ | Band |")
+        for p in fixtures {
+            if unscoredNames.contains(p.name) {
+                print("| \(p.name) | unscored | unscored | 0 | — |")
+                continue
             }
+            guard let live = scores[p.name],
+                  let old = ScoringEngineV4.score(p, ruleset: rs509)?.base
+            else { continue }
+            v509Scores[p.name] = old
+            let delta = live - old
+            let dText = delta > 0 ? "+\(delta)" : "\(delta)"
+            print("| \(p.name) | \(live) | \(old) | \(dText) | \(rs.bandLabel(live)) |")
         }
-        print("Band/score changes vs v5.0.6: \(bandChanges)")
-        #expect(bandChanges.map(\.name) == ["margarine"])
-        #expect(scores["margarine"] == 34)
-        #expect(rs.bandLabel(34) == "Bad")
-        #expect(rs.bandLabel(35) == "OK") // cut unchanged; only the cap moved
+
+        let wholeFoods = [
+            "apple", "banana", "chicken breast (no text)", "chicken breast (with text)",
+            "plain green tea", "salted nuts", "unsalted nuts", "dates", "fresh coconut",
+        ]
+        for name in wholeFoods {
+            guard let live = scores[name], let old = v509Scores[name] else { continue }
+            #expect(abs(live - old) <= 4, "whole-food \(name) moved \(live - old)")
+        }
+        if let milk = scores["whole milk"], let old = v509Scores["whole milk"] {
+            #expect(milk >= old, "whole milk must not decrease")
+        }
+        if let coke = scores["Coke"], let diet = scores["Diet Coke"],
+           let cokeOld = v509Scores["Coke"], let dietOld = v509Scores["Diet Coke"] {
+            #expect(coke == cokeOld && diet == dietOld)
+            #expect(diet > coke)
+        }
+        if let evoo = scores["extra-virgin olive oil"],
+           let coco = scores["coconut oil"],
+           let butter = scores["unsalted butter"],
+           let evooOld = v509Scores["extra-virgin olive oil"] {
+            #expect(evoo >= 80)
+            #expect(coco >= 65)
+            #expect(butter >= 62)
+            #expect(evooOld - evoo <= 5) // EVOO should stay excellent
+        }
+        if let marg = scores["margarine"], let margOld = v509Scores["margarine"] {
+            #expect(marg <= margOld)
+        }
 
         #expect(ScoringEngineV4.route(fixtures.first { $0.name == "Jif" }!) == "general")
         #expect(ScoringEngineV4.route(fixtures.first { $0.name == "fresh coconut" }!) == "whole_foods")
         #expect(lines.count == fixtures.count + 2)
-        #expect(rs.version == "2026.07-v5.0.8")
+        #expect(rs.version == "2026.07-v5.1.0")
         #expect(rs.profiles["sweeteners"] == nil)
+        #expect(rs.flags?.rulesetV510Enabled == true)
     }
 }
