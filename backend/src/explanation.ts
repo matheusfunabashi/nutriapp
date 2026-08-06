@@ -45,6 +45,12 @@ const SYSTEM_PROMPT =
   "- If confidence ≥ 0.80 AND every rule is evidenceTier 'data': FORBIDDEN to say " +
   "'where data is thin', 'limited data', 'provisional', or similar.\n" +
   "- Never contradict the displayed nutrient levels. Do not praise sugar/sodium/sat fat when their badge is high.\n" +
+  "- Never call a nutrient 'moderate', 'high', or 'low' contrary to its nutrientLevels badge " +
+  "(e.g. sugar badge OK/GOOD/LOW forbids 'moderate sugar' and 'high sugar').\n" +
+  "- Describe additives ONLY with risk vocabulary from the payload: 'low risk', 'moderate risk', " +
+  "or 'high risk'. NEVER say 'beneficial additives' or 'beneficial' for additives.\n" +
+  "- Mention the top 2 positive and top 2 negative contributors by weighted contribution when present.\n" +
+  "- If a preference hardGate / overallBindingCap fired, it MUST be explained.\n" +
   "- Never invent nutrients, additives, packaging, or medical claims.\n" +
   "- Never use em dashes (—) or en dashes (–). Use separate sentences, commas, or parentheses instead.\n" +
   "- Tone: plain, concrete, confident where data is confident. ≤ 90 words. Address the user as 'you'. " +

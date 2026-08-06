@@ -19,7 +19,7 @@ struct ScoreTierColorTests {
     @Test func bandColorTokensAreUniqueAndMapped() {
         // Excellent = deep green; Good = light green; OK = amber; Bad = red.
         #expect(ScoreBandColor.excellent == "1F8A5B")
-        #expect(ScoreBandColor.good == "3FA870")
+        #expect(ScoreBandColor.good == "2F9E66")
         #expect(ScoreBandColor.ok == "B0832A")
         #expect(ScoreBandColor.bad == "C9442B")
 

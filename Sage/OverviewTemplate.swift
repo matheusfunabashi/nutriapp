@@ -148,26 +148,21 @@ enum OverviewTemplate {
         }
         if topic == "quality labels" { return "no quality certification labels on file" }
         if topic == "certifications" { return "no certification labels on file" }
+        if topic == "real food" || topic == "ingredient integrity" {
+            return "formulation (not made from mostly real ingredients)"
+        }
+        if topic == "fat quality" {
+            return "fat quality (refined or industrial oils)"
+        }
         if topic == "protein and fiber" {
             let n = ctx.nutrientLevels
-            let proteinGood = n.contains(where: { $0.lowercased().contains("protein") && $0.lowercased().contains("high") })
-                || n.contains(where: { $0.lowercased().contains("protein") && $0.lowercased().contains("good") })
-            // Prefer density phrasing when badges are good (V5.0.6 nuts case).
-            // nutrientLevels lines look like "protein: high (20g)" / "fiber: high".
-            let fiberGood = n.contains(where: {
-                $0.lowercased().hasPrefix("fiber") &&
-                ($0.lowercased().contains("high") || $0.lowercased().contains("good"))
-            })
-            let proteinOk = n.contains(where: {
-                $0.lowercased().hasPrefix("protein") &&
-                ($0.lowercased().contains("high") || $0.lowercased().contains("good")
-                 || $0.lowercased().contains("moderate"))
-            })
-            if fiberGood && proteinOk {
-                return "protein and fiber are diluted by calorie density"
-            }
-            // Also check via rules + levels heuristics from prompt lines.
-            if proteinGood || fiberGood {
+            let proteinLine = n.first(where: { $0.lowercased().hasPrefix("protein") })?.lowercased() ?? ""
+            let fiberLine = n.first(where: { $0.lowercased().hasPrefix("fiber") })?.lowercased() ?? ""
+            let proteinStrong = proteinLine.contains("high") || proteinLine.contains("good")
+                || proteinLine.contains("moderate")
+            let fiberGood = fiberLine.contains("high") || fiberLine.contains("good")
+            // Never say "limited protein" when the badge is OK/GOOD/HIGH (V5.0.9).
+            if proteinStrong || fiberGood {
                 return "protein and fiber are diluted by calorie density"
             }
             return "limited protein and fiber credit"

@@ -195,17 +195,24 @@ struct ScannerHomeView: View {
             .padding(.horizontal, 24).padding(.top, 20).padding(.bottom, 10)
 
             if recent.isEmpty {
-                VStack(spacing: 4) {
-                    Text("No scans yet")
-                        .font(.sageSemiBold(14))
-                        .tracking(-0.2)
-                        .foregroundColor(Theme.ink)
-                    Text("Your scanned products will appear here.")
-                        .font(.sageRegular(12))
-                        .foregroundColor(Theme.inkSecondary)
+                VStack(spacing: 12) {
+                    VStack(spacing: 4) {
+                        Text("No scans yet")
+                            .font(.sageSemiBold(14))
+                            .tracking(-0.2)
+                            .foregroundColor(Theme.ink)
+                        Text("Point Sage at a barcode and your recent picks will land here.")
+                            .font(.sageRegular(12))
+                            .foregroundColor(Theme.inkSecondary)
+                            .multilineTextAlignment(.center)
+                    }
+                    Button("Scan a product", action: onTapScan)
+                        .buttonStyle(.borderedProminent)
+                        .tint(store.accent)
+                        .controlSize(.small)
                 }
                 .frame(maxWidth: .infinity)
-                .padding(.vertical, 28).padding(.horizontal, 16)
+                .padding(.vertical, 24).padding(.horizontal, 16)
                 .background(
                     RoundedRectangle(cornerRadius: 18, style: .continuous).fill(Theme.card)
                 )

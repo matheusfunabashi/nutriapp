@@ -109,7 +109,7 @@ struct BackendService {
     /// OFF's text search is occasionally slow enough that the Worker returns a
     /// transient 5xx (502/503/504) or the request errors outright. Those blips
     /// almost always clear on a second try, so we retry once — quietly, before
-    /// the UI ever shows "Search failed". A 401 (bad key) or other 4xx won't fix
+    /// the UI ever shows "Couldn't reach the catalog". A 401 (bad key) or other 4xx won't fix
     /// itself, so those fail fast without a retry.
     func search(_ query: String) async throws -> [SearchHit] {
         let maxAttempts = 2

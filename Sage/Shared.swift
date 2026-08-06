@@ -197,10 +197,11 @@ struct SectionTitle: View {
 
 // MARK: - Tab bar
 
-/// Tab cases drive `TabView` selection. `.scan` carries no destination —
-/// selecting it opens the camera and the previous tab stays selected
-/// (see `ContentView.tabSelection`). The system handles the selected/filled
-/// symbol variants, so there's no `activeIcon` to maintain.
+/// Tab cases drive `TabView` selection. `.scan` is an action tab — selecting it
+/// opens the camera, then selection snaps back to the previous content tab
+/// (see `ContentView.restoreContentTab`). Never leave selection on `.scan`:
+/// its page is empty and reads as a blank white screen. The system handles
+/// selected/filled symbol variants, so there's no `activeIcon` to maintain.
 enum AppTab: String, CaseIterable {
     case home, topRated, scan, pantry, you
 

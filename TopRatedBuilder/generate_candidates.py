@@ -54,6 +54,7 @@ SHELF_TAGS = {
     "instantNoodles": [
         "en:instant-noodles", "en:noodles", "en:dried-meals",
     ],
+    "energyDrinks": ["en:energy-drinks"],
 }
 
 COUNTRY_TAG = {

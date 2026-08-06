@@ -45,6 +45,12 @@ struct TopRatedCategoriesView: View {
                         .scaledToFit()
                         .frame(width: 56, height: 56)
                         .accessibilityHidden(true)
+                } else {
+                    // No pack-shot asset yet (e.g. energy drinks) — show the emoji.
+                    Text(category.emoji)
+                        .font(.sageRegular(34))
+                        .frame(width: 56, height: 56)
+                        .accessibilityHidden(true)
                 }
             }
             .padding(.leading, 14)
@@ -69,6 +75,7 @@ struct TopRatedListView: View {
     @EnvironmentObject var store: AppStore
     let shelf: SageCategory
     let onOpenProduct: (Product) -> Void
+    var onTapScan: (() -> Void)? = nil
 
     @State private var items: [Alternative] = []
     @State private var loaded = false
@@ -85,9 +92,17 @@ struct TopRatedListView: View {
         .overlay {
             if items.isEmpty {
                 if loaded {
-                    ContentUnavailableView("No rated products yet",
-                                           systemImage: "trophy",
-                                           description: Text("Nothing in this category has enough data to rank."))
+                    ContentUnavailableView {
+                        Label("Nothing to rank yet", systemImage: "trophy")
+                    } description: {
+                        Text("This category doesn't have enough scored products yet.")
+                    } actions: {
+                        if let onTapScan {
+                            Button("Scan a product", action: onTapScan)
+                                .buttonStyle(.borderedProminent)
+                                .tint(store.accent)
+                        }
+                    }
                 } else {
                     ProgressView().tint(store.accent)
                 }

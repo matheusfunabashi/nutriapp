@@ -10,8 +10,8 @@ struct SageApp: App {
         // AsyncImage uses URLSession.shared → URLCache.shared. Size the disk
         // cache so list scrolling doesn't refetch product thumbs every time.
         URLCache.shared = URLCache(
-            memoryCapacity: 20 * 1024 * 1024,
-            diskCapacity: 50 * 1024 * 1024,
+            memoryCapacity: 40 * 1024 * 1024,
+            diskCapacity: 100 * 1024 * 1024,
             diskPath: "sage_image_cache"
         )
         Self.configureNavigationBarTypography()
