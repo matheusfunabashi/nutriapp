@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		97122F093023EA7E00B26699 /* SuperwallKit in Frameworks */ = {isa = PBXBuildFile; productRef = 97122F083023EA7E00B26699 /* SuperwallKit */; };
 		TRB001BF001 /* ScoringV4.swift in Sources */ = {isa = PBXBuildFile; fileRef = TRB001SF001 /* ScoringV4.swift */; };
 		TRB001BF002 /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = TRB001SF002 /* Models.swift */; };
 		TRB001BF003 /* OpenFoodFacts.swift in Sources */ = {isa = PBXBuildFile; fileRef = TRB001SF003 /* OpenFoodFacts.swift */; };
@@ -107,6 +108,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				97122F093023EA7E00B26699 /* SuperwallKit in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -207,6 +209,7 @@
 			);
 			name = Sage;
 			packageProductDependencies = (
+				97122F083023EA7E00B26699 /* SuperwallKit */,
 			);
 			productName = Sage;
 			productReference = 975E57812FBA57E1000E9CAF /* Sage.app */;
@@ -318,6 +321,9 @@
 			);
 			mainGroup = 975E57782FBA57E1000E9CAF;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				97122F073023C5B700B26699 /* XCRemoteSwiftPackageReference "Superwall-iOS" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 975E57822FBA57E1000E9CAF /* Products */;
 			projectDirPath = "";
@@ -808,6 +814,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		97122F073023C5B700B26699 /* XCRemoteSwiftPackageReference "Superwall-iOS" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/superwall/Superwall-iOS";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 4.16.1;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		97122F083023EA7E00B26699 /* SuperwallKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 97122F073023C5B700B26699 /* XCRemoteSwiftPackageReference "Superwall-iOS" */;
+			productName = SuperwallKit;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 975E57792FBA57E1000E9CAF /* Project object */;
 }

@@ -1,4 +1,5 @@
 import SwiftUI
+import SuperwallKit
 
 @main
 struct SageApp: App {
@@ -14,6 +15,10 @@ struct SageApp: App {
             diskPath: "sage_image_cache"
         )
         Self.configureNavigationBarTypography()
+
+        // Superwall — remotely-configured hard paywall. This is the PUBLIC key
+        // (safe to ship in the binary): Superwall dashboard → Settings → API Keys.
+        Superwall.configure(apiKey: "pk_otYCM1-X8o13gE9m_PU-v")
     }
 
     /// The navigation bar is UIKit-backed, so `.font(.sage…)` can't reach its

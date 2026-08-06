@@ -1,4 +1,5 @@
 import SwiftUI
+import SuperwallKit
 
 enum Overlay: Identifiable, Hashable {
     case result(productId: String, fromScan: Bool)
@@ -74,6 +75,13 @@ struct ContentView: View {
     // sees the flow exactly once. Set to true the moment the user finishes
     // (or signs in from) the welcome flow.
     @AppStorage("sage.hasCompletedOnboarding") private var hasCompletedOnboarding: Bool = false
+    /// Superwall gate — true only while the user holds the `pro` entitlement.
+    /// Not persisted; Superwall re-checks entitlement on each launch, so a
+    /// lapsed subscriber is re-gated.
+    @State private var hasAccess = false
+    /// Set once Superwall actually presents the paywall, so the fail-open
+    /// timeout knows NOT to auto-unlock a user who's deciding on a live paywall.
+    @State private var paywallShown = false
 
     private let backend = BackendService()
 
@@ -87,7 +95,7 @@ struct ContentView: View {
                     confirmTick &+= 1
                 }
                 .transition(.opacity)
-            } else {
+            } else if hasAccess {
                 mainContent
                     .transition(.opacity)
                     // Fire-and-forget ruleset refresh (SCORING_V4.md §11): never
@@ -96,9 +104,47 @@ struct ContentView: View {
                         RulesetStore.refreshInBackground(backend: backend)
                         AlternativesStore.refreshInBackground(backend: backend)
                     }
+            } else {
+                // Hard paywall gate: only `pro` subscribers get past this splash.
+                // See `gateAccess()` — it presents the `app_access` paywall and
+                // fails open on error/timeout so a Superwall outage can't brick the app.
+                SplashView(accent: store.accent)
+                    .task { gateAccess() }
             }
         }
         .sensoryFeedback(.success, trigger: confirmTick)
+    }
+
+    /// Superwall hard-paywall gate. Presents the `app_access` paywall and grants
+    /// access only when the `pro` entitlement is confirmed — but FAILS OPEN if
+    /// the paywall can't present (error) or nothing resolves in time (config
+    /// never loaded, network hung), so a Superwall/network problem never traps
+    /// the user on the splash. A paywall that *does* present disarms the timeout,
+    /// so someone deciding on a live paywall is never let in for free.
+    private func gateAccess() {
+        let handler = PaywallPresentationHandler()
+        // Paywall came up → the user must act on it; disarm the safety net.
+        handler.onPresent { _ in self.paywallShown = true }
+        // Couldn't present (network / product load / config error) → don't trap.
+        handler.onError { _ in self.grantAccess() }
+        // No audience match / holdout / placement missing → no paywall by design.
+        handler.onSkip { _ in self.grantAccess() }
+
+        Superwall.shared.register(placement: "app_access", handler: handler) {
+            // Runs when the user holds `pro` — now, or the instant they purchase.
+            self.grantAccess()
+        }
+
+        // Safety net: if 8s pass with no paywall on screen and still no access,
+        // the request hung or config never loaded — fail open, don't brick.
+        DispatchQueue.main.asyncAfter(deadline: .now() + 8) {
+            if !self.hasAccess && !self.paywallShown { self.grantAccess() }
+        }
+    }
+
+    private func grantAccess() {
+        guard !hasAccess else { return }
+        withAnimation(.easeInOut(duration: 0.3)) { hasAccess = true }
     }
 
     private var mainContent: some View {
