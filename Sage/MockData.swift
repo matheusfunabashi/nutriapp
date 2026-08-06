@@ -20,7 +20,7 @@ enum MockData {
         dailyStepGoal: 8000,
         objective: "eat healthier",
         restrictions: ["Low-sugar diet"],
-        preferences: ["High protein", "Low sodium"],
+        preferences: ["High protein"],
         unitSystem: "imperial",
         subscriptionStatus: "trial",
         subscriptionDaysLeft: 5,

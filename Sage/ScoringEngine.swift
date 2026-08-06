@@ -219,8 +219,21 @@ enum ScoringEngine {
                                     objective: String,
                                     preferences: [String]) -> [Adjustment] {
         var out: [Adjustment] = []
+        /// One entry per factor key — objective + preference must not both
+        /// emit "ultra-processed" (that double-counted the delta and the
+        /// explain list). Later writes merge points and keep the more
+        /// specific label (preference phrasing wins over the plain driver).
         func add(_ key: FactorKey, _ points: Double, _ label: String?) {
-            guard let label, abs(points) >= 0.5 else { return }   // drop noise
+            guard let label, abs(points) >= 0.5 else { return }
+            if let idx = out.firstIndex(where: { $0.key == key }) {
+                let existing = out[idx]
+                let preferredLabel = label.count >= existing.label.count
+                    ? label : existing.label
+                out[idx] = Adjustment(key: key,
+                                      points: existing.points + points,
+                                      label: preferredLabel)
+                return
+            }
             out.append(Adjustment(key: key, points: points, label: label))
         }
         let sugarLv = n.sugar_g.map(NutrientLevels.sugar)

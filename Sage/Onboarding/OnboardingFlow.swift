@@ -99,8 +99,7 @@ struct OnboardingFlow: View {
         case .welcome:
             OnboardingWelcomeScreen(
                 accent: store.accent,
-                onContinue: state.advance,
-                onSignIn: complete  // placeholder until auth lands
+                onContinue: state.advance
             )
 
         case .marketing:

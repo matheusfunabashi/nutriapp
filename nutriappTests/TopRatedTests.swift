@@ -62,8 +62,38 @@ struct TopRatedTests {
            "nutriments":{"sugars_100g":0,"energy-kcal_100g":1}}
         ]
         """)
-        let items = TopRated.items(from: pool, profile: MockData.user, ruleset: .bundled)
+        let items = TopRated.items(from: pool, profile: MockData.user, ruleset: .bundled,
+                                   markets: ["us"])
         #expect(items.map(\.product.id).sorted() == ["BOTH", "US1"])
         #expect(items.allSatisfy { $0.countries.contains("us") })
+    }
+
+    @Test func energyDrinksTopRatedIsUSOnly() {
+        #expect(TopRated.allowedMarkets(for: .energyDrinks) == ["us"])
+        let pool = candidates("""
+        [
+          {"barcode":"UK1","name":"Prime Punch","brand":"PRIME",
+           "countries":["uk"],"categories_tags":["en:energy-drinks"],
+           "ingredients_text":"water, sugar, caffeine","nova_group":4,
+           "nutriments":{"sugars_100g":0,"energy-kcal_100g":10,"caffeine_100g":0.032}},
+          {"barcode":"CA1","name":"Guru Lite","brand":"Guru",
+           "countries":["ca"],"categories_tags":["en:energy-drinks"],
+           "ingredients_text":"water, organic cane sugar","nova_group":4,
+           "nutriments":{"sugars_100g":5,"energy-kcal_100g":20}},
+          {"barcode":"US1","name":"Celsius Tropical","brand":"CELSIUS",
+           "countries":["us"],"categories_tags":["en:energy-drinks"],
+           "ingredients_text":"carbonated water, caffeine","nova_group":4,
+           "nutriments":{"sugars_100g":0,"energy-kcal_100g":10,"caffeine_100g":0.032}},
+          {"barcode":"USUK","name":"Shared Can","brand":"Global",
+           "countries":["us","uk"],"categories_tags":["en:energy-drinks"],
+           "ingredients_text":"water, caffeine","nova_group":4,
+           "nutriments":{"sugars_100g":0,"energy-kcal_100g":10}}
+        ]
+        """)
+        let items = TopRated.items(from: pool, profile: MockData.user, ruleset: .bundled,
+                                   markets: TopRated.allowedMarkets(for: .energyDrinks))
+        #expect(items.map(\.product.id).sorted() == ["US1", "USUK"])
+        #expect(items.allSatisfy { $0.countries.contains("us") })
+        #expect(!items.contains { $0.product.id == "UK1" || $0.product.id == "CA1" })
     }
 }

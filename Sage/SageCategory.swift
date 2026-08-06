@@ -64,25 +64,24 @@ enum SageCategory: String, CaseIterable, Identifiable, Hashable {
     /// enum for scan→shelf routing / alternatives, but is hidden from browse.
     var topRatedHeroAsset: String? {
         switch self {
-        case .bread:     return "bread-tr"
-        case .cereal:    return "cereal-tr"
-        case .cheese:    return "cheese-tr"
-        case .chips:     return "chips-tr"
-        case .chocolate: return "chocolate-tr"
-        case .iceCream:  return "ice-cream-tr"
-        case .juice:     return "juice-tr"
-        case .milks:     return "milk-tr"
-        case .pasta:     return "pasta-tr"
-        case .snackBars: return "snackbar-tr"
-        case .soda:      return "soda-tr"
-        case .yogurt:    return "yogurt-tr"
-        default:         return nil
+        case .bread:        return "bread-tr"
+        case .cereal:       return "cereal-tr"
+        case .cheese:       return "cheese-tr"
+        case .chips:        return "chips-tr"
+        case .chocolate:    return "chocolate-tr"
+        case .energyDrinks: return "energy-tr"
+        case .iceCream:     return "ice-cream-tr"
+        case .juice:        return "juice-tr"
+        case .milks:        return "milk-tr"
+        case .pasta:        return "pasta-tr"
+        case .snackBars:    return "snackbar-tr"
+        case .soda:         return "soda-tr"
+        case .yogurt:       return "yogurt-tr"
+        default:            return nil
         }
     }
 
-    /// Browse order for the Top Rated grid (two-up cards). Most have a
-    /// `topRatedHeroAsset` pack shot; `energyDrinks` has none yet and falls back
-    /// to its emoji in the card until an asset is added.
+    /// Browse order for the Top Rated grid (two-up cards).
     static let topRatedBrowse: [SageCategory] = [
         .soda, .energyDrinks, .juice, .milks, .yogurt,
         .cheese, .iceCream, .cereal, .bread,

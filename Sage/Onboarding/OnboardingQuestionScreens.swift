@@ -32,7 +32,7 @@ struct OnboardingGoalsScreen: View {
             } header: {
                 OnboardingTitle(
                     title: "What should Sage\nweigh for you?",
-                    subtitle: "This is what makes Your Score yours. Pick everything that applies. You can change it later."
+                    subtitle: "Pick what matters most — or just keep it clean. You can change this anytime in Personalize."
                 )
                 .onboardingListHeader()
             } footer: {

@@ -84,9 +84,10 @@ enum DietaryOptions {
         "Vegan", "Vegetarian", "Pescatarian", "Low-sugar diet",
         "Low-sodium diet", "Gluten-free", "Dairy-free",
     ]
+    /// Soft nudges only — sugar/sodium hard rules live under Restrictions
+    /// ("Low-sugar diet" / "Low-sodium diet"), not duplicated here.
     static let preferences = [
-        "Low sugar", "Low sodium", "Low fat",
-        "High protein", "High fiber", "Organic", "Minimally processed",
+        "Low fat", "High protein", "High fiber", "Organic", "Minimally processed",
     ]
 
     /// Unified chip grid for the onboarding preferences step. Labels must
@@ -107,8 +108,6 @@ enum DietaryOptions {
         .init(id: "Dairy-free",           symbol: "cup.and.saucer.fill",    kind: .restriction),
         .init(id: "Low-sugar diet",       symbol: "cube.fill",              kind: .restriction),
         .init(id: "Low-sodium diet",      symbol: "drop.fill",              kind: .restriction),
-        .init(id: "Low sugar",            symbol: "cube",                   kind: .preference),
-        .init(id: "Low sodium",           symbol: "drop",                   kind: .preference),
         .init(id: "Low fat",              symbol: "chart.bar.fill",         kind: .preference),
         .init(id: "High fiber",           symbol: "circle.hexagongrid.fill", kind: .preference),
         .init(id: "Organic",              symbol: "leaf.circle.fill",       kind: .preference),
@@ -151,23 +150,26 @@ enum OnboardingAllergenOptions {
 
 enum OnboardingGoalOptions {
     struct Goal: Identifiable {
-        /// Must match `DietaryView.goals` / `UserProfile.healthGoals`.
+        /// Stored in `UserProfile.healthGoals` — must match a `multipliers.goal`
+        /// key in the ruleset (lookup is case-insensitive).
         let id: String
         let symbol: String
         let blurb: String
     }
 
+    /// Broad priorities for first-run. Clinical / life-stage goals
+    /// (Pregnancy, Young child, Gut health) live only in Personalize.
     static let all: [Goal] = [
-        .init(id: "Blood sugar",  symbol: "chart.line.downtrend.xyaxis",
-              blurb: "Added sugars and refined carbs weigh heavier"),
-        .init(id: "Heart",        symbol: "heart.fill",
+        .init(id: "Less sugar", symbol: "cube.fill",
+              blurb: "Added sugars and sweet drinks weigh heavier"),
+        .init(id: "Less processed", symbol: "leaf.fill",
+              blurb: "Ultra-processed foods and long additive lists weigh heavier"),
+        .init(id: "More protein", symbol: "flame.fill",
+              blurb: "Protein density weighs heavier"),
+        .init(id: "Heart health", symbol: "heart.fill",
               blurb: "Sodium and saturated fat weigh heavier"),
-        .init(id: "Gut health",   symbol: "leaf.fill",
-              blurb: "Emulsifiers and sweeteners weigh heavier"),
-        .init(id: "Pregnancy",    symbol: "figure.and.child.holdinghands",
-              blurb: "Caffeine and additive limits tighten"),
-        .init(id: "Young child",  symbol: "teddybear.fill",
-              blurb: "Portion limits scale down, dyes get flagged"),
+        .init(id: "Just keep it clean", symbol: "checkmark.seal.fill",
+              blurb: "A light nudge toward cleaner labels — no strong specialty focus"),
     ]
 }
 

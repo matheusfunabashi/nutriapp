@@ -5,7 +5,6 @@ import SwiftUI
 struct OnboardingWelcomeScreen: View {
     let accent: Color
     let onContinue: () -> Void
-    let onSignIn: () -> Void
 
     var body: some View {
         VStack(spacing: 0) {
@@ -21,13 +20,18 @@ struct OnboardingWelcomeScreen: View {
                 .padding(.bottom, 8)
             }
 
-            Spacer().frame(height: 20)
+            Spacer().frame(height: 12)
 
             StaggeredAppear(index: 1) {
-                PhoneShowcase(accent: accent)
+                OnboardingHeroImage(
+                    assetName: OnboardingAssets.welcomeHero,
+                    scale: 1.0,
+                    horizontalPadding: 12
+                )
+                .frame(height: 320)
             }
 
-            Spacer().frame(height: 28)
+            Spacer().frame(height: 36)
 
             StaggeredAppear(index: 2) {
                 Text("Know exactly\nwhat's inside.")
@@ -36,7 +40,7 @@ struct OnboardingWelcomeScreen: View {
                     .multilineTextAlignment(.center)
                     .lineSpacing(2)
                     .padding(.horizontal, 24)
-                    .padding(.top, 12)
+                    .padding(.top, 4)
             }
 
             StaggeredAppear(index: 3) {
@@ -57,32 +61,20 @@ struct OnboardingWelcomeScreen: View {
             Spacer()
 
             StaggeredAppear(index: 5) {
-                VStack(spacing: 0) {
-                    OnboardingCTAButton(title: "Get Started", action: onContinue)
-                        .padding(.horizontal, 20)
-                    Button(action: onSignIn) {
-                        (Text("Already have an account? ")
-                            .foregroundColor(Theme.inkSecondary)
-                        + Text("Sign in").foregroundColor(Theme.ink).fontWeight(.heavy))
-                            .font(.sageRegular(14))
-                            .padding(.vertical, 10) // bigger tap surface
-                            .contentShape(Rectangle())
-                    }
-                    .buttonStyle(.pressable)
-                    .padding(.top, 4)
+                OnboardingCTAButton(title: "Get Started", action: onContinue)
+                    .padding(.horizontal, 20)
                     .padding(.bottom, 32)
-                }
             }
         }
     }
 
     private var statsRow: some View {
         HStack(spacing: 0) {
-            stat(big: "400K+", small: "scanners")
             Spacer()
             stat(big: "4.9★", small: "App Store")
             Spacer()
             stat(big: "1.2M", small: "products")
+            Spacer()
         }
         .padding(.horizontal, 36)
     }
@@ -154,10 +146,16 @@ struct OnboardingScoresScreen: View {
         // Goals re-weight rather than cap, so they read as softer nudges.
         for goal in goals.sorted() where rows.count < 3 {
             switch goal {
-            case "Blood sugar":
-                rows.append((-9, "28g added sugar", "Weighs heavier for blood sugar"))
-            case "Heart":
-                rows.append((-7, "660mg sodium", "Weighs heavier for heart"))
+            case "Less sugar", "Blood sugar":
+                rows.append((-9, "28g added sugar", "Weighs heavier when you care about sugar"))
+            case "Less processed":
+                rows.append((-8, "Ultra-processed", "Weighs heavier for cleaner labels"))
+            case "More protein":
+                rows.append((-5, "Low protein density", "Weighs heavier when you want protein"))
+            case "Heart health", "Heart":
+                rows.append((-7, "660mg sodium", "Weighs heavier for heart health"))
+            case "Just keep it clean":
+                rows.append((-6, "Long additive list", "Light nudge toward cleaner food"))
             case "Gut health":
                 rows.append((-6, "Emulsifiers", "Weighs heavier for gut health"))
             case "Pregnancy":
@@ -663,9 +661,6 @@ struct OnboardingReviewsScreen: View {
                                     .foregroundColor(Color(hex: "D4A02D"))
                             }
                         }
-                        Text("400,000+ ratings")
-                            .font(.sageRegular(12)).monospacedDigit()
-                            .foregroundColor(Theme.inkSecondary)
                     }
                 }
                 .padding(.horizontal, 24)
@@ -860,9 +855,9 @@ struct OnboardingResultsScreen: View {
 
         rows.append(contentsOf: [
             ("Low added sugar",
-             foodPreferences.contains("Low sugar") || dietaryRestrictions.contains("Low-sugar diet")),
+             dietaryRestrictions.contains("Low-sugar diet")),
             ("Low sodium",
-             foodPreferences.contains("Low sodium") || dietaryRestrictions.contains("Low-sodium diet")),
+             dietaryRestrictions.contains("Low-sodium diet")),
             ("High protein", foodPreferences.contains("High protein")),
             ("Gluten-free", dietaryRestrictions.contains("Gluten-free")),
             ("Minimally processed", foodPreferences.contains("Minimally processed")),

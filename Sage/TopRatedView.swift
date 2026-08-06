@@ -46,7 +46,6 @@ struct TopRatedCategoriesView: View {
                         .frame(width: 56, height: 56)
                         .accessibilityHidden(true)
                 } else {
-                    // No pack-shot asset yet (e.g. energy drinks) — show the emoji.
                     Text(category.emoji)
                         .font(.sageRegular(34))
                         .frame(width: 56, height: 56)
