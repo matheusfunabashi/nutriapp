@@ -44,11 +44,10 @@ struct OnboardingDemoTests {
         #expect(overall > 45)
     }
 
-    /// Money shot for this fixture: ~13g added sugar / 100g. Someone who
-    /// picked Blood sugar should see Your Score drop relative to Overall,
+    /// picked Less sugar should see Your Score drop relative to Overall,
     /// with a nameable signed factor the reveal sheet can cite.
-    @Test func bloodSugarGoalSeesADrop() {
-        let p = profile(goals: ["Blood sugar"])
+    @Test func lessSugarGoalSeesADrop() {
+        let p = profile(goals: ["Less sugar"])
         let product = try! #require(OnboardingDemoProduct.scored(for: p))
         let overall = try! #require(product.overallScore)
         let yours = try! #require(product.yourScore)
@@ -61,7 +60,7 @@ struct OnboardingDemoTests {
     /// Your Score can still rise for a heart-goal user when fiber is high
     /// and sat fat stays moderate — the reveal sheet's `.better` branch.
     @Test func heartGoalCanRaiseOrHoldYourScore() {
-        let p = profile(goals: ["Heart"])
+        let p = profile(goals: ["Heart health"])
         let product = try! #require(OnboardingDemoProduct.scored(for: p))
         let overall = try! #require(product.overallScore)
         let yours = try! #require(product.yourScore)
@@ -86,17 +85,25 @@ struct OnboardingDemoTests {
     }
 
     @Test func swapIsAvailable() {
-        let p = profile(goals: ["Blood sugar"])
+        let p = profile(goals: ["Less sugar"])
         let product = try! #require(OnboardingDemoProduct.scored(for: p))
-        let outcome = Alternatives.suggest(for: product, profile: p)
-        guard case .suggestions(let list) = outcome else {
-            Issue.record("expected suggestions, got \(outcome)")
-            return
-        }
-        let best = try! #require(list.first)
-        // Prefer Your Score when personalization is on; fall back to Overall.
+        let swap = try! #require(
+            OnboardingDemoSwap.alternative(beating: product, profile: p))
         let baseline = product.yourScore ?? product.overallScore ?? 0
-        #expect(best.score > baseline)
+        #expect(swap.score > baseline)
+        #expect(swap.product.brand == OnboardingDemoSwap.displayBrand)
+        #expect(swap.product.name == OnboardingDemoSwap.displayName)
+        // Bundled asset — never a remote URL that would stall the reveal.
+        #expect(swap.product.imageURL == nil)
+        #expect(swap.product.imageThumbURL == nil)
+    }
+
+    @Test func swapFixtureDecodes() {
+        let candidate = OnboardingDemoSwap.candidate
+        #expect(candidate != nil)
+        #expect(candidate?.barcode == "0055577101100")
+        #expect(OnboardingDemoSwap.displayBrand == "Quaker")
+        #expect(OnboardingDemoSwap.displayName == "Quick Oats")
     }
 
     /// `AppStore` seeds `user` from `MockData.user`, which ships with a
@@ -104,16 +111,16 @@ struct OnboardingDemoTests {
     /// demo must not cite those as the user's own choices.
     @Test func previewProfileDropsSeededDefaults() {
         let state = OnboardingState()
-        state.healthGoals = ["Heart"]
+        state.healthGoals = ["Heart health"]
 
         var seeded = MockData.user
         seeded.restrictions = ["Low-sugar diet"]
-        seeded.preferences = ["High protein", "Low sodium"]
+        seeded.preferences = ["High protein"]
 
         let preview = state.previewProfile(basedOn: seeded)
         #expect(preview.restrictions.isEmpty)
         #expect(preview.preferences.isEmpty)
-        #expect(preview.healthGoals == ["Heart"])
+        #expect(preview.healthGoals == ["Heart health"])
     }
 
     @Test func skippedIdentityDoesNotKeepPlaceholderName() {

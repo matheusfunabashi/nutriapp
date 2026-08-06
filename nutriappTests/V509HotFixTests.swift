@@ -38,7 +38,7 @@ struct V509HotfixTests {
         restrictions: [String] = [],
         avoid: [String] = [],
         objective: String = "eat healthier",
-        goals: [String]? = ["Blood sugar"],
+        goals: [String]? = ["Less sugar"],
         preferences: [String] = ["Organic", "High protein", "Minimally processed"]
     ) -> UserProfile {
         var u = MockData.user

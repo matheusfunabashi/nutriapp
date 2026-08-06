@@ -7,12 +7,10 @@ import SwiftUI
 // to Your Score, with the gap attributed to the goals and avoid-list items
 // they picked back in Act 1.
 //
-// Nothing here is hardcoded. The demo product is a candidate JSON blob run
-// through `Alternatives.scored`, which is the exact path a real scan takes
-// (`OpenFoodFactsService.mapCandidate` → `ScoringEngineV4.scoreProduct`),
-// and the swap comes from `Alternatives.suggest` over the bundled shelves.
-// That means it works offline, and it can never drift from the shipping
-// ruleset — if scoring changes, this screen changes with it.
+// The demo product and its "better one" swap are fixed candidate JSON blobs
+// scored through `Alternatives.scored` (same path as a real scan). Pack shots
+// are bundled assets — no network on this screen — so the reveal never waits
+// on an OFF image download. Display names are title-cased in the fixtures.
 
 // MARK: Demo fixture
 
@@ -20,7 +18,7 @@ enum OnboardingDemoProduct {
     /// Real OFF product — Bear Naked Vanilla Almond Crisp
     /// (`0856416000710`). Markets as a clean whole-grain granola; the live
     /// engine still finds plenty to personalize on (added sugar for Blood
-    /// sugar, fiber for Heart, NOVA 4 on Overall). Encoded as the same
+    /// sugar for Less sugar, fiber for Heart health, NOVA 4 on Overall). Encoded as the same
     /// `AlternativeCandidate` JSON the bundled shelves use so offline
     /// scoring stays identical to a real scan.
     ///
@@ -76,6 +74,78 @@ enum OnboardingDemoProduct {
         guard let candidate else { return nil }
         return Alternatives.scored(candidate, profile: profile,
                                    ruleset: RulesetStore.current)?.product
+    }
+}
+
+/// Fixed "better one" for the reveal sheet — Quaker Quick Oats. Bundled pack
+/// shot + title-cased name so the button never waits on a remote image or
+/// shelf scan, and never shows ALL-CAPS / lowercase OFF strings.
+enum OnboardingDemoSwap {
+    /// Real OFF product — Quaker Quick Oats (`0055577101100`). Plain rolled
+    /// oats (NOVA 1, 0g sugar) that reliably beat the demo granola on both
+    /// Overall and a blood-sugar Your Score.
+    private static let candidateJSON = """
+    {
+      "barcode": "0055577101100",
+      "name": "Quick Oats",
+      "brand": "Quaker",
+      "image_url": "",
+      "ingredients_text": "100% rolled oats",
+      "additives_tags": [],
+      "nova_group": 1,
+      "nutriscore_grade": "a",
+      "categories_tags": [
+        "en:plant-based-foods-and-beverages",
+        "en:plant-based-foods",
+        "en:breakfasts",
+        "en:cereals-and-potatoes",
+        "en:cereals-and-their-products",
+        "en:breakfast-cereals",
+        "en:rolled-oats"
+      ],
+      "labels_tags": ["en:whole-grain", "en:non-gmo-project"],
+      "nutriments": {
+        "energy-kcal_100g": 375,
+        "sugars_100g": 0,
+        "added-sugars_100g": 0,
+        "sodium_100g": 0,
+        "saturated-fat_100g": 1.25,
+        "fiber_100g": 10,
+        "proteins_100g": 12.5,
+        "fruits-vegetables-nuts-estimate-from-ingredients_100g": 0
+      }
+    }
+    """
+
+    static let candidate: AlternativeCandidate? = {
+        guard let data = candidateJSON.data(using: .utf8) else { return nil }
+        return try? JSONDecoder().decode(AlternativeCandidate.self, from: data)
+    }()
+
+    static let imageAsset = "onboarding-demo-swap"
+
+    /// Display strings — never the raw OFF casing.
+    static let displayBrand = "Quaker"
+    static let displayName = "Quick Oats"
+
+    /// Scores the fixed swap; returns nil only if it fails to clear the live
+    /// +10 margin (should not happen for this fixture under current rules).
+    @MainActor
+    static func alternative(beating baseline: Product,
+                            profile: UserProfile) -> Alternative? {
+        guard let candidate,
+              let scored = Alternatives.scored(candidate, profile: profile,
+                                               ruleset: RulesetStore.current)
+        else { return nil }
+        var product = scored.product
+        // Never hit the network for this row — image is the bundled asset.
+        product.imageURL = nil
+        product.imageThumbURL = nil
+        let score = product.yourScore ?? product.overallScore ?? scored.score
+        let floor = (baseline.yourScore ?? baseline.overallScore ?? 0) + 10
+        guard score >= floor else { return nil }
+        return Alternative(product: product, score: score,
+                           sharedTag: true, countries: ["us", "ca"])
     }
 }
 
@@ -283,9 +353,17 @@ struct OnboardingDemoRevealSheet: View {
             // No cap fired, so explain the shift with the drivers that moved
             // it — positive ones when the score went up.
             let wanted = verdict == .better ? "+ " : "- "
+            var seen = Set<String>()
             out = ScoringEngine.signedFactors(product, profile: profile)
                 .filter { $0.hasPrefix(wanted) }
                 .map { String($0.dropFirst(2)).capitalizedFirst }
+                .filter { reason in
+                    // Collapse "Ultra-processed" vs "Ultra-processed (…)" etc.
+                    let stem = reason.lowercased()
+                        .components(separatedBy: " (")[0]
+                        .trimmingCharacters(in: .whitespaces)
+                    return seen.insert(stem).inserted
+                }
         }
         return Array(out.prefix(4))
     }
@@ -318,7 +396,8 @@ struct OnboardingDemoRevealSheet: View {
         }
         .task {
             guard !swapReady else { return }
-            pendingSwap = Self.bestSwap(for: product, profile: profile)
+            pendingSwap = OnboardingDemoSwap.alternative(beating: product,
+                                                         profile: profile)
             swapReady = true
         }
     }
@@ -450,13 +529,12 @@ struct OnboardingDemoRevealSheet: View {
                     .foregroundStyle(Theme.inkSecondary)
 
                 HStack(spacing: 14) {
-                    ProductThumb(glyph: "🥣", score: nil, size: 54, neutral: true,
-                                 imageURL: swap.product.imageURL)
+                    swapPackShot
                     VStack(alignment: .leading, spacing: 3) {
-                        Text(swap.product.brand)
+                        Text(OnboardingDemoSwap.displayBrand)
                             .font(.sageSemiBold(11)).tracking(0.4)
                             .foregroundStyle(Theme.inkSecondary)
-                        Text(swap.product.name)
+                        Text(OnboardingDemoSwap.displayName)
                             .font(.sageBold(15)).tracking(-0.2)
                             .foregroundStyle(Theme.ink)
                             .lineLimit(2)
@@ -499,8 +577,8 @@ struct OnboardingDemoRevealSheet: View {
         // rather than inventing one (same rule as the live Alternatives row).
     }
 
-    /// Instant reveal — the heavy `Alternatives.suggest` work already ran in
-    /// `.task`, so a single tap always shows the card.
+    /// Instant reveal — scoring already finished in `.task`, and the pack
+    /// shot is a bundled asset (no image download on tap).
     private func revealSwap() {
         guard let pendingSwap else { return }
         withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
@@ -508,13 +586,16 @@ struct OnboardingDemoRevealSheet: View {
         }
     }
 
-    /// Pulls a real alternative off the bundled shelf, or nil when nothing
-    /// clears the +10 margin.
-    private static func bestSwap(for product: Product, profile: UserProfile) -> Alternative? {
-        if case .suggestions(let list) = Alternatives.suggest(for: product, profile: profile) {
-            return list.first
+    @ViewBuilder
+    private var swapPackShot: some View {
+        if UIImage(named: OnboardingDemoSwap.imageAsset) != nil {
+            Image(OnboardingDemoSwap.imageAsset)
+                .resizable()
+                .scaledToFit()
+                .frame(width: 54, height: 54)
+        } else {
+            ProductThumb(glyph: "🥣", score: nil, size: 54, neutral: true)
         }
-        return nil
     }
 }
 

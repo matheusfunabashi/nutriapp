@@ -345,18 +345,29 @@ enum Alternatives {
 enum TopRated {
     static let maxItems = 20
 
+    /// Markets shown in Top Rated for a shelf. Energy drinks stay US-only —
+    /// the dataset also carries UK/CA SKUs that look foreign on a US browse tab.
+    static func allowedMarkets(for shelf: SageCategory) -> Set<String> {
+        switch shelf {
+        case .energyDrinks: return ["us"]
+        default: return Alternatives.allowedMarkets
+        }
+    }
+
     /// Top-N products in a category, re-scored on-device (Overall), best first.
     @MainActor
     static func items(for shelf: SageCategory, profile: UserProfile) -> [Alternative] {
         items(from: AlternativesStore.candidates(for: shelf),
-              profile: profile, ruleset: RulesetStore.current)
+              profile: profile, ruleset: RulesetStore.current,
+              markets: allowedMarkets(for: shelf))
     }
 
     /// Pure core (no global state) — testable in isolation.
     static func items(from candidates: [AlternativeCandidate],
-                      profile: UserProfile, ruleset: RulesetV4) -> [Alternative] {
+                      profile: UserProfile, ruleset: RulesetV4,
+                      markets: Set<String> = Alternatives.allowedMarkets) -> [Alternative] {
         candidates
-            .filter { Alternatives.isAllowedMarket($0.countries) }
+            .filter { !markets.isDisjoint(with: $0.countries ?? []) }
             .compactMap { c -> Alternative? in
                 guard let (p, s) = Alternatives.scored(c, profile: profile, ruleset: ruleset)
                 else { return nil }

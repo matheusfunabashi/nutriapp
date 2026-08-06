@@ -193,15 +193,14 @@ struct DietaryView: View {
     @State private var customAllergy = ""
     @FocusState private var allergyFocused: Bool
 
-    let restrictions = [
-        "Vegan", "Vegetarian", "Pescatarian", "Low-sugar diet",
-        "Low-sodium diet", "Gluten-free", "Dairy-free",
+    let restrictions = DietaryOptions.restrictions
+    let preferences = DietaryOptions.preferences
+    let goals = [
+        // Broad — same set as onboarding.
+        "Less sugar", "Less processed", "More protein", "Heart health", "Just keep it clean",
+        // Clinical / life-stage — Personalize only.
+        "Gut health", "Pregnancy", "Young child",
     ]
-    let preferences = [
-        "Low sugar", "Low sodium", "Low fat",
-        "High protein", "High fiber", "Organic", "Minimally processed",
-    ]
-    let goals = ["Blood sugar", "Heart", "Gut health", "Pregnancy", "Young child"]
     let avoids = ["Carrageenan", "Aspartame", "Sucralose", "Seed oils", "Palm oil",
                   "Caffeine", "Artificial colors", "Added phosphates", "HFCS", "Titanium dioxide"]
     let priorities: [(String, WritableKeyPath<UserProfile, Int?>)] = [
@@ -217,7 +216,7 @@ struct DietaryView: View {
                 toggleOptional(\.healthGoals, v)
             }
             chipSection("Restrictions",
-                        "Hard rules. Sage flags these as warnings on every scan.",
+                        "Hard rules — flags and can cap Your Score (e.g. Low-sugar diet).",
                         items: restrictions, active: store.user.restrictions) { v in
                 toggle(\.restrictions, v)
             }
@@ -227,7 +226,7 @@ struct DietaryView: View {
                 toggleOptional(\.avoidList, v)
             }
             chipSection("Preferences",
-                        "Soft signals. Most nudge Your Score; Organic shows a label check.",
+                        "Soft signals that nudge Your Score. Organic shows a label check.",
                         items: preferences, active: store.user.preferences) { v in
                 toggle(\.preferences, v)
             }

@@ -286,6 +286,8 @@ struct OnboardingInvertedTitle: View {
 // onboarding-marketing-hero.imageset.
 
 enum OnboardingAssets {
+    /// Welcome step hero (replaces the hand-drawn phone mockup).
+    static let welcomeHero = "onboarding-img-1"
     /// Marketing step hero (phone + product scan illustration).
     static let marketingHero = "onboarding-marketing-hero"
 }
@@ -322,116 +324,5 @@ struct OnboardingHeroImage: View {
             }
         }
         .padding(.horizontal, horizontalPadding)
-    }
-}
-
-// MARK: - Phone illustration used on the welcome screen
-
-struct PhoneShowcase: View {
-    let accent: Color
-
-    var body: some View {
-        ZStack {
-            // Phone body
-            RoundedRectangle(cornerRadius: 38, style: .continuous)
-                .fill(Color(hex: "26201A"))
-                .frame(width: 200, height: 260)
-                .overlay(
-                    Capsule()
-                        .fill(Color.black)
-                        .frame(width: 80, height: 22)
-                        .padding(.top, 10),
-                    alignment: .top
-                )
-
-            // Product mock card
-            VStack(spacing: 0) {
-                Spacer().frame(height: 6)
-                RoundedRectangle(cornerRadius: 14, style: .continuous)
-                    .fill(Color(hex: "F5F0E6"))
-                    .frame(width: 88, height: 116)
-                    .overlay(
-                        VStack(spacing: 6) {
-                            Capsule().fill(Color(hex: "B7A786")).frame(width: 56, height: 6)
-                            Text("HILLTOP")
-                                .font(.sageBold(10)).tracking(1.2)
-                            Text("GREEK\nYOGURT")
-                                .font(.sageBold(10))
-                                .multilineTextAlignment(.center)
-                                .lineSpacing(0)
-                            barcode
-                        }
-                        .padding(.top, 22)
-                        .foregroundColor(.black)
-                    )
-            }
-
-            // Floating chips
-            VStack {
-                HStack {
-                    floatingChip(emoji: "•", title: "17g protein",
-                                 subtitle: "High-protein goal", trailingCheck: true)
-                    Spacer()
-                }
-                .padding(.leading, -6)
-
-                Spacer().frame(height: 20)
-
-                HStack {
-                    Spacer()
-                    floatingChip(emoji: "•", title: "2 ingredients",
-                                 subtitle: "Whole foods", trailingCheck: false)
-                }
-                .padding(.trailing, -6)
-
-                Spacer().frame(height: 30)
-
-                HStack {
-                    floatingChip(emoji: "•", title: "0 additives",
-                                 subtitle: "Nothing flagged", trailingCheck: false)
-                    Spacer()
-                }
-                .padding(.leading, -8)
-
-                Spacer().frame(height: 6)
-            }
-            .frame(width: 280, height: 240)
-        }
-        .frame(width: 280, height: 280)
-    }
-
-    private var barcode: some View {
-        HStack(spacing: 1.5) {
-            ForEach(0..<22, id: \.self) { i in
-                Rectangle()
-                    .fill(Color.black)
-                    .frame(width: i % 3 == 0 ? 2.2 : 1, height: 22)
-            }
-        }
-    }
-
-    private func floatingChip(emoji: String, title: String,
-                               subtitle: String, trailingCheck: Bool) -> some View {
-        HStack(spacing: 8) {
-            Circle().fill(accent).frame(width: 6, height: 6)
-            VStack(alignment: .leading, spacing: 0) {
-                Text(title)
-                    .font(.sageBold(12)).tracking(-0.2)
-                    .foregroundColor(.black)
-                Text(subtitle)
-                    .font(.sageSemiBold(10))
-                    .foregroundColor(accent)
-            }
-            if trailingCheck {
-                Image(systemName: "checkmark")
-                    .font(.sageBold(10))
-                    .foregroundColor(accent)
-            }
-        }
-        .padding(.horizontal, 10).padding(.vertical, 7)
-        .background(
-            RoundedRectangle(cornerRadius: 14, style: .continuous).fill(Color.white)
-        )
-        .shadow(color: Color.black.opacity(0.10), radius: 10, x: 0, y: 4)
     }
 }

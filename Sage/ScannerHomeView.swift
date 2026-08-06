@@ -206,7 +206,11 @@ struct ScannerHomeView: View {
                             .foregroundColor(Theme.inkSecondary)
                             .multilineTextAlignment(.center)
                     }
-                    Button("Scan a product", action: onTapScan)
+                    Button(action: onTapScan) {
+                        Text("Scan a product")
+                            .font(.sageSemiBold(14))
+                            .tracking(-0.2)
+                    }
                         .buttonStyle(.borderedProminent)
                         .tint(store.accent)
                         .controlSize(.small)

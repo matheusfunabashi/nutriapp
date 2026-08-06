@@ -355,8 +355,8 @@ struct UserProfile: Codable {
     // All discrete + optional so ScoreClass cardinality stays small and older
     // profiles decode unchanged. nil is treated as the neutral default.
 
-    /// Multi-select health goals: "blood sugar", "heart", "gut health",
-    /// "pregnancy", "young child".
+    /// Multi-select health goals (e.g. "Less sugar", "Heart health",
+    /// "Pregnancy"). Looked up case-insensitively in `multipliers.goal`.
     var healthGoals: [String]? = nil
     /// Single diet pattern: "vegan", "vegetarian", "low-sodium", "keto", "none".
     var dietPattern: String? = nil
