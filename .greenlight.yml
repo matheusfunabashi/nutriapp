@@ -1,0 +1,7 @@
+# Tuned for Sage. Secrets.swift is git-ignored (see Secrets.swift.example);
+# codescan still walks the local working tree, so we skip that file explicitly.
+# `.claude/worktrees` is agent scratch and duplicates the app — skip it.
+ignore:
+  - Sage/Secrets.swift
+  - .claude
+  - backend

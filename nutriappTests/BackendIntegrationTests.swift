@@ -121,7 +121,7 @@ struct BackendIntegrationTests {
         #expect(OpenFoodFactsService.sanitizedImageURL("") == nil)
         #expect(OpenFoodFactsService.sanitizedImageURL("   ") == nil)
         // Plain http would be blocked by ATS — treated as no image.
-        #expect(OpenFoodFactsService.sanitizedImageURL("http://img.example/a.jpg") == nil)
+        #expect(OpenFoodFactsService.sanitizedImageURL("http://img.example/a.jpg") == nil) // greenlight:ignore http-not-https
         #expect(OpenFoodFactsService.sanitizedImageURL("https://img.example/a.jpg")
                 == "https://img.example/a.jpg")
     }
