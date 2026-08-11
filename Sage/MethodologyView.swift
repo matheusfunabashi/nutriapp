@@ -12,7 +12,7 @@ struct MethodologyView: View {
             ("Bands",
              "\(bands.excellent)–100 Excellent · \(bands.good)–\(bands.excellent - 1) Good · \(bands.ok)–\(bands.good - 1) OK · 10–\(bands.ok - 1) Bad. The same cut points drive dials, badges, and Overview labels."),
             ("Caps",
-             "Industrial trans fat (NOVA 4 or partially hydrogenated oil) caps Overall at 34. Free-sugar ceiling (34) still applies to foods with concentrated added sugar — candy in snacks, sugary drinks — but intrinsic dried-fruit sugar is exempt. Pure table sweeteners are not scored at all (see below), so the old NNS table-sweetener ceiling no longer applies to them. Your Score can be further limited by diet conflicts and avoid-list items; when several fire, the lowest wins."),
+             "Industrial trans fat (NOVA 4 or partially hydrogenated oil) caps Overall at 34. Free-sugar ceiling (34) still applies to foods with concentrated added sugar — candy in snacks — but intrinsic dried-fruit sugar is exempt. Ready-to-drink beverages use hard caps instead: sugar, caffeine, and Tier-1 artificial sweeteners can each limit the score (final = min of the weighted sum and those caps). Artificial sweeteners are score-limited as a precautionary signal — WHO conditionally recommends against non-sugar sweeteners for long-term health, and large cohorts associate high diet-beverage intake with modestly higher cardiovascular risk. IARC lists aspartame as possibly carcinogenic (2B) on limited evidence, while JECFA and FDA maintain that intake at normal levels (many cans per day) is within safe limits; the evidence is limited and contested. Diet sodas score above sugary sodas (substitution evidence) and well below unsweetened drinks. 100% juices use a dose-aware profile: small servings (about a glass) score more favorably than large single-serve bottles, consistent with dose-response evidence, while sugars in juice still count as free sugars. Pure table sweeteners are not scored at all (see below). Your Score can be further limited by diet conflicts and avoid-list items; when several fire, the lowest wins."),
             ("Why sweeteners aren’t scored",
              "This is essentially pure sugar, and no concentrated sugar is a health food. Sage doesn't score sweeteners, so a number here would only mislead."),
             ("Whole foods",
@@ -29,7 +29,7 @@ struct MethodologyView: View {
                     Text("A health score, not an ethics score")
                         .font(.sageBold(22)).tracking(-0.5)
                         .foregroundColor(Theme.ink)
-                    Text("Sage measures health only. Packaging, certifications, animal welfare, and origin claims are out of the score unless they have a direct health pathway (for example brew-bag microplastics or arsenic risk in rice drinks).")
+                    Text("Sage measures health only. Packaging, certifications, animal welfare, and origin claims are out of the score unless they have a direct health pathway (for example brew-bag microplastics, arsenic risk in rice drinks, or container leaching for ready-to-drink beverages).")
                         .font(.sageRegular(14))
                         .foregroundColor(Theme.inkSecondary)
                         .lineSpacing(2)

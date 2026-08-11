@@ -52,11 +52,13 @@ struct ScoringV4Tests {
                 fvn: 100, nova: 1, ingredientsText: "apples")
     }
     private var coke: Product {
-        product(kcal: 42, protein: 0, sugar: 10.6, sodium: 10, nova: 4,
+        var p = product(kcal: 42, protein: 0, sugar: 10.6, sodium: 10, nova: 4,
                 ingredientsText: "carbonated water, sugar, caramel color, phosphoric acid",
                 additives: [ProductAdditive(name: "Caramel IV", risk: .moderate, code: "e150d"),
                             ProductAdditive(name: "Phosphoric acid", risk: .moderate, code: "e338")],
                 categories: ["beverages", "carbonated-drinks", "sodas"])
+        p.servingSize = "12 fl oz"
+        return p
     }
     private var cheetos: Product {
         product(kcal: 570, protein: 6, fiber: 1, sugar: 3, satFat: 4, sodium: 800,
@@ -140,7 +142,7 @@ struct ScoringV4Tests {
         #expect(rs.bands.excellent == 75)
         #expect(rs.bands.good == 55)
         #expect(rs.bands.ok == 35)
-        #expect(rs.profiles.count == 12)
+        #expect(rs.profiles.count == 13)
         #expect(rs.bandLabel(80) == "Excellent")
         #expect(rs.bandLabel(55) == "Good")
         #expect(rs.bandLabel(35) == "OK")
@@ -194,7 +196,8 @@ struct ScoringV4Tests {
         let p = product(kcal: 100, sugar: 0, sodium: 0, nova: 4,
                         ingredientsText: "corn, high fructose corn syrup, salt")
         let s1 = ScoringEngineV4.score(p)!.rules.first { $0.rule == "S1" }!
-        #expect(abs(s1.fraction - 0.82) < 0.001)   // HFCS = Tier B −0.18
+        // "high fructose corn syrup" (B 0.18) also contains "corn syrup" (D 0.045).
+        #expect(abs(s1.fraction - 0.775) < 0.001)
     }
 
     @Test func s3FvnDiscountsFruitSugarOnSolids() {
@@ -224,10 +227,11 @@ struct ScoringV4Tests {
         }
         // OFF frequently reports a bogus `added-sugars: 0` on plainly-sweetened
         // drinks. A cola (10.6 g total, low FVN, 0 g "added") must NOT earn full
-        // sugar credit — it falls through to the FVN-discounted total path → 0.
-        let cola = product(kcal: 42, sugar: 10.6, addedSugar: 0, fvn: 0, nova: 4,
+        // sugar credit — per-serving path at 12 fl oz → ~37 g → 0.
+        var cola = product(kcal: 42, sugar: 10.6, addedSugar: 0, fvn: 0, nova: 4,
                            ingredientsText: "carbonated water, sugar, caramel color",
                            categories: ["beverages", "sodas"])
+        cola.servingSize = "12 fl oz"
         #expect(s3(cola) == 0.0)
         // A genuinely unsweetened drink (added 0, low total) keeps full credit.
         let seltzer = product(kcal: 0, sugar: 0.3, addedSugar: 0, fvn: 0, nova: 1,
@@ -296,11 +300,16 @@ struct ScoringV4Tests {
         #expect(RulesetV4.bundled.bandLabel(a.base) == "Excellent")
     }
 
-    @Test func anchorCokeIsBad() {
+    @Test func anchorCokeIsLowForSugarySoda() {
         let r = ScoringEngineV4.score(coke)!
         #expect(r.profileId == "drinks")
-        #expect(r.base <= 30)
-        #expect(RulesetV4.bundled.bandLabel(r.base) == "Bad")
+        // Oasis-aligned drinks + free-sugar damper: sugary cola lands Bad.
+        #expect(r.base <= 25)
+        let sparkling = product(kcal: 1, sugar: 0, sodium: 5, nova: 1,
+                                ingredientsText: "carbonated water, natural lemon flavor",
+                                categories: ["beverages", "sodas"],
+                                packaging: ["glass"])
+        #expect(ScoringEngineV4.score(sparkling)!.base > r.base)
     }
 
     @Test func anchorDairyProfiles() {

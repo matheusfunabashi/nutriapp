@@ -4,10 +4,10 @@ import Foundation
 //
 // Score measures HEALTH only. Ethics / environment / packaging factors are
 // out unless they have a direct health pathway (e.g. brewMaterial microplastics,
-// contaminantRisk arsenic). Architecture: all tunable data lives in
-// RulesetV5.json; this file only knows rule *shapes*. Score = Σ(w·f)/Σw,
-// floored at 10. Base caps (trans fat, free-sugar ceiling) can limit Overall;
-// preference caps (diet/avoid) limit Your Score only.
+// contaminantRisk arsenic, drinks S7 packaging leaching). Architecture: all
+// tunable data lives in RulesetV5.json; this file only knows rule *shapes*.
+// Score = Σ(w·f)/Σw, floored at 10. Base caps (trans fat, free-sugar ceiling)
+// can limit Overall; preference caps (diet/avoid) limit Your Score only.
 
 // MARK: Ruleset (mirrors RulesetV5.json)
 
@@ -128,11 +128,44 @@ struct RulesetV4: Codable {
         struct NNSCeiling: Codable {
             let cap: Int
         }
+        /// Drinks-only gradual free-sugar damper (per-serving grams → score ×factor).
+        struct DrinksFreeSugarDamper: Codable {
+            let startG: Double    // factor 1.0 at/below
+            let endG: Double      // factor minFactor at/above
+            let minFactor: Double
+        }
+        let drinksFreeSugarDamper: DrinksFreeSugarDamper?
     }
 
     let multipliers: Multipliers?
     let avoidList: [String: AvoidEntry]?
     let hardGates: HardGates?
+
+    /// Post-router nutritional plausibility envelopes (Fix 4). Key = profile id.
+    /// On violation, reroute to `rerouteTo` (usually `drinks`).
+    struct RoutingEnvelope: Codable {
+        let rerouteTo: String
+        /// Reject profile when caffeine_mg (per 100 ml) is ≥ this.
+        let maxCaffeineMgPer100ml: Double?
+        /// Reject profile when sugars_100g is ≥ this.
+        let maxSugarGPer100ml: Double?
+    }
+    var routingPlausibility: [String: RoutingEnvelope]? = nil
+
+    /// Fix 5: waters-family + flavor evidence → `drinks` instead of `unsupported`.
+    struct FlavoredWaterEvidence: Codable {
+        let watersFamilyTags: [String]
+        let nameFlavorWords: [String]
+        let ingredientFlavorTerms: [String]
+    }
+    var flavoredWaterEvidence: FlavoredWaterEvidence? = nil
+
+    /// v2.4: caffeine + stimulant ingredients → energy drink, independent of OFF tags.
+    struct EnergyDrinkEvidence: Codable {
+        let minCaffeineMgPer100ml: Double
+        let stimulantIngredients: [String]
+    }
+    var energyDrinkEvidence: EnergyDrinkEvidence? = nil
 
     /// Band label for a score under this ruleset (single source for all UI).
     func bandLabel(_ score: Int) -> String {
@@ -218,6 +251,8 @@ struct V4Result {
     /// Weight-backed confidence: Σ(w where rule had data) / Σw.
     let confidence: Double
     let rules: [V4RuleResult]
+    /// Drinks v2 breakdown (caps, serving, flags). Nil for other profiles.
+    var drinksBreakdown: DrinksScoreBreakdown? = nil
 }
 
 // MARK: Engine
@@ -282,6 +317,20 @@ enum ScoringEngineV4 {
         guard p.hasMinimumData else { return nil }
         let profileId = route(p, ruleset: rs)
         if profileId == "unsupported" || profileId == "unscored_sweetener" { return nil }
+
+        // Drinks v2.3 — cap-based path (`drinks` + dose-aware `juice_100`).
+        if profileId == "drinks" || profileId == "juice_100" {
+            guard let bd = DrinksScoring.score(product: p, ruleset: rs, profileId: profileId)
+            else { return nil }
+            let totalW = bd.rules.reduce(0.0) { $0 + $1.weight }
+            let backed = bd.rules.filter(\.hadData).reduce(0.0) { $0 + $1.weight }
+            let conf = totalW > 0 ? adjustedConfidence(base: backed / totalW, product: p, results: bd.rules) : 0.6
+            let afterHard = applyBaseCaps(base: bd.finalScore, product: p, rs: rs).capped
+            return V4Result(rulesetVersion: rs.version, profileId: profileId,
+                            base: afterHard, confidence: conf, rules: bd.rules,
+                            drinksBreakdown: bd)
+        }
+
         guard let profile = rs.profiles[profileId] else { return nil }
 
         let (results, _) = evaluatedRules(profile: profile, profileId: profileId, product: p, rs: rs)
@@ -354,6 +403,13 @@ enum ScoringEngineV4 {
             return .unscored(out, reasonKey: "sweetener")
         }
 
+        // MARK: Drinks / juice_100 v2.3 path
+        if profileId == "drinks" || profileId == "juice_100" {
+            return scoreDrinksProduct(original: originalProduct, product: p,
+                                      profile: profile, restrictions: restrictions,
+                                      rs: rs, profileId: profileId)
+        }
+
         guard let ruleList = rs.profiles[profileId] else { return .insufficientData }
 
         // Evaluate every rule once; reuse for Overall and Your Score.
@@ -375,22 +431,21 @@ enum ScoringEngineV4 {
         out.bonuses = nutrientBonuses(p.nutrients)
         out.overallFiredCaps = baseGate.fired.isEmpty ? nil : baseGate.fired
         out.overallBindingCap = baseGate.binding
-        // Band color/label follow the number only — no display-only band caps.
         out.overallBandCap = nil
         out.restrictions = restrictions
+        out.lowDataConfidence = nil
+        out.estimatedServing = nil
+        out.drinksBindingCapId = nil
 
         guard profile.personalizeScoring else {
             out.yourScore = overall
             out.overview = nil
             out.overviewStale = true
-            // Preference caps unused when personalization is off.
             out.firedCaps = nil
             out.bindingCap = nil
             return .scored(out)
         }
 
-        // Your Score = Σ(w·m·f) / Σ(w·m) — rule multipliers from objective,
-        // health goals, and priority sliders (§7.2).
         let mult = ruleMultipliers(profile, rs: rs)
         var yEarned = 0.0, yTotal = 0.0
         for r in usable {
@@ -399,35 +454,26 @@ enum ScoringEngineV4 {
             yTotal += r.weight * m
         }
         var your = yTotal > 0 ? max(floorScore, Int((yEarned / yTotal * 100).rounded())) : overall
-
-        // Reward-direction nutrient nudges: goals that reward a nutrient buried
-        // inside a blended rule (build muscle → protein density; lose weight →
-        // calorie lightness) can't be expressed as a rule multiplier, so apply
-        // a small bounded Your-Score nudge (§7.2 "protein component" note).
         your = max(floorScore, min(100, your + nutrientNudge(profile.objective, p.nutrients)))
 
-        // Preference caps (diet/avoid) only — overall health caps stay separate.
         let avoidHits = avoidListHits(p, profile: profile, rs: rs)
         let (prefFired, _, _) = applyCaps(weighted: your,
                                           restrictions: out.restrictions,
                                           avoidHits: avoidHits,
                                           nutrients: p.nutrients,
                                           rs: rs)
-        // Numerically stack overall + preference ceilings onto Your Score.
         let stacked = baseGate.fired + prefFired
         if let effective = stacked.map(\.value).min() {
             your = min(your, effective)
         }
+
         let binding: ScoreCap? = {
             guard let effective = stacked.map(\.value).min() else { return nil }
-            // Uncapped personalized score (before any cap).
             var uncapped = yTotal > 0
                 ? max(floorScore, Int((yEarned / yTotal * 100).rounded()))
                 : overall
             uncapped = max(floorScore, min(100, uncapped + nutrientNudge(profile.objective, p.nutrients)))
             guard uncapped > effective else { return nil }
-            // Prefer a preference-kind binding for Your Score UI; fall back to
-            // overall health caps when they alone bind.
             let preferenceFirst = stacked.filter { $0.value == effective }
                 .sorted { a, b in
                     let rank: (ScoreCap) -> Int = {
@@ -449,6 +495,97 @@ enum ScoringEngineV4 {
             else { return nil }
             return b
         }()
+        out.yourScore = your
+        out.overview = nil
+        out.overviewStale = true
+        return .scored(out)
+    }
+
+    /// Drinks / juice_100 product scoring — caps not user-adjustable; preference caps only lower.
+    private static func scoreDrinksProduct(original: Product, product p: Product,
+                                           profile: UserProfile,
+                                           restrictions: [Restriction],
+                                           rs: RulesetV4,
+                                           profileId: String) -> Outcome {
+        guard let bdOverall = DrinksScoring.score(product: p, ruleset: rs, profileId: profileId)
+        else {
+            return .insufficientData
+        }
+        #if DEBUG
+        DrinksScanDebug.logScore(product: p, profileId: profileId, bd: bdOverall)
+        #endif
+        let hard = applyBaseCaps(base: bdOverall.finalScore, product: p, rs: rs)
+        let overall = hard.capped
+
+        var drinksCaps: [ScoreCap] = []
+        func appendCap(id: String, value: Int, label: String) {
+            guard value < 100, value < bdOverall.weightedScore else { return }
+            drinksCaps.append(ScoreCap(
+                id: id, value: value, shortLabel: label, kind: "freeSugar",
+                intensity: value <= 30 ? "full" : "soft",
+                detail: "Score limited by \(label) (cap \(value))."
+            ))
+        }
+        appendCap(id: "sugarCap", value: bdOverall.sugarCap, label: "sugar content")
+        appendCap(id: "caffeineCap", value: bdOverall.caffeineCap, label: "caffeine")
+        appendCap(id: "sweetenerCap", value: bdOverall.sweetenerCap, label: "artificial sweeteners")
+
+        var overallFired = hard.fired + drinksCaps
+        let overallBinding: ScoreCap? = {
+            if let id = bdOverall.bindingCapId,
+               let c = drinksCaps.first(where: { $0.id == id }),
+               bdOverall.weightedScore > bdOverall.finalScore {
+                return c
+            }
+            return hard.binding
+        }()
+
+        var out = original
+        out.scoreState = .scored
+        out.overallScore = overall
+        out.bonuses = nutrientBonuses(p.nutrients)
+        out.overallFiredCaps = overallFired.isEmpty ? nil : overallFired
+        out.overallBindingCap = overallBinding
+        out.overallBandCap = nil
+        out.restrictions = restrictions
+        out.lowDataConfidence = bdOverall.lowDataConfidence
+        out.estimatedServing = bdOverall.estimatedServing
+        out.drinksBindingCapId = bdOverall.bindingCapId
+
+        guard profile.personalizeScoring else {
+            out.yourScore = overall
+            out.overview = nil
+            out.overviewStale = true
+            out.firedCaps = nil
+            out.bindingCap = nil
+            return .scored(out)
+        }
+
+        let mult = ruleMultipliers(profile, rs: rs)
+        guard let bdYour = DrinksScoring.score(product: p, ruleset: rs, profileId: profileId,
+                                               ruleMultipliers: mult)
+        else { return .insufficientData }
+        var your = applyBaseCaps(base: bdYour.finalScore, product: p, rs: rs).capped
+        // Nutrient nudge after caps would raise — apply before preference, then
+        // re-apply drinks caps (caps are not user-adjustable / cannot be raised past).
+        your = max(floorScore, min(100, your + nutrientNudge(profile.objective, p.nutrients)))
+        your = min(your, bdYour.sugarCap, bdYour.caffeineCap, bdYour.sweetenerCap)
+
+        let avoidHits = avoidListHits(p, profile: profile, rs: rs)
+        let (prefFired, _, _) = applyCaps(weighted: your,
+                                          restrictions: restrictions,
+                                          avoidHits: avoidHits,
+                                          nutrients: p.nutrients,
+                                          rs: rs)
+        // Preference / diet can only lower.
+        if let effective = (hard.fired + prefFired).map(\.value).min() {
+            your = min(your, effective)
+        }
+
+        out.firedCaps = prefFired.isEmpty ? nil : prefFired
+        out.bindingCap = prefFired.sorted { $0.value < $1.value }.first.flatMap { c in
+            (c.kind == "dietConflict" || c.kind == "avoidList") ? c : nil
+        }
         out.yourScore = your
         out.overview = nil
         out.overviewStale = true
@@ -907,6 +1044,12 @@ enum ScoringEngineV4 {
                 return ("high saturated fat", false)
             }
             return f >= 0.6 ? nil : ("high saturated fat", false)
+        case "S6":
+            return f >= 0.85 ? ("no artificial sweeteners", true) : ("artificial sweeteners", false)
+        case "S7":
+            return f >= 0.7 ? ("lower-leach packaging", true) : ("higher-leach packaging", false)
+        case "S8":
+            return f >= 0.75 ? ("low caffeine", true) : ("high caffeine", false)
         case "S13": return f >= 0.5 ? ("rich in vitamins & minerals", true) : nil
         default:    return nil
         }
@@ -917,22 +1060,163 @@ enum ScoringEngineV4 {
     /// Defense in depth (V5.0.4): `whole_foods` only accepts NOVA ∈ {0,1,2} so
     /// processed derivatives that inherit ancestral tags (e.g. peanut butter →
     /// `nuts`) fall through to snacks/general instead of skipping S5.
+    ///
+    /// Fix 5: waters-family + flavor evidence → `drinks` instead of unsupported.
+    /// Fix 4: nutritional plausibility envelopes may rerail a matched profile.
+    ///
+    /// Precedence (v2.4): evidence gates (energy, flavored water) >
+    /// category tag matches > catch-all `beverages`. Alcohol exclusions
+    /// still win over evidence.
     static func route(_ p: Product, ruleset rs: RulesetV4 = .bundled) -> String {
+        let tags = Set(p.categories ?? [])
+        let nova = p.novaGroup
+
+        if firstAlcoholMatch(in: tags, rs: rs) != nil {
+            return "unsupported"
+        }
+
+        // Evidence gate — energy drink (tags OR nutrition/ingredient evidence).
+        if DrinksScoring.hasEnergyDrinkEvidence(p, rs: rs) {
+            let attempted = firstTagProfile(p, rs: rs)
+            if attempted != "drinks" {
+                logEvidenceRerail(p, attempted: attempted, used: "drinks",
+                                  gate: "energyDrinkEvidence")
+            }
+            return "drinks"
+        }
+
+        for entry in rs.router where tags.contains(entry.match) {
+            if entry.profile == "whole_foods", !(nova == 0 || nova == 1 || nova == 2) {
+                continue
+            }
+            var profile = entry.profile
+            // Fix 5 — plain water tags with flavor evidence score as drinks.
+            if profile == "unsupported",
+               isWatersFamilyRouterMatch(entry.match, rs: rs),
+               hasFlavoredWaterEvidence(p, rs: rs) {
+                logEvidenceRerail(p, attempted: "unsupported", used: "drinks",
+                                  gate: "flavoredWaterEvidence")
+                profile = "drinks"
+            }
+            // Upgrade eligible 100% juices to the dose-aware juice_100 profile.
+            if profile == "drinks", DrinksScoring.qualifiesAsJuice100(p) {
+                return applyRoutingPlausibility(p, attempted: "juice_100", rs: rs)
+            }
+            return applyRoutingPlausibility(p, attempted: profile, rs: rs)
+        }
+        return applyRoutingPlausibility(p, attempted: "general", rs: rs)
+    }
+
+    private static let alcoholRouterMatches: Set<String> = [
+        "alcoholic-beverages", "beers", "wines", "spirits", "ciders",
+    ]
+
+    private static func firstAlcoholMatch(in tags: Set<String>, rs: RulesetV4) -> String? {
+        for entry in rs.router where tags.contains(entry.match) {
+            if alcoholRouterMatches.contains(entry.match) { return entry.match }
+        }
+        return nil
+    }
+
+    /// Tag-only profile (no evidence gates, no plausibility envelopes).
+    static func firstTagProfile(_ p: Product, rs: RulesetV4 = .bundled) -> String {
         let tags = Set(p.categories ?? [])
         let nova = p.novaGroup
         for entry in rs.router where tags.contains(entry.match) {
             if entry.profile == "whole_foods", !(nova == 0 || nova == 1 || nova == 2) {
                 continue
             }
+            if entry.profile == "drinks", DrinksScoring.qualifiesAsJuice100(p) {
+                return "juice_100"
+            }
             return entry.profile
         }
         return "general"
     }
 
+    private static func logEvidenceRerail(
+        _ p: Product, attempted: String, used: String, gate: String
+    ) {
+        #if DEBUG
+        DrinksScanDebug.logRerail(
+            productId: p.id,
+            productName: p.name,
+            attempted: attempted,
+            used: used,
+            thresholdsFired: [gate]
+        )
+        #endif
+    }
+
+    /// Waters-family router match ids (from ruleset list, with safe defaults).
+    private static func isWatersFamilyRouterMatch(_ match: String, rs: RulesetV4) -> Bool {
+        let family = Set(rs.flavoredWaterEvidence?.watersFamilyTags
+            ?? ["waters", "carbonated-waters", "mineral-waters", "spring-waters", "drinking-water"])
+        return family.contains(match)
+    }
+
+    /// Name or ingredients contain configurable flavor evidence.
+    static func hasFlavoredWaterEvidence(_ p: Product, rs: RulesetV4 = .bundled) -> Bool {
+        guard let cfg = rs.flavoredWaterEvidence else { return false }
+        let name = p.name.lowercased()
+            .folding(options: .diacriticInsensitive, locale: Locale(identifier: "en_US"))
+        for word in cfg.nameFlavorWords {
+            let w = word.lowercased()
+                .folding(options: .diacriticInsensitive, locale: Locale(identifier: "en_US"))
+            if !w.isEmpty, name.contains(w) { return true }
+        }
+        let ingredients = (p.ingredientsText ?? "").lowercased()
+            .folding(options: .diacriticInsensitive, locale: Locale(identifier: "en_US"))
+        for term in cfg.ingredientFlavorTerms {
+            let t = term.lowercased()
+                .folding(options: .diacriticInsensitive, locale: Locale(identifier: "en_US"))
+            if !t.isEmpty, ingredients.contains(t) { return true }
+        }
+        return false
+    }
+
+    /// Fix 4 — validate nutritional signature; rerail on envelope violation.
+    static func applyRoutingPlausibility(
+        _ p: Product, attempted: String, rs: RulesetV4
+    ) -> String {
+        guard let envelope = rs.routingPlausibility?[attempted] else {
+            return attempted
+        }
+        let sugar = p.nutrients.sugar_g
+        let caffeine = p.caffeine_mg  // mapped OFF caffeine_100g → mg/100 ml
+
+        var fired: [String] = []
+        if let maxCaf = envelope.maxCaffeineMgPer100ml,
+           let caf = caffeine, caf >= maxCaf {
+            fired.append(String(format: "caffeine_mg/100ml %.1f ≥ %.1f", caf, maxCaf))
+        }
+        if let maxSugar = envelope.maxSugarGPer100ml,
+           let s = sugar, s >= maxSugar {
+            fired.append(String(format: "sugars_100g %.1f ≥ %.1f", s, maxSugar))
+        }
+        guard !fired.isEmpty else { return attempted }
+
+        let used = envelope.rerouteTo
+        #if DEBUG
+        DrinksScanDebug.logRerail(
+            productId: p.id,
+            productName: p.name,
+            attempted: attempted,
+            used: used,
+            thresholdsFired: fired
+        )
+        #endif
+        // Rerailed drinks may still upgrade to juice_100.
+        if used == "drinks", DrinksScoring.qualifiesAsJuice100(p) {
+            return "juice_100"
+        }
+        return used
+    }
+
     // MARK: V5.0.9 / V5.1.0 — integrity helpers
 
     /// Drink-like profiles skip food-only v5.1.0 axes (sweetener cap / isolate / S15 foods).
-    private static let drinkLikeProfiles: Set<String> = ["drinks", "unscored_sweetener"]
+    private static let drinkLikeProfiles: Set<String> = ["drinks", "juice_100", "unscored_sweetener"]
 
     private static func isFoodProfile(_ id: String) -> Bool {
         !drinkLikeProfiles.contains(id)
@@ -1031,6 +1315,15 @@ enum ScoringEngineV4 {
                                 ?? rs.s5Thresholds["standard"] ?? [3, 8, 15],
                             unknownCredit: 0.40)
             return (r.0, r.1, nil)
+        case "S6":
+            // Legacy path — drinks profile uses DrinksScoring.s6Credit instead.
+            let r = DrinksScoring.s6Credit(p); return (r.0, r.1, nil)
+        case "S7":
+            let r = DrinksScoring.s7Credit(p, rs: rs); return (r.0, r.1, nil)
+        case "S8":
+            let serving = DrinksScoring.effectiveServing(for: p)
+            let r = DrinksScoring.s8Credit(p, serving: serving)
+            return (r.0, r.1, r.3 ? String(format: "estimated %.0f mg", r.2) : nil)
         case "S10":
             let r = s10(p, rs: rs); return (r.0, r.1, nil)
         case "S12":
@@ -1062,6 +1355,13 @@ enum ScoringEngineV4 {
         default:
             return (0, false, nil)
         }
+    }
+
+    /// Package-visible evaluate for `DrinksScoring` (S1 reuse).
+    static func _evaluateForDrinks(_ rule: String, variant: String?, product: Product,
+                                   rs: RulesetV4, profileId: String)
+    -> (Double, Bool, String?) {
+        evaluate(rule, variant: variant, product: product, rs: rs, profileId: profileId)
     }
 
     // MARK: Phase C category rules
@@ -1293,8 +1593,10 @@ enum ScoringEngineV4 {
         return (0.40, false)
     }
 
-    // MARK: S3 — added sugar (fvn-discounted fallback; drinks free-sugar + NNS floor)
+    // MARK: S3 — added sugar (fvn-discounted fallback; drinks = per-serving Oasis)
 
+    /// Artificial NNS codes used only by the legacy drinks-variant floor on
+    /// non-`drinks` profiles that still use `variant: "drinks"` (e.g. plant_milk).
     private static let nnsCodes: Set<String> = [
         "e950", "e951", "e954", "e955", "e957", "e959", "e960", "e961", "e962", "e969",
     ]
@@ -1310,16 +1612,84 @@ enum ScoringEngineV4 {
         return nnsTextMarkers.contains { hay.contains($0) }
     }
 
+    /// Default beverage serving when OFF `serving_size` is missing / unparseable.
+    static let defaultDrinkServingMl: Double = 250
+
+    /// Parse OFF free-form serving size into milliliters. Returns inferred=true
+    /// when falling back to `defaultDrinkServingMl`.
+    static func parseServingMilliliters(_ raw: String?) -> (ml: Double, inferred: Bool) {
+        guard let raw, !raw.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+            return (defaultDrinkServingMl, true)
+        }
+        let s = raw.lowercased()
+            .replacingOccurrences(of: ",", with: ".")
+            .replacingOccurrences(of: "\u{00a0}", with: " ")
+
+        // Prefer liquid units; ignore solid-only servings (g / oz by weight).
+        let patterns: [(String, Double)] = [
+            (#"(\d+(?:\.\d+)?)\s*(?:fl\.?\s*oz|floz|fluid\s*ounces?)"#, 29.5735),
+            (#"(\d+(?:\.\d+)?)\s*ml\b"#, 1.0),
+            (#"(\d+(?:\.\d+)?)\s*l\b"#, 1000.0),
+            (#"(\d+(?:\.\d+)?)\s*cl\b"#, 10.0),
+        ]
+        for (pattern, factor) in patterns {
+            if let re = try? NSRegularExpression(pattern: pattern),
+               let match = re.firstMatch(in: s, range: NSRange(s.startIndex..., in: s)),
+               match.numberOfRanges >= 2,
+               let range = Range(match.range(at: 1), in: s),
+               let value = Double(s[range]), value > 0 {
+                return (value * factor, false)
+            }
+        }
+        return (defaultDrinkServingMl, true)
+    }
+
     private static func s3(_ p: Product, variant: String, rs: RulesetV4,
                            profileId: String) -> (Double, Bool, String?) {
-        let thresholds = rs.s3Thresholds[variant] ?? rs.s3Thresholds["foods"]!
         let fvn = p.nutrients.fvn ?? 0
-        let isDrinks = variant == "drinks"
+        let isDrinksProfile = profileId == "drinks" || profileId == "juice_100"
+        let isDrinksVariant = variant == "drinks" || variant == "drinksServing"
+
+        // Drinks profile: Oasis-style per-serving thresholds (variant drinksServing).
+        if isDrinksProfile {
+            let (servingMl, inferred) = parseServingMilliliters(p.servingSize)
+            let per100: Double?
+            var pathNote: String
+            if let added = p.nutrients.addedSugar_g, added > 0 {
+                if fvn >= 80, let total = p.nutrients.sugar_g {
+                    per100 = max(added, total * 0.70)
+                    pathNote = "added+fvn70"
+                } else {
+                    per100 = added
+                    pathNote = "added"
+                }
+            } else if let total = p.nutrients.sugar_g {
+                let discount = min(0.30, fvn / 100)
+                per100 = total * (1 - discount)
+                pathNote = "total×(1−fvn30)"
+            } else {
+                return (0.25, false, "S3 drinks: no sugar data")
+            }
+            let sugarPerServing = per100! * (servingMl / 100)
+            let thresholds = rs.s3Thresholds["drinksServing"]
+                ?? rs.s3Thresholds[variant]
+                ?? [2, 8, 16, 30]
+            let result = stepped(sugarPerServing, thresholds: thresholds, unknownCredit: 0.25)
+            let note = String(
+                format: "S3 drinksServing: %.1f g/serving (%.0f ml%@, %@) → f %.3f",
+                sugarPerServing, servingMl, inferred ? " default" : "", pathNote, result.0
+            )
+            return (result.0, result.1, note)
+        }
+
+        let thresholds = rs.s3Thresholds[variant] ?? rs.s3Thresholds["foods"]!
+        // plant_milk etc. still use per-100 ml `drinks` thresholds.
+        let useDrinksFvnCap = isDrinksVariant
 
         let result: (Double, Bool)
         if let added = p.nutrients.addedSugar_g, added > 0 {
             let effective: Double
-            if isDrinks, fvn >= 80, let total = p.nutrients.sugar_g {
+            if useDrinksFvnCap, fvn >= 80, let total = p.nutrients.sugar_g {
                 effective = max(added, total * 0.70)
             } else {
                 effective = added
@@ -1327,7 +1697,7 @@ enum ScoringEngineV4 {
             result = stepped(effective, thresholds: thresholds, unknownCredit: 0.25)
         } else if let total = p.nutrients.sugar_g {
             let discount: Double
-            if isDrinks {
+            if useDrinksFvnCap {
                 discount = min(0.30, fvn / 100)
             } else {
                 discount = min(1, fvn / 100)
@@ -1341,13 +1711,14 @@ enum ScoringEngineV4 {
         var f = result.0
         var note: String? = nil
 
-        // Drinks NNS floor — leave as-is; do not stack with foods sweetener cap.
-        if isDrinks, hasNonNutritiveSweetener(p) {
+        // Legacy NNS floor for non-drinks profiles that still use drinks variant
+        // (e.g. plant_milk). Drinks profile uses S6 instead — no stack.
+        if useDrinksFvnCap, hasNonNutritiveSweetener(p) {
             return (min(f, 0.30), result.1, nil)
         }
 
         // V5.1.0 — sweetener-substitution cap (foods only).
-        if rs.isV510, isFoodProfile(profileId), !isDrinks {
+        if rs.isV510, isFoodProfile(profileId), !isDrinksProfile {
             let sweets = IngredientIntegrity.sweetenerSystemMatches(
                 ingredientsText: p.ingredientsText)
             if !sweets.isEmpty {
@@ -1363,7 +1734,7 @@ enum ScoringEngineV4 {
         }
 
         // V5.1.0 — intrinsic sugar discount for simple whole foods (dairy/fruit/honey).
-        if rs.isV510, isFoodProfile(profileId), !isDrinks {
+        if rs.isV510, isFoodProfile(profileId), !isDrinksProfile {
             let q = IngredientIntegrity.qualifiesForIntrinsicSugarDiscount(
                 ingredientsText: p.ingredientsText,
                 additivesEmpty: p.additives.isEmpty
@@ -1440,18 +1811,30 @@ enum ScoringEngineV4 {
 
     // MARK: Shared helpers
 
-    /// Piecewise-linear through anchors f(t0)=1.0, f(t1)=0.60, f(t2)=0.30,
-    /// f(t2·1.5)=0.0. Same signature / unknownCredit as the old step function.
+    /// Piecewise-linear through anchors. With 3 thresholds: f(t0)=1.0, f(t1)=0.60,
+    /// f(t2)=0.30, f(t2·1.5)=0.0. With 4 thresholds (drinksServing): last value is
+    /// the explicit zero point (Oasis: 2 / 8 / 16 / 30 g per serving).
     static func stepped(_ value: Double?, thresholds t: [Double],
                         unknownCredit: Double) -> (Double, Bool) {
         guard let v = value else { return (unknownCredit, false) }
-        guard t.count == 3 else { return (unknownCredit, false) }
-        let anchors: [(Double, Double)] = [
-            (t[0], 1.0),
-            (t[1], 0.60),
-            (t[2], 0.30),
-            (t[2] * 1.5, 0.0),
-        ]
+        let anchors: [(Double, Double)]
+        if t.count == 4 {
+            anchors = [
+                (t[0], 1.0),
+                (t[1], 0.60),
+                (t[2], 0.30),
+                (t[3], 0.0),
+            ]
+        } else if t.count == 3 {
+            anchors = [
+                (t[0], 1.0),
+                (t[1], 0.60),
+                (t[2], 0.30),
+                (t[2] * 1.5, 0.0),
+            ]
+        } else {
+            return (unknownCredit, false)
+        }
         if v <= anchors[0].0 { return (1.0, true) }
         if v >= anchors.last!.0 { return (0.0, true) }
         for i in 0..<(anchors.count - 1) {

@@ -47,7 +47,7 @@ struct V507HotfixTests {
     @Test func rulesetIsV507() {
         #expect(rs.version == "2026.07-v5.1.0")
         #expect(rs.profiles["sweeteners"] == nil)
-        #expect(rs.profiles.count == 12)
+        #expect(rs.profiles.count == 13)
         #expect(rs.sweetenerType != nil)
         #expect(rs.authenticityBad != nil)
     }

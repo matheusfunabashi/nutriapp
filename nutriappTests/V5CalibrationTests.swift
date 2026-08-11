@@ -85,11 +85,13 @@ struct V5CalibrationTests {
     }
 
     private var cokeLike: Product {
-        product(kcal: 42, protein: 0, sugar: 10.6, sodium: 10, nova: 4,
+        var p = product(kcal: 42, protein: 0, sugar: 10.6, sodium: 10, nova: 4,
                 ingredientsText: "carbonated water, sugar, caramel color, phosphoric acid",
                 additives: [ProductAdditive(name: "Caramel IV", risk: .moderate, code: "e150d", tier: .moderate),
                             ProductAdditive(name: "Phosphoric acid", risk: .moderate, code: "e338", tier: .mild)],
                 categories: ["beverages", "carbonated-drinks", "sodas"])
+        p.servingSize = "12 fl oz"
+        return p
     }
 
     private var whiteSugar: Product {
@@ -212,15 +214,20 @@ struct V5CalibrationTests {
         #expect(r.base >= 70)
     }
 
-    @Test func cokeLikeAtMost30() throws {
+    @Test func cokeLikeBelowSparklingAndDiet() throws {
         let r = try #require(ScoringEngineV4.score(cokeLike))
-        #expect(r.base <= 30)
+        #expect(r.base <= 25)
+        #expect(r.profileId == "drinks")
     }
 
     @Test func orangeJuiceFreeSugarFix() throws {
         let r = try #require(ScoringEngineV4.score(orangeJuice))
-        #expect(r.base <= 55)
-        #expect(r.base >= 45)
+        #expect(r.profileId == "juice_100")
+        // Dose-aware juice_100: missing size → 355 ml ≈ 30 g sugar → OK band, not Good.
+        #expect(r.base >= 40 && r.base <= 55)
+        let s3 = try #require(r.rules.first { $0.rule == "S3" })
+        #expect(s3.fraction < 1.0)
+        // Per-100 ml drinks thresholds still used by plant_milk variant.
         let (f, _) = ScoringEngineV4.stepped(8.4 * 0.70, thresholds: rs.s3Thresholds["drinks"]!,
                                              unknownCredit: 0.25)
         #expect(f < 1.0)

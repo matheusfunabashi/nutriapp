@@ -296,7 +296,7 @@ struct OpenFoodFactsService {
             preferredLanguages: OFFImageResolver.preferredLanguages()
         )
 
-        return Product(
+        let product = Product(
             id: barcode,
             name: off.productName?.isEmpty == false ? off.productName! : "Unknown product",
             brand: primaryBrand(off.brands),
@@ -335,6 +335,16 @@ struct OpenFoodFactsService {
             additiveIngredientTextMissing: additivesScan.ingredientTextMissing,
             dataSource: off.source
         )
+        #if DEBUG
+        var nutrimentKeys: [String] = []
+        if n?.sugars != nil { nutrimentKeys.append("sugars_100g") }
+        if n?.addedSugars != nil { nutrimentKeys.append("added-sugars_100g") }
+        if n?.caffeine != nil { nutrimentKeys.append("caffeine_100g") }
+        if n?.energyKcal != nil { nutrimentKeys.append("energy-kcal_100g") }
+        if n?.sodium != nil { nutrimentKeys.append("sodium_100g") }
+        DrinksScanDebug.logMappedProduct(product, barcode: barcode, nutrimentKeys: nutrimentKeys)
+        #endif
+        return product
     }
 
     // MARK: Additive detection
