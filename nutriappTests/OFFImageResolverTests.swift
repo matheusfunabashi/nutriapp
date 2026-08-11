@@ -196,7 +196,7 @@ struct OFFImageResolverTests {
         let resolved = OFFImageResolver.resolve(
             barcode: barcode,
             lang: nil,
-            imageFrontURL: "http://images.openfoodfacts.org/images/products/x/front.jpg",
+            imageFrontURL: "http://images.openfoodfacts.org/images/products/x/front.jpg", // greenlight:ignore http-not-https
             imageURL: nil,
             selectedFrontDisplay: nil,
             imageEntries: nil,
