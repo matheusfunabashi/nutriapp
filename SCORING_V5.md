@@ -153,6 +153,28 @@ A product tagged `tea_coffee` that fires `energyDrinkEvidence` therefore scores 
 
 **Merge order:** Track 2 (S3 low-end, Tier 3 0.70, 60 mg caffeine-cap start, I19–I20) before building the `tea_coffee` drinks profile. Calibrating that profile against pre-Track-2 curves forces a second fixture pass.
 
+**Resolved — the pre-Track-2 targets for three fixtures were wrong, not the curve.**
+LaCroix, unsweetened iced tea, and kombucha were specced to land well below where
+Track 2 puts them, and no curve change could have reached those targets:
+
+- LaCroix and iced tea contain **zero sugar and no sweeteners**, so their S3 and
+  S6 credits are already 1.000. A sugar or sweetener change cannot lower a rule
+  at full credit. Their scores are simply the ceiling for a flawless drink.
+- Kombucha's old target contradicted Track 2's own anchors. It is flawless except
+  for sugar, so ≤75 required an S3 credit ≤0.385, while Track 2 specifies 0.48 at
+  8 g. No drink with ≤8 g sugar and otherwise perfect credits can score ≤75; a
+  flawless drink first reaches 75 at ~11.3 g. Kombucha has 6.0 g.
+
+The ranges were therefore re-derived from measured scores. Because widening
+ranges weakens them as a signal, **I23** now asserts the ladder those ranges rest
+on directly: unsweetened zero-sugar > kombucha > lightly sweetened > diet soda >
+sugary soda, each by 5+ points. Run `printCalibrationTable` for per-rule numbers.
+
+**Plain vs flavored water.** Genuinely unflavored water — still or sparkling —
+stays `unsupported`: it is not a product choice to rate. Flavored sparkling water
+**is** scored, via `flavoredWaterEvidence`, because the flavoring makes it one.
+The line is flavor evidence in the name or ingredients, nothing else.
+
 ## Migration
 
 - `rulesetV510Rescored` — one-shot lazy rescore when v5.1.0 is enabled.
