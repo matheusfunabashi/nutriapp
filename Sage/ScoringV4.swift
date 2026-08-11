@@ -160,6 +160,11 @@ struct RulesetV4: Codable {
     }
     var flavoredWaterEvidence: FlavoredWaterEvidence? = nil
 
+    /// Track 2: drinks S3 credit anchors as `[[gramsPerServing, credit]]`.
+    /// A plain threshold list cannot express this curve — the credits at the
+    /// interior anchors (0.48 / 0.25) are not `stepped`'s fixed 0.60 / 0.30.
+    var s3DrinksServingCurve: [[Double]]? = nil
+
     /// v2.4: caffeine + stimulant ingredients → energy drink, independent of OFF tags.
     struct EnergyDrinkEvidence: Codable {
         let minCaffeineMgPer100ml: Double

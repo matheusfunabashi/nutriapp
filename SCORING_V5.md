@@ -89,7 +89,9 @@ identical scores across distinct products usually mean a cap plateau.
 
 - **Effective serving:** container ≤600 ml → whole container (anti-gaming);
   else declared serving if 100–600 ml; else **355 ml** + `estimatedServing`.
-- **S3 (drinks):** sugar per effective serving (anchors ≤2 / 8 / 16 / ≥30 g).
+- **S3 (drinks):** sugar per effective serving. Track 2 anchors (`s3DrinksServingCurve`
+  in both rulesets): ≤1 g → 100%, 5 g → 60%, 8 g → 48%, 16 g → 25%, ≥30 g → 0%.
+  The low end is steep so a lightly sweetened soda stops scoring like plain water.
   FVN discount max **15%** only for leftover juice-like products (nectars /
   juice drinks). No micronutrient boost on the regular profile.
 - **S3 (`juice_100`):** raw total sugar, no FVN discount. Curve ≤6 → 100%,
@@ -100,7 +102,8 @@ identical scores across distinct products usually mean a cap plateau.
   plus stimulants (taurine / guarana / mate).
 - **S6** three tiers (heavy NNS / sugar alcohols / stevia–monk); allulose neutral.
   Tier-1 is a strong per-sweetener credit hit (first → 0.10, each extra −0.10);
-  Tier-3 stevia/monk stays light (~0.90 alone). Tier-1 also sets
+  Tier-3 stevia/monk is a real penalty after Track 2 (first → 0.70, each extra
+  −0.10), no longer a rounding nudge. Tier-1 also sets
   **sweetenerCap = 55** as a net. Artificial sweeteners are score-limited as a
   precautionary signal: WHO conditionally recommends against non-sugar
   sweeteners for long-term weight control, and large cohorts associate high
@@ -114,7 +117,8 @@ identical scores across distinct products usually mean a cap plateau.
   sports+NNS, and energy (caffeine / stimulants / sugar) separate products
   below the caps instead of flattening on them.
 - **Caps (drinks):** sugar (≤16 → none; 16–30 → 55→20; ≥30 → 20); caffeine
-  (≤80 → none; 80–160 → 100→45; 160–300 → 45→28; ≥300 → 28); Tier-1 → 55.
+  (Track 2: ≤60 → none; 60–160 → 100→52; 160–200 → 52→40; 200–300 → 40→25;
+  ≥300 → 25 — monotonic by construction, guarded by I20); Tier-1 → 55.
   Heavy sugar + caffeine may undercut below `sugarCap` so energy drinks land
   below plain sugary soda.
 - **Caps (`juice_100` sugar only):** ≤20 g → none; 20–40 g → 60→36; ≥40 g → 36

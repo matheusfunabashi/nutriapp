@@ -92,11 +92,13 @@ struct DrinksOasisScoringTests {
         #expect(mid > 20 && mid < 55)
     }
 
+    /// Track 2 (3c): cap starts biting at 60 mg and lands on 25 at 300 mg.
     @Test func caffeineCapCurve() {
         #expect(DrinksScoring.caffeineCap(mgPerServing: 50) == 100)
-        #expect(DrinksScoring.caffeineCap(mgPerServing: 80) == 100)
-        #expect(DrinksScoring.caffeineCap(mgPerServing: 160) == 45)
-        #expect(DrinksScoring.caffeineCap(mgPerServing: 300) == 28)
+        #expect(DrinksScoring.caffeineCap(mgPerServing: 60) == 100)
+        #expect(DrinksScoring.caffeineCap(mgPerServing: 160) == 52)
+        #expect(DrinksScoring.caffeineCap(mgPerServing: 200) == 40)
+        #expect(DrinksScoring.caffeineCap(mgPerServing: 300) == 25)
     }
 
     @Test func sweetenerCapTier1() {
@@ -159,7 +161,8 @@ struct DrinksOasisScoringTests {
         )
         let r = try #require(ScoringEngineV4.score(stevia))
         let s6 = try #require(r.rules.first { $0.rule == "S6" })
-        #expect(abs(s6.fraction - 0.90) < 0.001)
+        // Track 2 (3b): one Tier-3 sweetener lands on 0.70, not the old ~0.90.
+        #expect(abs(s6.fraction - 0.70) < 0.001)
         #expect(r.drinksBreakdown?.sweetenerCap == 100)
     }
 

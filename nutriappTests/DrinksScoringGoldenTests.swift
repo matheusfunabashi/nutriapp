@@ -551,7 +551,8 @@ struct DrinksScoringGoldenTests {
         #expect(profile == "drinks")
         #expect(!DrinksScoring.qualifiesAsJuice100(steviaJuiceDrink))
         let s6 = bd.rules.first { $0.rule == "S6" }!
-        #expect(abs(s6.fraction - 0.90) < 0.001)
+        // Track 2 (3b): a single Tier-3 sweetener lands on 0.70, not the old ~0.90.
+        #expect(abs(s6.fraction - 0.70) < 0.001)
         #expect(base >= 10)
     }
 
@@ -680,6 +681,19 @@ struct DrinksScoringGoldenTests {
             printBreakdown("I18 bottle", bottle, "juice_100", score(oj450SameJuice).2)
         }
         #expect(carton - bottle >= 10)
+    }
+
+    /// I20: the caffeine cap never rises as caffeine rises (curve continuity).
+    @Test func invariantI20_CaffeineCapMonotonic() {
+        var previous = DrinksScoring.caffeineCap(mgPerServing: 0)
+        for mg in stride(from: 0.0, through: 400.0, by: 0.5) {
+            let cap = DrinksScoring.caffeineCap(mgPerServing: mg)
+            if cap > previous {
+                print("I20 STOP: cap rose to \(cap) at \(mg) mg (was \(previous))")
+            }
+            #expect(cap <= previous, "cap \(cap) at \(mg) mg exceeds \(previous)")
+            previous = cap
+        }
     }
 
     /// Tag-variance: same drink, different OFF tags, scores stay within `tolerance`.

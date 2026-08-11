@@ -234,10 +234,12 @@ struct ScoringV4Tests {
         cola.servingSize = "12 fl oz"
         #expect(s3(cola) == 0.0)
         // A genuinely unsweetened drink (added 0, low total) keeps full credit.
+        // Track 2 (3a) moved the 100% plateau from ≤2 g to ≤1 g per serving, so
+        // this seltzer (0.3 g/100 ml → ~1.07 g/355 ml) sits a hair under 1.0.
         let seltzer = product(kcal: 0, sugar: 0.3, addedSugar: 0, fvn: 0, nova: 1,
                               ingredientsText: "carbonated water, natural flavor",
                               categories: ["beverages", "sodas"])
-        #expect(s3(seltzer) == 1.0)
+        #expect(s3(seltzer) > 0.99)
         // A real, positive added-sugars value is still trusted over total sugar.
         let yogurt = product(kcal: 90, sugar: 20, addedSugar: 3, fvn: 0, nova: 3,
                              categories: ["dairies", "yogurts"])
