@@ -813,7 +813,7 @@ struct DrinksScoringGoldenTests {
     @Test func printCalibrationTable() {
         var lines = ["=== DRINKS CALIBRATION (Track 2 + Tier-3 cap) ===",
                      "fixture\tscore\ttarget\tprofile\tbind\tserving_ml\tsugar_g\tcaf_mg"
-                     + "\tS1\tS3\tS8\tS6\tS4\tweighted\tdrag\tsugarCap\tcafCap\tsweetCap"
+                     + "\tS1\tS3\tS8\tS6\tS4\tweighted\tdrag\tsugarCap\tcafCap\tsweetCap\tsatCap"
                      + "\tpkg_badge"]
         for (label, p, expected) in goldenRows {
             guard ScoringEngineV4.route(p) != "unsupported",
@@ -834,7 +834,7 @@ struct DrinksScoringGoldenTests {
                 + "\t\(credit("S1"))\t\(credit("S3"))\t\(credit("S8"))"
                 + "\t\(credit("S6"))\t\(credit("S4"))"
                 + "\t\(bd.weightedScore)\t\(bd.stackingDrag)"
-                + "\t\(bd.sugarCap)\t\(bd.caffeineCap)\t\(bd.sweetenerCap)"
+                + "\t\(bd.sugarCap)\t\(bd.caffeineCap)\t\(bd.sweetenerCap)\t\(bd.satFatCap)"
                 + "\t\(String(format: "%.2f", bd.packagingCredit))")
         }
         print(lines.joined(separator: "\n"))

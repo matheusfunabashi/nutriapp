@@ -67,7 +67,7 @@ of \(\sum w\). Confidence haircuts apply for missing nutrition inputs (floor 60%
 | `dairy_milk` | S1 24, dairyProcessing 10, S3 6, S5 6, S2 6, S12 20, S13 8, S14 14, S15 6 |
 | `yogurt_cheese` | S1 24, dairyProcessing 8, S3 10, S4 8, S5 8, S12 14, S13 8, S14 14, S15 6 |
 | `plant_milk` | S1 20, S10 16, contaminantRisk 8, S3 10, S5 4, S12 12, S2 10, S14 14, S15 6 |
-| `tea_coffee` | S1 28, S2 24, brewMaterial 12, S3 8, S12 14, S14 14 |
+| `tea_coffee` | S1 28, S2 24, brewMaterial 12, S3 8 (`foods`), S12 14 (`dryBrew` — redistributes: beans/leaves never carry a micronutrient panel), S14 14 |
 | `drinks` | S1 23, S3 43 (`drinksServing`), S8 15 (caffeine), S6 13 (tiered sweeteners), S4 6 — **no S2, no S7** |
 | `juice_100` | same weights as `drinks`; dose-aware S3 + juice sugar cap + flat +3 micronutrient boost |
 
@@ -92,6 +92,12 @@ identical scores across distinct products usually mean a cap plateau.
 - **S3 (drinks):** sugar per effective serving. Track 2 anchors (`s3DrinksServingCurve`
   in both rulesets): ≤1 g → 100%, 5 g → 60%, 8 g → 48%, 16 g → 25%, ≥30 g → 0%.
   The low end is steep so a lightly sweetened soda stops scoring like plain water.
+  **Lactose allowance (M2):** for RTDs with dairy ingredient evidence (plant-milk
+  phrases stripped first, so "oat milk" never qualifies), up to 4.8 g/100 ml of
+  total sugar is treated as intrinsic lactose and excluded from S3 and the sugar
+  cap — WHO's free-sugar definition excludes milk sugars. A *positive* declared
+  added-sugars value is trusted instead when sane; OFF's bogus `added-sugars: 0`
+  stays untrusted. Config: `dairyLactoseAllowance` in both rulesets.
   FVN discount max **15%** only for leftover juice-like products (nectars /
   juice drinks). No micronutrient boost on the regular profile.
 - **S3 (`juice_100`):** raw total sugar, no FVN discount. Curve ≤6 → 100%,
@@ -99,7 +105,11 @@ identical scores across distinct products usually mean a cap plateau.
   sweeteners, additives limited to ascorbic / citric acid.
 - **S8** caffeine (measured or category default; energy drinks never default to 0).
   Steeper credit above ~80–150 mg/serving; energy drinks stack extra S8 drag
-  plus stimulants (taurine / guarana / mate).
+  plus stimulants (taurine / guarana / mate). **Non-energy coffee/tea RTDs (M4)**
+  use an EFSA-anchored gentle curve instead (no meaningful dock ≤100 mg, moderate
+  to 200 mg, steep beyond 300) and a caffeine cap that starts at the 200 mg
+  single-dose mark. `energyDrinkEvidence` outranks the tag match (I27), so a
+  stimulant-stacked product wearing tea tags stays on the strict path.
 - **S6** three tiers (heavy NNS / sugar alcohols / stevia–monk); allulose neutral.
   Tier-1 is a strong per-sweetener credit hit (first → 0.10, each extra −0.10);
   Tier-3 stevia/monk is a real penalty after Track 2 (first → 0.70, each extra
@@ -121,8 +131,10 @@ identical scores across distinct products usually mean a cap plateau.
   below the caps instead of flattening on them.
 - **Caps (drinks):** sugar (≤16 → none; 16–30 → 55→20; ≥30 → 20); caffeine
   (Track 2: ≤60 → none; 60–160 → 100→52; 160–200 → 52→40; 200–300 → 40→25;
-  ≥300 → 25 — monotonic by construction, guarded by I20); Tier-1 → 55;
-  Tier-2/3 → 74 above 2 g sugar/serving.
+  ≥300 → 25 — monotonic by construction, guarded by I20; non-energy coffee/tea
+  class: ≤200 → none; 200–300 → 100→70; 300–400 → 70→40); Tier-1 → 55;
+  Tier-2/3 → 74 above 2 g sugar/serving; **satFatCap (M3, cream visibility,
+  data-present only)**: ≤2 g/serving → none; 2→8 g → 95→40; ≥12 g → 25.
   Heavy sugar + caffeine may undercut below `sugarCap` so energy drinks land
   below plain sugary soda.
 - **Caps (`juice_100` sugar only):** ≤20 g → none; 20–40 g → 60→36; ≥40 g → 36
@@ -158,7 +170,7 @@ Precedence, highest first:
 3. **Category tag matches** (most-specific-first router).
 4. **Catch-all** `beverages` → `drinks`, else `general`.
 
-A product tagged `tea_coffee` that fires `energyDrinkEvidence` therefore scores as an energy drink on `drinks`. Nutritional plausibility envelopes (`routingPlausibility`) still rerail after a tag match (e.g. `plant_milk` caffeine/sugar; `tea_coffee` sugar ≥ 5 g/100 ml stub for Frappuccino-class RTD). Evidence outranks those tag matches.
+A product tagged `tea_coffee` that fires `energyDrinkEvidence` therefore scores as an energy drink on `drinks`. Nutritional plausibility envelopes (`routingPlausibility`) still rerail after a tag match (e.g. `plant_milk` caffeine/sugar; `tea_coffee` sugar ≥ 5 g/100 ml for sweetened RTDs). Evidence outranks those tag matches. **Liquid gate (M1):** an envelope with `requiresLiquid: true` fires only when the product's size or serving parses as a volume — per-100 ml bounds must never be applied to a powder (a 3-in-1 coffee mix at 60 g sugar/100 g is not a 60 g/100 ml liquid, and must not be handed a fictional 355 ml serving). Guarded by I26.
 
 **Merge order:** Track 2 (S3 low-end, Tier 3 0.70, 60 mg caffeine-cap start, I19–I20) before building the `tea_coffee` drinks profile. Calibrating that profile against pre-Track-2 curves forces a second fixture pass.
 
