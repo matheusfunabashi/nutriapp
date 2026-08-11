@@ -37,6 +37,12 @@ struct DrinksScoreBreakdown {
     let micronutrientBoost: Int
     /// Post-rule diet/energy stacking drag (points).
     let stackingDrag: Int
+    /// Packaging leach-pathway credit (glass 1.0 → PVC 0.0), surfaced as a
+    /// sustainability badge. **Not part of the health score** — the evidence
+    /// does not support ranking one clean liquid above another on its bottle.
+    let packagingCredit: Double
+    /// False when packaging material is missing or unrecognized.
+    let packagingHadData: Bool
 }
 
 enum DrinksScoring {
@@ -662,11 +668,17 @@ enum DrinksScoring {
         _ = s8had
 
         let (s4f, s4had) = s4Credit(p, serving: serving, rs: rs)
-        let (s7f, s7had) = s7Credit(p, rs: rs)
-        _ = s4had; _ = s7had
+        // Packaging is a sustainability signal, not a health one — computed for
+        // the badge, deliberately excluded from the weighted score. See F1.
+        let (packagingCredit, packagingHadData) = s7Credit(p, rs: rs)
+        _ = s4had
 
+        // S7 packaging removed (F1); its 6 points redistribute *proportionally*
+        // across the surviving rules rather than by hand — S4 sodium is ~1.000
+        // for nearly every drink, so weighting it up would hand near-free points
+        // to zero-sugar energy drinks and break the juice-beats-energy ordering.
         var weights: [String: Double] = [
-            "S1": 22, "S3": 40, "S8": 14, "S6": 12, "S4": 6, "S7": 6,
+            "S1": 23, "S3": 43, "S8": 15, "S6": 13, "S4": 6,
         ]
         for (k, m) in ruleMultipliers {
             if let w = weights[k] { weights[k] = w * m }
@@ -680,13 +692,13 @@ enum DrinksScoring {
         }
 
         let fractions: [String: Double] = [
-            "S1": s1f, "S3": s3f, "S8": s8f, "S6": s6f, "S4": s4f, "S7": s7f,
+            "S1": s1f, "S3": s3f, "S8": s8f, "S6": s6f, "S4": s4f,
         ]
         let had: [String: Bool] = [
-            "S1": s1had, "S3": s3had, "S8": true, "S6": s6had, "S4": s4had, "S7": s7had,
+            "S1": s1had, "S3": s3had, "S8": true, "S6": s6had, "S4": s4had,
         ]
 
-        let order = ["S1", "S3", "S8", "S6", "S4", "S7"]
+        let order = ["S1", "S3", "S8", "S6", "S4"]
         var rules: [V4RuleResult] = []
         var earned = 0.0
         for id in order {
@@ -775,7 +787,9 @@ enum DrinksScoring {
             sweetenerReasonKeys: sweetKeys,
             riskFactorCount: riskFactorCount(for: p, tiers: tiers),
             micronutrientBoost: boost,
-            stackingDrag: drag
+            stackingDrag: drag,
+            packagingCredit: packagingCredit,
+            packagingHadData: packagingHadData
         )
     }
 }

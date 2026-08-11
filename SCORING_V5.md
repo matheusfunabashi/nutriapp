@@ -17,7 +17,7 @@ they have a direct documented health pathway:
 |---|---|
 | `brewMaterial` | Microplastic exposure from plastic tea/coffee bags in hot water |
 | `contaminantRisk` | Arsenic risk for rice plant milks (rice → 0.4; else 1.0) |
-| `S7` packaging (drinks only) | Container leaching / microplastics for ready-to-drink beverages |
+| ~~`S7` packaging~~ | **Removed from scoring (F1)** — kept as a sustainability badge only. Container-leaching evidence has no dose-response basis for ranking one clean liquid above another. |
 | `S15` Fat Quality | Refining process + fatty-acid source (not “natural is better”) |
 
 ## Kill switch (V5.1.0)
@@ -68,7 +68,7 @@ of \(\sum w\). Confidence haircuts apply for missing nutrition inputs (floor 60%
 | `yogurt_cheese` | S1 24, dairyProcessing 8, S3 10, S4 8, S5 8, S12 14, S13 8, S14 14, S15 6 |
 | `plant_milk` | S1 20, S10 16, contaminantRisk 8, S3 10, S5 4, S12 12, S2 10, S14 14, S15 6 |
 | `tea_coffee` | S1 28, S2 24, brewMaterial 12, S3 8, S12 14, S14 14 |
-| `drinks` | S1 22, S3 40 (`drinksServing`), S8 14 (caffeine), S6 12 (tiered sweeteners), S4 6, S7 6 — **no S2** |
+| `drinks` | S1 23, S3 43 (`drinksServing`), S8 15 (caffeine), S6 13 (tiered sweeteners), S4 6 — **no S2, no S7** |
 | `juice_100` | same weights as `drinks`; dose-aware S3 + juice sugar cap + flat +3 micronutrient boost |
 
 ## Drinks profile v2.3 (cap-based)
@@ -131,7 +131,16 @@ identical scores across distinct products usually mean a cap plateau.
   micronutrient boost; if sugar/serving ≥20 g, weighted is clamped **&lt; 55**.
 - **Diet soda ordering:** scored above sugary soda (substitution evidence) and
   well below unsweetened drinks (cohort risk signals plus WHO precaution).
-- **S7** packaging leach pathway (glass > carton/alu > PET > PS/PVC; missing → 0.40).
+- **Packaging is not scored (F1).** The leach-pathway credit (glass > carton/alu >
+  PET > PS/PVC; missing → 0.40) still resolves and is surfaced on the breakdown as
+  `packagingCredit` / `packagingHadData` for a **sustainability badge**, but it no
+  longer contributes to the health score. Microplastic and antimony-migration
+  evidence has no dose-response basis for ranking one clean liquid above another,
+  and at 6% it was swinging a flawless drink by 4.5 points — more than kombucha's
+  entire sugar load cost it. Its weight was redistributed **proportionally** across
+  the surviving rules (22/40/14/12/6 → 23/43/15/13/6). Proportional matters: S4
+  sodium is ~1.000 for nearly every beverage, so weighting it up by hand handed
+  near-free points to zero-sugar energy drinks and broke I16.
 - Flags: `lowDataConfidence`, `estimatedServing`, `bindingCapId` on the product /
   breakdown model for UI chips later.
 
@@ -161,11 +170,13 @@ Track 2 puts them, and no curve change could have reached those targets:
   S6 credits are already 1.000. A sugar or sweetener change cannot lower a rule
   at full credit. Their scores are simply the ceiling for a flawless drink.
 - Kombucha's old target contradicted Track 2's own anchors. It is flawless except
-  for sugar, so ≤75 required an S3 credit ≤0.385, while Track 2 specifies 0.48 at
-  8 g. No drink with ≤8 g sugar and otherwise perfect credits can score ≤75; a
-  flawless drink first reaches 75 at ~11.3 g. Kombucha has 6.0 g.
+  for sugar (59.6 points before S3), so ≤75 required an S3 credit ≤0.385, while
+  Track 2 specifies 0.48 at 8 g. No drink with ≤8 g sugar and otherwise perfect
+  credits can score ≤75; a flawless drink first reaches 75 at ~11.3 g. Kombucha
+  has 6.0 g.
 
-The ranges were therefore re-derived from measured scores. Because widening
+The ranges were therefore re-derived from measured scores (LaCroix and every
+flavored-water variants and iced tea 95–100 after F1, kombucha 77–87). Because widening
 ranges weakens them as a signal, **I23** now asserts the ladder those ranges rest
 on directly: unsweetened zero-sugar > kombucha > lightly sweetened > diet soda >
 sugary soda, each by 5+ points. Run `printCalibrationTable` for per-rule numbers.

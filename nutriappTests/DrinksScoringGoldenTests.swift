@@ -311,14 +311,14 @@ struct DrinksScoringGoldenTests {
     // Ranges revised after Track 2: a zero-sugar, unsweetened drink genuinely
     // belongs near the top, so these sit around their measured scores rather
     // than the pre-Track-2 targets, which no curve could reach.
-    @Test func goldenLaCroix() { expectRange(lacroix, 91, 98) }
+    @Test func goldenLaCroix() { expectRange(lacroix, 95, 100) }
     @Test func goldenPoppi() { expectRange(poppi, 62, 74) }
     @Test func goldenOJ300() { expectRange(oj300, 44, 50, profile: "juice_100") }
     @Test func goldenOJ1L() { expectRange(oj1L, 56, 63, profile: "juice_100") }
     @Test func goldenSimplyOrange() { expectRange(simplyOrange, 44, 50, profile: "juice_100") }
     @Test func goldenColdPressed450() { expectRange(coldPressed450, 34, 40, profile: "juice_100") }
     @Test func goldenKombucha() { expectRange(kombucha, 77, 87) }
-    @Test func goldenIcedTea() { expectRange(icedTea, 90, 97) }
+    @Test func goldenIcedTea() { expectRange(icedTea, 95, 100) }
 
     // MARK: Live-pipeline golden fixtures (captured OFF payloads)
 
@@ -415,7 +415,7 @@ struct DrinksScoringGoldenTests {
     @Test func goldenLaCroixLiveTags_pipelineFix() throws {
         let p = try loadCapturedOFF("0012993101619")
         #expect(ScoringEngineV4.route(p) == "drinks")
-        expectRange(p, 91, 98)
+        expectRange(p, 95, 100)
         if case .unsupported = ScoringEngineV4.scoreProduct(p, for: MockData.user) {
             Issue.record("LaCroix live must not be unsupported after Fix 3")
         }
@@ -498,13 +498,13 @@ struct DrinksScoringGoldenTests {
     @Test func goldenAguaLimaoRoutesToDrinks() {
         #expect(ScoringEngineV4.hasFlavoredWaterEvidence(aguaLimaoBR))
         #expect(ScoringEngineV4.route(aguaLimaoBR) == "drinks")
-        expectRange(aguaLimaoBR, 91, 98)
+        expectRange(aguaLimaoBR, 95, 100)
     }
 
     @Test func goldenAcquaLimoneRoutesToDrinks() {
         #expect(ScoringEngineV4.hasFlavoredWaterEvidence(acquaLimoneIT))
         #expect(ScoringEngineV4.route(acquaLimoneIT) == "drinks")
-        expectRange(acquaLimoneIT, 91, 98)
+        expectRange(acquaLimoneIT, 95, 100)
     }
 
     @Test func teaCoffeeTagsYieldToEnergyEvidence() {
@@ -525,7 +525,7 @@ struct DrinksScoringGoldenTests {
         #expect(!(p.categories ?? []).contains("flavored-waters"))
         #expect(ScoringEngineV4.hasFlavoredWaterEvidence(p))
         #expect(ScoringEngineV4.route(p) == "drinks")
-        expectRange(p, 91, 98)
+        expectRange(p, 95, 100)
     }
 
     /// Fix 5 negative: plain sparkling water stays unsupported.
@@ -791,20 +791,20 @@ struct DrinksScoringGoldenTests {
             ("Diet Coke", dietCoke, "40-55"), ("Coke Zero", cokeZero, "40-47"),
             ("Monster", monster, "10-15"), ("Monster Zero", monsterZero, "25-40"),
             ("Celsius", celsius, "25-40"), ("Red Bull", redBull, "15-25"),
-            ("LaCroix", lacroix, "91-98"), ("Poppi", poppi, "62-74"),
+            ("LaCroix", lacroix, "95-100"), ("Poppi", poppi, "62-74"),
             ("OJ 300ml", oj300, "44-50"), ("OJ 1L", oj1L, "56-63"),
             ("Simply 340", simplyOrange, "44-50"), ("ColdPress 450", coldPressed450, "34-40"),
-            ("Kombucha", kombucha, "77-87"), ("Iced tea", icedTea, "90-97"),
+            ("Kombucha", kombucha, "77-87"), ("Iced tea", icedTea, "95-100"),
             ("Coca EU 1.5L", cocaEu15L, "20"), ("RB clean can", redbullCleanCan, "15-17"),
             ("RB inflated add", redbullInflatedAdded, "15-17"),
-            ("LaCroix live", lacroixLiveTags, "91-98"),
+            ("LaCroix live", lacroixLiveTags, "95-100"),
             ("RB chicory tags", try! loadCapturedOFF("90454615"), "energy evidence"),
-            ("LaCroix no flav", try! loadCapturedOFF("0012993441128"), "91-98"),
+            ("LaCroix no flav", try! loadCapturedOFF("0012993441128"), "95-100"),
             ("Plain sparkling", plainSparklingWater, "unsupported"),
             ("Oat milk ctrl", oatMilkPlantControl, "plant_milk ~49"),
             ("RB chicory synth", redBullChicoryTagged, "I21 vs RB"),
-            ("Água limão BR", aguaLimaoBR, "91-98"),
-            ("Acqua limone IT", acquaLimoneIT, "91-98"),
+            ("Água limão BR", aguaLimaoBR, "95-100"),
+            ("Acqua limone IT", acquaLimoneIT, "95-100"),
         ]
     }
 
@@ -813,7 +813,8 @@ struct DrinksScoringGoldenTests {
     @Test func printCalibrationTable() {
         var lines = ["=== DRINKS CALIBRATION (Track 2 + Tier-3 cap) ===",
                      "fixture\tscore\ttarget\tprofile\tbind\tserving_ml\tsugar_g\tcaf_mg"
-                     + "\tS1\tS3\tS8\tS6\tS4\tS7\tweighted\tdrag\tsugarCap\tcafCap\tsweetCap"]
+                     + "\tS1\tS3\tS8\tS6\tS4\tweighted\tdrag\tsugarCap\tcafCap\tsweetCap"
+                     + "\tpkg_badge"]
         for (label, p, expected) in goldenRows {
             guard ScoringEngineV4.route(p) != "unsupported",
                   let r = ScoringEngineV4.score(p), let bd = r.drinksBreakdown else {
@@ -831,9 +832,10 @@ struct DrinksScoringGoldenTests {
                 "\(label)\t\(r.base)\t\(expected)\t\(r.profileId)\t\(bd.bindingCapId ?? "-")"
                 + "\t\(f2(bd.effectiveServingMl))\t\(f2(bd.sugarPerServingG))\t\(f2(bd.caffeinePerServingMg))"
                 + "\t\(credit("S1"))\t\(credit("S3"))\t\(credit("S8"))"
-                + "\t\(credit("S6"))\t\(credit("S4"))\t\(credit("S7"))"
+                + "\t\(credit("S6"))\t\(credit("S4"))"
                 + "\t\(bd.weightedScore)\t\(bd.stackingDrag)"
-                + "\t\(bd.sugarCap)\t\(bd.caffeineCap)\t\(bd.sweetenerCap)")
+                + "\t\(bd.sugarCap)\t\(bd.caffeineCap)\t\(bd.sweetenerCap)"
+                + "\t\(String(format: "%.2f", bd.packagingCredit))")
         }
         print(lines.joined(separator: "\n"))
     }

@@ -94,7 +94,7 @@ struct DrinksLivePipelineDiagnosisTests {
         row("weightedScore", "\(fbd.weightedScore)", "\(lbd.weightedScore)")
         row("stackingDrag", "\(fbd.stackingDrag)", "\(lbd.stackingDrag)")
         row("finalScore", "\(fs)", "\(ls)")
-        for rule in ["S1", "S3", "S8", "S6", "S4", "S7"] {
+        for rule in ["S1", "S3", "S8", "S6", "S4"] {
             let fr = fbd.rules.first { $0.rule == rule }
             let lr = lbd.rules.first { $0.rule == rule }
             row("\(rule).fraction",
