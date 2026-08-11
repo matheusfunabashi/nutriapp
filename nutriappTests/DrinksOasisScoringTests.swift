@@ -67,13 +67,14 @@ struct DrinksOasisScoringTests {
     @Test func drinksProfileHasV2Rules() throws {
         let rules = try #require(rs.profiles["drinks"])
         let byRule = Dictionary(uniqueKeysWithValues: rules.map { ($0.rule, $0) })
-        #expect(byRule["S1"]?.w == 22)
-        #expect(byRule["S3"]?.w == 40)
+        #expect(byRule["S1"]?.w == 23)
+        #expect(byRule["S3"]?.w == 43)
         #expect(byRule["S3"]?.variant == "drinksServing")
-        #expect(byRule["S8"]?.w == 14)
-        #expect(byRule["S6"]?.w == 12)
+        #expect(byRule["S8"]?.w == 15)
+        #expect(byRule["S6"]?.w == 13)
         #expect(byRule["S4"]?.w == 6)
-        #expect(byRule["S7"]?.w == 6)
+        // F1: packaging is a sustainability badge, not a scored health rule.
+        #expect(byRule["S7"] == nil)
         #expect(byRule["S2"] == nil)
         #expect(byRule["S5"] == nil)
         #expect(rules.reduce(0) { $0 + $1.w } == 100)
@@ -166,7 +167,7 @@ struct DrinksOasisScoringTests {
         #expect(r.drinksBreakdown?.sweetenerCap == 100)
     }
 
-    @Test func glassBeatsPetPackaging() throws {
+    @Test func packagingIsABadgeNotAScore() throws {
         let base = { (pack: [String]) in
             product(kcal: 1, sugar: 0, sodium: 5, nova: 1, size: "355 ml",
                     ingredientsText: "carbonated water, natural lemon flavor",
@@ -175,11 +176,14 @@ struct DrinksOasisScoringTests {
         }
         let glass = try #require(ScoringEngineV4.score(base(["glass"])))
         let pet = try #require(ScoringEngineV4.score(base(["pet"])))
-        let g7 = try #require(glass.rules.first { $0.rule == "S7" })
-        let p7 = try #require(pet.rules.first { $0.rule == "S7" })
-        #expect(g7.fraction == 1.0)
-        #expect(p7.fraction == 0.25)
-        #expect(glass.base > pet.base)
+        // F1: packaging still resolves, as a sustainability badge…
+        #expect(glass.drinksBreakdown?.packagingCredit == 1.0)
+        #expect(pet.drinksBreakdown?.packagingCredit == 0.25)
+        #expect(glass.drinksBreakdown?.packagingHadData == true)
+        // …but it must no longer move the health score, and must not appear
+        // among the weighted rules.
+        #expect(glass.base == pet.base)
+        #expect(!glass.rules.contains { $0.rule == "S7" })
     }
 
     @Test func missingPackagingGetsMidCredit() throws {
@@ -187,9 +191,9 @@ struct DrinksOasisScoringTests {
                         ingredientsText: "carbonated water, natural lemon flavor",
                         categories: ["beverages", "sodas"])
         let r = try #require(ScoringEngineV4.score(p))
-        let s7 = try #require(r.rules.first { $0.rule == "S7" })
-        #expect(s7.fraction == 0.40)
-        #expect(!s7.hadData)
+        #expect(r.drinksBreakdown?.packagingCredit == 0.40)
+        #expect(r.drinksBreakdown?.packagingHadData == false)
+        #expect(!r.rules.contains { $0.rule == "S7" })
         #expect(r.drinksBreakdown?.lowDataConfidence != true
                 || r.drinksBreakdown?.estimatedServing == false)
     }

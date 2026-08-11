@@ -252,54 +252,46 @@
     "drinks": [
       {
         "rule": "S1",
-        "w": 22
+        "w": 23
       },
       {
         "rule": "S3",
-        "w": 40,
+        "w": 43,
         "variant": "drinksServing"
       },
       {
         "rule": "S8",
-        "w": 14
+        "w": 15
       },
       {
         "rule": "S6",
-        "w": 12
+        "w": 13
       },
       {
         "rule": "S4",
-        "w": 6
-      },
-      {
-        "rule": "S7",
         "w": 6
       }
     ],
     "juice_100": [
       {
         "rule": "S1",
-        "w": 22
+        "w": 23
       },
       {
         "rule": "S3",
-        "w": 40,
+        "w": 43,
         "variant": "juice100Serving"
       },
       {
         "rule": "S8",
-        "w": 14
+        "w": 15
       },
       {
         "rule": "S6",
-        "w": 12
+        "w": 13
       },
       {
         "rule": "S4",
-        "w": 6
-      },
-      {
-        "rule": "S7",
         "w": 6
       }
     ],
