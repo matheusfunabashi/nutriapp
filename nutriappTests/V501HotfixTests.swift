@@ -128,17 +128,20 @@ struct V501HotfixTests {
     }
 
     @Test func unsweetenedSparklingHigh() throws {
+        // Flavored sparkling water IS scored (v2.4 `flavoredWaterEvidence`): the
+        // "natural flavor" makes it a product choice, not plain water. Only
+        // genuinely unflavored water stays unsupported — see
+        // `goldenPlainSparklingWaterStaysUnsupported`.
         let sparkling = product(kcal: 0, sugar: 0, sodium: 5, nova: 1,
                                 name: "sparkling water",
                                 ingredientsText: "carbonated water, natural flavor",
                                 categories: ["beverages", "waters", "carbonated-waters"])
-        // waters → unsupported; use flavored sparkling soda without sugar/NNS
         var flavored = product(kcal: 1, sugar: 0, sodium: 5, nova: 1,
                                name: "sparkling lemon",
                                ingredientsText: "carbonated water, natural lemon flavor",
                                categories: ["beverages", "carbonated-drinks", "sodas"])
         flavored.packagingMaterials = ["glass"]
-        #expect(ScoringEngineV4.route(sparkling) == "unsupported")
+        #expect(ScoringEngineV4.route(sparkling) == "drinks")
         let r = try #require(ScoringEngineV4.score(flavored))
         #expect(r.profileId == "drinks")
         #expect(r.base >= 70)
