@@ -196,6 +196,12 @@ struct Product: Identifiable, Hashable, Codable {
     /// "off+usda" when USDA supplied the nutrition table, nil for pure OFF.
     /// Dev/observability only — surfaced in the DEBUG score breakdown.
     var dataSource: String? = nil
+    /// Drinks v2: missing ingredients / estimated serving / estimated energy caffeine.
+    var lowDataConfidence: Bool? = nil
+    /// Drinks v2: effective serving fell back to 355 ml.
+    var estimatedServing: Bool? = nil
+    /// Drinks v2: which cap bound the score (`sugarCap` / `caffeineCap` / `sweetenerCap`).
+    var drinksBindingCapId: String? = nil
 }
 
 // MARK: - Data confidence (SCORING_V4.md §3.2–3.3)

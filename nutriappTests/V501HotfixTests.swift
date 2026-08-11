@@ -67,9 +67,9 @@ struct V501HotfixTests {
         #expect(!gate.fired.contains(where: { $0.kind == "transFat" }))
     }
 
-    // MARK: 2 — Drinks NNS floor; S6 gone
+    // MARK: 2 — Drinks Oasis-aligned (S6 + per-serving S3)
 
-    @Test func dietCokeNNSFloorBand() throws {
+    @Test func dietCokeUsesS6NotS3Floor() throws {
         let diet = product(kcal: 1, sugar: 0, sodium: 10, nova: 4, name: "Diet Coke",
                            ingredientsText: "carbonated water, caramel color, aspartame, phosphoric acid",
                            additives: [
@@ -79,15 +79,14 @@ struct V501HotfixTests {
                            categories: ["beverages", "sodas", "diet-sodas"])
         let r = try #require(ScoringEngineV4.score(diet))
         #expect(r.profileId == "drinks")
-        #expect((30...38).contains(r.base))
-        let band = rs.bandLabel(r.base)
-        #expect(band == "Bad" || band == "OK")
-        // S3 fraction capped by NNS floor
         let s3 = r.rules.first { $0.rule == "S3" }!
-        #expect(s3.fraction <= 0.30 + 0.001)
+        let s6 = r.rules.first { $0.rule == "S6" }!
+        #expect(s3.fraction == 1.0)
+        #expect(s6.fraction <= 0.60 + 0.001)
+        #expect(r.base > 40)
     }
 
-    @Test func regularCokeAtMost30() throws {
+    @Test func regularCokeBelowDietAndBelowSparkling() throws {
         let coke = product(kcal: 42, sugar: 10.6, sodium: 10, nova: 4,
                            ingredientsText: "carbonated water, sugar, caramel color, phosphoric acid",
                            additives: [
@@ -95,16 +94,37 @@ struct V501HotfixTests {
                             ProductAdditive(name: "Phosphoric", risk: .moderate, code: "e338", tier: .mild),
                            ],
                            categories: ["beverages", "sodas"])
-        let r = try #require(ScoringEngineV4.score(coke))
-        #expect(r.base <= 30)
+        var cokeServing = coke
+        cokeServing.servingSize = "12 fl oz"
+        let diet = product(kcal: 1, sugar: 0, sodium: 10, nova: 4,
+                           ingredientsText: "carbonated water, aspartame",
+                           additives: [
+                            ProductAdditive(name: "Aspartame", risk: .moderate, code: "e951", tier: .moderate),
+                           ],
+                           categories: ["beverages", "sodas", "diet-sodas"])
+        var spark = product(kcal: 1, sugar: 0, sodium: 5, nova: 1,
+                            ingredientsText: "carbonated water, natural lemon flavor",
+                            categories: ["beverages", "sodas"])
+        spark.packagingMaterials = ["glass"]
+
+        let c = try #require(ScoringEngineV4.score(cokeServing))
+        let d = try #require(ScoringEngineV4.score(diet))
+        let s = try #require(ScoringEngineV4.score(spark))
+        #expect(c.base < d.base)
+        #expect(c.base < s.base)
+        #expect(c.base <= 25)
     }
 
-    @Test func orangeJuiceIn45to55() throws {
+    @Test func orangeJuiceScoresGoodWithServingSugar() throws {
         let oj = product(kcal: 45, protein: 0.7, sugar: 8.4, sodium: 1, fvn: 100, nova: 1,
                          name: "orange juice", ingredientsText: "orange juice",
                          categories: ["beverages", "juices", "orange-juices"])
         let r = try #require(ScoringEngineV4.score(oj))
-        #expect((45...55).contains(r.base))
+        #expect(r.profileId == "juice_100")
+        // No container size → 355 ml fallback ≈ 29.8 g/serving → juice sugar cap mid-OK.
+        #expect(r.base >= 40 && r.base <= 55)
+        let s3 = r.rules.first { $0.rule == "S3" }!
+        #expect(s3.fraction < 1.0)
     }
 
     @Test func unsweetenedSparklingHigh() throws {
@@ -113,22 +133,24 @@ struct V501HotfixTests {
                                 ingredientsText: "carbonated water, natural flavor",
                                 categories: ["beverages", "waters", "carbonated-waters"])
         // waters → unsupported; use flavored sparkling soda without sugar/NNS
-        let flavored = product(kcal: 1, sugar: 0, sodium: 5, nova: 1,
+        var flavored = product(kcal: 1, sugar: 0, sodium: 5, nova: 1,
                                name: "sparkling lemon",
                                ingredientsText: "carbonated water, natural lemon flavor",
                                categories: ["beverages", "carbonated-drinks", "sodas"])
+        flavored.packagingMaterials = ["glass"]
         #expect(ScoringEngineV4.route(sparkling) == "unsupported")
         let r = try #require(ScoringEngineV4.score(flavored))
         #expect(r.profileId == "drinks")
         #expect(r.base >= 70)
-        _ = sparkling
     }
 
-    @Test func s6RemovedFromRulesetAndEngine() {
-        #expect(rs.ruleMeta?["S6"] == nil)
-        #expect(rs.multipliers?.objective["lose weight"]?["S6"] == nil)
-        #expect(rs.multipliers?.goal["gut health"]?["S6"] == nil)
-        for (_, rules) in rs.profiles {
+    @Test func s6OnlyOnDrinksProfiles() {
+        #expect(rs.ruleMeta?["S6"]?.displayName == "sweeteners")
+        let drinks = rs.profiles["drinks"] ?? []
+        #expect(drinks.contains(where: { $0.rule == "S6" }))
+        let juice = rs.profiles["juice_100"] ?? []
+        #expect(juice.contains(where: { $0.rule == "S6" }))
+        for (id, rules) in rs.profiles where id != "drinks" && id != "juice_100" {
             #expect(!rules.contains(where: { $0.rule == "S6" }))
         }
     }

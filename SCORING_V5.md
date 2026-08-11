@@ -17,6 +17,7 @@ they have a direct documented health pathway:
 |---|---|
 | `brewMaterial` | Microplastic exposure from plastic tea/coffee bags in hot water |
 | `contaminantRisk` | Arsenic risk for rice plant milks (rice → 0.4; else 1.0) |
+| `S7` packaging (drinks only) | Container leaching / microplastics for ready-to-drink beverages |
 | `S15` Fat Quality | Refining process + fatty-acid source (not “natural is better”) |
 
 ## Kill switch (V5.1.0)
@@ -67,7 +68,82 @@ of \(\sum w\). Confidence haircuts apply for missing nutrition inputs (floor 60%
 | `yogurt_cheese` | S1 24, dairyProcessing 8, S3 10, S4 8, S5 8, S12 14, S13 8, S14 14, S15 6 |
 | `plant_milk` | S1 20, S10 16, contaminantRisk 8, S3 10, S5 4, S12 12, S2 10, S14 14, S15 6 |
 | `tea_coffee` | S1 28, S2 24, brewMaterial 12, S3 8, S12 14, S14 14 |
-| `drinks` | unchanged (S1 20, S2 16, S3 42, S4 6, S5 4, S12 8, S13 4) |
+| `drinks` | S1 22, S3 40 (`drinksServing`), S8 14 (caffeine), S6 12 (tiered sweeteners), S4 6, S7 6 — **no S2** |
+| `juice_100` | same weights as `drinks`; dose-aware S3 + juice sugar cap + flat +3 micronutrient boost |
+
+## Drinks profile v2.3 (cap-based)
+
+Ready-to-drink beverages (`sodas`, energy drinks, iced teas/coffees, sports
+drinks, kombucha, nectars / juice drinks, catch-all `beverages`) use
+`DrinksScoring.swift`. Eligible **100% juices** route to `juice_100` instead.
+
+```
+earned        = Σ(credit × weight)   // juice_100: +3 then may clamp <55
+weightedScore = earned − stackingDrag // diet/energy spread; juice_100 drag = 0
+finalScore    = min(weightedScore, sugarCap, caffeineCap, sweetenerCap)
+              // sugar+caffeine may undercut sugarCap further on energy drinks
+```
+
+Credits first, caps as safety nets. Caps should rarely bind on diet/energy;
+identical scores across distinct products usually mean a cap plateau.
+
+- **Effective serving:** container ≤600 ml → whole container (anti-gaming);
+  else declared serving if 100–600 ml; else **355 ml** + `estimatedServing`.
+- **S3 (drinks):** sugar per effective serving (anchors ≤2 / 8 / 16 / ≥30 g).
+  FVN discount max **15%** only for leftover juice-like products (nectars /
+  juice drinks). No micronutrient boost on the regular profile.
+- **S3 (`juice_100`):** raw total sugar, no FVN discount. Curve ≤6 → 100%,
+  10 → 55%, 14 → 25%, ≥18 → 0%. Entry requires FVN ≥95%, no added sugar, no
+  sweeteners, additives limited to ascorbic / citric acid.
+- **S8** caffeine (measured or category default; energy drinks never default to 0).
+  Steeper credit above ~80–150 mg/serving; energy drinks stack extra S8 drag
+  plus stimulants (taurine / guarana / mate).
+- **S6** three tiers (heavy NNS / sugar alcohols / stevia–monk); allulose neutral.
+  Tier-1 is a strong per-sweetener credit hit (first → 0.10, each extra −0.10);
+  Tier-3 stevia/monk stays light (~0.90 alone). Tier-1 also sets
+  **sweetenerCap = 55** as a net. Artificial sweeteners are score-limited as a
+  precautionary signal: WHO conditionally recommends against non-sugar
+  sweeteners for long-term weight control, and large cohorts associate high
+  diet-beverage intake with modestly higher cardiovascular risk. IARC lists
+  aspartame as “possibly carcinogenic (2B)” on limited evidence; JECFA and FDA
+  maintain that intake at normal levels (many cans/day) remains within safe
+  limits. App copy must not say sweeteners “cause cancer”, are a “carcinogenic
+  ingredient”, “toxic”, or “proven harmful” — prefer “score-limited”,
+  “precautionary”, and “evidence is limited and contested”.
+- **Stacking drag (drinks only):** post-rule points subtracted so Tier-1 count,
+  sports+NNS, and energy (caffeine / stimulants / sugar) separate products
+  below the caps instead of flattening on them.
+- **Caps (drinks):** sugar (≤16 → none; 16–30 → 55→20; ≥30 → 20); caffeine
+  (≤80 → none; 80–160 → 100→45; 160–300 → 45→28; ≥300 → 28); Tier-1 → 55.
+  Heavy sugar + caffeine may undercut below `sugarCap` so energy drinks land
+  below plain sugary soda.
+- **Caps (`juice_100` sugar only):** ≤20 g → none; 20–40 g → 60→36; ≥40 g → 36
+  (J-shaped dose-response: glass-sized servings more favorable than large
+  single-serve bottles; sugars in juice still count as free sugars). Flat **+3**
+  micronutrient boost; if sugar/serving ≥20 g, weighted is clamped **&lt; 55**.
+- **Diet soda ordering:** scored above sugary soda (substitution evidence) and
+  well below unsweetened drinks (cohort risk signals plus WHO precaution).
+- **S7** packaging leach pathway (glass > carton/alu > PET > PS/PVC; missing → 0.40).
+- Flags: `lowDataConfidence`, `estimatedServing`, `bindingCapId` on the product /
+  breakdown model for UI chips later.
+
+`plant_milk` still uses per-100 ml `drinks` S3 thresholds; only profiles
+`drinks` / `juice_100` use this path.
+
+## Drinks routing (v2.4)
+
+Precedence, highest first:
+
+1. **Alcohol exclusions** (`alcoholic-beverages`, beers / wines / spirits / ciders) → `unsupported`. Untouched by evidence gates.
+2. **Evidence gates**
+   - `energyDrinkEvidence`: measured caffeine ≥ 25 mg/100 ml **and** a stimulant ingredient (taurine / guarana / mate, configurable) → `drinks` with `isEnergyDrink = true` for stacking, caffeine defaults, and compound risk. OR'd with `energy-drinks` tags.
+   - `flavoredWaterEvidence`: waters-family tags + flavor word in the name or flavoring term in ingredients → `drinks` (not `unsupported`).
+3. **Category tag matches** (most-specific-first router).
+4. **Catch-all** `beverages` → `drinks`, else `general`.
+
+A product tagged `tea_coffee` that fires `energyDrinkEvidence` therefore scores as an energy drink on `drinks`. Nutritional plausibility envelopes (`routingPlausibility`) still rerail after a tag match (e.g. `plant_milk` caffeine/sugar; `tea_coffee` sugar ≥ 5 g/100 ml stub for Frappuccino-class RTD). Evidence outranks those tag matches.
+
+**Merge order:** Track 2 (S3 low-end, Tier 3 0.70, 60 mg caffeine-cap start, I19–I20) before building the `tea_coffee` drinks profile. Calibrating that profile against pre-Track-2 curves forces a second fixture pass.
 
 ## Migration
 

@@ -107,6 +107,18 @@
       2,
       4
     ],
+    "drinksServing": [
+      2,
+      8,
+      16,
+      30
+    ],
+    "juice100Serving": [
+      6,
+      10,
+      14,
+      18
+    ],
     "yogurt": [
       4,
       8,
@@ -240,32 +252,55 @@
     "drinks": [
       {
         "rule": "S1",
-        "w": 20
-      },
-      {
-        "rule": "S2",
-        "w": 16
+        "w": 22
       },
       {
         "rule": "S3",
-        "w": 42,
-        "variant": "drinks"
+        "w": 40,
+        "variant": "drinksServing"
+      },
+      {
+        "rule": "S8",
+        "w": 14
+      },
+      {
+        "rule": "S6",
+        "w": 12
       },
       {
         "rule": "S4",
         "w": 6
       },
       {
-        "rule": "S5",
-        "w": 4
+        "rule": "S7",
+        "w": 6
+      }
+    ],
+    "juice_100": [
+      {
+        "rule": "S1",
+        "w": 22
       },
       {
-        "rule": "S12",
-        "w": 8
+        "rule": "S3",
+        "w": 40,
+        "variant": "juice100Serving"
       },
       {
-        "rule": "S13",
-        "w": 4
+        "rule": "S8",
+        "w": 14
+      },
+      {
+        "rule": "S6",
+        "w": 12
+      },
+      {
+        "rule": "S4",
+        "w": 6
+      },
+      {
+        "rule": "S7",
+        "w": 6
       }
     ],
     "tea_coffee": [
@@ -591,6 +626,14 @@
   },
   "router": [
     {
+      "match": "flavored-waters",
+      "profile": "drinks"
+    },
+    {
+      "match": "flavored-sparkling-waters",
+      "profile": "drinks"
+    },
+    {
       "match": "waters",
       "profile": "unsupported"
     },
@@ -600,10 +643,6 @@
     },
     {
       "match": "spring-waters",
-      "profile": "unsupported"
-    },
-    {
-      "match": "flavored-waters",
       "profile": "unsupported"
     },
     {
@@ -1747,6 +1786,23 @@
       "cap": 58
     }
   },
+  "s7Materials": {
+    "glass": 1.0,
+    "paper": 0.9,
+    "cardboard": 0.9,
+    "pulp": 0.9,
+    "tetra-pak": 0.7,
+    "carton": 0.7,
+    "aluminium": 0.55,
+    "aluminum": 0.55,
+    "steel": 0.55,
+    "hdpe": 0.4,
+    "polypropylene": 0.4,
+    "pet": 0.25,
+    "polystyrene": 0.0,
+    "pvc": 0.0,
+    "plastic": 0.3
+  },
   "ruleMeta": {
     "S1": {
       "displayName": "additives",
@@ -1766,6 +1822,18 @@
     },
     "S5": {
       "displayName": "saturated fat",
+      "driverKind": "merit"
+    },
+    "S6": {
+      "displayName": "sweeteners",
+      "driverKind": "merit"
+    },
+    "S7": {
+      "displayName": "packaging",
+      "driverKind": "hygiene"
+    },
+    "S8": {
+      "displayName": "caffeine",
       "driverKind": "merit"
     },
     "S10": {
@@ -1822,5 +1890,146 @@
   },
   "flags": {
     "rulesetV510Enabled": true
+  },
+  "routingPlausibility": {
+    "plant_milk": {
+      "rerouteTo": "drinks",
+      "maxCaffeineMgPer100ml": 15,
+      "maxSugarGPer100ml": 9
+    },
+    "tea_coffee": {
+      "rerouteTo": "drinks",
+      "maxSugarGPer100ml": 5
+    }
+  },
+  "energyDrinkEvidence": {
+    "minCaffeineMgPer100ml": 25,
+    "stimulantIngredients": [
+      "taurine",
+      "taurina",
+      "guarana",
+      "guaraná",
+      "yerba mate",
+      "erva-mate",
+      "mate extract"
+    ]
+  },
+  "flavoredWaterEvidence": {
+    "watersFamilyTags": [
+      "waters",
+      "carbonated-waters",
+      "mineral-waters",
+      "spring-waters",
+      "drinking-water",
+      "flavored-waters",
+      "flavored-sparkling-waters"
+    ],
+    "nameFlavorWords": [
+      "berry",
+      "raspberry",
+      "blackberry",
+      "strawberry",
+      "blueberry",
+      "lime",
+      "lemon",
+      "orange",
+      "mango",
+      "peach",
+      "apple",
+      "pear",
+      "cherry",
+      "grape",
+      "passion",
+      "pomegranate",
+      "watermelon",
+      "coconut",
+      "pineapple",
+      "kiwi",
+      "guava",
+      "hibiscus",
+      "vanilla",
+      "mint",
+      "ginger",
+      "cucumber",
+      "grapefruit",
+      "tangerine",
+      "clementine",
+      "yuzu",
+      "melon",
+      "apricot",
+      "cranberry",
+      "pamplemousse",
+      "citron",
+      "framboise",
+      "mangue",
+      "peche",
+      "cerise",
+      "menthe",
+      "limao",
+      "limão",
+      "laranja",
+      "morango",
+      "uva",
+      "maca",
+      "maçã",
+      "abacaxi",
+      "maracuja",
+      "maracujá",
+      "coco",
+      "tangerina",
+      "framboesa",
+      "cereja",
+      "hortela",
+      "hortelã",
+      "gengibre",
+      "pessego",
+      "pêssego",
+      "melancia",
+      "manga",
+      "goiaba",
+      "guarana",
+      "guaraná",
+      "limone",
+      "arancia",
+      "fragola",
+      "pesca",
+      "ciliegia",
+      "menta",
+      "zenzero",
+      "lampone",
+      "pompelmo",
+      "anguria",
+      "albicocca"
+    ],
+    "ingredientFlavorTerms": [
+      "natural flavor",
+      "natural flavours",
+      "natural flavour",
+      "natural essence",
+      "artificial flavor",
+      "artificial flavour",
+      "natural flavors",
+      "natural flavours",
+      "aroma",
+      "aromas",
+      "aromi",
+      "arome",
+      "arômes",
+      "arôme",
+      "flavoring",
+      "flavouring",
+      "flavorings",
+      "flavourings",
+      "natural aroma",
+      "naturel aroma",
+      "aroma natural",
+      "aromas naturais",
+      "aromatizante",
+      "sabor natural",
+      "saborizante",
+      "aromi naturali",
+      "aroma naturale",
+      "aromatizzanti"
+    ]
   }
 }
