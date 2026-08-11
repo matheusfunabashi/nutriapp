@@ -89,7 +89,9 @@ identical scores across distinct products usually mean a cap plateau.
 
 - **Effective serving:** container ≤600 ml → whole container (anti-gaming);
   else declared serving if 100–600 ml; else **355 ml** + `estimatedServing`.
-- **S3 (drinks):** sugar per effective serving (anchors ≤2 / 8 / 16 / ≥30 g).
+- **S3 (drinks):** sugar per effective serving. Track 2 anchors (`s3DrinksServingCurve`
+  in both rulesets): ≤1 g → 100%, 5 g → 60%, 8 g → 48%, 16 g → 25%, ≥30 g → 0%.
+  The low end is steep so a lightly sweetened soda stops scoring like plain water.
   FVN discount max **15%** only for leftover juice-like products (nectars /
   juice drinks). No micronutrient boost on the regular profile.
 - **S3 (`juice_100`):** raw total sugar, no FVN discount. Curve ≤6 → 100%,
@@ -100,8 +102,12 @@ identical scores across distinct products usually mean a cap plateau.
   plus stimulants (taurine / guarana / mate).
 - **S6** three tiers (heavy NNS / sugar alcohols / stevia–monk); allulose neutral.
   Tier-1 is a strong per-sweetener credit hit (first → 0.10, each extra −0.10);
-  Tier-3 stevia/monk stays light (~0.90 alone). Tier-1 also sets
-  **sweetenerCap = 55** as a net. Artificial sweeteners are score-limited as a
+  Tier-3 stevia/monk is a real penalty after Track 2 (first → 0.70, each extra
+  −0.10), no longer a rounding nudge. Tier-1 also sets
+  **sweetenerCap = 55** as a net, and Tier-2/Tier-3 set **74** — one point below
+  Excellent — once the drink carries more than 2 g sugar per effective serving.
+  A genuinely sugar-free stevia drink stays Excellent-eligible; a sweetened one
+  does not. This is the mechanism behind I19. Artificial sweeteners are score-limited as a
   precautionary signal: WHO conditionally recommends against non-sugar
   sweeteners for long-term weight control, and large cohorts associate high
   diet-beverage intake with modestly higher cardiovascular risk. IARC lists
@@ -114,7 +120,9 @@ identical scores across distinct products usually mean a cap plateau.
   sports+NNS, and energy (caffeine / stimulants / sugar) separate products
   below the caps instead of flattening on them.
 - **Caps (drinks):** sugar (≤16 → none; 16–30 → 55→20; ≥30 → 20); caffeine
-  (≤80 → none; 80–160 → 100→45; 160–300 → 45→28; ≥300 → 28); Tier-1 → 55.
+  (Track 2: ≤60 → none; 60–160 → 100→52; 160–200 → 52→40; 200–300 → 40→25;
+  ≥300 → 25 — monotonic by construction, guarded by I20); Tier-1 → 55;
+  Tier-2/3 → 74 above 2 g sugar/serving.
   Heavy sugar + caffeine may undercut below `sugarCap` so energy drinks land
   below plain sugary soda.
 - **Caps (`juice_100` sugar only):** ≤20 g → none; 20–40 g → 60→36; ≥40 g → 36
@@ -144,6 +152,28 @@ Precedence, highest first:
 A product tagged `tea_coffee` that fires `energyDrinkEvidence` therefore scores as an energy drink on `drinks`. Nutritional plausibility envelopes (`routingPlausibility`) still rerail after a tag match (e.g. `plant_milk` caffeine/sugar; `tea_coffee` sugar ≥ 5 g/100 ml stub for Frappuccino-class RTD). Evidence outranks those tag matches.
 
 **Merge order:** Track 2 (S3 low-end, Tier 3 0.70, 60 mg caffeine-cap start, I19–I20) before building the `tea_coffee` drinks profile. Calibrating that profile against pre-Track-2 curves forces a second fixture pass.
+
+**Resolved — the pre-Track-2 targets for three fixtures were wrong, not the curve.**
+LaCroix, unsweetened iced tea, and kombucha were specced to land well below where
+Track 2 puts them, and no curve change could have reached those targets:
+
+- LaCroix and iced tea contain **zero sugar and no sweeteners**, so their S3 and
+  S6 credits are already 1.000. A sugar or sweetener change cannot lower a rule
+  at full credit. Their scores are simply the ceiling for a flawless drink.
+- Kombucha's old target contradicted Track 2's own anchors. It is flawless except
+  for sugar, so ≤75 required an S3 credit ≤0.385, while Track 2 specifies 0.48 at
+  8 g. No drink with ≤8 g sugar and otherwise perfect credits can score ≤75; a
+  flawless drink first reaches 75 at ~11.3 g. Kombucha has 6.0 g.
+
+The ranges were therefore re-derived from measured scores. Because widening
+ranges weakens them as a signal, **I23** now asserts the ladder those ranges rest
+on directly: unsweetened zero-sugar > kombucha > lightly sweetened > diet soda >
+sugary soda, each by 5+ points. Run `printCalibrationTable` for per-rule numbers.
+
+**Plain vs flavored water.** Genuinely unflavored water — still or sparkling —
+stays `unsupported`: it is not a product choice to rate. Flavored sparkling water
+**is** scored, via `flavoredWaterEvidence`, because the flavoring makes it one.
+The line is flavor evidence in the name or ingredients, nothing else.
 
 ## Migration
 

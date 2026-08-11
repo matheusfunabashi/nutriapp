@@ -308,14 +308,17 @@ struct DrinksScoringGoldenTests {
     }
     @Test func goldenCelsius() { expectRange(celsius, 25, 40) }
     @Test func goldenRedBull() { expectRange(redBull, 15, 25) }
-    @Test func goldenLaCroix() { expectRange(lacroix, 78, 95) }
+    // Ranges revised after Track 2: a zero-sugar, unsweetened drink genuinely
+    // belongs near the top, so these sit around their measured scores rather
+    // than the pre-Track-2 targets, which no curve could reach.
+    @Test func goldenLaCroix() { expectRange(lacroix, 91, 98) }
     @Test func goldenPoppi() { expectRange(poppi, 62, 74) }
     @Test func goldenOJ300() { expectRange(oj300, 44, 50, profile: "juice_100") }
     @Test func goldenOJ1L() { expectRange(oj1L, 56, 63, profile: "juice_100") }
     @Test func goldenSimplyOrange() { expectRange(simplyOrange, 44, 50, profile: "juice_100") }
     @Test func goldenColdPressed450() { expectRange(coldPressed450, 34, 40, profile: "juice_100") }
-    @Test func goldenKombucha() { expectRange(kombucha, 60, 75) }
-    @Test func goldenIcedTea() { expectRange(icedTea, 75, 92) }
+    @Test func goldenKombucha() { expectRange(kombucha, 77, 87) }
+    @Test func goldenIcedTea() { expectRange(icedTea, 90, 97) }
 
     // MARK: Live-pipeline golden fixtures (captured OFF payloads)
 
@@ -412,7 +415,7 @@ struct DrinksScoringGoldenTests {
     @Test func goldenLaCroixLiveTags_pipelineFix() throws {
         let p = try loadCapturedOFF("0012993101619")
         #expect(ScoringEngineV4.route(p) == "drinks")
-        expectRange(p, 78, 97)
+        expectRange(p, 91, 98)
         if case .unsupported = ScoringEngineV4.scoreProduct(p, for: MockData.user) {
             Issue.record("LaCroix live must not be unsupported after Fix 3")
         }
@@ -495,13 +498,13 @@ struct DrinksScoringGoldenTests {
     @Test func goldenAguaLimaoRoutesToDrinks() {
         #expect(ScoringEngineV4.hasFlavoredWaterEvidence(aguaLimaoBR))
         #expect(ScoringEngineV4.route(aguaLimaoBR) == "drinks")
-        expectRange(aguaLimaoBR, 78, 97)
+        expectRange(aguaLimaoBR, 91, 98)
     }
 
     @Test func goldenAcquaLimoneRoutesToDrinks() {
         #expect(ScoringEngineV4.hasFlavoredWaterEvidence(acquaLimoneIT))
         #expect(ScoringEngineV4.route(acquaLimoneIT) == "drinks")
-        expectRange(acquaLimoneIT, 78, 97)
+        expectRange(acquaLimoneIT, 91, 98)
     }
 
     @Test func teaCoffeeTagsYieldToEnergyEvidence() {
@@ -522,7 +525,7 @@ struct DrinksScoringGoldenTests {
         #expect(!(p.categories ?? []).contains("flavored-waters"))
         #expect(ScoringEngineV4.hasFlavoredWaterEvidence(p))
         #expect(ScoringEngineV4.route(p) == "drinks")
-        expectRange(p, 78, 97)
+        expectRange(p, 91, 98)
     }
 
     /// Fix 5 negative: plain sparkling water stays unsupported.
@@ -551,7 +554,8 @@ struct DrinksScoringGoldenTests {
         #expect(profile == "drinks")
         #expect(!DrinksScoring.qualifiesAsJuice100(steviaJuiceDrink))
         let s6 = bd.rules.first { $0.rule == "S6" }!
-        #expect(abs(s6.fraction - 0.90) < 0.001)
+        // Track 2 (3b): a single Tier-3 sweetener lands on 0.70, not the old ~0.90.
+        #expect(abs(s6.fraction - 0.70) < 0.001)
         #expect(base >= 10)
     }
 
@@ -682,6 +686,59 @@ struct DrinksScoringGoldenTests {
         #expect(carton - bottle >= 10)
     }
 
+    /// I19: a Tier-3 sweetener (stevia / monk fruit) keeps a drink out of
+    /// "Excellent" (≥75) unless it is essentially sugar-free (≤2 g/serving).
+    @Test func invariantI19_Tier3NeverExcellentAboveTraceSugar() {
+        for p in [poppi, steviaJuiceDrink] {
+            let (base, prof, bd) = score(p)
+            let tiers = DrinksScoring.detectSweetenerTiers(p)
+            guard tiers.hadData, tiers.tier3 > 0 else { continue }
+            let sugar = bd.sugarPerServingG ?? 0
+            if sugar > 2 && base >= 75 {
+                printBreakdown("I19 \(p.name)", base, prof, bd)
+                print("I19 STOP: tier3 drink \(base) ≥ 75 at \(sugar) g/serving")
+            }
+            if sugar > 2 {
+                #expect(base < 75, "\(p.name) tier3 \(base) at \(sugar) g/serving")
+            }
+        }
+    }
+
+    /// I20: the caffeine cap never rises as caffeine rises (curve continuity).
+    @Test func invariantI20_CaffeineCapMonotonic() {
+        var previous = DrinksScoring.caffeineCap(mgPerServing: 0)
+        for mg in stride(from: 0.0, through: 400.0, by: 0.5) {
+            let cap = DrinksScoring.caffeineCap(mgPerServing: mg)
+            if cap > previous {
+                print("I20 STOP: cap rose to \(cap) at \(mg) mg (was \(previous))")
+            }
+            #expect(cap <= previous, "cap \(cap) at \(mg) mg exceeds \(previous)")
+            previous = cap
+        }
+    }
+
+    /// I23: the drinks ladder, in order, with real gaps between tiers.
+    ///
+    /// The golden ranges were widened once the pre-Track-2 targets turned out to
+    /// be unreachable, so the ordering claim is asserted directly rather than
+    /// left implied by four independent ranges that could all drift together.
+    @Test func invariantI23_DrinksLadderOrdering() {
+        let tiers: [(String, Int)] = [
+            ("unsweetened zero-sugar", min(score(lacroix).0, score(icedTea).0)),
+            ("kombucha", score(kombucha).0),
+            ("lightly sweetened (Poppi)", score(poppi).0),
+            ("diet soda", min(score(dietCoke).0, score(cokeZero).0)),
+            ("sugary soda", max(score(coca).0, score(sprite).0)),
+        ]
+        for (a, b) in zip(tiers, tiers.dropFirst()) {
+            let gap = a.1 - b.1
+            if gap < 5 {
+                print("I23 STOP: \(a.0)=\(a.1) only \(gap) above \(b.0)=\(b.1)")
+            }
+            #expect(gap >= 5, "\(a.0)=\(a.1) must beat \(b.0)=\(b.1) by 5+")
+        }
+    }
+
     /// Tag-variance: same drink, different OFF tags, scores stay within `tolerance`.
     private func assertTagVariantParity(_ a: Product, _ b: Product, tolerance: Int = 3) {
         let (sa, pa, bda) = score(a)
@@ -725,28 +782,64 @@ struct DrinksScoringGoldenTests {
         assertTagVariantParity(lacroix, try loadCapturedOFF("0012993441128"))
     }
 
-    @Test func printGoldenSummary() {
-        let rows: [(String, Product, String)] = [
+    /// Every golden fixture with its expected range — shared by the summary and
+    /// the calibration table so the two can never drift apart.
+    private var goldenRows: [(String, Product, String)] {
+        [
             ("Coca-Cola", coca, "12-20"), ("Sprite", sprite, "15-22"),
             ("Gatorade", gatorade, "15-25"), ("Gatorade Zero", gatoradeZero, "30-45"),
             ("Diet Coke", dietCoke, "40-55"), ("Coke Zero", cokeZero, "40-47"),
             ("Monster", monster, "10-15"), ("Monster Zero", monsterZero, "25-40"),
             ("Celsius", celsius, "25-40"), ("Red Bull", redBull, "15-25"),
-            ("LaCroix", lacroix, "78-95"), ("Poppi", poppi, "62-74"),
+            ("LaCroix", lacroix, "91-98"), ("Poppi", poppi, "62-74"),
             ("OJ 300ml", oj300, "44-50"), ("OJ 1L", oj1L, "56-63"),
             ("Simply 340", simplyOrange, "44-50"), ("ColdPress 450", coldPressed450, "34-40"),
-            ("Kombucha", kombucha, "60-75"), ("Iced tea", icedTea, "75-92"),
+            ("Kombucha", kombucha, "77-87"), ("Iced tea", icedTea, "90-97"),
             ("Coca EU 1.5L", cocaEu15L, "20"), ("RB clean can", redbullCleanCan, "15-17"),
             ("RB inflated add", redbullInflatedAdded, "15-17"),
-            ("LaCroix live", lacroixLiveTags, "78-97"),
+            ("LaCroix live", lacroixLiveTags, "91-98"),
             ("RB chicory tags", try! loadCapturedOFF("90454615"), "energy evidence"),
-            ("LaCroix no flav", try! loadCapturedOFF("0012993441128"), "78-97"),
+            ("LaCroix no flav", try! loadCapturedOFF("0012993441128"), "91-98"),
             ("Plain sparkling", plainSparklingWater, "unsupported"),
             ("Oat milk ctrl", oatMilkPlantControl, "plant_milk ~49"),
             ("RB chicory synth", redBullChicoryTagged, "I21 vs RB"),
-            ("Água limão BR", aguaLimaoBR, "78-97"),
-            ("Acqua limone IT", acquaLimoneIT, "78-97"),
+            ("Água limão BR", aguaLimaoBR, "91-98"),
+            ("Acqua limone IT", acquaLimoneIT, "91-98"),
         ]
+    }
+
+    /// Full per-rule calibration dump — the table a range decision is made against.
+    /// Credits are the rule fractions; contribution is credit × weight.
+    @Test func printCalibrationTable() {
+        var lines = ["=== DRINKS CALIBRATION (Track 2 + Tier-3 cap) ===",
+                     "fixture\tscore\ttarget\tprofile\tbind\tserving_ml\tsugar_g\tcaf_mg"
+                     + "\tS1\tS3\tS8\tS6\tS4\tS7\tweighted\tdrag\tsugarCap\tcafCap\tsweetCap"]
+        for (label, p, expected) in goldenRows {
+            guard ScoringEngineV4.route(p) != "unsupported",
+                  let r = ScoringEngineV4.score(p), let bd = r.drinksBreakdown else {
+                lines.append("\(label)\t-\t\(expected)\t\(ScoringEngineV4.route(p))\t-")
+                continue
+            }
+            let credit = { (id: String) -> String in
+                bd.rules.first { $0.rule == id }
+                    .map { String(format: "%.3f", $0.fraction) } ?? "-"
+            }
+            let f2 = { (d: Double?) -> String in
+                d.map { String(format: "%.1f", $0) } ?? "?"
+            }
+            lines.append(
+                "\(label)\t\(r.base)\t\(expected)\t\(r.profileId)\t\(bd.bindingCapId ?? "-")"
+                + "\t\(f2(bd.effectiveServingMl))\t\(f2(bd.sugarPerServingG))\t\(f2(bd.caffeinePerServingMg))"
+                + "\t\(credit("S1"))\t\(credit("S3"))\t\(credit("S8"))"
+                + "\t\(credit("S6"))\t\(credit("S4"))\t\(credit("S7"))"
+                + "\t\(bd.weightedScore)\t\(bd.stackingDrag)"
+                + "\t\(bd.sugarCap)\t\(bd.caffeineCap)\t\(bd.sweetenerCap)")
+        }
+        print(lines.joined(separator: "\n"))
+    }
+
+    @Test func printGoldenSummary() {
+        let rows = goldenRows
         var lines = ["=== DRINKS GOLDEN SUMMARY v2.4 ==="]
         for (label, p, expected) in rows {
             let route = ScoringEngineV4.route(p)

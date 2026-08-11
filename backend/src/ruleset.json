@@ -1891,6 +1891,13 @@
   "flags": {
     "rulesetV510Enabled": true
   },
+  "s3DrinksServingCurve": [
+    [1, 1.0],
+    [5, 0.6],
+    [8, 0.48],
+    [16, 0.25],
+    [30, 0.0]
+  ],
   "routingPlausibility": {
     "plant_milk": {
       "rerouteTo": "drinks",
