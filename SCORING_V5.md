@@ -104,7 +104,10 @@ identical scores across distinct products usually mean a cap plateau.
   Tier-1 is a strong per-sweetener credit hit (first → 0.10, each extra −0.10);
   Tier-3 stevia/monk is a real penalty after Track 2 (first → 0.70, each extra
   −0.10), no longer a rounding nudge. Tier-1 also sets
-  **sweetenerCap = 55** as a net. Artificial sweeteners are score-limited as a
+  **sweetenerCap = 55** as a net, and Tier-2/Tier-3 set **74** — one point below
+  Excellent — once the drink carries more than 2 g sugar per effective serving.
+  A genuinely sugar-free stevia drink stays Excellent-eligible; a sweetened one
+  does not. This is the mechanism behind I19. Artificial sweeteners are score-limited as a
   precautionary signal: WHO conditionally recommends against non-sugar
   sweeteners for long-term weight control, and large cohorts associate high
   diet-beverage intake with modestly higher cardiovascular risk. IARC lists
@@ -118,7 +121,8 @@ identical scores across distinct products usually mean a cap plateau.
   below the caps instead of flattening on them.
 - **Caps (drinks):** sugar (≤16 → none; 16–30 → 55→20; ≥30 → 20); caffeine
   (Track 2: ≤60 → none; 60–160 → 100→52; 160–200 → 52→40; 200–300 → 40→25;
-  ≥300 → 25 — monotonic by construction, guarded by I20); Tier-1 → 55.
+  ≥300 → 25 — monotonic by construction, guarded by I20); Tier-1 → 55;
+  Tier-2/3 → 74 above 2 g sugar/serving.
   Heavy sugar + caffeine may undercut below `sugarCap` so energy drinks land
   below plain sugary soda.
 - **Caps (`juice_100` sugar only):** ≤20 g → none; 20–40 g → 60→36; ≥40 g → 36

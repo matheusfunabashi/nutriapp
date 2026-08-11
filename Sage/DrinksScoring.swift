@@ -263,9 +263,25 @@ enum DrinksScoring {
         Int(interpolate(mgPerServing, anchors: caffeineCapAnchors).rounded())
     }
 
+    /// A non-Tier-1 sweetener holds a drink one point short of Excellent…
+    static let nonSugarSweetenerCap = 74
+    /// …unless the drink is essentially sugar-free, which stays eligible (I19).
+    static let traceSugarGPerServing: Double = 2
+
     /// Tier-1 sweetener presence → hard cap 55 (safety net; credits should usually bind first).
-    static func sweetenerCap(hasTier1: Bool) -> Int {
-        hasTier1 ? 55 : 100
+    ///
+    /// Tier-2 / Tier-3 (polyols, stevia / monk fruit) cap just below Excellent
+    /// once the drink carries more than trace sugar: a sweetened drink is not a
+    /// "best choice", while a genuinely sugar-free one still can be. This is the
+    /// mechanism behind I19 — precautionary, consistent with the Tier-1 framing.
+    static func sweetenerCap(hasTier1: Bool,
+                             hasLowerTierSweetener: Bool = false,
+                             sugarGPerServing: Double = 0) -> Int {
+        if hasTier1 { return 55 }
+        if hasLowerTierSweetener, sugarGPerServing > traceSugarGPerServing {
+            return nonSugarSweetenerCap
+        }
+        return 100
     }
 
     // MARK: Nutrients per serving
@@ -639,6 +655,7 @@ enum DrinksScoring {
         if !s6had { lowData = true }
         let tiers = detectSweetenerTiers(p)
         let hasTier1 = tiers.hadData && tiers.tier1 > 0
+        let hasLowerTierSweetener = tiers.hadData && (tiers.tier2 + tiers.tier3) > 0
 
         let (s8f, s8had, cafMg, cafEst) = s8Credit(p, serving: serving)
         if cafEst && isEnergyDrink(p) { lowData = true }
@@ -718,7 +735,9 @@ enum DrinksScoring {
             ? juiceSugarCap(gramsPerServing: sugarG ?? 0)
             : sugarCap(gramsPerServing: sugarG ?? 0)
         let cCap = caffeineCap(mgPerServing: cafMg)
-        let wCap = sweetenerCap(hasTier1: hasTier1)
+        let wCap = sweetenerCap(hasTier1: hasTier1,
+                                hasLowerTierSweetener: hasLowerTierSweetener,
+                                sugarGPerServing: sugarG ?? 0)
 
         var final = min(weighted, sCap, cCap, wCap)
         // Caffeine may pull below the sugar cap when both loads are serious.

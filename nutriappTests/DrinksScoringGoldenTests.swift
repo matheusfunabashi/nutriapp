@@ -683,6 +683,24 @@ struct DrinksScoringGoldenTests {
         #expect(carton - bottle >= 10)
     }
 
+    /// I19: a Tier-3 sweetener (stevia / monk fruit) keeps a drink out of
+    /// "Excellent" (≥75) unless it is essentially sugar-free (≤2 g/serving).
+    @Test func invariantI19_Tier3NeverExcellentAboveTraceSugar() {
+        for p in [poppi, steviaJuiceDrink] {
+            let (base, prof, bd) = score(p)
+            let tiers = DrinksScoring.detectSweetenerTiers(p)
+            guard tiers.hadData, tiers.tier3 > 0 else { continue }
+            let sugar = bd.sugarPerServingG ?? 0
+            if sugar > 2 && base >= 75 {
+                printBreakdown("I19 \(p.name)", base, prof, bd)
+                print("I19 STOP: tier3 drink \(base) ≥ 75 at \(sugar) g/serving")
+            }
+            if sugar > 2 {
+                #expect(base < 75, "\(p.name) tier3 \(base) at \(sugar) g/serving")
+            }
+        }
+    }
+
     /// I20: the caffeine cap never rises as caffeine rises (curve continuity).
     @Test func invariantI20_CaffeineCapMonotonic() {
         var previous = DrinksScoring.caffeineCap(mgPerServing: 0)
@@ -739,8 +757,10 @@ struct DrinksScoringGoldenTests {
         assertTagVariantParity(lacroix, try loadCapturedOFF("0012993441128"))
     }
 
-    @Test func printGoldenSummary() {
-        let rows: [(String, Product, String)] = [
+    /// Every golden fixture with its expected range — shared by the summary and
+    /// the calibration table so the two can never drift apart.
+    private var goldenRows: [(String, Product, String)] {
+        [
             ("Coca-Cola", coca, "12-20"), ("Sprite", sprite, "15-22"),
             ("Gatorade", gatorade, "15-25"), ("Gatorade Zero", gatoradeZero, "30-45"),
             ("Diet Coke", dietCoke, "40-55"), ("Coke Zero", cokeZero, "40-47"),
@@ -761,6 +781,40 @@ struct DrinksScoringGoldenTests {
             ("Água limão BR", aguaLimaoBR, "78-97"),
             ("Acqua limone IT", acquaLimoneIT, "78-97"),
         ]
+    }
+
+    /// Full per-rule calibration dump — the table a range decision is made against.
+    /// Credits are the rule fractions; contribution is credit × weight.
+    @Test func printCalibrationTable() {
+        var lines = ["=== DRINKS CALIBRATION (Track 2 + Tier-3 cap) ===",
+                     "fixture\tscore\ttarget\tprofile\tbind\tserving_ml\tsugar_g\tcaf_mg"
+                     + "\tS1\tS3\tS8\tS6\tS4\tS7\tweighted\tdrag\tsugarCap\tcafCap\tsweetCap"]
+        for (label, p, expected) in goldenRows {
+            guard ScoringEngineV4.route(p) != "unsupported",
+                  let r = ScoringEngineV4.score(p), let bd = r.drinksBreakdown else {
+                lines.append("\(label)\t-\t\(expected)\t\(ScoringEngineV4.route(p))\t-")
+                continue
+            }
+            let credit = { (id: String) -> String in
+                bd.rules.first { $0.rule == id }
+                    .map { String(format: "%.3f", $0.fraction) } ?? "-"
+            }
+            let f2 = { (d: Double?) -> String in
+                d.map { String(format: "%.1f", $0) } ?? "?"
+            }
+            lines.append(
+                "\(label)\t\(r.base)\t\(expected)\t\(r.profileId)\t\(bd.bindingCapId ?? "-")"
+                + "\t\(f2(bd.effectiveServingMl))\t\(f2(bd.sugarPerServingG))\t\(f2(bd.caffeinePerServingMg))"
+                + "\t\(credit("S1"))\t\(credit("S3"))\t\(credit("S8"))"
+                + "\t\(credit("S6"))\t\(credit("S4"))\t\(credit("S7"))"
+                + "\t\(bd.weightedScore)\t\(bd.stackingDrag)"
+                + "\t\(bd.sugarCap)\t\(bd.caffeineCap)\t\(bd.sweetenerCap)")
+        }
+        print(lines.joined(separator: "\n"))
+    }
+
+    @Test func printGoldenSummary() {
+        let rows = goldenRows
         var lines = ["=== DRINKS GOLDEN SUMMARY v2.4 ==="]
         for (label, p, expected) in rows {
             let route = ScoringEngineV4.route(p)
