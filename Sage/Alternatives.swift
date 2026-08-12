@@ -33,6 +33,9 @@ struct AlternativeCandidate: Decodable {
     /// Markets this candidate was pulled for (`us` / `br`). Dual-listed products
     /// keep both tags after barcode merge.
     let countries: [String]?
+    /// Offline verdict on the photo the app will display (`good` / `low` /
+    /// `missing`, annotate_image_quality.py). Nil on pre-annotation datasets.
+    let imageQuality: String?
 
     enum CodingKeys: String, CodingKey {
         case barcode, name, brand, nutriments, countries
@@ -44,6 +47,7 @@ struct AlternativeCandidate: Decodable {
         case novaGroup = "nova_group"
         case nutriscoreGrade = "nutriscore_grade"
         case labelsTags = "labels_tags"
+        case imageQuality = "image_quality"
     }
 }
 
@@ -396,47 +400,57 @@ enum TopRated {
     static let maxPerBrand = 2
 
     /// Pure core (no global state) — testable in isolation.
+    ///
+    /// Slots fill from candidates with a pack-shot-quality photo first (this
+    /// is a visual browse surface; a kitchen-counter phone photo at #1 reads
+    /// as broken), then top up from the rest so a shelf never goes empty over
+    /// image quality alone. Un-annotated datasets (nil) count as good.
     static func items(from candidates: [AlternativeCandidate],
                       profile: UserProfile, ruleset: RulesetV4,
                       markets: Set<String> = Alternatives.allowedMarkets) -> [Alternative] {
         let pool = candidates
             .filter { !markets.isDisjoint(with: $0.countries ?? []) }
-            .compactMap { c -> Alternative? in
+            .compactMap { c -> (alt: Alternative, goodImage: Bool)? in
                 guard let (p, s) = Alternatives.scored(c, profile: profile, ruleset: ruleset),
                       isEligible(p, ruleset: ruleset)
                 else { return nil }
-                return Alternative(product: p, score: s, sharedTag: false,
-                                   countries: c.countries ?? [])
+                let alt = Alternative(product: p, score: s, sharedTag: false,
+                                      countries: c.countries ?? [])
+                return (alt, c.imageQuality.map { $0 == "good" } ?? true)
             }
             .sorted {
-                if $0.score != $1.score { return $0.score > $1.score }
+                if $0.alt.score != $1.alt.score { return $0.alt.score > $1.alt.score }
                 // Score ties: US variant first (its barcode resolves to a real
                 // pack shot), then stable by id.
-                let lus = $0.countries.contains("us"), rus = $1.countries.contains("us")
+                let lus = $0.alt.countries.contains("us"), rus = $1.alt.countries.contains("us")
                 if lus != rus { return lus }
-                return $0.id < $1.id
+                return $0.alt.id < $1.alt.id
             }
 
         var seenProducts = Set<String>()
         var perBrand: [String: Int] = [:]
         var out: [Alternative] = []
-        for alt in pool {
-            let product = listKey(brand: alt.product.brand, name: alt.product.name)
-            guard seenProducts.insert(product).inserted else { continue }
-            let brand = listKey(brand: alt.product.brand, name: "")
-            if !brand.isEmpty {
-                // Brand aliases share a bucket by prefix ("Quaker" and
-                // "Quaker Oats" are one brand); sorted scan keeps it
-                // deterministic.
-                let bucket = perBrand.keys.sorted().first {
-                    $0.hasPrefix(brand) || brand.hasPrefix($0)
-                } ?? brand
-                guard perBrand[bucket, default: 0] < maxPerBrand else { continue }
-                perBrand[bucket, default: 0] += 1
+
+        func fill(goodImage: Bool) {
+            for (alt, good) in pool where good == goodImage && out.count < maxItems {
+                let product = listKey(brand: alt.product.brand, name: alt.product.name)
+                guard seenProducts.insert(product).inserted else { continue }
+                let brand = listKey(brand: alt.product.brand, name: "")
+                if !brand.isEmpty {
+                    // Brand aliases share a bucket by prefix ("Quaker" and
+                    // "Quaker Oats" are one brand); sorted scan keeps it
+                    // deterministic.
+                    let bucket = perBrand.keys.sorted().first {
+                        $0.hasPrefix(brand) || brand.hasPrefix($0)
+                    } ?? brand
+                    guard perBrand[bucket, default: 0] < maxPerBrand else { continue }
+                    perBrand[bucket, default: 0] += 1
+                }
+                out.append(alt)
             }
-            out.append(alt)
-            if out.count == maxItems { break }
         }
+        fill(goodImage: true)
+        fill(goodImage: false)
         return out
     }
 

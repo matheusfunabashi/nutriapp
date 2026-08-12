@@ -204,6 +204,37 @@ struct TopRatedTests {
                 != TopRated.listKey(brand: "Quaker", name: "Steel Cut Oats"))
     }
 
+    // MARK: Image quality preference
+
+    @Test func goodImagesFillBeforeLowImages() {
+        // Top Rated is a visual surface: a pack-shot candidate outranks a
+        // higher-scoring kitchen-counter photo, which still fills a later
+        // slot rather than vanishing. Un-annotated candidates count as good.
+        let pool = candidates("""
+        [
+          {"barcode":"LOWIMG","name":"Best Cola","brand":"A","countries":["us"],
+           "image_quality":"low",
+           "categories_tags":["en:sodas"],
+           "ingredients_text":"water, sugar","nova_group":4,
+           "nutriments":{"sugars_100g":0,"energy-kcal_100g":1,"sodium_100g":0.01,
+                         "proteins_100g":0,"saturated-fat_100g":0}},
+          {"barcode":"GOODIMG","name":"Good Cola","brand":"B","countries":["us"],
+           "image_quality":"good",
+           "categories_tags":["en:sodas"],
+           "ingredients_text":"water, sugar","nova_group":4,
+           "nutriments":{"sugars_100g":5,"energy-kcal_100g":20,"sodium_100g":0.01,
+                         "proteins_100g":0,"saturated-fat_100g":0}},
+          {"barcode":"NOANNO","name":"Legacy Cola","brand":"C","countries":["us"],
+           "categories_tags":["en:sodas"],
+           "ingredients_text":"water, sugar","nova_group":4,
+           "nutriments":{"sugars_100g":9,"energy-kcal_100g":40,"sodium_100g":0.01,
+                         "proteins_100g":0,"saturated-fat_100g":0}}
+        ]
+        """)
+        let items = TopRated.items(from: pool, profile: MockData.user, ruleset: .bundled)
+        #expect(items.map(\.product.id) == ["GOODIMG", "NOANNO", "LOWIMG"])
+    }
+
     // MARK: Image fallback (item 5a)
 
     @Test func scoredCandidateKeepsOFFFallbackImage() throws {

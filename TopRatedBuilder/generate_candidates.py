@@ -69,6 +69,10 @@ SHELF_EXCLUDE = {
         "en:syrups", "en:concentrates", "en:squashes", "en:kombuchas",
         "en:fruit-juices", "en:energy-drinks", "en:teas", "en:iced-teas",
         "en:waters", "en:tea-based-beverages",
+        # US lemonades are still juice drinks, not sodas, but OFF's taxonomy
+        # parents every lemonade under en:sodas. Actual carbonated lemonade
+        # sodas (poppi, Sanpellegrino Limonata) don't carry the tag.
+        "en:lemonades", "en:lemonade",
     ],
     "juice": [
         "en:syrups", "en:concentrates", "en:squashes", "en:sodas",

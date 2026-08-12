@@ -31,7 +31,13 @@ xcodebuild -project ../Sage.xcodeproj -scheme TopRatedBuilder -configuration Rel
 BUILD=$(ls -d ~/Library/Developer/Xcode/DerivedData/Sage-*/Build/Products/Release/TopRatedBuilder | head -1)
 "$BUILD" fixtures/candidates-live.json
 
-# 3) Install into app + Worker (byte-identical)
+# 3) Annotate image quality (good / low / missing per candidate). Top Rated
+#    fills its slots from `good` first, so community kitchen-counter photos
+#    stop reaching the top 10. Needs a venv with Pillow:
+#      python3 -m venv .imgenv && .imgenv/bin/pip install pillow
+.imgenv/bin/python annotate_image_quality.py fixtures/alternatives.json
+
+# 4) Install into app + Worker (byte-identical)
 cp fixtures/alternatives.json ../Sage/Alternatives.json
 cp fixtures/alternatives.json ../backend/src/alternatives.json
 ```
