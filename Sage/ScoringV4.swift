@@ -149,6 +149,12 @@ struct RulesetV4: Codable {
         let maxCaffeineMgPer100ml: Double?
         /// Reject profile when sugars_100g is ≥ this.
         let maxSugarGPer100ml: Double?
+        /// M1: envelope bounds are per-100 ml, so they only make sense for
+        /// liquids. When true, the envelope fires only if the product's size or
+        /// serving parses as a volume — a 3-in-1 coffee *powder* at 60 g
+        /// sugar/100 g must not be compared against a 5 g/100 ml liquid bound
+        /// and handed a fictional 355 ml serving.
+        let requiresLiquid: Bool?
     }
     var routingPlausibility: [String: RoutingEnvelope]? = nil
 
@@ -159,6 +165,17 @@ struct RulesetV4: Codable {
         let ingredientFlavorTerms: [String]
     }
     var flavoredWaterEvidence: FlavoredWaterEvidence? = nil
+
+    /// M2: WHO's free-sugar definition excludes intrinsic milk sugars. For RTDs
+    /// with dairy evidence, up to `gPer100ml` of total sugar is treated as
+    /// lactose and excluded from S3 and the sugar cap. Plant-milk phrases are
+    /// stripped before the dairy-term match so "oat milk" never qualifies.
+    struct DairyLactoseAllowance: Codable {
+        let gPer100ml: Double
+        let dairyTerms: [String]
+        let plantMilkPhrases: [String]
+    }
+    var dairyLactoseAllowance: DairyLactoseAllowance? = nil
 
     /// Track 2: drinks S3 credit anchors as `[[gramsPerServing, credit]]`.
     /// A plain threshold list cannot express this curve — the credits at the
@@ -1187,6 +1204,14 @@ enum ScoringEngineV4 {
         guard let envelope = rs.routingPlausibility?[attempted] else {
             return attempted
         }
+        // M1: per-100 ml envelopes only apply to products that are demonstrably
+        // liquids. Dry goods (beans, powders, mixes) stay on their tag profile,
+        // whose own S3 variant handles sugar per 100 g honestly.
+        if envelope.requiresLiquid == true {
+            let isLiquid = DrinksScoring.parseVolumeMilliliters(p.size) != nil
+                || DrinksScoring.parseVolumeMilliliters(p.servingSize) != nil
+            guard isLiquid else { return attempted }
+        }
         let sugar = p.nutrients.sugar_g
         let caffeine = p.caffeine_mg  // mapped OFF caffeine_100g → mg/100 ml
 
@@ -1257,9 +1282,12 @@ enum ScoringEngineV4 {
     }
 
     /// S14/S15 with no usable ingredient signal drop out of Σw (weight redistributed).
+    /// M5: S12 joins them only on the `dryBrew` variant (note-marked), so
+    /// ingredient-only products on other profiles keep their current scores.
     private static func activeWeightResults(_ results: [V4RuleResult]) -> [V4RuleResult] {
         results.filter { r in
             if (r.rule == "S14" || r.rule == "S15"), !r.hadData { return false }
+            if r.rule == "S12", !r.hadData, r.note?.hasPrefix("dryBrew") == true { return false }
             return true
         }
     }
@@ -1332,6 +1360,12 @@ enum ScoringEngineV4 {
         case "S10":
             let r = s10(p, rs: rs); return (r.0, r.1, nil)
         case "S12":
+            // M5: dry brew goods (beans, ground, loose tea, instant) will never
+            // have a meaningful micronutrient panel — the rule is structurally
+            // zero, not evidence of poor quality. Mark it for redistribution.
+            if variant == "dryBrew" {
+                return (0, false, "dryBrew: no micronutrient basis (weight redistributed)")
+            }
             let r = s12(p, variant: variant); return (r.0, r.1, nil)
         case "S13":
             let r = s13(p, rs: rs); return (r.0, r.1, nil)
