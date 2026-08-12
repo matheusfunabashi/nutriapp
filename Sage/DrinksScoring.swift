@@ -37,6 +37,9 @@ struct DrinksScoreBreakdown {
     let riskFactorCount: Int
     /// Flat +3 applied on juice_100 (0 otherwise).
     let micronutrientBoost: Int
+    /// Merit credits earned (brew polyphenols / dairy nutrition), applied
+    /// before caps — a capped product can never merit its way up.
+    let meritBoost: Int
     /// Post-rule diet/energy stacking drag (points).
     let stackingDrag: Int
     /// Packaging leach-pathway credit (glass 1.0 → PVC 0.0), surfaced as a
@@ -60,9 +63,14 @@ enum DrinksScoring {
     /// Anti-gaming: container ≤600 ml → whole container. Larger containers use a
     /// genuine declared serving when present; OFF nutrition-panel "100 ml"
     /// references are discarded and replaced by a category-typical dose.
+    /// Smallest plausible drink container; below this the parse is treated as
+    /// junk data rather than a real serving (fuzzer finding — a "5 ml" soda
+    /// would otherwise score its sugar load on a 5 ml dose).
+    static let minPlausibleContainerMl: Double = 30
+
     static func effectiveServing(for product: Product) -> DrinksEffectiveServing {
         let containerMl = parseVolumeMilliliters(product.size)
-        if let c = containerMl, c > 0, c <= singleServeMaxMl {
+        if let c = containerMl, c >= minPlausibleContainerMl, c <= singleServeMaxMl {
             return DrinksEffectiveServing(ml: c, estimatedServing: false, usedWholeContainer: true)
         }
 
@@ -75,8 +83,19 @@ enum DrinksScoring {
             return DrinksEffectiveServing(ml: dose, estimatedServing: true, usedWholeContainer: false)
         }
 
-        // Genuine consumption serving surviving panel-ref discard.
+        // Genuine consumption serving surviving panel-ref discard. Field QA:
+        // on a multi-serve container the declared serving is floored at the
+        // category-typical dose — a 1 L cola declaring a 250 ml serving was
+        // scoring 29 while the identical liquid in a 355 ml can scored 20.
+        // Same anti-gaming rationale as whole-container ≤600 ml.
         if let s = declared, s >= 100, s <= singleServeMaxMl {
+            if let c = containerMl, c > singleServeMaxMl {
+                let dose = categoryTypicalDoseMl(for: product)
+                if s < dose {
+                    return DrinksEffectiveServing(ml: dose, estimatedServing: true,
+                                                  usedWholeContainer: false)
+                }
+            }
             return DrinksEffectiveServing(ml: s, estimatedServing: false, usedWholeContainer: false)
         }
 
@@ -105,12 +124,14 @@ enum DrinksScoring {
     }
 
     /// Cached volume parsers — built once; safe under Swift Testing parallelism.
+    /// Negative lookbehind rejects minus-signed quantities ("-5 ml" is junk,
+    /// not a 5 ml container) — found by the property fuzzer.
     private static let volumeParsers: [(NSRegularExpression, Double)] = {
         let specs: [(String, Double)] = [
-            (#"(\d+(?:\.\d+)?)\s*(?:fl\.?\s*oz|floz|fluid\s*ounces?)"#, 29.5735),
-            (#"(\d+(?:\.\d+)?)\s*ml\b"#, 1.0),
-            (#"(\d+(?:\.\d+)?)\s*cl\b"#, 10.0),
-            (#"(\d+(?:\.\d+)?)\s*l\b"#, 1000.0),
+            (#"(?<!-)(\d+(?:\.\d+)?)\s*(?:fl\.?\s*oz|floz|fluid\s*ounces?)"#, 29.5735),
+            (#"(?<!-)(\d+(?:\.\d+)?)\s*ml\b"#, 1.0),
+            (#"(?<!-)(\d+(?:\.\d+)?)\s*cl\b"#, 10.0),
+            (#"(?<!-)(\d+(?:\.\d+)?)\s*l\b"#, 1000.0),
         ]
         return specs.compactMap { pattern, factor in
             (try? NSRegularExpression(pattern: pattern)).map { ($0, factor) }
@@ -285,6 +306,16 @@ enum DrinksScoring {
         return Int(interpolate(gramsPerServing, anchors: satFatCapAnchors).rounded())
     }
 
+    // MARK: Merit layer (drinks) — the profile is otherwise deficit-only.
+    /// Unsweetened brew (non-energy tea/coffee RTD, ≤2 g free sugar, no
+    /// sweeteners): coffee/tea polyphenol evidence.
+    static let brewPolyphenolMerit = 3
+    static let brewMeritMaxFreeSugarG: Double = 2
+    /// Real dairy content (dairy evidence + protein ≥2.5 g/100 ml): protein and
+    /// calcium credited, not just lactose excused.
+    static let dairyNutritionMerit = 3
+    static let dairyMeritMinProteinPer100ml: Double = 2.5
+
     /// A non-Tier-1 sweetener holds a drink one point short of Excellent…
     static let nonSugarSweetenerCap = 74
     /// …unless the drink is essentially sugar-free, which stays eligible (I19).
@@ -355,15 +386,10 @@ enum DrinksScoring {
             let free = freeSugarPer100mlAfterLactose(total: total, p: p, rs: rs)
             return free * (serving.ml / 100)
         }
-        let fvn = p.nutrients.fvn ?? 0
-        let discount: Double
-        if isJuiceCategory(p) {
-            discount = min(0.15, fvn / 100)
-        } else {
-            discount = 0
-        }
-        let per100 = total * (1 - discount)
-        return per100 * (serving.ml / 100)
+        // F4a: no FVN discount. WHO counts juice sugars fully as free sugars —
+        // fruit content is not a license to discount them. (Milk lactose above
+        // is the one WHO-sanctioned exemption.)
+        return total * (serving.ml / 100)
     }
 
     /// Caffeine mg per 100 ml — measured or category default.
@@ -465,6 +491,15 @@ enum DrinksScoring {
         return (canon1.count, canon2.count, canon3.count, keys, true)
     }
 
+    /// F4b — erythritol detection (code or name), for the extra Tier-2 dock.
+    static func containsErythritol(_ p: Product) -> Bool {
+        if p.additives.contains(where: { $0.code?.lowercased() == "e968" }) { return true }
+        let hay = folded(
+            ([p.ingredientsText ?? ""] + (p.labels ?? []) + [p.name]).joined(separator: " ")
+        )
+        return hay.contains("erythritol") || hay.contains("eritritol")
+    }
+
     static func s6Credit(_ p: Product) -> (Double, Bool, [String]) {
         let d = detectSweetenerTiers(p)
         guard d.hadData else { return (0.50, false, []) }
@@ -475,6 +510,12 @@ enum DrinksScoring {
         }
         // Tier 2 polyols — medium; Tier 3 stevia/monk — light (stevia alone → 0.90).
         f -= 0.25 * Double(d.tier2)
+        // F4b: erythritol carries an extra precautionary dock within Tier 2 —
+        // prospective cohorts associate circulating erythritol with higher
+        // cardiovascular event risk, evidence the other polyols don't share.
+        if containsErythritol(p) {
+            f -= 0.10
+        }
         // Tier 3 (stevia / monk fruit), Track 2: first hit lands on 0.70, each
         // additional −0.10. Previously ~0.90, which was cosmetic.
         if d.tier3 > 0 {
@@ -562,6 +603,24 @@ enum DrinksScoring {
     }
 
     /// Post-rule stacking drag so diet/energy products spread below caps (points 0–100).
+    // F3: piecewise-linear anchors replace stepwise thresholds so a 2 mg data
+    // revision on OFF can never flip a product across a cliff. Anchors are set
+    // at the calibrated fixture operating points (140/180/200 mg etc.), so
+    // golden scores are preserved while the space BETWEEN anchors is smooth.
+    static let energyCaffeineDragAnchors: [(Double, Double)] = [
+        (100, 0), (140, 5), (180, 11), (200, 13),
+    ]
+    static let energySugarDragAnchors: [(Double, Double)] = [
+        (15, 0), (20, 8),
+    ]
+    static let energySugarCaffeineComboDragAnchors: [(Double, Double)] = [
+        (20, 0), (25, 6),
+    ]
+    /// 0→1 ramp gating sugar+caffeine combo terms (was a hard `cafMg >= 70`).
+    static let comboCaffeineGateAnchors: [(Double, Double)] = [
+        (40, 0), (70, 1),
+    ]
+
     static func stackingDrag(
         tier1: Int,
         sugarG: Double,
@@ -570,14 +629,15 @@ enum DrinksScoring {
         isSports: Bool,
         hasStimulants: Bool
     ) -> Int {
-        var d = 0
+        var d = 0.0
         if tier1 > 0 {
             // Diet / sports: strong NNS count drag so scores land below sweetenerCap.
             // Energy: lighter NNS drag — caffeine/stimulant stack does the rest.
+            // Integer counts, not continuous inputs — no cliff to smooth.
             if isEnergy {
-                d += 6 + 6 * tier1          // 1→12, 2→18
+                d += Double(6 + 6 * tier1)  // 1→12, 2→18
             } else {
-                d += 12 + 10 * tier1        // 1→22, 2→32
+                d += Double(12 + 10 * tier1)  // 1→22, 2→32
             }
         }
         if isSports && tier1 > 0 {
@@ -585,26 +645,40 @@ enum DrinksScoring {
         }
         if isEnergy {
             d += 8
-            if cafMg >= 140 { d += 5 }
-            if cafMg >= 180 { d += 6 }
-            // ~200 mg/can (e.g. Celsius 56.3×355 ≈ 199.9) — keep below cold-press juice floor.
-            if cafMg >= 195 { d += 2 }
+            d += interpolate(cafMg, anchors: energyCaffeineDragAnchors)
             if hasStimulants { d += 4 }
-            if sugarG >= 20 { d += 8 }
-            if sugarG >= 25 && cafMg >= 70 { d += 6 }
+            d += interpolate(sugarG, anchors: energySugarDragAnchors)
+            d += interpolate(sugarG, anchors: energySugarCaffeineComboDragAnchors)
+                * interpolate(cafMg, anchors: comboCaffeineGateAnchors)
         }
-        return d
+        return Int(d.rounded())
     }
 
     /// Extra pull below sugarCap when heavy sugar stacks with serious caffeine.
+    // F3 continuous anchors — same operating points as the old thresholds,
+    // smooth in between (the old hard `sugarG >= 20` guard becomes a 15→20 ramp).
+    static let undercutCaffeineAnchors: [(Double, Double)] = [
+        (100, 0), (120, 5), (160, 10),
+    ]
+    static let undercutSugarGateAnchors: [(Double, Double)] = [
+        (15, 0), (20, 1),
+    ]
+    static let undercutEnergySugarAnchors: [(Double, Double)] = [
+        (15, 0), (20, 8),
+    ]
+    static let undercutEnergyComboAnchors: [(Double, Double)] = [
+        (20, 0), (25, 4),
+    ]
+
     static func sugarCapUndercut(sugarG: Double, cafMg: Double, isEnergy: Bool) -> Int {
-        guard sugarG >= 20 else { return 0 }
-        var u = 0
-        if cafMg >= 120 { u += 5 }
-        if cafMg >= 160 { u += 5 }
-        if isEnergy && sugarG >= 20 { u += 8 }
-        if isEnergy && sugarG >= 25 && cafMg >= 70 { u += 4 }
-        return u
+        let sugarGate = interpolate(sugarG, anchors: undercutSugarGateAnchors)
+        var u = interpolate(cafMg, anchors: undercutCaffeineAnchors) * sugarGate
+        if isEnergy {
+            u += interpolate(sugarG, anchors: undercutEnergySugarAnchors)
+            u += interpolate(sugarG, anchors: undercutEnergyComboAnchors)
+                * interpolate(cafMg, anchors: comboCaffeineGateAnchors)
+        }
+        return Int(u.rounded())
     }
 
     // MARK: S4 — sodium (drinks)
@@ -802,6 +876,7 @@ enum DrinksScoring {
         }
 
         var boost = 0
+        var merit = 0
         var earnedPoints = Int((earned / 100.0 * 100).rounded())
         let stimulants = hasEnergyStimulants(p)
         let drag: Int
@@ -822,6 +897,26 @@ enum DrinksScoring {
                 hasStimulants: stimulants
             )
             earnedPoints -= drag
+            // Merit layer — the drinks profile is otherwise deficit-only.
+            // Small, evidence-anchored credits, applied BEFORE caps so a
+            // capped product (e.g. a Frappuccino) can never merit its way up:
+            // safety nets outrank bonuses, no health-washing.
+            let noSweeteners = tiers.hadData
+                && (tiers.tier1 + tiers.tier2 + tiers.tier3) == 0
+            if isNonEnergyTeaCoffeeRTD(p),
+               (sugarG ?? 0) <= brewMeritMaxFreeSugarG, noSweeteners {
+                // Unsweetened brew: coffee/tea polyphenols, neutral-to-favorable
+                // in large cohorts.
+                merit += brewPolyphenolMerit
+            }
+            if hasDairyIngredientEvidence(p, rs: rs),
+               (p.nutrients.protein_g ?? 0) >= dairyMeritMinProteinPer100ml {
+                // Real dairy content: protein + calcium, credited rather than
+                // merely excusing lactose. Kombucha's fermentation stays
+                // uncredited — trial evidence is too weak to score.
+                merit += dairyNutritionMerit
+            }
+            earnedPoints = min(100, earnedPoints + merit)
         }
         let weighted = max(floorScore, earnedPoints)
 
@@ -878,6 +973,7 @@ enum DrinksScoring {
             sweetenerReasonKeys: sweetKeys,
             riskFactorCount: riskFactorCount(for: p, tiers: tiers),
             micronutrientBoost: boost,
+            meritBoost: merit,
             stackingDrag: drag,
             packagingCredit: packagingCredit,
             packagingHadData: packagingHadData

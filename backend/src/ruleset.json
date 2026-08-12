@@ -1884,6 +1884,16 @@
   "flags": {
     "rulesetV510Enabled": true
   },
+  "plainWaterEvidence": {
+    "nameWaterWords": [
+      "water", "mineral water", "sparkling water", "spring water",
+      "agua", "água", "agua mineral", "água mineral", "agua con gas", "água com gás",
+      "acqua", "acqua minerale", "acqua frizzante", "acqua naturale",
+      "eau", "eau minérale", "eau gazeuse", "wasser", "mineralwasser"
+    ],
+    "maxKcalPer100ml": 5,
+    "maxSugarGPer100ml": 0.5
+  },
   "dairyLactoseAllowance": {
     "gPer100ml": 4.8,
     "dairyTerms": ["milk", "leite", "latte", "lait", "leche", "cream", "nata", "panna"],

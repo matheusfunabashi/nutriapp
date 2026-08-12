@@ -88,7 +88,11 @@ Credits first, caps as safety nets. Caps should rarely bind on diet/energy;
 identical scores across distinct products usually mean a cap plateau.
 
 - **Effective serving:** container ≤600 ml → whole container (anti-gaming);
-  else declared serving if 100–600 ml; else **355 ml** + `estimatedServing`.
+  else declared serving if 100–600 ml, **floored at the category-typical dose**
+  (field QA: a 1 L cola declaring a 250 ml serving scored 29 vs 20 for the
+  identical liquid in a can — declared servings below the typical dose are
+  raised to it and flagged estimated); else **355 ml** + `estimatedServing`.
+  Containers under 30 ml and minus-signed quantities are junk data, not servings.
 - **S3 (drinks):** sugar per effective serving. Track 2 anchors (`s3DrinksServingCurve`
   in both rulesets): ≤1 g → 100%, 5 g → 60%, 8 g → 48%, 16 g → 25%, ≥30 g → 0%.
   The low end is steep so a lightly sweetened soda stops scoring like plain water.
@@ -98,8 +102,8 @@ identical scores across distinct products usually mean a cap plateau.
   cap — WHO's free-sugar definition excludes milk sugars. A *positive* declared
   added-sugars value is trusted instead when sane; OFF's bogus `added-sugars: 0`
   stays untrusted. Config: `dairyLactoseAllowance` in both rulesets.
-  FVN discount max **15%** only for leftover juice-like products (nectars /
-  juice drinks). No micronutrient boost on the regular profile.
+  No FVN discount anywhere on the drinks path — WHO counts juice sugars fully
+  as free sugars; the lactose allowance above is the only sanctioned exemption.
 - **S3 (`juice_100`):** raw total sugar, no FVN discount. Curve ≤6 → 100%,
   10 → 55%, 14 → 25%, ≥18 → 0%. Entry requires FVN ≥95%, no added sugar, no
   sweeteners, additives limited to ascorbic / citric acid.
@@ -111,6 +115,9 @@ identical scores across distinct products usually mean a cap plateau.
   single-dose mark. `energyDrinkEvidence` outranks the tag match (I27), so a
   stimulant-stacked product wearing tea tags stays on the strict path.
 - **S6** three tiers (heavy NNS / sugar alcohols / stevia–monk); allulose neutral.
+  Erythritol carries an extra −0.10 within Tier 2 — prospective cohorts associate
+  circulating erythritol with higher cardiovascular event risk, evidence the
+  other polyols don't share (precautionary; copy constraints in §6 apply).
   Tier-1 is a strong per-sweetener credit hit (first → 0.10, each extra −0.10);
   Tier-3 stevia/monk is a real penalty after Track 2 (first → 0.70, each extra
   −0.10), no longer a rounding nudge. Tier-1 also sets
@@ -128,7 +135,21 @@ identical scores across distinct products usually mean a cap plateau.
   “precautionary”, and “evidence is limited and contested”.
 - **Stacking drag (drinks only):** post-rule points subtracted so Tier-1 count,
   sports+NNS, and energy (caffeine / stimulants / sugar) separate products
-  below the caps instead of flattening on them.
+  below the caps instead of flattening on them. **F3:** the drag and the
+  sugar-cap undercut are piecewise-linear (named anchor tables), not stepwise —
+  a 1 mg / 0.2 g data revision can never flip a product across a cliff.
+  Continuity is guarded by dedicated sweep tests and a score-level fuzz sweep.
+- **Merit layer (drinks only):** the profile is otherwise deficit-only, so two
+  small evidence-anchored credits exist: **+3 unsweetened brew** (non-energy
+  tea/coffee RTD, ≤2 g free sugar, no sweeteners — coffee/tea polyphenol
+  cohort evidence) and **+3 dairy nutrition** (dairy evidence + protein
+  ≥2.5 g/100 ml — protein and calcium credited, not just lactose excused).
+  Merit applies BEFORE caps: a capped product (Frappuccino) can never merit
+  its way up — safety nets outrank bonuses, no health-washing. Kombucha's
+  fermentation stays deliberately uncredited: trial evidence is too weak.
+- **Serving hardening:** minus-signed quantities never parse ("-5 ml" is junk,
+  not 5 ml) and containers under 30 ml are treated as data errors, not
+  servings — both found by the property fuzzer.
 - **Caps (drinks):** sugar (≤16 → none; 16–30 → 55→20; ≥30 → 20); caffeine
   (Track 2: ≤60 → none; 60–160 → 100→52; 160–200 → 52→40; 200–300 → 40→25;
   ≥300 → 25 — monotonic by construction, guarded by I20; non-energy coffee/tea
@@ -166,6 +187,7 @@ Precedence, highest first:
 1. **Alcohol exclusions** (`alcoholic-beverages`, beers / wines / spirits / ciders) → `unsupported`. Untouched by evidence gates.
 2. **Evidence gates**
    - `energyDrinkEvidence`: measured caffeine ≥ 25 mg/100 ml **and** a stimulant ingredient (taurine / guarana / mate, configurable) → `drinks` with `isEnergyDrink = true` for stacking, caffeine defaults, and compound risk. OR'd with `energy-drinks` tags.
+   - `plainWaterEvidence`: a water word in the product NAME (multi-language, configurable) + ≤5 kcal and ≤0.5 g sugar/100 ml + no flavor evidence, additives, caffeine, or sweeteners → `unsupported`, regardless of tags. Field QA: a US S.Pellegrino wearing Spanish category tags ("Aguas", "Bebidas") matched no router entry and scored 77. Name-only matching on purpose — "carbonated water" leads every soda's ingredient list. Guarded by I29.
    - `flavoredWaterEvidence`: waters-family tags + flavor word in the name or flavoring term in ingredients → `drinks` (not `unsupported`).
 3. **Category tag matches** (most-specific-first router).
 4. **Catch-all** `beverages` → `drinks`, else `general`.
