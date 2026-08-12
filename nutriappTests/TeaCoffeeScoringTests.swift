@@ -164,7 +164,9 @@ struct TeaCoffeeScoringTests {
 
     // MARK: Golden ranges — RTD
 
-    @Test func goldenColdBrewBlack() { expectRange(coldBrewBlack, 88, 96, profile: "drinks") }
+    // Range re-derived after the merit layer: an unsweetened brew earns the
+    // +3 polyphenol credit (96 → 99).
+    @Test func goldenColdBrewBlack() { expectRange(coldBrewBlack, 92, 100, profile: "drinks") }
     @Test func goldenUnsweetenedLatte() { expectRange(unsweetenedLatte, 78, 90, profile: "drinks") }
     @Test func goldenMatchaLatte() { expectRange(matchaLatte, 58, 74, profile: "drinks") }
     @Test func goldenFrappuccino() { expectRange(frappuccino, 25, 35, profile: "drinks") }
@@ -270,7 +272,7 @@ struct TeaCoffeeScoringTests {
             ("D3 instant coffee", instantCoffee, "50-68"),
             ("D4 chicory", chicorySubstitute, "60-75"),
             ("D5 3-in-1 mix", threeInOneMix, "25-40"),
-            ("R1 cold brew", coldBrewBlack, "88-96"),
+            ("R1 cold brew", coldBrewBlack, "92-100"),
             ("R2 latte", unsweetenedLatte, "78-90"),
             ("R3 matcha latte", matchaLatte, "58-74"),
             ("R4 frappuccino", frappuccino, "25-35"),
