@@ -355,10 +355,10 @@ struct SplashView: View {
 struct SageToolbarTitle: ToolbarContent {
     var body: some ToolbarContent {
         ToolbarItem(placement: .principal) {
-            HStack(spacing: 7) {
-                SageMark(size: 20, color: Theme.accent)
+            HStack(spacing: 8) {
+                SageMark(size: 28, color: Theme.accent)
                 Text("Sage")
-                    .font(.sageSemiBold(17)).tracking(-0.4)
+                    .font(.sageBold(24)).tracking(-0.6)
                     .foregroundStyle(Theme.ink)
             }
             .accessibilityElement(children: .combine)
