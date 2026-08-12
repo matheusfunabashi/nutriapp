@@ -68,7 +68,7 @@ struct TopRatedCategoriesView: View {
     }
 }
 
-/// The best-scoring products in one category (ranked 1…20, Overall). Candidates
+/// The best-scoring products in one category (ranked 1…10, Overall). Candidates
 /// are re-scored on-device so the numbers match a fresh scan (§4).
 struct TopRatedListView: View {
     @EnvironmentObject var store: AppStore

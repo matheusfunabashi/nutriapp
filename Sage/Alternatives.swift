@@ -349,7 +349,9 @@ enum Alternatives {
 // products (often the top of a shelf) in a US-facing browse tab.
 
 enum TopRated {
-    static let maxItems = 20
+    /// A short list is the product: ten defensible picks per shelf, not a
+    /// leaderboard that trails off into 40-point sodas.
+    static let maxItems = 10
 
     /// Eligibility floor (stricter than "scoreable"): a Top Rated placement is
     /// an endorsement, so the score must rest on evidence, not on defaults.
@@ -389,7 +391,7 @@ enum TopRated {
               markets: allowedMarkets(for: shelf))
     }
 
-    /// At most this many list slots per brand — a top-20 that is one third
+    /// At most this many list slots per brand — a top list that is one third
     /// Häagen-Dazs SKUs reads as broken even when the scores are right.
     static let maxPerBrand = 2
 
@@ -423,8 +425,14 @@ enum TopRated {
             guard seenProducts.insert(product).inserted else { continue }
             let brand = listKey(brand: alt.product.brand, name: "")
             if !brand.isEmpty {
-                guard perBrand[brand, default: 0] < maxPerBrand else { continue }
-                perBrand[brand, default: 0] += 1
+                // Brand aliases share a bucket by prefix ("Quaker" and
+                // "Quaker Oats" are one brand); sorted scan keeps it
+                // deterministic.
+                let bucket = perBrand.keys.sorted().first {
+                    $0.hasPrefix(brand) || brand.hasPrefix($0)
+                } ?? brand
+                guard perBrand[bucket, default: 0] < maxPerBrand else { continue }
+                perBrand[bucket, default: 0] += 1
             }
             out.append(alt)
             if out.count == maxItems { break }

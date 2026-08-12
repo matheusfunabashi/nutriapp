@@ -31,17 +31,18 @@ struct TopRatedTests {
         """
     }
 
-    @Test func itemsCapAtTwentyAndSortDescending() {
-        // 22 sodas with increasing sugar → decreasing Overall. items() keeps the
-        // best 20, ordered high→low, and drops the worst.
-        let entries = (0..<22).map {
+    @Test func itemsCapAtMaxItemsAndSortDescending() {
+        // 12 sodas with increasing sugar → decreasing Overall. items() keeps
+        // the best 10, ordered high→low, and drops the worst.
+        let entries = (0..<12).map {
             soda("B\($0)", name: "Soda \($0)", brand: "Br\($0)", sugar: $0)
         }
         let items = TopRated.items(from: candidates("[\(entries.joined(separator: ","))]"),
                                    profile: MockData.user, ruleset: .bundled)
-        #expect(items.count == 20)                                            // capped
+        #expect(TopRated.maxItems == 10)
+        #expect(items.count == TopRated.maxItems)                             // capped
         #expect(items.map(\.score) == items.map(\.score).sorted(by: >))       // best first
-        #expect(!items.contains { $0.product.name == "Soda 21" })             // worst dropped
+        #expect(!items.contains { $0.product.name == "Soda 11" })             // worst dropped
     }
 
     @Test func waterAndCoffeeHaveNoTopRated() {
@@ -162,6 +163,22 @@ struct TopRatedTests {
         // The two kept SKUs are the brand's best-scoring ones.
         #expect(items.map(\.product.id).contains("HD0"))
         #expect(items.map(\.product.id).contains("HD1"))
+    }
+
+    @Test func brandCapBucketsAliases() {
+        // "Quaker" and "Quaker Oats" are one brand: together they get
+        // maxPerBrand slots, not maxPerBrand each.
+        let entries = [
+            soda("Q1", name: "Steel Cut Oats", brand: "Quaker", sugar: 0),
+            soda("Q2", name: "Quick Oats", brand: "Quaker Oats", sugar: 1),
+            soda("Q3", name: "Old Fashioned Oats", brand: "Quaker", sugar: 2),
+            soda("Q4", name: "One Minute Oats", brand: "Quaker Oats", sugar: 3),
+            soda("OTHER", name: "Rolled Oats", brand: "Bob's Red Mill", sugar: 9),
+        ]
+        let items = TopRated.items(from: candidates("[\(entries.joined(separator: ","))]"),
+                                   profile: MockData.user, ruleset: .bundled)
+        #expect(items.filter { $0.product.brand.hasPrefix("Quaker") }.count == TopRated.maxPerBrand)
+        #expect(items.contains { $0.product.id == "OTHER" })
     }
 
     @Test func marketVariantsCollapseToUSVariant() {
