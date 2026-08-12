@@ -20,10 +20,18 @@ Resolution chain (once per barcode, then cached):
 1. **KV + R2 cache** — serve immediately when fresh (&lt; 30 days). Stale entries
    are returned and revalidated in the background (`waitUntil`).
 2. **Kroger Products API** — official US retailer pack shots (preferred).
-3. **Open Food Facts** — front-image selection (same priority order as the
+3. **Walmart Content Provider (Affiliate) API** — official studio pack shots;
+   covers grocery items Kroger doesn't stock. Inert until
+   `WALMART_CONSUMER_ID` / `WALMART_PRIVATE_KEY` (PKCS#8 PEM) /
+   `WALMART_KEY_VERSION` are configured (walmart.io affiliate approval
+   required). Endpoint shape assumed from Walmart.io docs — validate against
+   the live API when the first real key lands (`walmart.test.ts` pins the
+   contract).
+4. **Open Food Facts** — front-image selection (same priority order as the
    iOS `OFFImageResolver`).
-4. **null** — app falls back to placeholder / user photo. Misses are
-   negative-cached for 7 days. Kroger 429/5xx gets a 6h per-barcode backoff.
+5. **null** — app falls back to placeholder / user photo. Misses are
+   negative-cached for 7 days. Kroger/Walmart 429/5xx get a 6h per-barcode
+   backoff.
 
 Successful resolutions download the image once into R2 and expose it at a
 stable Worker URL:

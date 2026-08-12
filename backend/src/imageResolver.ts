@@ -1,7 +1,7 @@
 /**
  * Product-image resolution chain for Sage.
  *
- *   curated → cache (R2 + KV) → Kroger pack shot → OFF front image → null
+ *   curated → cache (R2 + KV) → Kroger pack shot → Walmart pack shot → OFF front image → null
  *
  * On a hit we download bytes once into R2 (`product-images/{barcode}`) and
  * point the iOS app at the stable Worker URL `GET /images/{barcode}`.
@@ -12,10 +12,11 @@ import type { OFFProduct } from "./off.ts";
 import { fetchOFF } from "./off.ts";
 import { resolveOFFFrontImage } from "./offImage.ts";
 import { fetchKrogerImage, type KrogerDeps, DEFAULT_KROGER_BASE_URL } from "./kroger.ts";
+import { fetchWalmartImage, type WalmartCredentials, DEFAULT_WALMART_BASE_URL } from "./walmart.ts";
 import { shouldAttemptKroger } from "./barcode.ts";
 import { adoptCuratedIfPresent } from "./curatedImages.ts";
 
-export type ImageSourceName = "curated" | "kroger" | "off";
+export type ImageSourceName = "curated" | "kroger" | "walmart" | "off";
 
 /** Public shape returned on /lookup (and mirrored into Product for the app). */
 export interface ProductImagePayload {
@@ -47,11 +48,12 @@ export interface ImageCacheMeta {
  * Bump when the resolve chain changes (new upstream, barcode normalization,
  * curated tier, etc.) so existing KV rows re-resolve without a manual flush.
  */
-export const IMAGE_CACHE_VERSION = 3;
+export const IMAGE_CACHE_VERSION = 4;
 
 const IMAGE_KV_PREFIX = "image:v1:";
 const MISS_KV_PREFIX = "image:miss:v1:";
 const KROGER_BACKOFF_PREFIX = "image:kroger-backoff:v1:";
+const WALMART_BACKOFF_PREFIX = "image:walmart-backoff:v1:";
 const R2_KEY_PREFIX = "product-images/";
 
 const FRESH_MS = 30 * 24 * 60 * 60 * 1000;       // 30 days
@@ -206,7 +208,42 @@ async function resolveAndStore(
     // unavailable → continue
   }
 
-  // --- (c) OFF -------------------------------------------------------------
+  // --- (c) Walmart ----------------------------------------------------------
+  // Official studio pack shots; covers US grocery items Kroger doesn't stock.
+  // Inert until WALMART_CONSUMER_ID / WALMART_PRIVATE_KEY are configured.
+  const walmartBackoff = await env.CACHE.get(walmartBackoffKey(barcode));
+  if (!walmartBackoff) {
+    const walmart = await fetchWalmartImage(barcode, {
+      credentials: walmartCredentials(env),
+      baseUrl: env.WALMART_BASE_URL || DEFAULT_WALMART_BASE_URL,
+      fetchFn,
+      now,
+    });
+    if (walmart.kind === "hit") {
+      const stored = await ingestUpstream(env, barcode, {
+        upstreamUrl: walmart.image.url,
+        source: "walmart",
+        isFrontImage: walmart.image.isFrontImage,
+        isLowQuality: false,
+        width: walmart.image.estimatedWidth,
+        height: null,
+        fetchFn,
+        now,
+      });
+      if (stored) {
+        logWin(barcode, "walmart");
+        return toPayload(opts.origin, barcode, stored);
+      }
+    } else if (walmart.kind === "rate_limited") {
+      await env.CACHE.put(walmartBackoffKey(barcode), "1", {
+        expirationTtl: KROGER_BACKOFF_TTL_SECONDS,
+      });
+      console.log(JSON.stringify({ event: "image_walmart_backoff", barcode }));
+    }
+    // miss / unavailable → continue
+  }
+
+  // --- (d) OFF -------------------------------------------------------------
   const off = resolveOFFFrontImage(
     offProduct,
     barcode,
@@ -238,7 +275,7 @@ async function resolveAndStore(
     }));
   }
 
-  // --- (d) total miss ------------------------------------------------------
+  // --- (e) total miss ------------------------------------------------------
   await env.CACHE.put(missKey(barcode), "1", { expirationTtl: MISS_TTL_SECONDS });
   console.log(JSON.stringify({ event: "image_miss", barcode }));
   return null;
@@ -445,6 +482,19 @@ function toPayload(
 function krogerCredentials(env: Env): { clientId: string; clientSecret: string } | null {
   if (!env.KROGER_CLIENT_ID || !env.KROGER_CLIENT_SECRET) return null;
   return { clientId: env.KROGER_CLIENT_ID, clientSecret: env.KROGER_CLIENT_SECRET };
+}
+
+function walmartCredentials(env: Env): WalmartCredentials | null {
+  if (!env.WALMART_CONSUMER_ID || !env.WALMART_PRIVATE_KEY) return null;
+  return {
+    consumerId: env.WALMART_CONSUMER_ID,
+    privateKeyPem: env.WALMART_PRIVATE_KEY,
+    keyVersion: env.WALMART_KEY_VERSION || "1",
+  };
+}
+
+export function walmartBackoffKey(barcode: string): string {
+  return `${WALMART_BACKOFF_PREFIX}${barcode}`;
 }
 
 function logWin(barcode: string, source: ImageSourceName): void {

@@ -4,6 +4,7 @@ import { normalizeBarcodeForKroger, shouldAttemptKroger, krogerProductIdCandidat
 import { pickBestImage, fetchKrogerImage, DEFAULT_KROGER_BASE_URL } from "./kroger.ts";
 import {
   resolveProductImage,
+  IMAGE_CACHE_VERSION,
   metaKey,
   missKey,
   krogerBackoffKey,
@@ -273,7 +274,7 @@ describe("resolveProductImage chain", () => {
 
     assert.ok(result);
     assert.equal(result!.source, "kroger");
-    assert.equal(result!.url, `${origin}/images/${barcode}?v=3`);
+    assert.equal(result!.url, `${origin}/images/${barcode}?v=${IMAGE_CACHE_VERSION}`);
     assert.equal(result!.isFrontImage, true);
     assert.equal(offDownloadAttempts, 0);
     assert.ok(r2._store.has(r2Key(barcode)));

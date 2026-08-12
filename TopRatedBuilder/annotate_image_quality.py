@@ -15,7 +15,7 @@ and alternatives keep working regardless of verdict).
 
 Run after TopRatedBuilder, before installing:
   .venv with Pillow required, e.g.:
-  python3 -m venv .imgenv && .imgenv/bin/pip install pillow requests-free
+  python3 -m venv .imgenv && .imgenv/bin/pip install pillow
   .imgenv/bin/python annotate_image_quality.py fixtures/alternatives.json
 """
 import io, json, sys, urllib.request
@@ -24,7 +24,7 @@ from concurrent.futures import ThreadPoolExecutor
 from PIL import Image
 
 BACKEND = "https://sage-backend.sage-app1710.workers.dev"
-IMAGE_CACHE_VERSION = 3
+IMAGE_CACHE_VERSION = 4
 
 MIN_LONGEST_SIDE = 300          # below this the app prefers the glyph anyway
 BORDER_FRACTION = 0.08          # outer frame sampled for background analysis

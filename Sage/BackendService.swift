@@ -24,7 +24,7 @@ struct BackendService {
     static let defaultBaseURL = URL(string: "https://sage-backend.sage-app1710.workers.dev")!
 
     /// Must match Worker `IMAGE_CACHE_VERSION` (URL `?v=` busts immutable caches).
-    static let imageCacheVersion = 3
+    static let imageCacheVersion = 4
 
     /// Stable pack-shot URL served by `GET /images/{barcode}` (lazy-resolves).
     static func productImageURL(barcode: String) -> String {
