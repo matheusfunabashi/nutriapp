@@ -164,7 +164,9 @@ struct DrinksOasisScoringTests {
         let s6 = try #require(r.rules.first { $0.rule == "S6" })
         // Track 2 (3b): one Tier-3 sweetener lands on 0.70, not the old ~0.90.
         #expect(abs(s6.fraction - 0.70) < 0.001)
-        #expect(r.drinksBreakdown?.sweetenerCap == 100)
+        // v5.1.1: any lower-tier sweetener caps below Excellent, even
+        // sugar-free — a stevia soda is never a "best choice."
+        #expect(r.drinksBreakdown?.sweetenerCap == DrinksScoring.nonSugarSweetenerCap)
     }
 
     @Test func packagingIsABadgeNotAScore() throws {
