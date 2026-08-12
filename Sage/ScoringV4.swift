@@ -166,6 +166,18 @@ struct RulesetV4: Codable {
     }
     var flavoredWaterEvidence: FlavoredWaterEvidence? = nil
 
+    /// Field QA: plain unflavored water must stay unscored no matter what OFF
+    /// tags it wears. A US S.Pellegrino payload carried Spanish category tags
+    /// ("Aguas", "Bebidas") that matched nothing in the router and scored 77.
+    /// This gate recognizes water by *evidence* — name, zero energy/sugar, no
+    /// flavor terms, no additives, no sweeteners — independent of tags.
+    struct PlainWaterEvidence: Codable {
+        let nameWaterWords: [String]
+        let maxKcalPer100ml: Double
+        let maxSugarGPer100ml: Double
+    }
+    var plainWaterEvidence: PlainWaterEvidence? = nil
+
     /// M2: WHO's free-sugar definition excludes intrinsic milk sugars. For RTDs
     /// with dairy evidence, up to `gPer100ml` of total sugar is treated as
     /// lactose and excluded from S3 and the sugar cap. Plant-milk phrases are
@@ -1107,6 +1119,16 @@ enum ScoringEngineV4 {
             return "drinks"
         }
 
+        // Evidence gate — plain water (outranks tags in every language).
+        if isPlainWaterByEvidence(p, rs: rs) {
+            let attempted = firstTagProfile(p, rs: rs)
+            if attempted != "unsupported" {
+                logEvidenceRerail(p, attempted: attempted, used: "unsupported",
+                                  gate: "plainWaterEvidence")
+            }
+            return "unsupported"
+        }
+
         for entry in rs.router where tags.contains(entry.match) {
             if entry.profile == "whole_foods", !(nova == 0 || nova == 1 || nova == 2) {
                 continue
@@ -1175,6 +1197,33 @@ enum ScoringEngineV4 {
         let family = Set(rs.flavoredWaterEvidence?.watersFamilyTags
             ?? ["waters", "carbonated-waters", "mineral-waters", "spring-waters", "drinking-water"])
         return family.contains(match)
+    }
+
+    /// Plain unflavored water, recognized by evidence rather than tags:
+    /// a water word in the NAME, essentially zero energy and sugar, no flavor
+    /// evidence, no additives, no measured caffeine, no sweeteners. Flavored
+    /// waters keep their `drinks` path — the flavor vocabulary disqualifies
+    /// them. Name-only on purpose: "carbonated water" leads the ingredient
+    /// list of every soda, so ingredient matching would swallow zero-calorie
+    /// flavored drinks whose flavor phrasing escapes the vocabulary.
+    static func isPlainWaterByEvidence(_ p: Product, rs: RulesetV4 = .bundled) -> Bool {
+        guard let cfg = rs.plainWaterEvidence else { return false }
+        let fold = { (s: String) in
+            s.lowercased().folding(options: .diacriticInsensitive,
+                                   locale: Locale(identifier: "en_US"))
+        }
+        let hay = fold(p.name)
+        guard cfg.nameWaterWords.contains(where: { hay.contains(fold($0)) }) else {
+            return false
+        }
+        if hasFlavoredWaterEvidence(p, rs: rs) { return false }
+        if let sugar = p.nutrients.sugar_g, sugar > cfg.maxSugarGPer100ml { return false }
+        if let kcal = p.nutrients.kcal, kcal > cfg.maxKcalPer100ml { return false }
+        if let caf = p.caffeine_mg, caf > 0 { return false }
+        guard p.additives.isEmpty else { return false }
+        let tiers = DrinksScoring.detectSweetenerTiers(p)
+        if tiers.hadData, (tiers.tier1 + tiers.tier2 + tiers.tier3) > 0 { return false }
+        return true
     }
 
     /// Name or ingredients contain configurable flavor evidence.

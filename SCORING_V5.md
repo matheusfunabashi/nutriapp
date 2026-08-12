@@ -88,7 +88,11 @@ Credits first, caps as safety nets. Caps should rarely bind on diet/energy;
 identical scores across distinct products usually mean a cap plateau.
 
 - **Effective serving:** container ≤600 ml → whole container (anti-gaming);
-  else declared serving if 100–600 ml; else **355 ml** + `estimatedServing`.
+  else declared serving if 100–600 ml, **floored at the category-typical dose**
+  (field QA: a 1 L cola declaring a 250 ml serving scored 29 vs 20 for the
+  identical liquid in a can — declared servings below the typical dose are
+  raised to it and flagged estimated); else **355 ml** + `estimatedServing`.
+  Containers under 30 ml and minus-signed quantities are junk data, not servings.
 - **S3 (drinks):** sugar per effective serving. Track 2 anchors (`s3DrinksServingCurve`
   in both rulesets): ≤1 g → 100%, 5 g → 60%, 8 g → 48%, 16 g → 25%, ≥30 g → 0%.
   The low end is steep so a lightly sweetened soda stops scoring like plain water.
@@ -183,6 +187,7 @@ Precedence, highest first:
 1. **Alcohol exclusions** (`alcoholic-beverages`, beers / wines / spirits / ciders) → `unsupported`. Untouched by evidence gates.
 2. **Evidence gates**
    - `energyDrinkEvidence`: measured caffeine ≥ 25 mg/100 ml **and** a stimulant ingredient (taurine / guarana / mate, configurable) → `drinks` with `isEnergyDrink = true` for stacking, caffeine defaults, and compound risk. OR'd with `energy-drinks` tags.
+   - `plainWaterEvidence`: a water word in the product NAME (multi-language, configurable) + ≤5 kcal and ≤0.5 g sugar/100 ml + no flavor evidence, additives, caffeine, or sweeteners → `unsupported`, regardless of tags. Field QA: a US S.Pellegrino wearing Spanish category tags ("Aguas", "Bebidas") matched no router entry and scored 77. Name-only matching on purpose — "carbonated water" leads every soda's ingredient list. Guarded by I29.
    - `flavoredWaterEvidence`: waters-family tags + flavor word in the name or flavoring term in ingredients → `drinks` (not `unsupported`).
 3. **Category tag matches** (most-specific-first router).
 4. **Catch-all** `beverages` → `drinks`, else `general`.

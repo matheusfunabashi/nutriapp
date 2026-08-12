@@ -83,8 +83,19 @@ enum DrinksScoring {
             return DrinksEffectiveServing(ml: dose, estimatedServing: true, usedWholeContainer: false)
         }
 
-        // Genuine consumption serving surviving panel-ref discard.
+        // Genuine consumption serving surviving panel-ref discard. Field QA:
+        // on a multi-serve container the declared serving is floored at the
+        // category-typical dose — a 1 L cola declaring a 250 ml serving was
+        // scoring 29 while the identical liquid in a 355 ml can scored 20.
+        // Same anti-gaming rationale as whole-container ≤600 ml.
         if let s = declared, s >= 100, s <= singleServeMaxMl {
+            if let c = containerMl, c > singleServeMaxMl {
+                let dose = categoryTypicalDoseMl(for: product)
+                if s < dose {
+                    return DrinksEffectiveServing(ml: dose, estimatedServing: true,
+                                                  usedWholeContainer: false)
+                }
+            }
             return DrinksEffectiveServing(ml: s, estimatedServing: false, usedWholeContainer: false)
         }
 
