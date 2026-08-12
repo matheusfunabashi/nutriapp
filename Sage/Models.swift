@@ -160,6 +160,11 @@ struct Product: Identifiable, Hashable, Codable {
     var imageIsLowQuality: Bool? = nil
     /// Backend image provenance: `"kroger"` | `"off"`. Nil on legacy snapshots.
     var imageSource: String? = nil
+    /// Secondary photo tried when `imageURL` fails to load — e.g. Top Rated /
+    /// Alternatives rows point at the backend pack-shot slot, which can 404;
+    /// the dataset's own OFF photo is kept here so rows degrade to a real
+    /// photo instead of the glyph.
+    var imageFallbackURL: String? = nil
     /// True when the resolved shot is front-of-pack.
     var imageIsFrontImage: Bool? = nil
 

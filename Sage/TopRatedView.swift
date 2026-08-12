@@ -2,9 +2,9 @@ import SwiftUI
 
 // MARK: - Top Rated (TOPRATED_SPEC.md)
 
-/// Two-up category grid. Only shelves with a hero pack shot appear here —
-/// water / coffee / cookies / etc. stay in `SageCategory` for scan routing
-/// but are hidden from browse until they have an asset.
+/// Two-up category grid over `SageCategory.topRatedBrowse` — hero pack shot
+/// when the asset exists, emoji tile otherwise. Water / coffee (unscored) and
+/// energy drinks (nothing rates well) are excluded from the list itself.
 struct TopRatedCategoriesView: View {
     @EnvironmentObject var store: AppStore
     let onOpenCategory: (SageCategory) -> Void
@@ -133,6 +133,7 @@ private struct TopRatedRow: View {
                     .frame(width: 22, alignment: .center)
                 ProductThumb(glyph: alt.product.glyph, score: alt.score, size: 56,
                              imageURL: alt.product.listImageURL,
+                             fallbackImageURL: alt.product.imageFallbackURL,
                              processCutout: alt.product.shouldProcessCutout)
                 VStack(alignment: .leading, spacing: 1) {
                     if let brand = formatted.brand {

@@ -59,9 +59,8 @@ enum SageCategory: String, CaseIterable, Identifiable, Hashable {
         }
     }
 
-    /// Asset-catalog imageset for the Top Rated browse card. Only shelves
-    /// with a hero photo appear in the grid — everything else stays in the
-    /// enum for scan→shelf routing / alternatives, but is hidden from browse.
+    /// Asset-catalog imageset for the Top Rated browse card. Shelves without
+    /// one render their emoji tile until a hero photo is added.
     var topRatedHeroAsset: String? {
         switch self {
         case .bread:        return "bread-tr"
@@ -81,10 +80,16 @@ enum SageCategory: String, CaseIterable, Identifiable, Hashable {
         }
     }
 
-    /// Browse order for the Top Rated grid (two-up cards).
+    /// Browse order for the Top Rated grid (two-up cards). Every populated
+    /// shelf appears — hero photo when the asset exists, emoji tile otherwise.
+    /// Energy drinks are deliberately absent: everything in that category
+    /// scores poorly, and a "Top Rated" list of red pills is not a
+    /// recommendation.
     static let topRatedBrowse: [SageCategory] = [
-        .soda, .energyDrinks, .juice, .milks, .yogurt,
+        .soda, .juice, .milks, .yogurt,
         .cheese, .iceCream, .cereal, .bread,
         .pasta, .chips, .snackBars, .chocolate,
+        .cookies, .nutButtersAndSpreads, .instantNoodles,
+        .fatsAndOils, .babyFood,
     ]
 }

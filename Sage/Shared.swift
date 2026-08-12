@@ -115,6 +115,9 @@ struct ProductThumb: View {
     /// Product photo; nil (or a failed load) falls back to the glyph tile —
     /// "no image" is a designed state, never an error.
     var imageURL: String? = nil
+    /// Secondary photo tried when `imageURL` fails (Top Rated / Alternatives
+    /// rows whose backend slot 404s degrade to their OFF photo, not the glyph).
+    var fallbackImageURL: String? = nil
     /// Run Vision cutout when a remote URL is shown. False for soft OFF shots /
     /// placeholder-only rows.
     var processCutout: Bool = true
@@ -126,6 +129,7 @@ struct ProductThumb: View {
             url: imageURL.flatMap(URL.init(string:)),
             style: isDetail ? .detail : .fixed(size),
             glyph: glyph,
+            fallbackURL: fallbackImageURL.flatMap(URL.init(string:)),
             processCutout: processCutout && imageURL != nil
         )
     }

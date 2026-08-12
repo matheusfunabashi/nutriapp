@@ -280,14 +280,20 @@ enum Alternatives {
     /// Top Rated so both re-score candidates identically (version-consistent).
     static func scored(_ c: AlternativeCandidate, profile: UserProfile,
                        ruleset: RulesetV4) -> (product: Product, score: Int)? {
+        let primaryImageURL = Self.imageURL(for: c)
         let raw = OpenFoodFactsService.mapCandidate(
             barcode: c.barcode, name: c.name, brands: c.brand,
             ingredientsText: c.ingredientsText, additivesTags: c.additivesTags,
             nutriments: c.nutriments, nutriscoreGrade: c.nutriscoreGrade,
-            novaGroup: c.novaGroup, imageURL: Self.imageURL(for: c),
+            novaGroup: c.novaGroup, imageURL: primaryImageURL,
             categoriesTags: c.categoriesTags, labelsTags: c.labelsTags)
-        guard case .scored(let p) = ScoringEngineV4.scoreProduct(raw, for: profile, ruleset: ruleset),
+        guard case .scored(var p) = ScoringEngineV4.scoreProduct(raw, for: profile, ruleset: ruleset),
               let score = p.overallScore else { return nil }
+        // The backend slot can 404 (never-resolved barcode); keep the dataset's
+        // own OFF photo as a fallback so the row degrades to a real photo.
+        if let offURL = OFFImageResolver.upgradeToDisplaySize(c.imageURL), offURL != primaryImageURL {
+            p.imageFallbackURL = offURL
+        }
         return (p, score)
     }
 
@@ -345,13 +351,34 @@ enum Alternatives {
 enum TopRated {
     static let maxItems = 20
 
-    /// Markets shown in Top Rated for a shelf. Energy drinks stay US-only —
-    /// the dataset also carries UK/CA SKUs that look foreign on a US browse tab.
+    /// Eligibility floor (stricter than "scoreable"): a Top Rated placement is
+    /// an endorsement, so the score must rest on evidence, not on defaults.
+    /// Confidence is the engine's weight-backed measure; `maxUnknownRuleWeight`
+    /// tolerates systemic mid-weight unknowns (e.g. `dairyProcessing`, which no
+    /// label can evidence) but never an unknown core driver (S1/S12-class).
+    static let minConfidence = 0.80
+    static let maxUnknownRuleWeight = 20.0
+
+    /// Markets shown in Top Rated. US-only (TOPRATED_SPEC §8) — the dataset
+    /// also carries UK/CA candidates for Better Alternatives, but foreign SKUs
+    /// on a US browse tab read as broken, and their barcodes never resolve to
+    /// a clean backend pack shot (Kroger is US-only).
     static func allowedMarkets(for shelf: SageCategory) -> Set<String> {
-        switch shelf {
-        case .energyDrinks: return ["us"]
-        default: return Alternatives.allowedMarkets
-        }
+        ["us"]
+    }
+
+    /// A candidate may appear in Top Rated only when its label data is complete
+    /// enough to defend the ranking: ingredients, known NOVA, a real nutrition
+    /// table, and rule evidence above the confidence floor. Products that score
+    /// high *because* information is missing never clear this.
+    static func isEligible(_ product: Product, ruleset: RulesetV4) -> Bool {
+        guard product.hasIngredientData,
+              product.hasKnownNova,
+              product.hasNutritionData,
+              let evidence = ScoringEngineV4.evidenceSummary(product, ruleset: ruleset)
+        else { return false }
+        return evidence.confidence >= minConfidence
+            && evidence.maxUnknownWeight < maxUnknownRuleWeight
     }
 
     /// Top-N products in a category, re-scored on-device (Overall), best first.
@@ -362,20 +389,59 @@ enum TopRated {
               markets: allowedMarkets(for: shelf))
     }
 
+    /// At most this many list slots per brand — a top-20 that is one third
+    /// Häagen-Dazs SKUs reads as broken even when the scores are right.
+    static let maxPerBrand = 2
+
     /// Pure core (no global state) — testable in isolation.
     static func items(from candidates: [AlternativeCandidate],
                       profile: UserProfile, ruleset: RulesetV4,
                       markets: Set<String> = Alternatives.allowedMarkets) -> [Alternative] {
-        candidates
+        let pool = candidates
             .filter { !markets.isDisjoint(with: $0.countries ?? []) }
             .compactMap { c -> Alternative? in
-                guard let (p, s) = Alternatives.scored(c, profile: profile, ruleset: ruleset)
+                guard let (p, s) = Alternatives.scored(c, profile: profile, ruleset: ruleset),
+                      isEligible(p, ruleset: ruleset)
                 else { return nil }
                 return Alternative(product: p, score: s, sharedTag: false,
                                    countries: c.countries ?? [])
             }
-            .sorted { $0.score > $1.score }
-            .prefix(maxItems)
-            .map { $0 }
+            .sorted {
+                if $0.score != $1.score { return $0.score > $1.score }
+                // Score ties: US variant first (its barcode resolves to a real
+                // pack shot), then stable by id.
+                let lus = $0.countries.contains("us"), rus = $1.countries.contains("us")
+                if lus != rus { return lus }
+                return $0.id < $1.id
+            }
+
+        var seenProducts = Set<String>()
+        var perBrand: [String: Int] = [:]
+        var out: [Alternative] = []
+        for alt in pool {
+            let product = listKey(brand: alt.product.brand, name: alt.product.name)
+            guard seenProducts.insert(product).inserted else { continue }
+            let brand = listKey(brand: alt.product.brand, name: "")
+            if !brand.isEmpty {
+                guard perBrand[brand, default: 0] < maxPerBrand else { continue }
+                perBrand[brand, default: 0] += 1
+            }
+            out.append(alt)
+            if out.count == maxItems { break }
+        }
+        return out
+    }
+
+    /// Dedupe/brand key: diacritic-folded, unit/size tokens stripped,
+    /// alphanumerics only — so "Flocons d'avoine complète 500 g" and
+    /// "Flocons d'avoine complete" collide, and "Häagen-Dazs" == "Haagen-Dazs".
+    static func listKey(brand: String?, name: String) -> String {
+        let joined = ((brand ?? "") + " " + name)
+            .folding(options: [.diacriticInsensitive, .caseInsensitive], locale: Locale(identifier: "en_US"))
+            .lowercased()
+        let unitPattern = #"\b(\d+([.,]\d+)?\s*(fl\s*oz|fluid\s+ounces?|oz|ml|l|g|kg|lbs?|ct|pk)|pack|count|each)\b"#
+        let stripped = joined.replacingOccurrences(of: unitPattern, with: " ",
+                                                   options: .regularExpression)
+        return String(stripped.unicodeScalars.filter { CharacterSet.alphanumerics.contains($0) })
     }
 }

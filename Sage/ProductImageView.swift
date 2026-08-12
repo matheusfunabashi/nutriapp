@@ -65,6 +65,10 @@ struct ProductImageView: View {
     let url: URL?
     var style: ProductImageStyle = .list
     var glyph: String = "🛒"
+    /// Tried when `url` fails to load (missing, non-2xx, or undecodable) —
+    /// Top Rated / Alternatives rows fall back to their dataset OFF photo
+    /// instead of the glyph.
+    var fallbackURL: URL? = nil
     /// When false, show original (or glyph) only — never run Vision.
     var processCutout: Bool = true
 
@@ -133,7 +137,7 @@ struct ProductImageView: View {
     }
 
     private var taskIdentity: String {
-        "\(url?.absoluteString ?? "nil")|\(processCutout)"
+        "\(url?.absoluteString ?? "nil")|\(fallbackURL?.absoluteString ?? "nil")|\(processCutout)"
     }
 
     @MainActor
@@ -143,82 +147,82 @@ struct ProductImageView: View {
         cutout = nil
         settled = false
 
-        guard let url else {
+        // Primary first, dataset fallback second; a URL that fails any tier
+        // simply hands over to the next candidate.
+        let candidates = [url, fallbackURL].compactMap { $0 }
+        guard !candidates.isEmpty else {
             settled = true
             return
         }
 
         let task = Task {
-            // Instant cutout if we already processed this URL.
-            if processCutout,
-               let cached = await ProductImageProcessor.shared.cachedImage(for: url) {
-                if Task.isCancelled { return }
-                await MainActor.run {
-                    withAnimation(.easeInOut(duration: 0.18)) {
-                        cutout = cached
-                        original = cached
-                        settled = true
+            // Instant cutout if we already processed one of these URLs.
+            if processCutout {
+                for candidate in candidates {
+                    guard let cached = await ProductImageProcessor.shared.cachedImage(for: candidate)
+                    else { continue }
+                    if Task.isCancelled { return }
+                    await MainActor.run {
+                        withAnimation(.easeInOut(duration: 0.18)) {
+                            cutout = cached
+                            original = cached
+                            settled = true
+                        }
                     }
+                    return
                 }
-                return
             }
 
-            // Decoded original already in RAM (scroll-off / re-search).
-            if let cached = ProductImageMemoryCache.image(for: url) {
+            // Decoded original already in RAM (scroll-off / re-search),
+            // else network. First URL that yields a decodable image wins.
+            var loaded: (image: UIImage, url: URL)?
+            for candidate in candidates {
+                if let cached = ProductImageMemoryCache.image(for: candidate) {
+                    loaded = (cached, candidate)
+                    break
+                }
+                if let fetched = await fetchImage(from: candidate) {
+                    ProductImageMemoryCache.store(fetched, for: candidate)
+                    loaded = (fetched, candidate)
+                    break
+                }
                 if Task.isCancelled { return }
-                await MainActor.run {
-                    withAnimation(.easeInOut(duration: 0.18)) {
-                        original = cached
-                    }
-                }
-                guard processCutout else {
-                    await MainActor.run { settled = true }
-                    return
-                }
-                let processed = await ProductImageProcessor.shared.process(cached, url: url)
-                if Task.isCancelled { return }
-                await MainActor.run {
-                    withAnimation(.easeInOut(duration: 0.22)) {
-                        cutout = processed
-                        settled = true
-                    }
-                }
-                return
             }
 
-            do {
-                let (data, response) = try await URLSession.shared.data(from: url)
-                if Task.isCancelled { return }
-                guard let http = response as? HTTPURLResponse, (200...299).contains(http.statusCode),
-                      let image = UIImage(data: data) else {
-                    await MainActor.run { settled = true }
-                    return
-                }
-                ProductImageMemoryCache.store(image, for: url)
-                await MainActor.run {
-                    withAnimation(.easeInOut(duration: 0.18)) {
-                        original = image
-                    }
-                }
-
-                guard processCutout else {
-                    await MainActor.run { settled = true }
-                    return
-                }
-                let processed = await ProductImageProcessor.shared.process(image, url: url)
-                if Task.isCancelled { return }
-                await MainActor.run {
-                    withAnimation(.easeInOut(duration: 0.22)) {
-                        cutout = processed
-                        settled = true
-                    }
-                }
-            } catch {
+            guard let loaded else {
                 await MainActor.run { settled = true }
+                return
+            }
+            if Task.isCancelled { return }
+            await MainActor.run {
+                withAnimation(.easeInOut(duration: 0.18)) {
+                    original = loaded.image
+                }
+            }
+
+            guard processCutout else {
+                await MainActor.run { settled = true }
+                return
+            }
+            let processed = await ProductImageProcessor.shared.process(loaded.image, url: loaded.url)
+            if Task.isCancelled { return }
+            await MainActor.run {
+                withAnimation(.easeInOut(duration: 0.22)) {
+                    cutout = processed
+                    settled = true
+                }
             }
         }
         loadTask = task
         await task.value
+    }
+
+    /// One network attempt; nil on transport error, non-2xx, or undecodable bytes.
+    private func fetchImage(from url: URL) async -> UIImage? {
+        guard let (data, response) = try? await URLSession.shared.data(from: url),
+              let http = response as? HTTPURLResponse, (200...299).contains(http.statusCode)
+        else { return nil }
+        return UIImage(data: data)
     }
 }
 

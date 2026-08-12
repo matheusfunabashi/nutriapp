@@ -2340,25 +2340,43 @@ enum ScoringEngineV4 {
         )
     }
 
-    /// Engine confidence + unknown-tier weight gate for the provisional banner.
-    /// Independent of personalization — only rule evidence matters.
-    static func isProvisionalScore(_ product: Product, ruleset rs: RulesetV4) -> Bool {
+    /// Weight-backed rule evidence for a product under its routed profile:
+    /// `confidence` = Σ(w where the rule had data) / Σw, and `maxUnknownWeight`
+    /// is the heaviest rule that fell back to its unknown-tier default (0 when
+    /// every rule had data). Nil when the product lacks minimum data, routes to
+    /// unsupported/unscored, or the profile is missing from the ruleset.
+    ///
+    /// Callers apply their own thresholds: the provisional banner flags any
+    /// unknown rule ≥ 10, while Top Rated eligibility tolerates systemic
+    /// mid-weight unknowns (e.g. `dairyProcessing`, which no label can evidence)
+    /// but not an unknown core driver.
+    static func evidenceSummary(_ product: Product, ruleset rs: RulesetV4)
+    -> (confidence: Double, maxUnknownWeight: Double)? {
         let product = applyingInferredFVN(to: product)
-        guard product.hasMinimumData else { return true }
+        guard product.hasMinimumData else { return nil }
         let profileId = route(product, ruleset: rs)
-        if profileId == "unsupported" || profileId == "unscored_sweetener" { return false }
-        guard let ruleList = rs.profiles[profileId] else { return true }
-        var totalW = 0.0, backed = 0.0
-        var heavyUnknown = false
+        if profileId == "unsupported" || profileId == "unscored_sweetener" { return nil }
+        guard let ruleList = rs.profiles[profileId] else { return nil }
+        var totalW = 0.0, backed = 0.0, maxUnknown = 0.0
         for pr in ruleList {
             let (_, had, _) = evaluate(pr.rule, variant: pr.variant, product: product, rs: rs,
                                        profileId: profileId)
             totalW += pr.w
             if had { backed += pr.w }
-            else if pr.w >= 10 { heavyUnknown = true }
+            else { maxUnknown = max(maxUnknown, pr.w) }
         }
-        let confidence = totalW > 0 ? backed / totalW : 0
-        return confidence < 0.80 || heavyUnknown
+        guard totalW > 0 else { return nil }
+        return (backed / totalW, maxUnknown)
+    }
+
+    /// Engine confidence + unknown-tier weight gate for the provisional banner.
+    /// Independent of personalization — only rule evidence matters.
+    static func isProvisionalScore(_ product: Product, ruleset rs: RulesetV4) -> Bool {
+        guard applyingInferredFVN(to: product).hasMinimumData else { return true }
+        let routed = route(applyingInferredFVN(to: product), ruleset: rs)
+        if routed == "unsupported" || routed == "unscored_sweetener" { return false }
+        guard let summary = evidenceSummary(product, ruleset: rs) else { return true }
+        return summary.confidence < 0.80 || summary.maxUnknownWeight >= 10
     }
 
     static func isProvisional(_ ctx: OverviewContext) -> Bool {
