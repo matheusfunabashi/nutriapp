@@ -252,54 +252,46 @@
     "drinks": [
       {
         "rule": "S1",
-        "w": 22
+        "w": 23
       },
       {
         "rule": "S3",
-        "w": 40,
+        "w": 43,
         "variant": "drinksServing"
       },
       {
         "rule": "S8",
-        "w": 14
+        "w": 15
       },
       {
         "rule": "S6",
-        "w": 12
+        "w": 13
       },
       {
         "rule": "S4",
-        "w": 6
-      },
-      {
-        "rule": "S7",
         "w": 6
       }
     ],
     "juice_100": [
       {
         "rule": "S1",
-        "w": 22
+        "w": 23
       },
       {
         "rule": "S3",
-        "w": 40,
+        "w": 43,
         "variant": "juice100Serving"
       },
       {
         "rule": "S8",
-        "w": 14
+        "w": 15
       },
       {
         "rule": "S6",
-        "w": 12
+        "w": 13
       },
       {
         "rule": "S4",
-        "w": 6
-      },
-      {
-        "rule": "S7",
         "w": 6
       }
     ],
@@ -323,7 +315,8 @@
       },
       {
         "rule": "S12",
-        "w": 14
+        "w": 14,
+        "variant": "dryBrew"
       },
       {
         "rule": "S14",
@@ -1891,6 +1884,19 @@
   "flags": {
     "rulesetV510Enabled": true
   },
+  "dairyLactoseAllowance": {
+    "gPer100ml": 4.8,
+    "dairyTerms": ["milk", "leite", "latte", "lait", "leche", "cream", "nata", "panna"],
+    "plantMilkPhrases": [
+      "oat milk", "almond milk", "soy milk", "soya milk", "coconut milk",
+      "rice milk", "cashew milk", "coconut cream",
+      "leite de aveia", "leite de amendoa", "leite de amêndoa", "leite de coco",
+      "leite de arroz", "leite de soja", "creme de coco", "bebida vegetal",
+      "latte di avena", "latte di mandorla", "latte di cocco", "latte di riso",
+      "latte di soia", "lait d'avoine", "lait d'amande", "lait de coco",
+      "lait de riz", "lait de soja"
+    ]
+  },
   "s3DrinksServingCurve": [
     [1, 1.0],
     [5, 0.6],
@@ -1906,7 +1912,8 @@
     },
     "tea_coffee": {
       "rerouteTo": "drinks",
-      "maxSugarGPer100ml": 5
+      "maxSugarGPer100ml": 5,
+      "requiresLiquid": true
     }
   },
   "energyDrinkEvidence": {

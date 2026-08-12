@@ -24,6 +24,8 @@ struct DrinksScoreBreakdown {
     let sugarCap: Int
     let caffeineCap: Int
     let sweetenerCap: Int
+    /// M3: cream visibility — 100 when satfat is trace or data is missing.
+    let satFatCap: Int
     /// Cap id that bound the final score, if any (`sugarCap` / `caffeineCap` / `sweetenerCap`).
     let bindingCapId: String?
     let weightedScore: Int
@@ -37,6 +39,12 @@ struct DrinksScoreBreakdown {
     let micronutrientBoost: Int
     /// Post-rule diet/energy stacking drag (points).
     let stackingDrag: Int
+    /// Packaging leach-pathway credit (glass 1.0 → PVC 0.0), surfaced as a
+    /// sustainability badge. **Not part of the health score** — the evidence
+    /// does not support ranking one clean liquid above another on its bottle.
+    let packagingCredit: Double
+    /// False when packaging material is missing or unrecognized.
+    let packagingHadData: Bool
 }
 
 enum DrinksScoring {
@@ -263,6 +271,20 @@ enum DrinksScoring {
         Int(interpolate(mgPerServing, anchors: caffeineCapAnchors).rounded())
     }
 
+    /// M3 — saturated-fat cap so cream is visible (data-present only). A
+    /// whole-milk latte (~3.6 g/serving) lands mid-80s; cream-class RTDs
+    /// (≥10 g/serving, Frappuccino territory) cap at soda level. Missing
+    /// satfat data → no cap, same convention as the other caps.
+    static let satFatCapAnchors: [(Double, Double)] = [
+        (2, 95), (8, 40), (12, 25),
+    ]
+    static let satFatNoCapMaxGPerServing: Double = 2
+
+    static func satFatCap(gramsPerServing: Double) -> Int {
+        if gramsPerServing <= satFatNoCapMaxGPerServing { return 100 }
+        return Int(interpolate(gramsPerServing, anchors: satFatCapAnchors).rounded())
+    }
+
     /// A non-Tier-1 sweetener holds a drink one point short of Excellent…
     static let nonSugarSweetenerCap = 74
     /// …unless the drink is essentially sugar-free, which stays eligible (I19).
@@ -292,11 +314,47 @@ enum DrinksScoring {
         return total * (serving.ml / 100)
     }
 
+    /// M2 — dairy ingredient evidence for the lactose allowance.
+    /// Plant-milk phrases are stripped first so "oat milk" / "leite de coco"
+    /// never count as dairy; then unambiguous dairy terms are matched.
+    static func hasDairyIngredientEvidence(_ p: Product, rs: RulesetV4 = .bundled) -> Bool {
+        guard let cfg = rs.dairyLactoseAllowance else { return false }
+        var hay = folded(p.ingredientsText ?? "")
+        guard !hay.isEmpty else { return false }
+        for phrase in cfg.plantMilkPhrases {
+            hay = hay.replacingOccurrences(of: folded(phrase), with: " ")
+        }
+        return cfg.dairyTerms.contains { !folded($0).isEmpty && hay.contains(folded($0)) }
+    }
+
+    /// M2 — free sugar per 100 ml for dairy RTDs.
+    /// WHO's free-sugar definition excludes intrinsic milk sugars, so up to
+    /// `gPer100ml` (≈4.8, whole-milk lactose) is exempt. A *positive* declared
+    /// added-sugar value is trusted instead when sane (OFF's bogus
+    /// `added-sugars: 0` on plainly sweetened drinks stays untrusted, matching
+    /// the existing S3 convention).
+    static func freeSugarPer100mlAfterLactose(
+        total: Double, p: Product, rs: RulesetV4
+    ) -> Double {
+        guard let cfg = rs.dairyLactoseAllowance,
+              hasDairyIngredientEvidence(p, rs: rs) else { return total }
+        if let added = p.nutrients.addedSugar_g, added > 0, added <= total {
+            return added
+        }
+        return max(0, total - cfg.gPer100ml)
+    }
+
     /// Effective sugar g/serving for regular drinks.
-    /// Always total `sugars_100g` (never `added-sugars_100g`). FVN discount max 15%
+    /// Total `sugars_100g` minus the dairy lactose allowance (M2) where dairy
+    /// evidence exists (never `added-sugars_100g` alone). FVN discount max 15%
     /// only for leftover juice-like / nectar products.
-    static func sugarGramsPerServing(_ p: Product, serving: DrinksEffectiveServing) -> Double? {
+    static func sugarGramsPerServing(_ p: Product, serving: DrinksEffectiveServing,
+                                     rs: RulesetV4 = .bundled) -> Double? {
         guard let total = p.nutrients.sugar_g else { return nil }
+        if hasDairyIngredientEvidence(p, rs: rs) {
+            let free = freeSugarPer100mlAfterLactose(total: total, p: p, rs: rs)
+            return free * (serving.ml / 100)
+        }
         let fvn = p.nutrients.fvn ?? 0
         let discount: Double
         if isJuiceCategory(p) {
@@ -441,9 +499,39 @@ enum DrinksScoring {
         return names.contains { !folded($0).isEmpty && hay.contains(folded($0)) }
     }
 
+    /// M4 — non-energy coffee/tea RTDs get EFSA-anchored caffeine handling:
+    /// single doses ≤200 mg and ≤400 mg/day carry no safety concern for
+    /// adults, and moderate coffee/tea intake is neutral-to-favorable in
+    /// cohorts. `energyDrinkEvidence` outranks the tag match (I27), so a
+    /// stimulant-stacked product wearing tea tags stays on the strict path.
+    static func isNonEnergyTeaCoffeeRTD(_ p: Product, rs: RulesetV4 = .bundled) -> Bool {
+        guard !isEnergyDrink(p, ruleset: rs) else { return false }
+        let tags = (p.categories ?? []).map { $0.lowercased() }
+        let needles = ["iced-tea", "iced-coffee", "coffee-drink", "tea-based",
+                       "teas", "coffees", "matcha"]
+        return tags.contains { tag in needles.contains { tag.contains($0) } }
+    }
+
+    /// Gentle credit for the coffee/tea class — no meaningful dock ≤100 mg,
+    /// moderate to 200, steep beyond 300.
+    static let coffeeTeaCaffeineCreditAnchors: [(Double, Double)] = [
+        (0, 1.00), (60, 0.97), (120, 0.82), (200, 0.55), (300, 0.25), (400, 0.00),
+    ]
+    /// Gentle cap for the coffee/tea class — starts at the EFSA single-dose
+    /// mark instead of 60 mg. Monotonic by construction, like the strict cap.
+    static let coffeeTeaCaffeineCapAnchors: [(Double, Double)] = [
+        (200, 100), (300, 70), (400, 40),
+    ]
+
+    static func coffeeTeaCaffeineCap(mgPerServing: Double) -> Int {
+        Int(interpolate(mgPerServing, anchors: coffeeTeaCaffeineCapAnchors).rounded())
+    }
+
     static func s8Credit(_ p: Product, serving: DrinksEffectiveServing) -> (Double, Bool, Double, Bool) {
         let (mg, estimated) = caffeineMgPerServing(p, serving: serving)
-        var f = caffeineCreditCurve(mg)
+        var f = isNonEnergyTeaCoffeeRTD(p)
+            ? interpolate(mg, anchors: coffeeTeaCaffeineCreditAnchors)
+            : caffeineCreditCurve(mg)
         if isEnergyDrink(p) {
             // Energy base drag on the caffeine rule (stacking with S6 / additives).
             if mg >= 100 { f = max(0, f - 0.10) }
@@ -609,7 +697,7 @@ enum DrinksScoring {
             }
             return (juiceS3CreditCurve(grams), true, grams)
         }
-        guard let grams = sugarGramsPerServing(p, serving: serving) else {
+        guard let grams = sugarGramsPerServing(p, serving: serving, rs: rs) else {
             return (0.25, false, nil)
         }
         return (drinksS3CreditCurve(grams, rs: rs), true, grams)
@@ -662,11 +750,17 @@ enum DrinksScoring {
         _ = s8had
 
         let (s4f, s4had) = s4Credit(p, serving: serving, rs: rs)
-        let (s7f, s7had) = s7Credit(p, rs: rs)
-        _ = s4had; _ = s7had
+        // Packaging is a sustainability signal, not a health one — computed for
+        // the badge, deliberately excluded from the weighted score. See F1.
+        let (packagingCredit, packagingHadData) = s7Credit(p, rs: rs)
+        _ = s4had
 
+        // S7 packaging removed (F1); its 6 points redistribute *proportionally*
+        // across the surviving rules rather than by hand — S4 sodium is ~1.000
+        // for nearly every drink, so weighting it up would hand near-free points
+        // to zero-sugar energy drinks and break the juice-beats-energy ordering.
         var weights: [String: Double] = [
-            "S1": 22, "S3": 40, "S8": 14, "S6": 12, "S4": 6, "S7": 6,
+            "S1": 23, "S3": 43, "S8": 15, "S6": 13, "S4": 6,
         ]
         for (k, m) in ruleMultipliers {
             if let w = weights[k] { weights[k] = w * m }
@@ -680,13 +774,13 @@ enum DrinksScoring {
         }
 
         let fractions: [String: Double] = [
-            "S1": s1f, "S3": s3f, "S8": s8f, "S6": s6f, "S4": s4f, "S7": s7f,
+            "S1": s1f, "S3": s3f, "S8": s8f, "S6": s6f, "S4": s4f,
         ]
         let had: [String: Bool] = [
-            "S1": s1had, "S3": s3had, "S8": true, "S6": s6had, "S4": s4had, "S7": s7had,
+            "S1": s1had, "S3": s3had, "S8": true, "S6": s6had, "S4": s4had,
         ]
 
-        let order = ["S1", "S3", "S8", "S6", "S4", "S7"]
+        let order = ["S1", "S3", "S8", "S6", "S4"]
         var rules: [V4RuleResult] = []
         var earned = 0.0
         for id in order {
@@ -734,12 +828,19 @@ enum DrinksScoring {
         let sCap = isJuice100
             ? juiceSugarCap(gramsPerServing: sugarG ?? 0)
             : sugarCap(gramsPerServing: sugarG ?? 0)
-        let cCap = caffeineCap(mgPerServing: cafMg)
+        let cCap = isNonEnergyTeaCoffeeRTD(p)
+            ? coffeeTeaCaffeineCap(mgPerServing: cafMg)
+            : caffeineCap(mgPerServing: cafMg)
         let wCap = sweetenerCap(hasTier1: hasTier1,
                                 hasLowerTierSweetener: hasLowerTierSweetener,
                                 sugarGPerServing: sugarG ?? 0)
+        // M3: cream visibility — only when satfat data exists.
+        let fCap: Int = {
+            guard let satPer100 = p.nutrients.satFat_g else { return 100 }
+            return satFatCap(gramsPerServing: satPer100 * (serving.ml / 100))
+        }()
 
-        var final = min(weighted, sCap, cCap, wCap)
+        var final = min(weighted, sCap, cCap, wCap, fCap)
         // Caffeine may pull below the sugar cap when both loads are serious.
         if !isJuice100 {
             let undercut = sugarCapUndercut(sugarG: sugarG ?? 0, cafMg: cafMg,
@@ -751,6 +852,7 @@ enum DrinksScoring {
         let binding: String? = {
             let pairs: [(String, Int)] = [
                 ("sugarCap", sCap), ("caffeineCap", cCap), ("sweetenerCap", wCap),
+                ("satFatCap", fCap),
             ]
             // Binding only if a cap equals final and is below pre-cap weighted.
             let bindingPairs = pairs.filter { $0.1 < weighted && $0.1 == final }
@@ -768,6 +870,7 @@ enum DrinksScoring {
             sugarCap: sCap,
             caffeineCap: cCap,
             sweetenerCap: wCap,
+            satFatCap: fCap,
             bindingCapId: binding,
             weightedScore: weighted,
             finalScore: max(floorScore, final),
@@ -775,7 +878,9 @@ enum DrinksScoring {
             sweetenerReasonKeys: sweetKeys,
             riskFactorCount: riskFactorCount(for: p, tiers: tiers),
             micronutrientBoost: boost,
-            stackingDrag: drag
+            stackingDrag: drag,
+            packagingCredit: packagingCredit,
+            packagingHadData: packagingHadData
         )
     }
 }
