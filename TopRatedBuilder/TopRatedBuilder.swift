@@ -203,6 +203,10 @@ enum TopRatedBuilder {
                         stats.skippedDataProblems += 1
                         continue
                     }
+                    if !hasUsableName(entry) {
+                        stats.skippedInsufficient += 1
+                        continue
+                    }
 
                     let raw = OpenFoodFactsService.mapCandidate(
                         barcode: entry.barcode,
@@ -235,8 +239,9 @@ enum TopRatedBuilder {
                 scored = dedupe(scored, stats: &stats)
                 stats.scored = scored.count
 
-                // Top 25 per market, then merge by barcode (union countries).
-                let altMerged = topPerCountry(scored, markets: marketCodes, limit: 25)
+                // Top N per market, then merge by barcode (union countries).
+                let altMerged = topPerCountry(scored, markets: marketCodes,
+                                              limit: marketCap)
                 altShelves[categoryId] = altMerged.map(altCandidate(from:))
 
                 let ranked = scored.sorted { $0.score > $1.score }
@@ -271,7 +276,7 @@ enum TopRatedBuilder {
                     let n = altMerged.filter {
                         ($0.entry.countries ?? []).contains(market)
                     }.count
-                    print("  alt \(market): \(n) (cap 25)")
+                    print("  alt \(market): \(n) (cap \(marketCap(market)))")
                 }
             }
 
@@ -302,10 +307,17 @@ enum TopRatedBuilder {
         }
     }
 
-    /// Keep top `limit` per market code, then merge duplicate barcodes.
+    /// Per-market candidate cap. US carries double headroom: the app's Top
+    /// Rated eligibility gate (ingredients + NOVA + nutrition + evidence)
+    /// prunes the pool at runtime, and the browse tab is US-only.
+    private static func marketCap(_ market: String) -> Int {
+        market == "us" ? 50 : 25
+    }
+
+    /// Keep top `limit(market)` per market code, then merge duplicate barcodes.
     private static func topPerCountry(_ scored: [ScoredCandidate],
                                       markets: [String],
-                                      limit: Int) -> [ScoredCandidate] {
+                                      limit: (String) -> Int) -> [ScoredCandidate] {
         var byBarcode: [String: ScoredCandidate] = [:]
         for market in markets {
             let inMarket = scored.filter {
@@ -313,7 +325,7 @@ enum TopRatedBuilder {
                 return cs.isEmpty || cs.contains(market)
             }
             .sorted { $0.score > $1.score }
-            for item in inMarket.prefix(limit) {
+            for item in inMarket.prefix(limit(market)) {
                 if let existing = byBarcode[item.entry.barcode] {
                     let union = sortedUnion(existing.entry.countries, item.entry.countries)
                     byBarcode[item.entry.barcode] = ScoredCandidate(
@@ -348,6 +360,17 @@ enum TopRatedBuilder {
         profile.sliderEnvironment = nil
         profile.sliderAnimalWelfare = nil
         return profile
+    }
+
+    /// A product that cannot be named cannot be recommended: reject empty
+    /// names, OFF's "Unknown product" placeholder, and barcode-as-name rows.
+    private static func hasUsableName(_ entry: CandidateEntry) -> Bool {
+        let name = (entry.offName ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !name.isEmpty else { return false }
+        if name.lowercased() == "unknown product" { return false }
+        if name.filter(\.isNumber) == entry.barcode.filter(\.isNumber),
+           !name.contains(where: \.isLetter) { return false }
+        return true
     }
 
     /// Keep entries whose only problem is a missing image; skip all others.
