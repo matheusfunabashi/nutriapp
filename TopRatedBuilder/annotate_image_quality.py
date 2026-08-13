@@ -26,22 +26,36 @@ from PIL import Image
 BACKEND = "https://sage-backend.sage-app1710.workers.dev"
 IMAGE_CACHE_VERSION = 4
 
-MIN_LONGEST_SIDE = 300          # below this the app prefers the glyph anyway
+MIN_LONGEST_SIDE = 200          # below this it can't fill a detail header cleanly
 BORDER_FRACTION = 0.08          # outer frame sampled for background analysis
 LIGHT_LEVEL = 205               # channel floor for a "light" border pixel
 LIGHT_BORDER_MIN = 0.60         # ≥60% light border → studio background
 UNIFORM_STD_MAX = 22.0          # or a very uniform border of any color
 
+# Tiers whose images are catalog pack shots by construction. Provenance beats
+# pixels: the border heuristic below assumes a margin of background around the
+# product, but retailer shots are often cropped tight to the package (an
+# 800×800 Nature Valley box fills the frame, so its "border" is the box), which
+# the heuristic would wrongly call a user photo. Only community-uploaded OFF
+# images need pixel screening.
+TRUSTED_SOURCES = {"curated", "kroger", "walmart", "goupc"}
+
 
 def fetch(url, timeout=25):
+    """Bytes, or None. See fetch_with_source when provenance matters."""
+    return fetch_with_source(url, timeout)[0]
+
+
+def fetch_with_source(url, timeout=25):
+    """(bytes|None, source|None) — source from the Worker's X-Sage-Image-Source."""
     try:
         req = urllib.request.Request(url, headers={"User-Agent": "Sage-ImageQA/1.0"})
         with urllib.request.urlopen(req, timeout=timeout) as r:
             if r.status != 200:
-                return None
-            return r.read()
+                return None, None
+            return r.read(), r.headers.get("X-Sage-Image-Source")
     except Exception:
-        return None
+        return None, None
 
 
 def classify(data):
@@ -87,16 +101,27 @@ def classify(data):
 
 
 def verdict(cand):
+    """'good' | 'low' | 'missing' for the image the app will actually show."""
     barcode = str(cand.get("barcode") or "").strip()
     urls = []
     if barcode:
         urls.append(f"{BACKEND}/images/{barcode}?v={IMAGE_CACHE_VERSION}")
     if cand.get("image_url"):
+        # The dataset's own OFF url — the app's fallback, community-uploaded.
         urls.append(cand["image_url"])
     for url in urls:
-        data = fetch(url)
+        data, source = fetch_with_source(url)
         if data is None:
             continue
+        # A retailer/aggregator tier served it → pack shot by construction;
+        # only size disqualifies. Everything else gets pixel screening.
+        if source in TRUSTED_SOURCES:
+            try:
+                img = Image.open(io.BytesIO(data))
+                img.load()
+            except Exception:
+                continue
+            return "good" if max(img.size) >= MIN_LONGEST_SIDE else "low"
         result = classify(data)
         if result is not None:
             return result

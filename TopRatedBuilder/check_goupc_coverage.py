@@ -106,10 +106,16 @@ def main():
     n = i
     print(f"\nsampled {n}")
     print(f"  catalog hits      {found}/{n}  ({found / n:.0%})")
-    print(f"  with an image     {with_image}/{n}  ({with_image / n:.0%})")
-    print(f"  pack-shot quality {good_image}/{n}  ({good_image / n:.0%})")
+    print(f"  with an image     {with_image}/{n}  ({with_image / n:.0%})  <- headline coverage")
+    print(f"  passes pixel QA   {good_image}/{n}  ({good_image / n:.0%})  (advisory only)")
     if inferred:
         print(f"  inferred (skipped) {inferred}")
+    print(
+        "\nNote: the pixel classifier assumes a margin of background around the\n"
+        "product and under-counts tight-cropped catalog shots, so 'with an image'\n"
+        "is the number to judge coverage by. In the live chain these images are\n"
+        "trusted by provenance (X-Sage-Image-Source), not re-screened."
+    )
 
 
 if __name__ == "__main__":

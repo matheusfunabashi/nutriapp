@@ -491,6 +491,11 @@ export async function serveCachedImage(
   headers.set("Cache-Control", "public, max-age=31536000, immutable");
   headers.set("ETag", etag);
   if (obj.size) headers.set("Content-Length", String(obj.size));
+  // Provenance for offline QA (annotate_image_quality.py): which tier served
+  // these bytes is a stronger quality signal than any pixel heuristic —
+  // retailer/aggregator catalogs are pack shots, OFF is community-uploaded.
+  const source = meta?.source ?? obj.customMetadata?.source;
+  if (source) headers.set("X-Sage-Image-Source", source);
   return new Response(obj.body, { status: 200, headers });
 }
 
