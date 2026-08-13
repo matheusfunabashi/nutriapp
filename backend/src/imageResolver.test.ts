@@ -444,3 +444,77 @@ function json(body: unknown, status = 200): Response {
     headers: { "content-type": "application/json" },
   });
 }
+
+// ---------------------------------------------------------------------------
+describe("resolveProductImage — cache-version staleness", () => {
+  it("re-resolves inline when the chain version changed (no stale first scan)", async () => {
+    // A photo cached under an older IMAGE_CACHE_VERSION, e.g. an OFF image
+    // stored before a higher-priority tier existed.
+    const barcode = "0096619555505";
+    const env = mockEnv();
+    env.GOUPC_API_KEY = "test-key";
+    await env.CACHE.put(metaKey(barcode), JSON.stringify({
+      source: "off",
+      isFrontImage: true,
+      isLowQuality: false,
+      width: 400, height: 400,
+      fetchedAt: Date.now(),          // fresh by age — only the version is stale
+      contentType: "image/jpeg",
+      upstreamUrl: "https://images.openfoodfacts.org/old-user-photo.jpg",
+      cacheVersion: IMAGE_CACHE_VERSION - 1,
+    }));
+    await env.IMAGES.put(r2Key(barcode), new Uint8Array([1, 2, 3]).buffer);
+
+    const goupcImage = "https://go-upc.s3.amazonaws.com/images/1.jpeg";
+    const fetchFn = (async (input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url.includes("go-upc.com")) {
+        return new Response(JSON.stringify({
+          product: { name: "Kirkland Peanut Butter", imageUrl: goupcImage },
+        }), { status: 200 });
+      }
+      // Image byte download (any tier).
+      return new Response(new Uint8Array([9, 9, 9]).buffer, {
+        status: 200, headers: { "content-type": "image/jpeg" },
+      });
+    }) as typeof fetch;
+
+    const result = await resolveProductImage(env, barcode, null, {
+      origin: "https://sage.test",
+      fetchFn,
+      krogerDeps: { credentials: null },
+    });
+
+    // Answered from the re-resolved chain, not the stale OFF entry.
+    assert.ok(result);
+    assert.equal(result!.source, "goupc");
+    const meta = await env.CACHE.get<ImageCacheMeta>(metaKey(barcode), "json");
+    assert.equal(meta!.source, "goupc");
+    assert.equal(meta!.cacheVersion, IMAGE_CACHE_VERSION);
+  });
+
+  it("still serves stale (background refresh) when only the age is stale", async () => {
+    const barcode = "0001111041600";
+    const env = mockEnv();
+    await env.CACHE.put(metaKey(barcode), JSON.stringify({
+      source: "kroger",
+      isFrontImage: true,
+      isLowQuality: false,
+      width: 500, height: 500,
+      fetchedAt: 0,                    // ancient, but the version is current
+      contentType: "image/jpeg",
+      cacheVersion: IMAGE_CACHE_VERSION,
+    }));
+    await env.IMAGES.put(r2Key(barcode), new Uint8Array([1]).buffer);
+
+    let scheduled = 0;
+    const result = await resolveProductImage(env, barcode, null, {
+      origin: "https://sage.test",
+      krogerDeps: { credentials: null },
+      waitUntil: () => { scheduled++; },
+    });
+
+    assert.equal(result!.source, "kroger");   // served stale immediately
+    assert.equal(scheduled, 1);               // refreshed in the background
+  });
+});

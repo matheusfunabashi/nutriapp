@@ -111,21 +111,40 @@ export async function resolveProductImage(
         cacheVersion: cached.cacheVersion ?? null,
         expectedVersion: IMAGE_CACHE_VERSION,
       }));
-      waitUntil(
-        revalidate(env, trimmed, offProduct, opts).catch((err) => {
-          console.log(JSON.stringify({
-            event: "image_revalidate_error",
-            barcode: trimmed,
-            error: String(err),
-          }));
-        }),
-      );
+      if (versionStale) {
+        // The resolve chain itself changed (a new tier, new normalization),
+        // so the cached bytes may come from a source we now rank lower —
+        // e.g. a community OFF photo cached before the Go-UPC tier existed.
+        // Serving stale here would show every user the old photo on their
+        // first scan of the product, so re-resolve inline and answer with the
+        // winner. Costs one slow request per stale barcode, once.
+        const fresh = await resolveAndStore(env, trimmed, offProduct, opts)
+          .catch((err) => {
+            console.log(JSON.stringify({
+              event: "image_revalidate_error",
+              barcode: trimmed,
+              error: String(err),
+            }));
+            return null;
+          });
+        if (fresh) return fresh;
+        // Re-resolution failed — fall through to whatever is still cached.
+      } else {
+        waitUntil(
+          revalidate(env, trimmed, offProduct, opts).catch((err) => {
+            console.log(JSON.stringify({
+              event: "image_revalidate_error",
+              barcode: trimmed,
+              error: String(err),
+            }));
+          }),
+        );
+      }
     }
     // Confirm object still exists in R2 before advertising the URL.
     const obj = await env.IMAGES.head(r2Key(trimmed));
     if (obj) {
-      // Serve stale meanwhile; URL includes current IMAGE_CACHE_VERSION so
-      // clients bypass immutable URLCache when the chain was bumped.
+      // Age-stale only: serve stale while the background refresh runs.
       return toPayload(opts.origin, trimmed, cached);
     }
     // R2 missing despite KV — fall through to full resolve.
