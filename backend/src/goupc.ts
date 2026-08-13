@@ -79,13 +79,19 @@ export async function fetchGoUPCImage(
 
   const fetchFn: typeof fetch = deps.fetchFn ?? ((i, o) => fetch(i, o));
   const base = (deps.baseUrl ?? DEFAULT_GOUPC_BASE_URL).replace(/\/$/, "");
+  // `wrangler secret put` keeps whatever was pasted; a stray newline or space
+  // would otherwise be sent inside the Authorization header and rejected.
+  const apiKey = deps.apiKey.trim();
 
   let res: Response;
   try {
     res = await fetchFn(`${base}/code/${encodeURIComponent(code)}`, {
       headers: {
-        Authorization: `Bearer ${deps.apiKey}`,
+        Authorization: `Bearer ${apiKey}`,
         Accept: "application/json",
+        // Identify ourselves to the provider rather than sending a bare
+        // Workers request.
+        "User-Agent": "Sage/1.0 (+https://sage.app)",
       },
     });
   } catch (err) {
@@ -96,7 +102,19 @@ export async function fetchGoUPCImage(
   if (res.status === 404 || res.status === 400) return { kind: "miss" };
   if (res.status === 401 || res.status === 403) {
     // A bad/expired key must not burn the retry budget on every barcode.
-    console.log(JSON.stringify({ event: "goupc_auth_error", status: res.status }));
+    // Log the key's *length* (never the value) plus a body excerpt: a wrong
+    // length means the stored secret was mangled on paste, while a correct
+    // length points at the provider rejecting our egress instead.
+    let detail = "";
+    try {
+      detail = (await res.text()).slice(0, 200);
+    } catch { /* body already consumed / empty */ }
+    console.log(JSON.stringify({
+      event: "goupc_auth_error",
+      status: res.status,
+      keyLength: apiKey.length,
+      detail,
+    }));
     return { kind: "unavailable" };
   }
   if (res.status === 429 || res.status >= 500) return { kind: "rate_limited" };

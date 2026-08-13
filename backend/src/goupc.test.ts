@@ -126,3 +126,20 @@ describe("fetchGoUPCImage", () => {
     assert.equal(r.kind, "rate_limited");
   });
 });
+
+// ---------------------------------------------------------------------------
+describe("fetchGoUPCImage — request hygiene", () => {
+  it("trims a pasted key and identifies itself with a User-Agent", async () => {
+    let captured: Request | null = null;
+    await fetchGoUPCImage("012000161155", {
+      // Simulates `wrangler secret put` keeping a trailing newline.
+      apiKey: "  abc123\n",
+      fetchFn: (async (input: RequestInfo | URL, init?: RequestInit) => {
+        captured = new Request(input, init);
+        return new Response(JSON.stringify({ product: {} }), { status: 200 });
+      }) as typeof fetch,
+    });
+    assert.equal(captured!.headers.get("Authorization"), "Bearer abc123");
+    assert.ok((captured!.headers.get("User-Agent") ?? "").startsWith("Sage/"));
+  });
+});
