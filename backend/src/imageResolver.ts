@@ -1,7 +1,7 @@
 /**
  * Product-image resolution chain for Sage.
  *
- *   curated → cache (R2 + KV) → Kroger pack shot → Walmart pack shot → OFF front image → null
+ *   curated → cache (R2 + KV) → Kroger → Walmart → Go-UPC → OFF front image → null
  *
  * On a hit we download bytes once into R2 (`product-images/{barcode}`) and
  * point the iOS app at the stable Worker URL `GET /images/{barcode}`.
@@ -13,10 +13,11 @@ import { fetchOFF } from "./off.ts";
 import { resolveOFFFrontImage } from "./offImage.ts";
 import { fetchKrogerImage, type KrogerDeps, DEFAULT_KROGER_BASE_URL } from "./kroger.ts";
 import { fetchWalmartImage, type WalmartCredentials, DEFAULT_WALMART_BASE_URL } from "./walmart.ts";
+import { fetchGoUPCImage, DEFAULT_GOUPC_BASE_URL } from "./goupc.ts";
 import { shouldAttemptKroger } from "./barcode.ts";
 import { adoptCuratedIfPresent } from "./curatedImages.ts";
 
-export type ImageSourceName = "curated" | "kroger" | "walmart" | "off";
+export type ImageSourceName = "curated" | "kroger" | "walmart" | "goupc" | "off";
 
 /** Public shape returned on /lookup (and mirrored into Product for the app). */
 export interface ProductImagePayload {
@@ -54,6 +55,7 @@ const IMAGE_KV_PREFIX = "image:v1:";
 const MISS_KV_PREFIX = "image:miss:v1:";
 const KROGER_BACKOFF_PREFIX = "image:kroger-backoff:v1:";
 const WALMART_BACKOFF_PREFIX = "image:walmart-backoff:v1:";
+const GOUPC_BACKOFF_PREFIX = "image:goupc-backoff:v1:";
 const R2_KEY_PREFIX = "product-images/";
 
 const FRESH_MS = 30 * 24 * 60 * 60 * 1000;       // 30 days
@@ -243,7 +245,42 @@ async function resolveAndStore(
     // miss / unavailable → continue
   }
 
-  // --- (d) OFF -------------------------------------------------------------
+  // --- (d) Go-UPC -----------------------------------------------------------
+  // Aggregator catalog: covers store brands and mid-tail products no single
+  // retailer API carries. Inert until GOUPC_API_KEY is configured. A 401 marks
+  // the key unusable, so a bad key doesn't burn quota on every barcode.
+  const goupcBackoff = await env.CACHE.get(goupcBackoffKey(barcode));
+  if (!goupcBackoff) {
+    const goupc = await fetchGoUPCImage(barcode, {
+      apiKey: env.GOUPC_API_KEY ?? null,
+      baseUrl: env.GOUPC_BASE_URL || DEFAULT_GOUPC_BASE_URL,
+      fetchFn,
+    });
+    if (goupc.kind === "hit") {
+      const stored = await ingestUpstream(env, barcode, {
+        upstreamUrl: goupc.image.url,
+        source: "goupc",
+        isFrontImage: goupc.image.isFrontImage,
+        isLowQuality: false,
+        width: goupc.image.estimatedWidth,
+        height: null,
+        fetchFn,
+        now,
+      });
+      if (stored) {
+        logWin(barcode, "goupc");
+        return toPayload(opts.origin, barcode, stored);
+      }
+    } else if (goupc.kind === "rate_limited") {
+      await env.CACHE.put(goupcBackoffKey(barcode), "1", {
+        expirationTtl: KROGER_BACKOFF_TTL_SECONDS,
+      });
+      console.log(JSON.stringify({ event: "image_goupc_backoff", barcode }));
+    }
+    // miss / unavailable → continue
+  }
+
+  // --- (e) OFF -------------------------------------------------------------
   const off = resolveOFFFrontImage(
     offProduct,
     barcode,
@@ -275,7 +312,7 @@ async function resolveAndStore(
     }));
   }
 
-  // --- (e) total miss ------------------------------------------------------
+  // --- (f) total miss ------------------------------------------------------
   await env.CACHE.put(missKey(barcode), "1", { expirationTtl: MISS_TTL_SECONDS });
   console.log(JSON.stringify({ event: "image_miss", barcode }));
   return null;
@@ -495,6 +532,10 @@ function walmartCredentials(env: Env): WalmartCredentials | null {
 
 export function walmartBackoffKey(barcode: string): string {
   return `${WALMART_BACKOFF_PREFIX}${barcode}`;
+}
+
+export function goupcBackoffKey(barcode: string): string {
+  return `${GOUPC_BACKOFF_PREFIX}${barcode}`;
 }
 
 function logWin(barcode: string, source: ImageSourceName): void {

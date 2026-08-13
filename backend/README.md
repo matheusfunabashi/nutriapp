@@ -27,11 +27,21 @@ Resolution chain (once per barcode, then cached):
    required). Endpoint shape assumed from Walmart.io docs — validate against
    the live API when the first real key lands (`walmart.test.ts` pins the
    contract).
-4. **Open Food Facts** — front-image selection (same priority order as the
+4. **Go-UPC** — aggregator catalog; covers store brands (Kirkland, Trader
+   Joe's, Aldi) and mid-tail products no single retailer API carries. Measured
+   86% image coverage on a sample of products the retailer tiers miss, but
+   US-centric: UK/CA barcodes hit far less often. Inert until `GOUPC_API_KEY`
+   is set. `inferred: true` records are guesses, not catalog matches, and are
+   treated as misses.
+5. **Open Food Facts** — front-image selection (same priority order as the
    iOS `OFFImageResolver`).
-5. **null** — app falls back to placeholder / user photo. Misses are
-   negative-cached for 7 days. Kroger/Walmart 429/5xx get a 6h per-barcode
-   backoff.
+6. **null** — app falls back to placeholder / user photo. Misses are
+   negative-cached for 7 days. Kroger/Walmart/Go-UPC 429/5xx get a 6h
+   per-barcode backoff.
+
+Quota note: paid tiers (Go-UPC) are billed per lookup, but a resolved image is
+stored in R2 forever and misses are negative-cached, so spend is roughly *one
+lookup per new barcode*, not per scan.
 
 Successful resolutions download the image once into R2 and expose it at a
 stable Worker URL:

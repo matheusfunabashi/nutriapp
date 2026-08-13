@@ -17,6 +17,9 @@ export interface Env {
   WALMART_PRIVATE_KEY?: string;
   WALMART_KEY_VERSION?: string;
   WALMART_BASE_URL?: string;
+  /** Go-UPC aggregator API — image chain tier (d). */
+  GOUPC_API_KEY?: string;
+  GOUPC_BASE_URL?: string;
   /** Kroger API host, e.g. https://api.kroger.com (wrangler [vars]). */
   KROGER_BASE_URL?: string;
   /** Bearer token for POST /admin/curated-images/{barcode}. */
