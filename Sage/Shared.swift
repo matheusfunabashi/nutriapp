@@ -14,30 +14,60 @@ struct ScoreRing: View {
 
     var body: some View {
         let color = ringColor ?? scoreColor(score)
+        // The arc and the numeral are driven by one animatable value, so they
+        // can never disagree: `trim` is animatable but `Text` is not, so
+        // reading both from plain @State snapped the number to its final value
+        // while the arc was still sweeping — a 77 sitting inside a half-filled
+        // ring for the first second.
+        ScoreRingBody(value: animated, color: color, size: size,
+                      stroke: stroke, sublabel: sublabel)
+            .frame(width: size, height: size)
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel(sublabel.map { "\(score), \($0)" } ?? "\(score)")
+            .onAppear {
+                withAnimation(.easeOut(duration: 1.1)) { animated = Double(score) }
+            }
+            .onChange(of: score) { _, newScore in
+                withAnimation(.easeOut(duration: 1.1)) { animated = Double(newScore) }
+            }
+    }
+}
+
+/// Ring + numeral for one animation frame. Conforming to `Animatable` makes
+/// SwiftUI re-evaluate the body as `value` interpolates, which is what lets the
+/// numeral count up in lockstep with the arc.
+private struct ScoreRingBody: View, Animatable {
+    var value: Double
+    var color: Color
+    var size: CGFloat
+    var stroke: CGFloat
+    var sublabel: String?
+
+    var animatableData: Double {
+        get { value }
+        set { value = newValue }
+    }
+
+    var body: some View {
         ZStack {
             Circle().stroke(Theme.ringTrack, lineWidth: stroke)
             Circle()
-                .trim(from: 0, to: CGFloat(animated) / 100)
+                .trim(from: 0, to: CGFloat(max(0, min(100, value))) / 100)
                 .stroke(color, style: StrokeStyle(lineWidth: stroke, lineCap: .round))
                 .rotationEffect(.degrees(-90))
-                .animation(.easeOut(duration: 1.1), value: animated)
             VStack(spacing: 2) {
-                Text("\(Int(animated.rounded()))")
+                Text("\(Int(value.rounded()))")
                     .font(.sageFixedBold(size * 0.34))
                     .monospacedDigit()
                     .foregroundColor(Theme.ink)
-                if let sub = sublabel {
-                    Text(sub.uppercased())
+                if let sublabel {
+                    Text(sublabel.uppercased())
                         .font(.sageFixedBold(10))
                         .tracking(1)
                         .foregroundColor(color)
                 }
             }
         }
-        .frame(width: size, height: size)
-        .accessibilityElement(children: .ignore)
-        .accessibilityLabel(sublabel.map { "\(score), \($0)" } ?? "\(score)")
-        .onAppear { animated = Double(score) }
     }
 }
 
@@ -115,6 +145,9 @@ struct ProductThumb: View {
     /// Product photo; nil (or a failed load) falls back to the glyph tile —
     /// "no image" is a designed state, never an error.
     var imageURL: String? = nil
+    /// Secondary photo tried when `imageURL` fails (Top Rated / Alternatives
+    /// rows whose backend slot 404s degrade to their OFF photo, not the glyph).
+    var fallbackImageURL: String? = nil
     /// Run Vision cutout when a remote URL is shown. False for soft OFF shots /
     /// placeholder-only rows.
     var processCutout: Bool = true
@@ -126,6 +159,7 @@ struct ProductThumb: View {
             url: imageURL.flatMap(URL.init(string:)),
             style: isDetail ? .detail : .fixed(size),
             glyph: glyph,
+            fallbackURL: fallbackImageURL.flatMap(URL.init(string:)),
             processCutout: processCutout && imageURL != nil
         )
     }
@@ -351,10 +385,10 @@ struct SplashView: View {
 struct SageToolbarTitle: ToolbarContent {
     var body: some ToolbarContent {
         ToolbarItem(placement: .principal) {
-            HStack(spacing: 7) {
-                SageMark(size: 20, color: Theme.accent)
+            HStack(spacing: 8) {
+                SageMark(size: 28, color: Theme.accent)
                 Text("Sage")
-                    .font(.sageSemiBold(17)).tracking(-0.4)
+                    .font(.sageBold(24)).tracking(-0.6)
                     .foregroundStyle(Theme.ink)
             }
             .accessibilityElement(children: .combine)

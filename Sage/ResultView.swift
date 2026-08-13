@@ -149,6 +149,7 @@ struct ResultView: View {
         return HStack(alignment: .center, spacing: 12) {
             ProductThumb(glyph: product.glyph, score: product.yourScore,
                          neutral: true, imageURL: product.detailImageURL,
+                         fallbackImageURL: product.imageFallbackURL,
                          processCutout: product.shouldProcessCutout,
                          isDetail: true)
 
@@ -1711,6 +1712,7 @@ private struct AlternativeRow: View {
             HStack(spacing: 12) {
                 ProductThumb(glyph: alt.product.glyph, score: alt.score, size: 56,
                              imageURL: alt.product.listImageURL,
+                             fallbackImageURL: alt.product.imageFallbackURL,
                              processCutout: alt.product.shouldProcessCutout)
                 VStack(alignment: .leading, spacing: 1) {
                     if let brand = formatted.brand {

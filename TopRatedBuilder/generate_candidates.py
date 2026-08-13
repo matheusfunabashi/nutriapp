@@ -19,7 +19,7 @@ Usage:
 Two-country regeneration (default):
   python3 generate_candidates.py --countries us,br --out fixtures/candidates.json
 """
-import argparse, json, sys, time, urllib.parse, urllib.request, urllib.error
+import argparse, json, re, sys, time, urllib.parse, urllib.request, urllib.error
 
 # Shelf id (SageCategory.rawValue) → OFF category tags to pull. Coffee/water are
 # intentionally omitted (shelf-excluded / unsupported — SPEC §7).
@@ -32,7 +32,9 @@ SHELF_TAGS = {
     "yogurt":    ["en:yogurts"],
     "bread":     ["en:breads"],
     "juice":     ["en:fruit-juices"],
-    "chips":     ["en:crisps", "en:chips-and-fries"],
+    # en:chips-and-fries deliberately not pulled — it is where frozen oven
+    # fries come from; the US "chips" shelf means crisps.
+    "chips":     ["en:crisps"],
     "pasta":     ["en:pastas"],
     "iceCream":  ["en:ice-creams"],
     "babyFood":  ["en:baby-foods"],
@@ -51,11 +53,124 @@ SHELF_TAGS = {
         "en:butters", "en:margarines", "en:olive-oils", "en:vegetable-oils",
         "en:coconut-oils",
     ],
-    "instantNoodles": [
-        "en:instant-noodles", "en:noodles", "en:dried-meals",
-    ],
+    # en:noodles / en:dried-meals deliberately not pulled — OFF's hierarchy
+    # funnels ordinary dry pasta through en:noodles, duplicating the pasta shelf.
+    "instantNoodles": ["en:instant-noodles"],
     "energyDrinks": ["en:energy-drinks"],
 }
+
+# Shelf id → OFF tags that DISQUALIFY a candidate even though the pull query
+# matched it. OFF's category hierarchy is community-tagged and leaks siblings:
+# skyr shows up under cheeses, squash concentrate under sodas, coffee creamer
+# under plant-milks. A candidate carrying any of these tags is dropped from
+# that shelf (it can still appear on its own shelf via its own pull).
+SHELF_EXCLUDE = {
+    "soda": [
+        "en:syrups", "en:concentrates", "en:squashes", "en:kombuchas",
+        "en:fruit-juices", "en:energy-drinks", "en:teas", "en:iced-teas",
+        "en:waters", "en:tea-based-beverages",
+        # US lemonades are still juice drinks, not sodas, but OFF's taxonomy
+        # parents every lemonade under en:sodas. Actual carbonated lemonade
+        # sodas (poppi, Sanpellegrino Limonata) don't carry the tag.
+        "en:lemonades", "en:lemonade",
+    ],
+    "juice": [
+        "en:syrups", "en:concentrates", "en:squashes", "en:sodas",
+        "en:applesauces", "en:compotes", "en:plant-milks", "en:almond-milks",
+    ],
+    "milks": [
+        "en:creamers", "en:coffee-whiteners", "en:condensed-milks",
+        "en:evaporated-milks", "en:milkshakes", "en:protein-shakes",
+        "en:meal-replacements",
+    ],
+    "energyDrinks": [
+        "en:waters", "en:flavored-waters", "en:sports-drinks",
+        "en:protein-shakes", "en:dairy-drinks", "en:meal-replacements",
+    ],
+    "cheese": [
+        "en:yogurts", "en:skyrs", "en:quarks", "en:sauces", "en:pasta-sauces",
+        "en:crisps", "en:salty-snacks", "en:desserts",
+    ],
+    "yogurt": ["en:cheeses"],
+    # US crackers are tagged en:crackers-appetizers, not en:crackers; Ready
+    # Brek-style breakfast biscuits carry en:breakfasts.
+    "cookies": ["en:crackers", "en:crackers-appetizers", "en:crispbreads",
+                "en:breakfast-cereals", "en:breakfasts"],
+    "bread": ["en:crispbreads", "en:crackers", "en:bread-crumbs"],
+    "cereal": ["en:cereal-bars", "en:granola-bars", "en:biscuits", "en:cookies"],
+    "snackBars": ["en:granolas", "en:breakfast-cereals"],
+    "pasta": ["en:instant-noodles"],
+    # NOTE: instantNoodles must NOT exclude en:pastas or en:soups — OFF's
+    # hierarchy puts en:instant-noodles under en:pastas, and real instant ramen
+    # (Maruchan, Nissin) legitimately carries en:soups. The name rule below
+    # handles noodle-less soup cups. Pulling only en:instant-noodles is the
+    # shelf filter.
+    "iceCream": ["en:cheeses", "en:fresh-cheeses"],
+    "fatsAndOils": ["en:sugars", "en:sweeteners"],
+    "chips": ["en:french-fries", "en:frozen-french-fries", "en:frozen-foods"],
+}
+
+# Shelf id → product-name regex that disqualifies. Last resort for products
+# whose OFF tags carry nothing distinguishing (community mis-tags): protein
+# shakes filed as energy drinks, taco shells filed as cookies, split-pea soup
+# cups filed as instant noodles.
+SHELF_NAME_EXCLUDE = {
+    "energyDrinks": re.compile(r"protein|collagen|powder|sticks", re.I),
+    "bread": re.compile(r"taco shell|bread ?crumbs|panko", re.I),
+    "cookies": re.compile(r"taco shell", re.I),
+    "juice": re.compile(r"apple ?sauce", re.I),
+    # Still/flavored waters mis-tagged en:sodas ("Organic Lemon Water"). The
+    # \b keeps Watermelon sodas alive.
+    "soda": re.compile(r"\bwater\b", re.I),
+    # Soups without noodles ("Vegan Split Pea Soup") are mis-tagged; noodle
+    # soups ("Ramen Noodle Soup") are the genre itself.
+    "instantNoodles": re.compile(r"^(?!.*(noodle|ramen)).*soup", re.I | re.S),
+}
+
+# Never a beverage regardless of shelf tags ("Original Canola Spray" has been
+# seen tagged en:sodas, with all-zero nutrition to boot).
+DRINK_NAME_EXCLUDE = re.compile(r"\bspray\b|\boil\b", re.I)
+
+# Shelf id → brand substrings that disqualify (lowercased match). Sports-drink
+# and shake brands blanket-tagged as energy drinks; almond milk vandal-tagged
+# as squeezed orange juice.
+SHELF_BRAND_EXCLUDE = {
+    "energyDrinks": ("powerade", "body armor", "bodyarmor", "gatorade",
+                     "glaceau", "vitaminwater", "oikos", "vital proteins"),
+    "juice": ("almond breeze",),
+}
+
+# A "drink" denser than ~150 kcal/100ml is not a drink — heavy cream tops out
+# around 100–120; a mis-tagged pizza clocks 238. Applied per 100 g/ml.
+DRINK_SHELVES = {"soda", "juice", "milks", "energyDrinks"}
+MAX_DRINK_KCAL_100 = 150
+
+
+def entry_allowed(shelf, e):
+    """Shelf-hygiene verdict for a candidate entry (also usable offline)."""
+    # Non-English label → drop: the additive detector reads English, so a
+    # Turkish cola sails past S1 and "outscores" its US twin, and these rows
+    # are OFF countries-tag pollution with foreign pack shots anyway. (Revisit
+    # per-market if a non-English market is ever added.)
+    lang = e.get("lang")
+    if lang not in (None, "en"):
+        return False
+    if set(SHELF_EXCLUDE.get(shelf, ())) & set(e.get("categories_tags") or ()):
+        return False
+    name = e.get("off_name") or ""
+    rx = SHELF_NAME_EXCLUDE.get(shelf)
+    if rx and rx.search(name):
+        return False
+    brands = (e.get("off_brands") or "").lower()
+    if any(b in brands for b in SHELF_BRAND_EXCLUDE.get(shelf, ())):
+        return False
+    if shelf in DRINK_SHELVES:
+        if DRINK_NAME_EXCLUDE.search(name):
+            return False
+        kcal = (e.get("nutriments") or {}).get("energy-kcal_100g")
+        if isinstance(kcal, (int, float)) and kcal > MAX_DRINK_KCAL_100:
+            return False
+    return True
 
 COUNTRY_TAG = {
     "us": "en:united-states",
@@ -77,18 +192,29 @@ NUTRIMENT_KEYS = [
 ]
 FIELDS = ("code,product_name,brands,ingredients_text,additives_tags,nutriments,"
           "nutriscore_grade,nova_group,image_front_url,image_url,"
-          "categories_tags,labels_tags")
+          "categories_tags,labels_tags,lang")
 
 BASE = "https://world.openfoodfacts.org/api/v2/search"
 
 
-def fetch(tag, country_tag, page_size):
+# The API caps page_size at 100; larger pulls page through.
+PAGE_SIZE = 100
+
+
+class PullFailed(Exception):
+    """A page still failed after all retries — the caller must not silently
+    ship a shelf with a missing market (that is how cereal/us once went to
+    production empty)."""
+
+
+def fetch_page(tag, country_tag, page):
     q = urllib.parse.urlencode({
         "categories_tags": tag, "countries_tags": country_tag,
-        "sort_by": "unique_scans_n", "page_size": page_size, "fields": FIELDS,
+        "sort_by": "unique_scans_n", "page_size": PAGE_SIZE, "page": page,
+        "fields": FIELDS,
     })
     url = f"{BASE}?{q}"
-    for attempt in range(6):
+    for attempt in range(8):
         try:
             req = urllib.request.Request(url, headers={"User-Agent": "Sage-TopRated/1.0"})
             with urllib.request.urlopen(req, timeout=60) as r:
@@ -99,7 +225,27 @@ def fetch(tag, country_tag, page_size):
             raise
         except Exception:
             time.sleep(min(2 ** attempt, 30)); continue
-    return []
+    raise PullFailed(f"{tag} × {country_tag} page {page} failed after retries")
+
+
+def fetch(tag, country_tag, per_shelf):
+    out = []
+    pages = max(1, -(-per_shelf // PAGE_SIZE))  # ceil
+    for page in range(1, pages + 1):
+        try:
+            batch = fetch_page(tag, country_tag, page)
+        except PullFailed:
+            if out:
+                # Page 1 landed; a flaky later page must not void the pull.
+                print(f"! {tag} × {country_tag}: page {page} failed, "
+                      f"keeping {len(out)} rows", file=sys.stderr)
+                break
+            raise
+        out.extend(batch)
+        if len(batch) < PAGE_SIZE:  # last page
+            break
+        time.sleep(1.0)
+    return out[:per_shelf]
 
 
 def nutriments(off):
@@ -127,6 +273,7 @@ def entry(off, country_code):
         "image_url": img,
         "categories_tags": off.get("categories_tags") or [],
         "labels_tags": off.get("labels_tags") or [],
+        "lang": off.get("lang"),
         "data_problems": problems,
         "countries": [country_code],
     }
@@ -152,14 +299,22 @@ def merge_entry(existing, new):
 
 def pull_shelf(shelf, tags, country_code, country_tag, per_shelf):
     seen, rows = set(), []
+    dropped = 0
     for tag in tags:
         for off in fetch(tag, country_tag, per_shelf):
             code = off.get("code")
             if not code or code in seen:
                 continue
             seen.add(code)
-            rows.append(entry(off, country_code))
-        time.sleep(0.5)
+            row = entry(off, country_code)
+            if not entry_allowed(shelf, row):
+                dropped += 1
+                continue
+            rows.append(row)
+        time.sleep(1.0)
+    if dropped:
+        print(f"{shelf}/{country_code}: dropped {dropped} off-shelf products "
+              f"(shelf hygiene)")
     return rows
 
 
@@ -185,13 +340,22 @@ def main():
 
     shelves = [s for s in args.shelves.split(",") if s] or list(SHELF_TAGS)
     categories = {}
+    failures = []
     for shelf in shelves:
         tags = SHELF_TAGS.get(shelf)
         if not tags:
             print(f"! unknown shelf {shelf}", file=sys.stderr); continue
         by_barcode = {}
         for code in country_codes:
-            rows = pull_shelf(shelf, tags, code, COUNTRY_TAG[code], args.per_shelf)
+            try:
+                rows = pull_shelf(shelf, tags, code, COUNTRY_TAG[code], args.per_shelf)
+            except PullFailed as e:
+                failures.append(f"{shelf}/{code}: {e}")
+                print(f"! {shelf}/{code}: PULL FAILED — {e}", file=sys.stderr)
+                continue
+            if not rows:
+                failures.append(f"{shelf}/{code}: 0 rows")
+                print(f"! {shelf}/{code}: pulled 0 rows", file=sys.stderr)
             print(f"{shelf}/{code}: {len(rows)} pulled")
             for row in rows:
                 bc = row["barcode"]
@@ -207,6 +371,13 @@ def main():
         json.dump({"categories": categories, "countries": country_codes},
                   f, ensure_ascii=False, indent=2)
     print(f"wrote {args.out} ({sum(len(v) for v in categories.values())} total)")
+    if failures:
+        # A shelf×market that came back empty must fail the run — shipping it
+        # would silently blank that market's shelf (cereal/us, July 2026).
+        print("\nPULL FAILURES — do not ship this file:", file=sys.stderr)
+        for f_ in failures:
+            print(f"  {f_}", file=sys.stderr)
+        sys.exit(1)
 
 
 if __name__ == "__main__":

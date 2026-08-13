@@ -11,6 +11,15 @@ export interface Env {
   /** Kroger Developer Portal app credentials (wrangler secret). */
   KROGER_CLIENT_ID?: string;
   KROGER_CLIENT_SECRET?: string;
+  /** Walmart Content Provider (Affiliate) API — image chain tier (c). */
+  WALMART_CONSUMER_ID?: string;
+  /** PKCS#8 PEM private key whose public half is registered on Walmart.io. */
+  WALMART_PRIVATE_KEY?: string;
+  WALMART_KEY_VERSION?: string;
+  WALMART_BASE_URL?: string;
+  /** Go-UPC aggregator API — image chain tier (d). */
+  GOUPC_API_KEY?: string;
+  GOUPC_BASE_URL?: string;
   /** Kroger API host, e.g. https://api.kroger.com (wrangler [vars]). */
   KROGER_BASE_URL?: string;
   /** Bearer token for POST /admin/curated-images/{barcode}. */

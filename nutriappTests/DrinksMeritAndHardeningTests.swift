@@ -94,8 +94,12 @@ struct DrinksMeritAndHardeningTests {
         let erythritol = try #require(ScoringEngineV4.score(base("erythritol", "e968")))
         let xylitol = try #require(ScoringEngineV4.score(base("xylitol", "e967")))
         #expect(DrinksScoring.containsErythritol(base("erythritol", "e968")))
-        #expect(erythritol.base < xylitol.base,
-                "erythritol \(erythritol.base) must score below xylitol \(xylitol.base)")
+        // v5.1.1: the all-NNS sweetener cap can clamp both final scores to 74,
+        // so the erythritol dock is asserted on the pre-cap weighted score.
+        let eW = try #require(erythritol.drinksBreakdown?.weightedScore)
+        let xW = try #require(xylitol.drinksBreakdown?.weightedScore)
+        #expect(eW < xW, "erythritol \(eW) must score below xylitol \(xW) pre-cap")
+        #expect(erythritol.base <= xylitol.base)
     }
 
     // MARK: F3 — continuity of drag and undercut

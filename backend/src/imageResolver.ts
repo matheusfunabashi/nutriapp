@@ -1,7 +1,7 @@
 /**
  * Product-image resolution chain for Sage.
  *
- *   curated → cache (R2 + KV) → Kroger pack shot → OFF front image → null
+ *   curated → cache (R2 + KV) → Kroger → Walmart → Go-UPC → OFF front image → null
  *
  * On a hit we download bytes once into R2 (`product-images/{barcode}`) and
  * point the iOS app at the stable Worker URL `GET /images/{barcode}`.
@@ -12,10 +12,12 @@ import type { OFFProduct } from "./off.ts";
 import { fetchOFF } from "./off.ts";
 import { resolveOFFFrontImage } from "./offImage.ts";
 import { fetchKrogerImage, type KrogerDeps, DEFAULT_KROGER_BASE_URL } from "./kroger.ts";
+import { fetchWalmartImage, type WalmartCredentials, DEFAULT_WALMART_BASE_URL } from "./walmart.ts";
+import { fetchGoUPCImage, DEFAULT_GOUPC_BASE_URL } from "./goupc.ts";
 import { shouldAttemptKroger } from "./barcode.ts";
 import { adoptCuratedIfPresent } from "./curatedImages.ts";
 
-export type ImageSourceName = "curated" | "kroger" | "off";
+export type ImageSourceName = "curated" | "kroger" | "walmart" | "goupc" | "off";
 
 /** Public shape returned on /lookup (and mirrored into Product for the app). */
 export interface ProductImagePayload {
@@ -47,11 +49,13 @@ export interface ImageCacheMeta {
  * Bump when the resolve chain changes (new upstream, barcode normalization,
  * curated tier, etc.) so existing KV rows re-resolve without a manual flush.
  */
-export const IMAGE_CACHE_VERSION = 3;
+export const IMAGE_CACHE_VERSION = 4;
 
 const IMAGE_KV_PREFIX = "image:v1:";
 const MISS_KV_PREFIX = "image:miss:v1:";
 const KROGER_BACKOFF_PREFIX = "image:kroger-backoff:v1:";
+const WALMART_BACKOFF_PREFIX = "image:walmart-backoff:v1:";
+const GOUPC_BACKOFF_PREFIX = "image:goupc-backoff:v1:";
 const R2_KEY_PREFIX = "product-images/";
 
 const FRESH_MS = 30 * 24 * 60 * 60 * 1000;       // 30 days
@@ -107,21 +111,40 @@ export async function resolveProductImage(
         cacheVersion: cached.cacheVersion ?? null,
         expectedVersion: IMAGE_CACHE_VERSION,
       }));
-      waitUntil(
-        revalidate(env, trimmed, offProduct, opts).catch((err) => {
-          console.log(JSON.stringify({
-            event: "image_revalidate_error",
-            barcode: trimmed,
-            error: String(err),
-          }));
-        }),
-      );
+      if (versionStale) {
+        // The resolve chain itself changed (a new tier, new normalization),
+        // so the cached bytes may come from a source we now rank lower —
+        // e.g. a community OFF photo cached before the Go-UPC tier existed.
+        // Serving stale here would show every user the old photo on their
+        // first scan of the product, so re-resolve inline and answer with the
+        // winner. Costs one slow request per stale barcode, once.
+        const fresh = await resolveAndStore(env, trimmed, offProduct, opts)
+          .catch((err) => {
+            console.log(JSON.stringify({
+              event: "image_revalidate_error",
+              barcode: trimmed,
+              error: String(err),
+            }));
+            return null;
+          });
+        if (fresh) return fresh;
+        // Re-resolution failed — fall through to whatever is still cached.
+      } else {
+        waitUntil(
+          revalidate(env, trimmed, offProduct, opts).catch((err) => {
+            console.log(JSON.stringify({
+              event: "image_revalidate_error",
+              barcode: trimmed,
+              error: String(err),
+            }));
+          }),
+        );
+      }
     }
     // Confirm object still exists in R2 before advertising the URL.
     const obj = await env.IMAGES.head(r2Key(trimmed));
     if (obj) {
-      // Serve stale meanwhile; URL includes current IMAGE_CACHE_VERSION so
-      // clients bypass immutable URLCache when the chain was bumped.
+      // Age-stale only: serve stale while the background refresh runs.
       return toPayload(opts.origin, trimmed, cached);
     }
     // R2 missing despite KV — fall through to full resolve.
@@ -206,7 +229,77 @@ async function resolveAndStore(
     // unavailable → continue
   }
 
-  // --- (c) OFF -------------------------------------------------------------
+  // --- (c) Walmart ----------------------------------------------------------
+  // Official studio pack shots; covers US grocery items Kroger doesn't stock.
+  // Inert until WALMART_CONSUMER_ID / WALMART_PRIVATE_KEY are configured.
+  const walmartBackoff = await env.CACHE.get(walmartBackoffKey(barcode));
+  if (!walmartBackoff) {
+    const walmart = await fetchWalmartImage(barcode, {
+      credentials: walmartCredentials(env),
+      baseUrl: env.WALMART_BASE_URL || DEFAULT_WALMART_BASE_URL,
+      fetchFn,
+      now,
+    });
+    if (walmart.kind === "hit") {
+      const stored = await ingestUpstream(env, barcode, {
+        upstreamUrl: walmart.image.url,
+        source: "walmart",
+        isFrontImage: walmart.image.isFrontImage,
+        isLowQuality: false,
+        width: walmart.image.estimatedWidth,
+        height: null,
+        fetchFn,
+        now,
+      });
+      if (stored) {
+        logWin(barcode, "walmart");
+        return toPayload(opts.origin, barcode, stored);
+      }
+    } else if (walmart.kind === "rate_limited") {
+      await env.CACHE.put(walmartBackoffKey(barcode), "1", {
+        expirationTtl: KROGER_BACKOFF_TTL_SECONDS,
+      });
+      console.log(JSON.stringify({ event: "image_walmart_backoff", barcode }));
+    }
+    // miss / unavailable → continue
+  }
+
+  // --- (d) Go-UPC -----------------------------------------------------------
+  // Aggregator catalog: covers store brands and mid-tail products no single
+  // retailer API carries. Inert until GOUPC_API_KEY is configured. A 401 marks
+  // the key unusable, so a bad key doesn't burn quota on every barcode.
+  const goupcBackoff = await env.CACHE.get(goupcBackoffKey(barcode));
+  if (!goupcBackoff) {
+    const goupc = await fetchGoUPCImage(barcode, {
+      apiKey: env.GOUPC_API_KEY ?? null,
+      baseUrl: env.GOUPC_BASE_URL || DEFAULT_GOUPC_BASE_URL,
+      fetchFn,
+    });
+    if (goupc.kind === "hit") {
+      const stored = await ingestUpstream(env, barcode, {
+        upstreamUrl: goupc.image.url,
+        source: "goupc",
+        isFrontImage: goupc.image.isFrontImage,
+        isLowQuality: false,
+        width: goupc.image.estimatedWidth,
+        height: null,
+        fetchFn,
+        now,
+      });
+      if (stored) {
+        logWin(barcode, "goupc");
+        return toPayload(opts.origin, barcode, stored);
+      }
+    } else if (goupc.kind === "rate_limited") {
+      await env.CACHE.put(goupcBackoffKey(barcode), "1", {
+        expirationTtl: KROGER_BACKOFF_TTL_SECONDS,
+      });
+      console.log(JSON.stringify({ event: "image_goupc_backoff", barcode }));
+    }
+    // miss / unavailable → continue
+  }
+
+  // --- (e) OFF -------------------------------------------------------------
   const off = resolveOFFFrontImage(
     offProduct,
     barcode,
@@ -238,7 +331,7 @@ async function resolveAndStore(
     }));
   }
 
-  // --- (d) total miss ------------------------------------------------------
+  // --- (f) total miss ------------------------------------------------------
   await env.CACHE.put(missKey(barcode), "1", { expirationTtl: MISS_TTL_SECONDS });
   console.log(JSON.stringify({ event: "image_miss", barcode }));
   return null;
@@ -417,6 +510,11 @@ export async function serveCachedImage(
   headers.set("Cache-Control", "public, max-age=31536000, immutable");
   headers.set("ETag", etag);
   if (obj.size) headers.set("Content-Length", String(obj.size));
+  // Provenance for offline QA (annotate_image_quality.py): which tier served
+  // these bytes is a stronger quality signal than any pixel heuristic —
+  // retailer/aggregator catalogs are pack shots, OFF is community-uploaded.
+  const source = meta?.source ?? obj.customMetadata?.source;
+  if (source) headers.set("X-Sage-Image-Source", source);
   return new Response(obj.body, { status: 200, headers });
 }
 
@@ -445,6 +543,23 @@ function toPayload(
 function krogerCredentials(env: Env): { clientId: string; clientSecret: string } | null {
   if (!env.KROGER_CLIENT_ID || !env.KROGER_CLIENT_SECRET) return null;
   return { clientId: env.KROGER_CLIENT_ID, clientSecret: env.KROGER_CLIENT_SECRET };
+}
+
+function walmartCredentials(env: Env): WalmartCredentials | null {
+  if (!env.WALMART_CONSUMER_ID || !env.WALMART_PRIVATE_KEY) return null;
+  return {
+    consumerId: env.WALMART_CONSUMER_ID,
+    privateKeyPem: env.WALMART_PRIVATE_KEY,
+    keyVersion: env.WALMART_KEY_VERSION || "1",
+  };
+}
+
+export function walmartBackoffKey(barcode: string): string {
+  return `${WALMART_BACKOFF_PREFIX}${barcode}`;
+}
+
+export function goupcBackoffKey(barcode: string): string {
+  return `${GOUPC_BACKOFF_PREFIX}${barcode}`;
 }
 
 function logWin(barcode: string, source: ImageSourceName): void {

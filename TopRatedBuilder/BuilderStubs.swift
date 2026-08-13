@@ -17,7 +17,7 @@ struct BackendProductImage: Codable, Equatable, Sendable {
 
 enum BackendService {
     static let defaultBaseURL = URL(string: "https://sage-backend.sage-app1710.workers.dev")!
-    static let imageCacheVersion = 3
+    static let imageCacheVersion = 4
 
     static func productImageURL(barcode: String) -> String {
         let base = defaultBaseURL.absoluteString.trimmingCharacters(in: CharacterSet(charactersIn: "/"))

@@ -136,6 +136,9 @@ struct SearchView: View {
         ("🥣", "Cereal"),      ("🍞", "Bread"),
         ("🍝", "Pasta"),       ("🍟", "Chips"),
         ("▣", "Snack bars"),  ("🍫", "Chocolate"),
+        ("🍪", "Cookies"),     ("🥜", "Nut butters"),
+        ("🍜", "Instant noodles"), ("🫒", "Fats & oils"),
+        ("🍼", "Baby food"),
     ]
 }
 

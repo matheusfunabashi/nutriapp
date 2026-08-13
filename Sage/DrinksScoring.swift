@@ -316,24 +316,22 @@ enum DrinksScoring {
     static let dairyNutritionMerit = 3
     static let dairyMeritMinProteinPer100ml: Double = 2.5
 
-    /// A non-Tier-1 sweetener holds a drink one point short of Excellent…
+    /// A non-Tier-1 sweetener holds a drink one point short of Excellent.
     static let nonSugarSweetenerCap = 74
-    /// …unless the drink is essentially sugar-free, which stays eligible (I19).
-    static let traceSugarGPerServing: Double = 2
 
     /// Tier-1 sweetener presence → hard cap 55 (safety net; credits should usually bind first).
     ///
     /// Tier-2 / Tier-3 (polyols, stevia / monk fruit) cap just below Excellent
-    /// once the drink carries more than trace sugar: a sweetened drink is not a
-    /// "best choice", while a genuinely sugar-free one still can be. This is the
-    /// mechanism behind I19 — precautionary, consistent with the Tier-1 framing.
+    /// regardless of sugar content: a sweetened drink is never a "best choice."
+    /// (Until v5.1.1 a sugar-free lower-tier drink stayed Excellent-eligible,
+    /// which crowned stevia sodas at 90+ over their 74-capped peers — the cap
+    /// now matches the precautionary Tier-1 framing and Nutri-Score's
+    /// all-NNS treatment. I19 follows a fortiori.)
     static func sweetenerCap(hasTier1: Bool,
                              hasLowerTierSweetener: Bool = false,
                              sugarGPerServing: Double = 0) -> Int {
         if hasTier1 { return 55 }
-        if hasLowerTierSweetener, sugarGPerServing > traceSugarGPerServing {
-            return nonSugarSweetenerCap
-        }
+        if hasLowerTierSweetener { return nonSugarSweetenerCap }
         return 100
     }
 
