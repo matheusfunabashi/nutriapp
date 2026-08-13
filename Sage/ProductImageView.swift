@@ -6,7 +6,7 @@ import UIKit
 enum ProductImageStyle: Equatable {
     /// History / alternatives / compare rows (~56pt).
     case list
-    /// Product detail header — larger fixed frame, no chrome while loading/processing.
+    /// Product detail header — larger fixed frame.
     case detail
     /// Explicit size (search, home, compare cards).
     case fixed(CGFloat)
@@ -20,14 +20,6 @@ enum ProductImageStyle: Equatable {
         }
     }
 
-    /// Detail: skip the fallback card until the final image state is known,
-    /// so original→cutout never flashes a white tile mid-transition.
-    var suppressesChromeUntilSettled: Bool {
-        switch self {
-        case .detail: return true
-        case .list, .fixed: return false
-        }
-    }
 }
 
 // MARK: - Decoded-image memory cache
@@ -55,27 +47,30 @@ enum ProductImageMemoryCache {
 
 // MARK: - ProductImageView
 
-/// Shared product photo: glyph placeholder → URLCache original → crossfade cutout.
-/// Fixed frame per style so layout never jumps when the cutout arrives.
-/// Cutouts float (no card); fallbacks keep a neutral `Theme.surface` container.
+/// Shared product photo: skeleton placeholder → finished image, one fade.
+/// Nothing is shown until the image is in its final form (cutout processing
+/// included), so the background removal never plays out on screen. Fixed frame
+/// per style so layout never jumps. Cutouts float (no card); opaque photos and
+/// the placeholder keep a neutral container.
 struct ProductImageView: View {
     @EnvironmentObject private var store: AppStore
     @Environment(\.colorScheme) private var colorScheme
 
     let url: URL?
     var style: ProductImageStyle = .list
+    /// Unused for rendering — the placeholder is a neutral skeleton, never an
+    /// emoji. Kept for call-site stability and accessibility copy.
     var glyph: String = "🛒"
     /// Tried when `url` fails to load (missing, non-2xx, or undecodable) —
     /// Top Rated / Alternatives rows fall back to their dataset OFF photo
-    /// instead of the glyph.
+    /// instead of the placeholder.
     var fallbackURL: URL? = nil
-    /// When false, show original (or glyph) only — never run Vision.
+    /// When false, show the original photo as-is — never run Vision.
     var processCutout: Bool = true
 
-    @State private var original: UIImage?
-    @State private var cutout: UIImage?
-    /// True once loading/processing finished (or there is nothing to load).
-    @State private var settled = false
+    /// The finished image. Set exactly once, after any cutout processing, so
+    /// the view never renders an intermediate state.
+    @State private var finished: UIImage?
     @State private var loadTask: Task<Void, Never>?
 
     private var size: CGFloat { style.size }
@@ -84,26 +79,20 @@ struct ProductImageView: View {
 
     /// True only for a real transparent cutout (failed Vision keeps chrome).
     private var isFloatingCutout: Bool {
-        cutout.map { ProductImageHeuristics.hasMeaningfulAlpha($0) } == true
+        finished.map { ProductImageHeuristics.hasMeaningfulAlpha($0) } == true
     }
 
-    private var showsCardChrome: Bool {
-        if isFloatingCutout { return false }
-        if style.suppressesChromeUntilSettled && !settled { return false }
-        // Glyph / opaque original / no-URL placeholder.
-        return true
-    }
+    private var showsCardChrome: Bool { !isFloatingCutout }
 
     var body: some View {
         ZStack {
             if showsCardChrome {
                 RoundedRectangle(cornerRadius: corner, style: .continuous)
                     .fill(Theme.card)
-                    .transition(.opacity)
             }
 
-            if let shown = cutout ?? original {
-                Image(uiImage: shown)
+            if let finished {
+                Image(uiImage: finished)
                     .resizable()
                     .scaledToFit()
                     .padding(size * (isFloatingCutout ? 0.02 : 0.08))
@@ -113,8 +102,10 @@ struct ProductImageView: View {
                         x: 0, y: 1
                     )
                     .transition(.opacity)
-            } else if settled || !style.suppressesChromeUntilSettled {
-                Text(glyph).font(.sageRegular(size * 0.5))
+            } else {
+                // Loading *and* no-image resolve to the same neutral tile, so a
+                // slow load never flashes a different shape than the result.
+                ProductImageSkeleton(size: size)
             }
         }
         .frame(width: size, height: size)
@@ -123,10 +114,8 @@ struct ProductImageView: View {
             corner: corner,
             dark: dark
         ))
-        .animation(.easeInOut(duration: 0.22), value: cutout != nil)
-        .animation(.easeInOut(duration: 0.18), value: original != nil)
+        .animation(.easeInOut(duration: 0.22), value: finished != nil)
         .animation(.easeInOut(duration: 0.22), value: isFloatingCutout)
-        .animation(.easeInOut(duration: 0.22), value: showsCardChrome)
         .task(id: taskIdentity) {
             await reload()
         }
@@ -143,32 +132,27 @@ struct ProductImageView: View {
     @MainActor
     private func reload() async {
         loadTask?.cancel()
-        original = nil
-        cutout = nil
-        settled = false
+        finished = nil
 
         // Primary first, dataset fallback second; a URL that fails any tier
         // simply hands over to the next candidate.
         let candidates = [url, fallbackURL].compactMap { $0 }
-        guard !candidates.isEmpty else {
-            settled = true
-            return
-        }
+        guard !candidates.isEmpty else { return }
 
         let task = Task {
-            // Instant cutout if we already processed one of these URLs.
+            /// Publish the final image exactly once — the skeleton stays up
+            /// until this fires, so background removal is never seen happening.
+            @MainActor func publish(_ image: UIImage?) {
+                withAnimation(.easeInOut(duration: 0.22)) { finished = image }
+            }
+
+            // Already-processed cutout for one of these URLs: final immediately.
             if processCutout {
                 for candidate in candidates {
                     guard let cached = await ProductImageProcessor.shared.cachedImage(for: candidate)
                     else { continue }
                     if Task.isCancelled { return }
-                    await MainActor.run {
-                        withAnimation(.easeInOut(duration: 0.18)) {
-                            cutout = cached
-                            original = cached
-                            settled = true
-                        }
-                    }
+                    await publish(cached)
                     return
                 }
             }
@@ -190,28 +174,20 @@ struct ProductImageView: View {
             }
 
             guard let loaded else {
-                await MainActor.run { settled = true }
+                await publish(nil)          // nothing anywhere — keep the skeleton
                 return
-            }
-            if Task.isCancelled { return }
-            await MainActor.run {
-                withAnimation(.easeInOut(duration: 0.18)) {
-                    original = loaded.image
-                }
             }
 
             guard processCutout else {
-                await MainActor.run { settled = true }
+                if Task.isCancelled { return }
+                await publish(loaded.image)
                 return
             }
+
+            // Hold the skeleton across Vision so the cutout appears finished.
             let processed = await ProductImageProcessor.shared.process(loaded.image, url: loaded.url)
             if Task.isCancelled { return }
-            await MainActor.run {
-                withAnimation(.easeInOut(duration: 0.22)) {
-                    cutout = processed
-                    settled = true
-                }
-            }
+            await publish(processed)
         }
         loadTask = task
         await task.value
@@ -223,6 +199,21 @@ struct ProductImageView: View {
               let http = response as? HTTPURLResponse, (200...299).contains(http.statusCode)
         else { return nil }
         return UIImage(data: data)
+    }
+}
+
+/// Neutral tile shown while a photo loads and when there is none — a faint
+/// barcode mark on the card surface. Deliberately identical in both cases so a
+/// slow load never flashes a different shape than the final result, and never
+/// an emoji.
+struct ProductImageSkeleton: View {
+    let size: CGFloat
+
+    var body: some View {
+        Image(systemName: "barcode")
+            .font(.system(size: size * 0.34, weight: .regular))
+            .foregroundStyle(Theme.inkSecondary.opacity(0.35))
+            .accessibilityHidden(true)
     }
 }
 
