@@ -28,3 +28,4 @@ backend/scripts/fixtures-live/
 TopRatedBuilder/fixtures/candidates-live.json
 TopRatedBuilder/fixtures/alternatives.json
 TopRatedBuilder/fixtures/top-rated.json
+__pycache__/

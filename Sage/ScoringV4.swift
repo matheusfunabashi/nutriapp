@@ -57,8 +57,10 @@ struct RulesetV4: Codable {
     }
     var flags: Flags? = nil
 
-    /// True when this ruleset is the v5.1.0 Real Food engine (not the frozen 5.0.9).
-    var isV510: Bool { version.contains("v5.1.0") }
+    /// True for the v5.1.0 Real Food engine and later (not the frozen 5.0.9).
+    /// Version strings sort lexicographically ("2026.07-v5.0.9" < "2026.07-v5.1.0"
+    /// < "2026.08-v5.2.0"), so >= keeps the flag on across future bumps.
+    var isV510: Bool { version >= "2026.07-v5.1.0" }
 
     // Category rules — optional so an older downloaded ruleset can't crash
     // decoding; evaluators fall back to unknown credit when absent.
@@ -67,6 +69,9 @@ struct RulesetV4: Codable {
     let dairyLabels: PointsRule?
     let dairyProcessing: [SourceCredit]?
     let dairyProcessingDefault: Double?
+    /// V5.2: processing words in the product NAME ("Ultra-Pasteurized", "UHT")
+    /// — printed on front labels far more often than tagged. Word-bounded.
+    let dairyProcessingName: [KwCredit]?
     let brewMaterial: [KwCredit]?
     let brewMaterialDefault: Double?
     let sweetenerType: [KwCredit]?
@@ -79,6 +84,34 @@ struct RulesetV4: Codable {
     let welfare: PointsRule?
     let heroCredit: [[Double]]?
 
+    // V5.2 dairy — all optional so older rulesets (and frozen v5.0.9) keep
+    // their behavior when the config is absent.
+    /// S12 `dairy` variant: protein + calcium replace the fiber/FVN axes that
+    /// are structurally zero for milk.
+    struct S12Dairy: Codable {
+        let proteinTargetG: Double      // g/100 ml earning full protein credit
+        let calciumTargetMg: Double     // mg/100 ml earning full calcium credit
+        let unknownCredit: Double       // neither reported
+    }
+    let s12Dairy: S12Dairy?
+    /// S12 `dairyDense` variant (yogurt/cheese): same axes, but protein blends
+    /// absolute per-100 g with per-kcal density — absolute alone would rank
+    /// cream cheese above plain yogurt, density alone would break the
+    /// whole-vs-nonfat neutrality stance.
+    let s12DairyDense: S12Dairy?
+    /// Powdered milk reconstitution: per-100 g panel → per-100 ml as prepared.
+    struct DairyPowder: Codable {
+        let factor: Double              // standard reconstitution (≈12.5 g/100 ml)
+        let kcalTrigger: Double         // liquid milk can't reach this per 100 ml
+        let keywords: [String]          // matched in name/ingredients, not tags
+    }
+    let dairyPowder: DairyPowder?
+    /// Fortificants (vitamin D/A, lactase) that must not count as processing.
+    struct DairyFortification: Codable {
+        let exempt: [String]
+    }
+    let dairyFortification: DairyFortification?
+
     // S13 — beneficial micronutrient credit (positive-only). NRF-style: each
     // present nutrient contributes min(cap, %DV per 100g); the capped sum is
     // normalized by `target`. Optional so an older ruleset falls back to unknown.
@@ -87,6 +120,9 @@ struct RulesetV4: Codable {
         let capPerNutrient: Double      // one nutrient's max contribution (fraction of DV)
         let target: Double              // capped-sum that earns full credit
         let unknownCredit: Double       // neutral fraction when no micros reported
+        /// V5.2: reported micros never score below the unknown credit —
+        /// declaring data must not rank a product under an identical silent one.
+        let dataFloor: Bool?
     }
     let micronutrients: Micronutrients?
 
@@ -128,6 +164,16 @@ struct RulesetV4: Codable {
         struct NNSCeiling: Codable {
             let cap: Int
         }
+        /// V5.2: unpasteurized fluid milk — pathogen risk the label can't
+        /// certify away (Listeria / STEC / Salmonella). Fires on tag evidence.
+        struct RawMilkGate: Codable {
+            let cap: Int
+            let tags: [String]
+            /// Word-bounded phrases matched in the product name ("raw milk") —
+            /// producers print it on the front label more often than OFF tags it.
+            let names: [String]?
+        }
+        let rawMilk: RawMilkGate?
         /// Drinks-only gradual free-sugar damper (per-serving grams → score ×factor).
         struct DrinksFreeSugarDamper: Codable {
             let startG: Double    // factor 1.0 at/below
@@ -344,13 +390,68 @@ enum ScoringEngineV4 {
         return normalized
     }
 
+    /// V5.2 dairy normalization (`dairy_milk` route only).
+    /// 1. Powdered milk: the per-100 g panel is rewritten to per-100 ml as
+    ///    reconstituted, so concentrated lactose isn't judged as a sugar bomb
+    ///    against liquid thresholds. Keyword evidence comes from name/ingredients
+    ///    (never category tags — OFF's `milks-liquid-and-powder` ancestor tag
+    ///    also rides on liquid milks) plus a kcal trigger no liquid can reach.
+    /// 2. Fortification exemption: vitamin D/A and lactase tokens are stripped
+    ///    from the ingredient list, and when everything left is whole food the
+    ///    product returns to NOVA 1 — fortifying milk is a public-health win,
+    ///    not processing, and must not cost S2/S14/S15 points.
+    static func dairyNormalized(_ p: Product, rs: RulesetV4,
+                                includePowder: Bool = true) -> Product {
+        var q = p
+        // Powder reconstitution is fluid-milk only: processed cheeses and
+        // yogurts legitimately list "milk powder" as an ingredient and are
+        // dense per 100 g — they must never be rescaled.
+        if includePowder,
+           let cfg = rs.dairyPowder,
+           let kcal = q.nutrients.kcal, kcal >= cfg.kcalTrigger {
+            let hay = (q.name + " " + (q.ingredientsText ?? "")).lowercased()
+            if cfg.keywords.contains(where: { hay.contains($0) }) {
+                let f = cfg.factor
+                func scale(_ v: inout Double?) { v = v.map { $0 * f } }
+                scale(&q.nutrients.sugar_g)
+                scale(&q.nutrients.sodium_mg)
+                scale(&q.nutrients.satFat_g)
+                scale(&q.nutrients.fiber_g)
+                scale(&q.nutrients.protein_g)
+                scale(&q.nutrients.calcium_mg)
+                scale(&q.nutrients.kcal)
+                scale(&q.nutrients.addedSugar_g)
+                scale(&q.nutrients.transFat_g)
+                scale(&q.nutrients.iron_mg)
+                scale(&q.nutrients.potassium_mg)
+                scale(&q.nutrients.magnesium_mg)
+                scale(&q.nutrients.zinc_mg)
+                scale(&q.nutrients.vitaminC_mg)
+            }
+        }
+        if let cfg = rs.dairyFortification, let text = q.ingredientsText {
+            let tokens = IngredientIntegrity.tokens(from: text)
+            let kept = tokens.filter { t in !cfg.exempt.contains { t.contains($0) } }
+            if kept.count < tokens.count, !kept.isEmpty {
+                q.ingredientsText = kept.joined(separator: ", ")
+                if q.additives.isEmpty,
+                   kept.allSatisfy(IngredientIntegrity.isWholeFoodToken) {
+                    q.novaGroup = 1
+                }
+            }
+        }
+        return q
+    }
+
     /// nil when the product fails the minimum-data requirement (§3.3) —
     /// callers show the insufficient-data state, never a made-up number.
     static func score(_ p: Product, ruleset rs: RulesetV4 = .bundled) -> V4Result? {
-        let p = applyingInferredFVN(to: p)
+        var p = applyingInferredFVN(to: p)
         guard p.hasMinimumData else { return nil }
         let profileId = route(p, ruleset: rs)
         if profileId == "unsupported" || profileId == "unscored_sweetener" { return nil }
+        if profileId == "dairy_milk" { p = dairyNormalized(p, rs: rs) }
+        if profileId == "yogurt_cheese" { p = dairyNormalized(p, rs: rs, includePowder: false) }
 
         // Drinks v2.3 — cap-based path (`drinks` + dose-aware `juice_100`).
         if profileId == "drinks" || profileId == "juice_100" {
@@ -402,13 +503,15 @@ enum ScoringEngineV4 {
     static func scoreProduct(_ p: Product, for profile: UserProfile,
                              ruleset rs: RulesetV4 = .bundled) -> Outcome {
         let originalProduct = p
-        let p = applyingInferredFVN(to: p)
+        var p = applyingInferredFVN(to: p)
         // Route before the minimum-data gate: water/alcohol often lack a full
         // nutrition table, and would otherwise be mis-labeled "not enough data"
         // instead of the deliberate unsupported explanation.
         let profileId = route(p, ruleset: rs)
         if profileId == "unsupported" { return .unsupported }
         guard p.hasMinimumData else { return .insufficientData }
+        if profileId == "dairy_milk" { p = dairyNormalized(p, rs: rs) }
+        if profileId == "yogurt_cheese" { p = dairyNormalized(p, rs: rs, includePowder: false) }
 
         // Diet / avoid flags still run for unscored sweeteners — there is just
         // no number to cap.
@@ -950,6 +1053,24 @@ enum ScoringEngineV4 {
             ))
         }
 
+        if let gate = rs.hardGates?.rawMilk {
+            let tags = Set((p.categories ?? []) + (p.labels ?? []))
+            let name = p.name.lowercased()
+            let evidenced = !tags.isDisjoint(with: gate.tags)
+                || (gate.names ?? []).contains { matchesWord($0, in: name) }
+            if evidenced,
+               route(p, ruleset: rs) == "dairy_milk" {
+                fired.append(ScoreCap(
+                    id: "rawMilkCap",
+                    value: gate.cap,
+                    shortLabel: "unpasteurized",
+                    kind: "rawMilk",
+                    intensity: "full",
+                    detail: "Unpasteurized milk can carry harmful bacteria such as Listeria, E. coli, and Salmonella. Public-health agencies advise young children, pregnant people, older adults, and immunocompromised people to avoid it. Caps the overall score at \(gate.cap)."
+                ))
+            }
+        }
+
         if let gate = rs.hardGates?.nnsCeiling,
            route(p, ruleset: rs) == "unscored_sweetener",
            (p.nutrients.sugar_g ?? 0) < 10,
@@ -1348,12 +1469,15 @@ enum ScoringEngineV4 {
         let byRule = Dictionary(uniqueKeysWithValues: results.map { ($0.rule, $0.weight) })
         var haircutPP = 0.0
         let n = p.nutrients
+        // The dairy S12 variant runs on protein + calcium; fiber and kcal are
+        // not inputs there, so their absence must not shave milk's confidence.
+        let s12IsDairy = results.first { $0.rule == "S12" }?.note?.hasPrefix("dairy") == true
         if n.sugar_g == nil, let w = byRule["S3"] { haircutPP += w / 2 }
         if n.satFat_g == nil, let w = byRule["S5"] { haircutPP += w / 2 }
         if n.sodium_mg == nil, let w = byRule["S4"] { haircutPP += w / 2 }
-        if n.fiber_g == nil, let w = byRule["S12"] { haircutPP += w / 2 }
+        if n.fiber_g == nil, !s12IsDairy, let w = byRule["S12"] { haircutPP += w / 2 }
         if n.protein_g == nil, let w = byRule["S12"] { haircutPP += w / 2 }
-        if n.kcal == nil, let w = byRule["S12"] { haircutPP += w / 2 }
+        if n.kcal == nil, !s12IsDairy, let w = byRule["S12"] { haircutPP += w / 2 }
         let pct = max(60.0, base * 100 - haircutPP)
         return pct / 100.0
     }
@@ -1414,6 +1538,16 @@ enum ScoringEngineV4 {
             // zero, not evidence of poor quality. Mark it for redistribution.
             if variant == "dryBrew" {
                 return (0, false, "dryBrew: no micronutrient basis (weight redistributed)")
+            }
+            // V5.2: dairy can never earn fiber or FVN (60% of the generic rule),
+            // so the dairy variants measure protein + calcium instead.
+            if variant == "dairy" {
+                let r = s12DairyCredit(p, cfg: rs.s12Dairy)
+                return (r.0, r.1, "dairy: protein+calcium basis")
+            }
+            if variant == "dairyDense" {
+                let r = s12DairyDenseCredit(p, cfg: rs.s12DairyDense)
+                return (r.0, r.1, "dairyDense: protein+calcium basis")
             }
             let r = s12(p, variant: variant); return (r.0, r.1, nil)
         case "S13":
@@ -1494,8 +1628,19 @@ enum ScoringEngineV4 {
         for entry in rs.dairyProcessing ?? [] where tags.contains(entry.match) {
             return (entry.credit, true)
         }
+        // Name evidence — word-bounded so "yoghurt" never matches "uht".
+        let name = p.name.lowercased()
+        for entry in rs.dairyProcessingName ?? [] where matchesWord(entry.kw, in: name) {
+            return (entry.credit, true)
+        }
         // Default is an assumption (fresh pasteurized), not evidence.
         return (rs.dairyProcessingDefault ?? 0.85, false)
+    }
+
+    /// Word-bounded phrase search (case handled by callers passing lowercase).
+    static func matchesWord(_ phrase: String, in text: String) -> Bool {
+        let pattern = "\\b" + NSRegularExpression.escapedPattern(for: phrase) + "\\b"
+        return text.range(of: pattern, options: .regularExpression) != nil
     }
 
     private static func brewMaterial(_ p: Product, rs: RulesetV4) -> (Double, Bool) {
@@ -1863,6 +2008,48 @@ enum ScoringEngineV4 {
         return (f, n.kcal != nil || n.fiber_g != nil || n.fvn != nil)
     }
 
+    /// S12 `dairy` variant — protein and calcium per 100 ml, the axes milk
+    /// actually delivers on. Protein per volume (not per kcal) keeps the
+    /// whole-vs-skim question out of this rule: fat level is preference, and
+    /// saturated fat already has S5. Missing calcium falls back to protein
+    /// alone rather than penalizing a sparse label.
+    private static func s12DairyCredit(_ p: Product, cfg: RulesetV4.S12Dairy?) -> (Double, Bool) {
+        let protTarget = cfg?.proteinTargetG ?? 3.4
+        let calTarget = cfg?.calciumTargetMg ?? 125
+        let prot = p.nutrients.protein_g.map { min(1, $0 / protTarget) }
+        let cal = p.nutrients.calcium_mg.map { min(1, $0 / calTarget) }
+        switch (prot, cal) {
+        case let (pr?, ca?): return (0.5 * pr + 0.5 * ca, true)
+        case let (pr?, nil): return (pr, true)
+        case let (nil, ca?): return (ca, true)
+        default: return (cfg?.unknownCredit ?? 0.5, false)
+        }
+    }
+
+    /// S12 `dairyDense` (yogurt/cheese) — protein credit is the mean of the
+    /// absolute per-100 g credit and the per-kcal density credit (15 g/100 kcal
+    /// = full, same anchor as generic S12). The blend keeps whole vs nonfat
+    /// yogurt within a point (fat level is preference) while still ranking
+    /// yogurt above cream cheese, which absolute grams alone cannot do.
+    private static func s12DairyDenseCredit(_ p: Product, cfg: RulesetV4.S12Dairy?) -> (Double, Bool) {
+        let protTarget = cfg?.proteinTargetG ?? 6
+        let calTarget = cfg?.calciumTargetMg ?? 150
+        let n = p.nutrients
+        let protCredit: Double? = n.protein_g.map { prot in
+            let abs = min(1, prot / protTarget)
+            guard let kcal = n.kcal, kcal > 0 else { return abs }
+            let dens = min(1, (prot / (kcal / 100)) / 15)
+            return (abs + dens) / 2
+        }
+        let cal = n.calcium_mg.map { min(1, $0 / calTarget) }
+        switch (protCredit, cal) {
+        case let (pr?, ca?): return (0.5 * pr + 0.5 * ca, true)
+        case let (pr?, nil): return (pr, true)
+        case let (nil, ca?): return (ca, true)
+        default: return (cfg?.unknownCredit ?? 0.5, false)
+        }
+    }
+
     /// S14 — Real Food (ingredient integrity).
     private static func s14(_ p: Product) -> (Double, Bool) {
         let b = IngredientIntegrity.evaluate(ingredientsText: p.ingredientsText)
@@ -1894,7 +2081,12 @@ enum ScoringEngineV4 {
         }
         // No micros reported → neutral, not a penalty; lowers Data Confidence.
         guard had else { return (cfg.unknownCredit, false) }
-        return (min(1.0, sum / cfg.target), true)
+        let f = min(1.0, sum / cfg.target)
+        // V5.2 dataFloor: a declared panel never scores below the unknown
+        // credit — otherwise reporting calcium ranked milk under an identical
+        // product that stayed silent.
+        if cfg.dataFloor == true { return (max(cfg.unknownCredit, f), true) }
+        return (f, true)
     }
 
     // MARK: Shared helpers

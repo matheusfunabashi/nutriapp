@@ -120,7 +120,9 @@ struct Product: Identifiable, Hashable, Codable {
     /// When true, stored overview is stale and should regenerate on next open.
     var overviewStale: Bool? = nil
     let nutriGrade: String
-    let novaGroup: Int
+    /// Mutable so dairy normalization can lift fortified milk back to NOVA 1
+    /// (vitamin D / lactase are not processing; see `dairyNormalized`).
+    var novaGroup: Int
     var nutrients: Nutrients
     var bonuses: [String]
     /// Derived at ingest: true only when `nutrients.transFat_g > 0` (strict).

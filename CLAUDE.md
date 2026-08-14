@@ -1,3 +1,43 @@
+# Session Changelog — 2026-08-14 — Dairy-aware milk scoring (v5.2.0)
+
+Milk scoring audit against the engine's live per-rule output (CLI harness) found
+five bugs and one structural flaw; all fixed under ruleset `2026.08-v5.2.0`.
+Full rationale in SCORING_V5.md §"V5.2.0 Dairy milk"; tests in
+`MilkScoringV52Tests.swift`.
+
+- **dairyProcessing table never matched** real OFF tags (`raw-milks` vs
+  `raw-milk` etc.) — every milk fell to the 0.85 unknown default; raw milk
+  escaped its 0.5 credit. Table now carries OFF plural forms + explicit
+  pasteurized/fresh entries (0.85, evidenced).
+- **Raw milk safety gate** — new `hardGates.rawMilk` cap 54 + chip (kind
+  `rawMilk`). V4's promised "mandatory safety chip" had been lost in V5.
+- **S12 `dairy` variant** — protein+calcium per 100 ml replaces fiber/FVN
+  (structurally zero for milk; the profile's biggest weight was 85% dead and
+  compressed all milks into 74–78). Whole vs skim is now a deliberate near-tie.
+- **Fortification exemption** — vitamin D/A + lactase no longer cost ~9 points
+  (NOVA cascade); ultrafiltered is explicitly not laundered.
+- **S14 qualifier stripping** — "organic milk" / "goat milk" / "raw milk" no
+  longer lose 6 points to the whitelist prefix-match; whitelist expanded.
+- **S13 dataFloor** — declared micros never score below the unknown credit
+  (reporting calcium used to *lower* milk by 2 points).
+- **Powder reconstitution** — milk powders scored per 100 ml as prepared.
+- **Flavored milks route to `drinks`** (chocolate-milks etc. before `milks` in
+  the router) — the RTD path with lactose allowance and satFat cap fits them.
+- `isV510` is now `>=` so v5.1.0 paths survive version bumps; `Product.novaGroup`
+  is `var` for normalization; one-shot `rulesetV520Rescored` migration.
+- **yogurt_cheese extension**: S12 `dairyDense` variant (protein blend of
+  absolute per-100 g + per-kcal density, plus calcium — see SCORING_V5.md for
+  why neither half works alone); reweight S12 14→8 / S5 8→12 / S4 8→10;
+  `raw-milk-cheeses` gets the 0.5 processing dock but not the fluid-milk cap;
+  fortification stripping extends, powder reconstitution does not; whitelist
+  gains cultures/rennet. Yogurts 88–93, cheeses 68–77 (`YogurtCheeseV52Tests`).
+- Calibration: plain milk 93 (Excellent), vat 94, UHT 88, ultrafiltered 73,
+  raw 54, chocolate milk 65. Deliberately NOT adopted from the Oasis-style doc:
+  farming/welfare/packaging inputs (ethics, not health), whole-over-skim
+  penalties, and raw-milk "benefits" claims (lactase/vitamin C myths).
+
+---
+
 # Session Changelog — 2026-07-27 — Native SwiftUI chrome pass
 
 Design review called the UI "a copy of Oasis" and asked for more default SwiftUI

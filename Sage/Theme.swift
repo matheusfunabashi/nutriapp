@@ -263,6 +263,7 @@ final class AppStore: ObservableObject {
         invalidateAndRescoreForV507IfNeeded()
         invalidateAndRescoreForV509IfNeeded()
         invalidateAndRescoreForV510IfNeeded()
+        invalidateAndRescoreForV520IfNeeded()
     }
 
     /// Decode a stored snapshot, migrating legacy `deltaReason` → `overview`.
@@ -324,6 +325,16 @@ final class AppStore: ObservableObject {
         let key = "rulesetV510Rescored"
         guard !UserDefaults.standard.bool(forKey: key) else { return }
         guard RulesetStore.v510Enabled else { return }
+        rescoreAll()
+        UserDefaults.standard.set(true, forKey: key)
+        UserDefaults.standard.set(true, forKey: "overviewExpV9Invalidated")
+    }
+
+    /// One-shot V5.2.0 — dairy-aware milk scoring (S12 dairy axes, processing
+    /// tags, raw-milk gate, fortification exemption, powder reconstitution).
+    private func invalidateAndRescoreForV520IfNeeded() {
+        let key = "rulesetV520Rescored"
+        guard !UserDefaults.standard.bool(forKey: key) else { return }
         rescoreAll()
         UserDefaults.standard.set(true, forKey: key)
         UserDefaults.standard.set(true, forKey: "overviewExpV9Invalidated")
