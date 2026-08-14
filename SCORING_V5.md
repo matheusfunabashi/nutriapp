@@ -1,6 +1,6 @@
 # SCORING V5 — health-only score
 
-**Ruleset version:** `2026.07-v5.1.0`  
+**Ruleset version:** `2026.08-v5.2.0`  
 **Engine:** `ScoringEngineV4.engineVersion = "v5"` (Swift type name retained; behavior is V5)  
 **Config:** `Sage/RulesetV5.json` ↔ `backend/src/ruleset.json` (must stay byte-identical)  
 **Frozen fallback:** `Sage/RulesetV509.json` (`2026.07-v5.0.9`) when `flags.rulesetV510Enabled` is false  
@@ -64,12 +64,85 @@ of \(\sum w\). Confidence haircuts apply for missing nutrition inputs (floor 60%
 | `general` | S1 20, S2 22, S3 8, S4 8, S5 4, S12 11, S13 5, S14 14, S15 8 |
 | `breads` | S1 18, wholeGrain 12, S3 8, S4 8, S2 16, S12 12, S13 4, S14 14, S15 8 |
 | `meat` | S1 30, S2 14, S4 10, S5 6, S12 14, S13 4, S14 14, S15 8 |
-| `dairy_milk` | S1 24, dairyProcessing 10, S3 6, S5 6, S2 6, S12 20, S13 8, S14 14, S15 6 |
-| `yogurt_cheese` | S1 24, dairyProcessing 8, S3 10, S4 8, S5 8, S12 14, S13 8, S14 14, S15 6 |
+| `dairy_milk` | S1 24, dairyProcessing 10, S3 6, S5 6, S2 6, S12 20 (`dairy`), S13 8, S14 14, S15 6 |
+| `yogurt_cheese` | S1 24, dairyProcessing 8, S3 10, S4 10, S5 12, S12 8 (`dairyDense`), S13 8, S14 14, S15 6 |
 | `plant_milk` | S1 20, S10 16, contaminantRisk 8, S3 10, S5 4, S12 12, S2 10, S14 14, S15 6 |
 | `tea_coffee` | S1 28, S2 24, brewMaterial 12, S3 8 (`foods`), S12 14 (`dryBrew` — redistributes: beans/leaves never carry a micronutrient panel), S14 14 |
 | `drinks` | S1 23, S3 43 (`drinksServing`), S8 15 (caffeine), S6 13 (tiered sweeteners), S4 6 — **no S2, no S7** |
 | `juice_100` | same weights as `drinks`; dose-aware S3 + juice sugar cap + flat +3 micronutrient boost |
+
+## V5.2.0 Dairy milk (health-only, dairy-aware)
+
+Fixes a category where the generic rules were structurally wrong for the food:
+
+- **S12 `dairy` variant** — fiber and FVN are 60% of generic S12 and milk can
+  never earn them, which compressed every milk into 74–78. The dairy variant is
+  `0.5·min(1, protein/3.4 g) + 0.5·min(1, calcium/125 mg)` per 100 ml
+  (`s12Dairy` config). Protein is per **volume**, not per kcal, so whole vs
+  skim stays deliberately neutral (fat level is preference → Your Score; S5
+  still scores saturated fat). Missing calcium falls back to protein alone.
+  The fiber/kcal confidence haircuts don't apply to the dairy variant.
+- **dairyProcessing matches real OFF tags** — the table previously listed
+  `raw-milk` / `uht` / `ultrafiltered` while OFF emits `raw-milks`,
+  `uht-milks`, etc., so no entry ever fired and every milk fell to the 0.85
+  unknown default. The table now carries the plural OFF forms plus
+  `sterilized`, `microfiltered` (0.9), and explicit `pasteurised-milks` /
+  `fresh-milks` at 0.85 — same value as the default but **evidenced**
+  (hadData, confidence).
+- **Raw-milk safety gate** (`hardGates.rawMilk`, cap 54) — unpasteurized fluid
+  milk caps at OK-band with a chip. Nutritionally raw ≈ pasteurized; the risk
+  is microbial (Listeria / STEC / Salmonella) and no barcode metadata can
+  verify herd testing, so unknown ≠ low risk. Copy stays factual and cites
+  vulnerable groups; no "toxic"-style language.
+- **Fortification exemption** (`dairyFortification`) — vitamin D/A and lactase
+  tokens are stripped before S14/S15, and when the remaining list is pure
+  whole food the product returns to NOVA 1 for S2. Vitamin D milk and
+  lactose-free milk previously lost ~9 points to the NOVA-3 cascade;
+  fortifying milk is a public-health win, not processing. Ultrafiltered milk
+  is *not* laundered — "ultrafiltered milk" is not whitelisted, so its NOVA-4
+  identity and 0.25 processing credit stand.
+- **Powder reconstitution** (`dairyPowder`) — milk powders are judged per
+  100 ml as prepared (×0.125), not as 38 g/100 g "sugar". Trigger requires a
+  powder keyword in name/ingredients (never category tags — OFF's
+  `milks-liquid-and-powder` ancestor rides on liquids) **and** kcal ≥ 200.
+- **S13 dataFloor** (`micronutrients.dataFloor`) — a declared micronutrient
+  panel never scores below the 0.35 unknown credit. Milk's 120 mg calcium
+  earned f 0.08, so reporting calcium scored *worse* than silence.
+- **S14 qualifier stripping** — `IngredientIntegrity.isWholeFoodToken` strips
+  identity-preserving prefixes (organic / raw / fresh / grade a / pasteurized
+  …) before a whitelist retry; "organic milk" no longer costs 6 points. The
+  whitelist gains goat/sheep/buttermilk/fat-level variants. "whole" is
+  deliberately not strippable (whole wheat flour ≠ wheat flour).
+- **Flavored milks route to `drinks`** — `flavoured-milks` / `chocolate-milks`
+  / `milkshakes` entries precede `milks` in the router. The drinks path is
+  purpose-built for sugary RTDs: M2 lactose allowance, per-serving S3, satFat
+  cap, +3 dairy-nutrition merit. Chocolate milk ≈ 65 vs plain milk ≈ 93.
+- **Calibration:** plain milks (whole = semi = skim ±1) ≈ 93 Excellent;
+  vat-pasteurized 94; UHT 88; ultrafiltered ~73; raw capped 54. Ladder guard:
+  vat ≥ pasteurized > UHT > ultrafiltered > raw (`MilkScoringV52Tests`).
+- `isV510` is now `version >= "2026.07-v5.1.0"` so v5.1.0 engine paths stay on
+  across later version bumps. One-shot migration: `rulesetV520Rescored`.
+
+### yogurt_cheese extension (same release)
+
+- **S12 `dairyDense`** (`s12DairyDense`: protein 6 g, calcium 150 mg) — protein
+  credit is the mean of absolute per-100 g and per-kcal density (15 g/100 kcal
+  anchor). Absolute alone ranks cream cheese above plain yogurt (5.9 vs 3.5 g);
+  density alone breaks whole-vs-nonfat yogurt neutrality. The blend keeps
+  whole = nonfat within a point and yogurt above cream cheese.
+- **Reweight** S12 14→8, S5 8→12, S4 8→10 — the dead S12 was accidentally doing
+  the sat-fat/sodium rules' job of separating cheeses; now they do it openly.
+- **Raw-milk cheese** (`raw-milk-cheeses` tag) takes the graded 0.5 processing
+  dock but **not** the fluid-milk 54 cap — aged cheese is a different risk
+  class (60-day rules); the gate stays scoped to `dairy_milk` routing.
+- Fortification stripping extends to yogurt_cheese; **powder reconstitution
+  does not** (processed cheeses legitimately list "milk powder" and are dense
+  per 100 g by nature — `includePowder: false`).
+- Whitelist gains traditional fermentation terms (cultures / rennet variants);
+  "salt" and generic "enzymes" deliberately stay off.
+- **Calibration:** plain whole = nonfat yogurt 90, Greek 92–93, kefir 88,
+  cottage 86, sweetened yogurt ~80, mozzarella 77, cream cheese 72,
+  cheddar 71 (was 64), raw-milk cheddar 68 (`YogurtCheeseV52Tests`).
 
 ## Drinks profile v2.3 (cap-based)
 

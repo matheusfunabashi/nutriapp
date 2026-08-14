@@ -57,9 +57,38 @@ enum IngredientIntegrity {
             .filter { !$0.isEmpty }
     }
 
+    /// Identity-preserving qualifiers: "organic milk" is still milk. The list
+    /// deliberately excludes words that change the food itself — stripping
+    /// "whole" would turn whole wheat flour into (refined) wheat flour.
+    private static let strippableQualifiers = [
+        "organic", "raw", "fresh", "local", "cultured", "pasteurized",
+        "pasteurised", "homogenized", "homogenised", "unhomogenized",
+        "unhomogenised", "grade a", "100%",
+    ]
+
     /// Exact whitelist match, or ingredient that starts with a multi-word whitelist entry.
     /// Avoids loose substring hits (e.g. "powdered sugar" ≠ "sugar").
+    /// V5.2: leading identity-preserving qualifiers are stripped before a
+    /// retry, so "organic milk" / "raw milk" / "fresh goat milk" match.
+    static func isWholeFoodToken(_ token: String) -> Bool {
+        if matchesWhitelist(token) { return true }
+        var t = token
+        var stripped = true
+        while stripped {
+            stripped = false
+            for q in strippableQualifiers where t.hasPrefix(q + " ") {
+                t = String(t.dropFirst(q.count + 1))
+                stripped = true
+            }
+        }
+        return t != token && matchesWhitelist(t)
+    }
+
     private static func isWholeFood(_ token: String) -> Bool {
+        isWholeFoodToken(token)
+    }
+
+    private static func matchesWhitelist(_ token: String) -> Bool {
         keywords.whole_food_whitelist.contains { kw in
             token == kw || token.hasPrefix(kw + " ")
         }

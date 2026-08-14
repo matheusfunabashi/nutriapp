@@ -1,5 +1,5 @@
 {
-  "version": "2026.07-v5.1.0",
+  "version": "2026.08-v5.2.0",
   "bands": {
     "excellent": 75,
     "good": 55,
@@ -168,7 +168,8 @@
     },
     "capPerNutrient": 0.5,
     "target": 1.2,
-    "unknownCredit": 0.35
+    "unknownCredit": 0.35,
+    "dataFloor": true
   },
   "profiles": {
     "general": [
@@ -386,7 +387,8 @@
       },
       {
         "rule": "S12",
-        "w": 20
+        "w": 20,
+        "variant": "dairy"
       },
       {
         "rule": "S13",
@@ -417,15 +419,16 @@
       },
       {
         "rule": "S4",
-        "w": 8
+        "w": 10
       },
       {
         "rule": "S5",
-        "w": 8
+        "w": 12
       },
       {
         "rule": "S12",
-        "w": 14
+        "w": 8,
+        "variant": "dairyDense"
       },
       {
         "rule": "S13",
@@ -857,6 +860,22 @@
     {
       "match": "coconut-oils",
       "profile": "fats"
+    },
+    {
+      "match": "flavoured-milks",
+      "profile": "drinks"
+    },
+    {
+      "match": "flavored-milks",
+      "profile": "drinks"
+    },
+    {
+      "match": "chocolate-milks",
+      "profile": "drinks"
+    },
+    {
+      "match": "milkshakes",
+      "profile": "drinks"
     },
     {
       "match": "milks",
@@ -1369,23 +1388,165 @@
   ],
   "dairyProcessing": [
     {
-      "match": "raw-milk",
-      "credit": 0.5
+      "match": "ultrafiltered",
+      "credit": 0.25
+    },
+    {
+      "match": "ultrafiltered-milks",
+      "credit": 0.25
+    },
+    {
+      "match": "ultra-filtered-milks",
+      "credit": 0.25
     },
     {
       "match": "uht",
       "credit": 0.4
     },
     {
-      "match": "ultrafiltered",
-      "credit": 0.25
+      "match": "uht-milks",
+      "credit": 0.4
+    },
+    {
+      "match": "sterilized-milks",
+      "credit": 0.4
+    },
+    {
+      "match": "sterilised-milks",
+      "credit": 0.4
+    },
+    {
+      "match": "raw-milk",
+      "credit": 0.5
+    },
+    {
+      "match": "raw-milks",
+      "credit": 0.5
+    },
+    {
+      "match": "raw-milk-cheeses",
+      "credit": 0.5
     },
     {
       "match": "vat-pasteurized",
       "credit": 1.0
+    },
+    {
+      "match": "vat-pasteurised",
+      "credit": 1.0
+    },
+    {
+      "match": "microfiltered-milks",
+      "credit": 0.9
+    },
+    {
+      "match": "micro-filtered-milks",
+      "credit": 0.9
+    },
+    {
+      "match": "pasteurised-milks",
+      "credit": 0.85
+    },
+    {
+      "match": "pasteurized-milks",
+      "credit": 0.85
+    },
+    {
+      "match": "fresh-milks",
+      "credit": 0.85
     }
   ],
   "dairyProcessingDefault": 0.85,
+  "dairyProcessingName": [
+    {
+      "kw": "ultrafiltered",
+      "credit": 0.25
+    },
+    {
+      "kw": "ultra-filtered",
+      "credit": 0.25
+    },
+    {
+      "kw": "ultra filtered",
+      "credit": 0.25
+    },
+    {
+      "kw": "ultra-pasteurized",
+      "credit": 0.4
+    },
+    {
+      "kw": "ultra pasteurized",
+      "credit": 0.4
+    },
+    {
+      "kw": "ultra-pasteurised",
+      "credit": 0.4
+    },
+    {
+      "kw": "ultra pasteurised",
+      "credit": 0.4
+    },
+    {
+      "kw": "uht",
+      "credit": 0.4
+    },
+    {
+      "kw": "raw milk",
+      "credit": 0.5
+    },
+    {
+      "kw": "leche cruda",
+      "credit": 0.5
+    },
+    {
+      "kw": "lait cru",
+      "credit": 0.5
+    },
+    {
+      "kw": "leite cru",
+      "credit": 0.5
+    }
+  ],
+  "s12Dairy": {
+    "proteinTargetG": 3.4,
+    "calciumTargetMg": 125,
+    "unknownCredit": 0.5
+  },
+  "s12DairyDense": {
+    "proteinTargetG": 6,
+    "calciumTargetMg": 150,
+    "unknownCredit": 0.5
+  },
+  "dairyPowder": {
+    "factor": 0.125,
+    "kcalTrigger": 200,
+    "keywords": [
+      "milk powder",
+      "powdered milk",
+      "whole milk powder",
+      "skimmed milk powder",
+      "skim milk powder",
+      "leite em pó",
+      "leche en polvo",
+      "lait en poudre",
+      "milchpulver",
+      "latte in polvere"
+    ]
+  },
+  "dairyFortification": {
+    "exempt": [
+      "vitamin a",
+      "vitamin d",
+      "vitamin b12",
+      "vitamina a",
+      "vitamina d",
+      "vitamine a",
+      "vitamine d",
+      "cholecalciferol",
+      "retinyl palmitate",
+      "lactase"
+    ]
+  },
   "brewMaterial": [
     {
       "kw": "loose",
@@ -1777,6 +1938,26 @@
     },
     "nnsCeiling": {
       "cap": 58
+    },
+    "rawMilk": {
+      "cap": 54,
+      "tags": [
+        "raw-milk",
+        "raw-milks",
+        "raw-whole-milks",
+        "raw-goat-milks",
+        "raw-sheep-milks",
+        "lait-cru",
+        "leche-cruda",
+        "leite-cru"
+      ],
+      "names": [
+        "raw milk",
+        "raw whole milk",
+        "leche cruda",
+        "lait cru",
+        "leite cru"
+      ]
     }
   },
   "s7Materials": {
