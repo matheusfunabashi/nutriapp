@@ -75,8 +75,9 @@ struct TopRatedTests {
     }
 
     @Test func topRatedIsUSOnlyForEveryShelf() {
-        // TOPRATED_SPEC §8 — the browse tab is US-only even though the dataset
-        // carries UK/CA candidates for Better Alternatives.
+        // TOPRATED_SPEC §8 — the browse tab is US-only. The dataset still
+        // carries UK/CA/BR candidates, but both Top Rated and Better Options
+        // now filter to US, so those never surface.
         #expect(SageCategory.allCases.allSatisfy {
             TopRated.allowedMarkets(for: $0) == ["us"]
         })
@@ -252,7 +253,7 @@ struct TopRatedTests {
     }
 
     @Test func fallbackOmittedWhenPrimaryIsAlreadyOFF() throws {
-        // Non-US/UK/CA candidates keep their OFF photo as the primary (the
+        // Non-US candidates keep their OFF photo as the primary (the
         // resolver may rewrite it to another size of the same asset) — no
         // backend URL, and no self-referential fallback.
         let off = "https://images.openfoodfacts.org/images/products/789/100/000/0017/front_pt.2.400.jpg"
