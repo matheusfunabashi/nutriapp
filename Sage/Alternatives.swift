@@ -205,10 +205,13 @@ enum Alternatives {
     static let goodFloor = 55
     static let maxResults = 3
 
-    /// Markets Sage surfaces in Top Rated + Better Options — mirrors the search
-    /// filter. The dataset may also carry other markets (e.g. `br`) that are
-    /// filtered out here.
-    static let allowedMarkets: Set<String> = ["us", "uk", "ca"]
+    /// Markets Sage surfaces in Better Options — **US-only** (ALTERNATIVES_SPEC
+    /// §8), matching Top Rated. The dataset also carries `uk`/`ca`/`br`
+    /// candidates; they're filtered out here so only American products are
+    /// suggested. (OFF records for foreign SKUs are often thin — missing
+    /// additives/ingredients — which inflates their re-scored value, so a
+    /// sparse UK energy drink could otherwise out-rank real US options.)
+    static let allowedMarkets: Set<String> = ["us"]
     static func isAllowedMarket(_ countries: [String]?) -> Bool {
         !allowedMarkets.isDisjoint(with: countries ?? [])
     }
@@ -257,8 +260,8 @@ enum Alternatives {
         guard let baseline = scanned.overallScore else { return .unscored }
         let scannedKey = dedupeKey(brand: scanned.brand, name: scanned.name)
 
-        // Market-filtered (US/UK/CA): the dataset may carry other markets, but
-        // suggestions (and empty-reason peers) stay in-market — same as Top Rated.
+        // Market-filtered (US-only): the dataset may carry other markets, but
+        // suggestions (and empty-reason peers) stay US-market — same as Top Rated.
         var pool: [Alternative] = []
         for cand in candidates {
             guard isAllowedMarket(cand.countries) else { continue }
@@ -307,8 +310,9 @@ enum Alternatives {
     /// backend (Kroger skips them, lazy-resolve finds no OFF product), so they
     /// keep the perfectly good OFF url from `alternatives.json`.
     static func imageURL(for c: AlternativeCandidate) -> String {
-        // US/UK/CA all resolve on the backend; other markets (e.g. BR) blank
-        // there, so keep their OFF url.
+        // US resolves on the backend; non-US markets blank there, so keep their
+        // OFF url. (Non-US candidates are market-filtered out of display, so this
+        // only guards stray callers.)
         if !isAllowedMarket(c.countries),
            let url = c.imageURL?.trimmingCharacters(in: .whitespacesAndNewlines), !url.isEmpty {
             return url
@@ -318,7 +322,7 @@ enum Alternatives {
 
     /// Pure selection over already-scored candidates (§3.5–3.6): margin gate,
     /// "Good" preference with a margin-only fallback, same-subtype first, top N.
-    /// Market-filtered (US/UK/CA) — other-market peers are never suggested.
+    /// Market-filtered (US-only) — non-US peers are never suggested.
     static func select<T: RankableAlternative>(baseline: Int, from pool: [T]) -> [T] {
         let inMarket = pool.filter { isAllowedMarket($0.countries) }
         return selectMargin(baseline: baseline, from: inMarket)
@@ -366,9 +370,9 @@ enum TopRated {
     static let maxUnknownRuleWeight = 20.0
 
     /// Markets shown in Top Rated. US-only (TOPRATED_SPEC §8) — the dataset
-    /// also carries UK/CA candidates for Better Alternatives, but foreign SKUs
-    /// on a US browse tab read as broken, and their barcodes never resolve to
-    /// a clean backend pack shot (Kroger is US-only).
+    /// still carries UK/CA/BR candidates, but foreign SKUs on a US browse tab
+    /// read as broken, and their barcodes never resolve to a clean backend
+    /// pack shot (Kroger is US-only). Better Options is US-only too.
     static func allowedMarkets(for shelf: SageCategory) -> Set<String> {
         ["us"]
     }

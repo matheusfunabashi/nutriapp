@@ -43,16 +43,17 @@ struct AlternativesTests {
     }
 
     @Test func selectFiltersToAllowedMarkets() {
-        // US / UK / CA peers qualify; BR is filtered out even when higher-scoring.
+        // US-only (ALTERNATIVES_SPEC §8): non-US peers are filtered out even when
+        // higher-scoring, so UK / CA / BR never surface as suggestions.
         let pool = [
             M(60, countries: ["us"]),
             M(70, countries: ["br"]),        // excluded despite the top score
-            M(58, countries: ["uk"]),
-            M(55, countries: ["ca"]),
+            M(58, countries: ["uk"]),        // excluded — not US
+            M(55, countries: ["ca"]),        // excluded — not US
         ]
         let r = Alternatives.select(baseline: 40, from: pool)
-        #expect(r.map(\.score) == [60, 58, 55])            // us, uk, ca — best first
-        #expect(!r.contains { $0.countries == ["br"] })
+        #expect(r.map(\.score) == [60])                    // only the US peer
+        #expect(r.allSatisfy { $0.countries == ["us"] })
     }
 
     @Test func regionFromBarcodeBrazil() {
