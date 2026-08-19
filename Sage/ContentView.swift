@@ -408,6 +408,12 @@ struct ContentView: View {
                 if !product.isUnscored {
                     store.requestOverview(for: product.id)
                 }
+                // Engagement-gated rating ask — no-ops until the user has
+                // scanned enough, in a later session than the install one.
+                ReviewPrompt.recordScan()
+                DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                    ReviewPrompt.requestIfEarned()
+                }
             } catch {
                 isLookingUp = false
                 scanFeedback = .failed

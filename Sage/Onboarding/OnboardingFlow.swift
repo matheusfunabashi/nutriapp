@@ -19,7 +19,6 @@ import SwiftUI
 struct OnboardingFlow: View {
     @EnvironmentObject var store: AppStore
     @StateObject private var state = OnboardingState()
-    @State private var awaitingReviewPrompt = false
     let onFinish: () -> Void
 
     var body: some View {
@@ -158,9 +157,6 @@ struct OnboardingFlow: View {
                 onContinue: state.advance
             )
 
-        case .reviews:
-            OnboardingReviewsScreen()
-
         case .loading:
             OnboardingLoadingScreen(accent: store.accent, onComplete: state.advance)
 
@@ -203,16 +199,6 @@ struct OnboardingFlow: View {
                                     action: state.advance)
             )
 
-        case .reviews:
-            return AnyView(VStack(spacing: 8) {
-                OnboardingCTAButton(
-                    title: "Continue",
-                    enabled: !awaitingReviewPrompt,
-                    action: requestReviewThenAdvance
-                )
-                OnboardingGhostButton(title: "Maybe later", action: state.advance)
-            })
-
         case .avoids, .marketing, .scores, .alternatives,
              .aboutYou, .dietaryRestrictions, .allergens:
             return AnyView(
@@ -222,15 +208,6 @@ struct OnboardingFlow: View {
     }
 
     // MARK: - Side effects
-
-    private func requestReviewThenAdvance() {
-        guard !awaitingReviewPrompt else { return }
-        awaitingReviewPrompt = true
-        ReviewPromptPresenter.requestThenContinue {
-            awaitingReviewPrompt = false
-            state.advance()
-        }
-    }
 
     /// Persists the user's answers and finishes the flow.
     private func complete() {
