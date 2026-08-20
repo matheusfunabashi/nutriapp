@@ -30,7 +30,7 @@ struct HistoryView: View {
                 Section(entry.day.uppercased()) {
                     ForEach(entry.items) { h in
                         if let p = store.products[h.productId] {
-                            HistoryRow(product: p, when: h.time) {
+                            ProductRow(product: p, when: h.time) {
                                 onOpenProduct(p.id)
                             }
                             // Swipe-to-delete is the platform gesture for a
@@ -71,7 +71,6 @@ struct HistoryView: View {
                 }
             }
         }
-        .navigationTitle("History")
         .toolbar {
             if !store.history.isEmpty {
                 ToolbarItem(placement: .topBarTrailing) {
@@ -138,7 +137,9 @@ struct HistoryView: View {
     }
 }
 
-private struct HistoryRow: View {
+/// A tappable product row (thumbnail, brand/name, meta subtitle, score pill).
+/// Shared by the History and Favorites lists.
+struct ProductRow: View {
     let product: Product
     let when: String
     let onTap: () -> Void

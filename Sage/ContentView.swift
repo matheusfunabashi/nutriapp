@@ -176,7 +176,7 @@ struct ContentView: View {
             }
             Tab(AppTab.pantry.label, systemImage: AppTab.pantry.icon, value: AppTab.pantry) {
                 stack($pantryPath) {
-                    HistoryView(
+                    PantryView(
                         onOpenProduct: { id in openProduct(id) },
                         onTapScan: { startScan() }
                     )

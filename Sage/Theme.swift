@@ -199,6 +199,8 @@ final class AppStore: ObservableObject {
 
     /// Read-only to the UI; mutated through recordScan/saveProduct.
     @Published private(set) var history: [HistoryEntry] = []
+    /// User-curated favorites shelf, newest first. Mutated through toggleFavorite.
+    @Published private(set) var favorites: [FavoriteEntry] = []
     @Published private(set) var products: [String: Product] = [:]
     /// Product ids currently awaiting an overview from `/explain`.
     @Published private(set) var overviewGenerating: Set<String> = []
@@ -214,7 +216,7 @@ final class AppStore: ObservableObject {
         // Build the persistent store, falling back to in-memory if it fails
         // (e.g. a migration error) so the app still launches.
         let models: [any PersistentModel.Type] = [
-            ProfileRecord.self, ProductRecord.self, HistoryRecord.self
+            ProfileRecord.self, ProductRecord.self, HistoryRecord.self, FavoriteRecord.self
         ]
         if let c = try? ModelContainer(for: Schema(models)) {
             container = c
@@ -229,6 +231,7 @@ final class AppStore: ObservableObject {
         loadProfile()
         loadProducts()
         loadHistory()
+        loadFavorites()
     }
 
     // MARK: Loading
@@ -349,6 +352,14 @@ final class AppStore: ObservableObject {
             HistoryEntry(productId: $0.productId, when: $0.when,
                          dateLabel: $0.dateLabel, scannedAt: $0.scannedAt)
         }
+    }
+
+    private func loadFavorites() {
+        let desc = FetchDescriptor<FavoriteRecord>(
+            sortBy: [SortDescriptor(\.addedAt, order: .reverse)]
+        )
+        let recs = (try? context.fetch(desc)) ?? []
+        favorites = recs.map { FavoriteEntry(productId: $0.productId, addedAt: $0.addedAt) }
     }
 
     // MARK: Persistence
@@ -507,6 +518,53 @@ final class AppStore: ObservableObject {
         recs.forEach { context.delete($0) }
         try? context.save()
         history.removeAll()
+    }
+
+    // MARK: Favorites
+
+    func isFavorite(_ productId: String) -> Bool {
+        favorites.contains { $0.productId == productId }
+    }
+
+    /// Add or remove a product from the favorites shelf. Adding snapshots the
+    /// product first, so a favorite made from Search / Top Rated stays openable
+    /// even if it was never scanned. Returns the new favorited state.
+    @discardableResult
+    func toggleFavorite(_ product: Product) -> Bool {
+        let id = product.id
+        if isFavorite(id) {
+            removeFavorite(productId: id)
+            return false
+        }
+        saveProduct(product)
+        let now = Date.now
+        context.insert(FavoriteRecord(productId: id, addedAt: now))
+        try? context.save()
+        favorites.insert(FavoriteEntry(productId: id, addedAt: now), at: 0)
+        return true
+    }
+
+    /// Remove a single favorite (swipe action).
+    func removeFavorite(_ entry: FavoriteEntry) {
+        removeFavorite(productId: entry.productId)
+    }
+
+    private func removeFavorite(productId id: String) {
+        if let rec = try? context.fetch(
+            FetchDescriptor<FavoriteRecord>(predicate: #Predicate { $0.productId == id })
+        ).first {
+            context.delete(rec)
+            try? context.save()
+        }
+        favorites.removeAll { $0.productId == id }
+    }
+
+    /// Clear the favorites shelf (products and history are kept).
+    func clearFavorites() {
+        let recs = (try? context.fetch(FetchDescriptor<FavoriteRecord>())) ?? []
+        recs.forEach { context.delete($0) }
+        try? context.save()
+        favorites.removeAll()
     }
 
     private static func dateLabel(for date: Date) -> String {

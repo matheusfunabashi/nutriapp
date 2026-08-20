@@ -334,6 +334,29 @@ struct HistoryEntry: Identifiable, Hashable {
     }
 }
 
+/// A product on the user's favorites shelf (see `AppStore.favorites`).
+struct FavoriteEntry: Identifiable, Hashable {
+    let id = UUID()
+    let productId: String
+    let addedAt: Date
+
+    /// Relative add time for list subtitles, e.g. "Added 4 days ago".
+    static func addedAgoLabel(since date: Date, now: Date = .now) -> String {
+        let elapsed = max(0, now.timeIntervalSince(date))
+        if elapsed < 60 { return "Added just now" }
+        if elapsed < 3600 {
+            let minutes = Int(elapsed / 60)
+            return "Added \(minutes) \(minutes == 1 ? "minute" : "minutes") ago"
+        }
+        if elapsed < 86_400 {
+            let hours = Int(elapsed / 3600)
+            return "Added \(hours) \(hours == 1 ? "hour" : "hours") ago"
+        }
+        let days = Int(elapsed / 86_400)
+        return "Added \(days) \(days == 1 ? "day" : "days") ago"
+    }
+}
+
 struct UserProfile: Codable {
     var name: String
     var handle: String
