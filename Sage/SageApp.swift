@@ -19,6 +19,10 @@ struct SageApp: App {
         // Superwall — remotely-configured hard paywall. This is the PUBLIC key
         // (safe to ship in the binary): Superwall dashboard → Settings → API Keys.
         Superwall.configure(apiKey: "pk_otYCM1-X8o13gE9m_PU-v")
+
+        // Session bookkeeping for the App Store review gate (5.6.3): the
+        // prompt only fires in a session after the install one.
+        ReviewPrompt.registerLaunch()
     }
 
     /// The navigation bar is UIKit-backed, so `.font(.sage…)` can't reach its

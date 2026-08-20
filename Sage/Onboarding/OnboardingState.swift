@@ -30,7 +30,6 @@ enum OnboardingStep: Int, CaseIterable, Identifiable {
 
     // Act 4 — payoff.
     case demo                // a real product, scored live against their answers
-    case reviews
     case loading
     case results
 
