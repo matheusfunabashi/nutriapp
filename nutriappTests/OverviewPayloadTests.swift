@@ -38,6 +38,36 @@ struct OverviewPayloadTests {
         }
     }
 
+    @Test func milkPayloadSaysProteinAndCalciumNeverFiber() throws {
+        // Regression: milk routes to dairy_milk, where S12 scores protein +
+        // calcium (fiber is structurally absent). The prose topic must reflect
+        // that so the overview never claims a fiber contribution milk lacks.
+        let p = fixtureMilk()
+        #expect(ScoringEngineV4.route(p) == "dairy_milk")
+        let ctx = try #require(
+            ScoringEngineV4.overviewContext(for: p, profile: profile(), ruleset: RulesetV4.bundled)
+        )
+        let s12 = try #require(ctx.rules.first { $0.rule == "S12" })
+        #expect(s12.topic == "protein and calcium")
+        // S12 is a strong positive for milk (good protein + calcium).
+        #expect(ctx.topPositive.contains { $0.topic == "protein and calcium" })
+        // "fiber" must not leak into any prose-facing field.
+        #expect(!ctx.rules.contains { $0.topic.localizedCaseInsensitiveContains("fiber") })
+        #expect(!ctx.topPositive.contains { $0.topic.localizedCaseInsensitiveContains("fiber") })
+        #expect(!ctx.topNegative.contains { $0.topic.localizedCaseInsensitiveContains("fiber") })
+        #expect(!ctx.deltaDrivers.contains { $0.topic.localizedCaseInsensitiveContains("fiber") })
+    }
+
+    @Test func validatorRejectsFiberClaimForMilk() throws {
+        let ctx = try #require(
+            ScoringEngineV4.overviewContext(for: fixtureMilk(), profile: profile(), ruleset: RulesetV4.bundled)
+        )
+        let bad = "Milk earns an excellent score from its protein and fiber."
+        #expect(OverviewValidator.forbiddenPhrase(in: bad, ctx: ctx) == "fiber not in payload")
+        let ok = "Milk scores well on protein and calcium with no additives."
+        #expect(OverviewValidator.isValid(ok, ctx: ctx))
+    }
+
     @Test func validatorRejectsInternalRuleIdsAndCamelCase() {
         let ctx = baseCtx(confidence: 1.0, signal: true, delta: -1, allData: true)
         #expect(OverviewValidator.forbiddenPhrase(
@@ -261,6 +291,37 @@ struct OverviewPayloadTests {
             additives: [],
             restrictions: [],
             categories: ["yogurts", "dairies"]
+        )
+    }
+
+    private func fixtureMilk() -> Product {
+        // Simple Truth Organic Vitamin D Milk (the reported case): no fiber row,
+        // routes to dairy_milk so S12 uses the protein + calcium variant.
+        Product(
+            id: "0011110045218",
+            name: "Vitamin D Milk",
+            brand: "Simple Truth Organic",
+            size: "half gal",
+            glyph: "🥛",
+            overallScore: 93,
+            yourScore: 94,
+            overview: nil,
+            nutriGrade: "C",
+            novaGroup: 1,
+            nutrients: Nutrients(
+                sugar_g: 5, sodium_mg: 43.8, satFat_g: 2.1,
+                fiber_g: nil, protein_g: 3.3, calcium_mg: 120.8, kcal: 61,
+                potassium_mg: 154.2
+            ),
+            bonuses: [],
+            transFats: false,
+            caffeine_mg: nil,
+            sweeteners: [],
+            seedOils: false,
+            additives: [],
+            restrictions: [],
+            ingredientsText: "organic grade a milk, vitamin d3",
+            categories: ["dairies", "milks"]
         )
     }
 

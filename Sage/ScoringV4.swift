@@ -2243,12 +2243,24 @@ enum ScoringEngineV4 {
         let (evalResults, _) = evaluatedRules(
             profile: ruleList, profileId: profileId, product: product, rs: rs)
         let usable = activeWeightResults(evalResults)
+        // S12's `dairy`/`dairyDense` variants (milk, yogurt, cheese) score
+        // protein + calcium — fiber and FVN are structurally absent from dairy,
+        // so the generic "protein and fiber" displayName would make the overview
+        // (LLM or template) claim a fiber contribution the product cannot have.
+        // Relabel S12 to "protein and calcium" for those profiles. Keyed off the
+        // profile's rule variant (authoritative) rather than the result note,
+        // which the S12 isolate discount can overwrite.
+        let s12ScoresCalcium: Bool = {
+            guard let v = ruleList.first(where: { $0.rule == "S12" })?.variant else { return false }
+            return v == "dairy" || v == "dairyDense"
+        }()
         var rules: [OverviewRuleInput] = []
         for r in evalResults {
-            guard let display = rs.displayName(for: r.rule) else {
+            guard let baseDisplay = rs.displayName(for: r.rule) else {
                 print("overview: missing displayName for rule \(r.rule); excluded from prose payload")
                 continue
             }
+            let display = (r.rule == "S12" && s12ScoresCalcium) ? "protein and calcium" : baseDisplay
             let detail = multDetail[r.rule]
             let sources = detail?.factors.map {
                 OverviewMultiplierSource(source: $0.source, selection: $0.selection, factor: $0.factor)

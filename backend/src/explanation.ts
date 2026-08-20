@@ -216,6 +216,19 @@ export function validateOverview(text: string, input: ExplainRequest): string | 
     if (measuredHit && !missingOk) return rule.topic;
   }
 
+  // Fiber is a real contributor only when the payload actually mentions it —
+  // either a rule/contributor topic references fiber (the generic S12
+  // "protein and fiber") or a displayed nutrient level reports it. Dairy
+  // (milk / yogurt / cheese) scores protein + calcium and carries no fiber, so
+  // any fiber claim there is invented. Reject it and fall back / retry.
+  const fiberInPayload =
+    (input.rules ?? []).some((r) => r.topic.toLowerCase().includes("fiber")) ||
+    (input.topPositive ?? []).some((t) => t.topic.toLowerCase().includes("fiber")) ||
+    (input.topNegative ?? []).some((t) => t.topic.toLowerCase().includes("fiber")) ||
+    (input.deltaDrivers ?? []).some((d) => d.topic.toLowerCase().includes("fiber")) ||
+    (input.nutrientLevels ?? []).some((l) => l.toLowerCase().includes("fiber"));
+  if (!fiberInPayload && /\bfib(?:er|re)s?\b/i.test(text)) return "fiber not in payload";
+
   const listClaim = falseListClaim(lower, input);
   if (listClaim) return listClaim;
 
