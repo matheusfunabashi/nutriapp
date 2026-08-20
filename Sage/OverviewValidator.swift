@@ -127,6 +127,21 @@ enum OverviewValidator {
             }
         }
 
+        // Fiber is a real contributor only when the payload mentions it — a rule /
+        // contributor topic referencing fiber (the generic S12 "protein and
+        // fiber") or a displayed nutrient level. Dairy (milk / yogurt / cheese)
+        // scores protein + calcium and has no fiber, so a fiber claim there is
+        // invented and must fall back to the template.
+        let fiberInPayload = ctx.rules.contains { $0.topic.lowercased().contains("fiber") }
+            || ctx.topPositive.contains { $0.topic.lowercased().contains("fiber") }
+            || ctx.topNegative.contains { $0.topic.lowercased().contains("fiber") }
+            || ctx.deltaDrivers.contains { $0.topic.lowercased().contains("fiber") }
+            || ctx.nutrientLevels.contains { $0.lowercased().contains("fiber") }
+        if !fiberInPayload,
+           lower.range(of: #"\bfib(?:er|re)s?\b"#, options: .regularExpression) != nil {
+            return "fiber not in payload"
+        }
+
         // List-claims may only name avoidMatches / restriction short labels.
         if let claim = falseListClaim(in: lower, ctx: ctx) {
             return claim

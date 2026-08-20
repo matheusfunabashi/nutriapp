@@ -83,6 +83,40 @@ const confidentInput: ExplainRequest = {
   knownRuleIds: ["S1", "S2", "wholeGrain", "flourOxidizers", "dairyLabels", "dairyProcessing"],
 };
 
+// Dairy milk (dairy_milk profile): S12 scores protein + calcium, never fiber,
+// and the label carries no fiber row. Nothing in the payload mentions fiber.
+const milkInput: ExplainRequest = {
+  barcode: "0011110045218",
+  classHash: "test",
+  productName: "Vitamin D Milk",
+  objective: "eat healthier",
+  overall: 93,
+  your: 94,
+  band: "Excellent",
+  confidence: 0.95,
+  hasScoreableIngredientSignal: true,
+  hasNutritionData: true,
+  hasIngredientData: true,
+  deltaValue: 1,
+  deltaDrivers: [{ topic: "protein and calcium", direction: "up" }],
+  rules: [
+    {
+      rule: "S12",
+      topic: "protein and calcium",
+      weight: 20,
+      fraction: 0.9,
+      contribution: 18,
+      evidenceTier: "data",
+    },
+  ],
+  topPositive: [{ topic: "protein and calcium", contribution: 18, evidenceTier: "data" }],
+  topNegative: [],
+  nutrientLevels: ["sugar: good (5g)", "protein: low (3.3g)", "calcium: good (120.8mg)"],
+  avoidMatches: [],
+  detectedAdditives: [],
+  novaGroup: 1,
+};
+
 describe("validateOverview", () => {
   it("rejects additive presence claims when ingredient signal is missing", () => {
     const bad =
@@ -193,6 +227,46 @@ describe("validateOverview", () => {
     assert.equal(
       validateOverview("Held back by micronutrients.", input),
       "micronutrients"
+    );
+  });
+
+  it("rejects fiber claims for dairy milk (no fiber in the payload)", () => {
+    // The bug: milk overviews praised "protein and fiber" although milk has no
+    // fiber and S12 scores protein + calcium. Fiber must not appear at all.
+    const bad =
+      "Vitamin D Milk earns an excellent score from strong contributions of protein and fiber.";
+    assert.equal(validateOverview(bad, milkInput), "fiber not in payload");
+    assert.equal(
+      validateOverview("Your profile improved with protein and fibre increasing.", milkInput),
+      "fiber not in payload"
+    );
+  });
+
+  it("accepts a milk overview that stays on protein and calcium", () => {
+    const ok =
+      "Vitamin D Milk scores excellently thanks to strong protein and calcium, no additives, and being a real food.";
+    assert.equal(validateOverview(ok, milkInput), null);
+  });
+
+  it("allows fiber when a rule topic actually references it", () => {
+    const cereal: ExplainRequest = {
+      ...milkInput,
+      rules: [
+        {
+          rule: "S12",
+          topic: "protein and fiber",
+          weight: 12,
+          fraction: 0.9,
+          contribution: 10.8,
+          evidenceTier: "data",
+        },
+      ],
+      topPositive: [{ topic: "protein and fiber", contribution: 10.8, evidenceTier: "data" }],
+      nutrientLevels: ["fiber: good (10g)", "protein: good (12g)"],
+    };
+    assert.equal(
+      validateOverview("It scores well on protein and fiber.", cereal),
+      null
     );
   });
 });
