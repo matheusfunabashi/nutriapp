@@ -32,6 +32,19 @@ final class ProductRecord {
     }
 }
 
+/// One record per favorited product, pointing at a ProductRecord by id.
+/// Favorites are a user-curated shelf, independent of scan history.
+@Model
+final class FavoriteRecord {
+    @Attribute(.unique) var productId: String
+    var addedAt: Date
+
+    init(productId: String, addedAt: Date = .now) {
+        self.productId = productId
+        self.addedAt = addedAt
+    }
+}
+
 /// One record per scan event, pointing at a ProductRecord by id.
 @Model
 final class HistoryRecord {

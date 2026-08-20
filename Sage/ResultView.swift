@@ -14,6 +14,8 @@ struct ResultView: View {
     @State private var showLabelLegend = false
     @State private var selectedAdditive: ProductAdditive? = nil
     @State private var ingredientsExpanded = false
+    /// Edge for `.sensoryFeedback` — bumped each time the favorite is toggled.
+    @State private var favoriteTick = 0
     /// Computed once on appear (re-scoring candidates is cheap but not free, so
     /// it stays off the per-render path).
     @State private var alternativesOutcome: AlternativesOutcome = .noShelf
@@ -208,6 +210,7 @@ struct ResultView: View {
                            bindingCap: liveProduct.bindingCap)
             }
             compareButton(dark: dark)
+            favoriteButton(dark: dark)
         }
         .padding(14)
         .background(
@@ -251,6 +254,7 @@ struct ResultView: View {
                 }
             }
             compareButton(dark: dark)
+            favoriteButton(dark: dark)
             Button(action: onOpenMethodology) {
                 HStack(spacing: 6) {
                     Image(systemName: "info.circle")
@@ -503,6 +507,34 @@ struct ResultView: View {
         }
         .buttonStyle(.plain)
         .accessibilityLabel("Compare with another product")
+    }
+
+    /// Add / remove this product from the user's favorites shelf (Pantry tab).
+    /// Snapshots the live product so it stays openable even when opened from
+    /// Search or Top Rated without ever being scanned.
+    private func favoriteButton(dark: Bool) -> some View {
+        let saved = store.isFavorite(product.id)
+        return Button {
+            store.toggleFavorite(liveProduct)
+            favoriteTick &+= 1
+        } label: {
+            HStack(spacing: 8) {
+                Image(systemName: saved ? "heart.fill" : "heart")
+                    .font(.sageSemiBold(14))
+                Text(saved ? "Remove from favorites" : "Add to favorites")
+                    .font(.sageSemiBold(14)).tracking(-0.2)
+            }
+            .foregroundColor(saved ? store.accent : Theme.ink)
+            .padding(.vertical, 13)
+            .frame(maxWidth: .infinity)
+            .background(
+                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                    .stroke(saved ? store.accent.opacity(0.5) : Theme.hairline, lineWidth: 1)
+            )
+        }
+        .buttonStyle(.plain)
+        .sensoryFeedback(.selection, trigger: favoriteTick)
+        .accessibilityLabel(saved ? "Remove from favorites" : "Add to favorites")
     }
 
     /// Grades only render when the product actually carries them — a missing
@@ -1697,7 +1729,7 @@ func sweetenerLabel(_ key: String) -> String {
 
 // MARK: - Better-options row
 
-/// One "Better options" card (ALTERNATIVES_SPEC.md §5) — mirrors HistoryRow, with
+/// One "Better options" card (ALTERNATIVES_SPEC.md §5) — mirrors ProductRow, with
 /// a green "+N vs. this" delta instead of a timestamp.
 private struct AlternativeRow: View {
     let alt: Alternative
