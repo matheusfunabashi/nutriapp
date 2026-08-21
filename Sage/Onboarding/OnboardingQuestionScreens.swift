@@ -165,16 +165,16 @@ struct OnboardingAboutYouScreen: View {
                         .textInputAutocapitalization(.words)
                         .autocorrectionDisabled(true)
                         .submitLabel(.done)
-                        .font(.sageSemiBold(17))
+                        .font(.sageSemiBold(16))
                         .foregroundStyle(Theme.ink)
                         .padding(.horizontal, 14).padding(.vertical, 14)
                         .background(
-                            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                            RoundedRectangle(cornerRadius: Theme.Radius.control, style: .continuous)
                                 .fill(Theme.card)
                         )
                         .overlay(
-                            RoundedRectangle(cornerRadius: 14, style: .continuous)
-                                .stroke(nameFocused ? accent : Color.black.opacity(0.08),
+                            RoundedRectangle(cornerRadius: Theme.Radius.control, style: .continuous)
+                                .stroke(nameFocused ? accent : Theme.outline,
                                         lineWidth: nameFocused ? 1.5 : 1)
                         )
                         .animation(.easeOut(duration: 0.18), value: nameFocused)
@@ -193,7 +193,7 @@ struct OnboardingAboutYouScreen: View {
                     }
                     .padding(4)
                     .background(Capsule().fill(Theme.card))
-                    .overlay(Capsule().stroke(Color.black.opacity(0.08), lineWidth: 1))
+                    .overlay(Capsule().stroke(Theme.outline, lineWidth: 1))
                 }
                 .padding(.horizontal, 20)
 

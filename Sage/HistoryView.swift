@@ -13,18 +13,70 @@ struct HistoryView: View {
 
     enum Filter: String, CaseIterable { case all, good, bad }
 
+    /// Goal-aware starter rows for the empty state; resolved once.
+    @State private var starterPicks: [Alternative] = []
+
     var body: some View {
-        List {
-            // Segmented control, not a hand-rolled chip row: it gets the
-            // system's selection animation and VoiceOver treatment for free.
-            Picker("Filter", selection: $filter) {
+        VStack(spacing: 0) {
+            // Filter chips (capsules with counts) — a secondary filter under the
+            // underline tabs, the way Airbnb / Uber Eats do it. Lives outside
+            // the List so it shares the tabs' 20pt gutter instead of inheriting
+            // the inset-grouped section margin (which differs by iOS version).
+            // Hidden until there's something to filter — "All 0 · Good 0" reads
+            // as dead controls.
+            if !store.history.isEmpty {
+            HStack(spacing: 8) {
                 ForEach(Filter.allCases, id: \.self) { f in
-                    Text(label(for: f)).tag(f)
+                    SageChip(title: title(for: f), count: count(for: f), selected: filter == f) {
+                        withAnimation(.easeOut(duration: 0.2)) { filter = f }
+                    }
                 }
             }
-            .pickerStyle(.segmented)
-            .listRowBackground(Color.clear)
-            .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 8, trailing: 16))
+            // Centered, like the tab labels and the empty state above/below it.
+            .frame(maxWidth: .infinity)
+            .padding(.horizontal, 20)
+            .padding(.top, 14)
+            .padding(.bottom, 4)
+            .sensoryFeedback(.selection, trigger: filter)
+            }
+
+            historyList
+        }
+        .background(Theme.background.ignoresSafeArea())
+        .task(id: store.history.isEmpty) {
+            guard store.history.isEmpty, starterPicks.isEmpty else { return }
+            starterPicks = StarterPicks.picks(for: store.user, limit: 3)
+        }
+    }
+
+    private var historyList: some View {
+        List {
+            if store.history.isEmpty {
+                // First-run: a compact, top-anchored intro that says what this
+                // screen becomes, then real products to open right now —
+                // content pulls the eye, not whitespace.
+                Section {
+                    StarterIntroCard(
+                        symbol: "clock.arrow.circlepath",
+                        title: "Your scans will line up here",
+                        message: "Every product you scan lands in this feed, grouped by day, with its score — so you can see how your pantry is trending.",
+                        cta: onTapScan.map { ("Scan a product", $0) }
+                    )
+                    .listRowBackground(Color.clear)
+                    .listRowSeparator(.hidden)
+                    .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 4, trailing: 16))
+                }
+                if !starterPicks.isEmpty {
+                    Section("MEANWHILE, WORTH A LOOK") {
+                        ForEach(starterPicks) { pick in
+                            StarterProductRow(pick: pick) {
+                                store.saveProduct(pick.product)
+                                onOpenProduct(pick.product.id)
+                            }
+                        }
+                    }
+                }
+            }
 
             ForEach(groupedDays, id: \.day) { entry in
                 Section(entry.day.uppercased()) {
@@ -47,27 +99,19 @@ struct HistoryView: View {
             }
         }
         .sageListStyle()
+        .contentMargins(.top, store.history.isEmpty ? 0 : 16, for: .scrollContent)
         .overlay {
-            if groupedDays.isEmpty {
+            // Only the *filtered*-empty case keeps a system empty view; the
+            // first-run case is handled by the starter rows above.
+            if !store.history.isEmpty && groupedDays.isEmpty {
                 ContentUnavailableView {
-                    Label(filter == .all ? "Nothing here yet" : "Nothing in this filter",
-                          systemImage: "leaf")
+                    Label("Nothing in this filter", systemImage: "line.3.horizontal.decrease.circle")
                 } description: {
-                    Text(filter == .all
-                         ? "Scan a food label and it'll show up here."
-                         : "Try All, or scan something new.")
+                    Text("Try All, or scan something new.")
                 } actions: {
-                    if filter == .all {
-                        if let onTapScan {
-                            Button("Scan a product", action: onTapScan)
-                                .buttonStyle(.borderedProminent)
-                                .tint(store.accent)
-                        }
-                    } else {
-                        Button("Show all") { filter = .all }
-                            .buttonStyle(.borderedProminent)
-                            .tint(store.accent)
-                    }
+                    Button("Show all") { filter = .all }
+                        .buttonStyle(.borderedProminent)
+                        .tint(store.accent)
                 }
             }
         }
@@ -100,11 +144,19 @@ struct HistoryView: View {
         .sensoryFeedback(.impact(weight: .light), trigger: deletedTick)
     }
 
-    private func label(for f: Filter) -> String {
+    private func title(for f: Filter) -> String {
         switch f {
-        case .all:  return "All (\(store.history.count))"
-        case .good: return "Good (\(count { $0 >= 50 }))"
-        case .bad:  return "Avoid (\(count { $0 < 50 }))"
+        case .all:  return "All"
+        case .good: return "Good"
+        case .bad:  return "Avoid"
+        }
+    }
+
+    private func count(for f: Filter) -> Int {
+        switch f {
+        case .all:  return store.history.count
+        case .good: return count { $0 >= 50 }
+        case .bad:  return count { $0 < 50 }
         }
     }
 

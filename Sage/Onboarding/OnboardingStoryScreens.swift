@@ -61,7 +61,7 @@ struct OnboardingHowItWorksScreen: View {
     private func stageCard(_ stage: Stage) -> some View {
         HStack(spacing: 14) {
             Image(systemName: stage.symbol)
-                .font(.sageSemiBold(17))
+                .font(.sageSemiBold(16))
                 .foregroundStyle(accent)
                 .frame(width: 40, height: 40)
                 .background(Circle().fill(Color.white.opacity(0.10)))
@@ -81,7 +81,7 @@ struct OnboardingHowItWorksScreen: View {
         .padding(16)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(
-            RoundedRectangle(cornerRadius: 18, style: .continuous)
+            RoundedRectangle(cornerRadius: Theme.Radius.card, style: .continuous)
                 .fill(OnboardingInverted.surface)
         )
     }
@@ -119,12 +119,12 @@ struct OnboardingPledgeScreen: View {
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(20)
                         .background(
-                            RoundedRectangle(cornerRadius: 20, style: .continuous)
+                            RoundedRectangle(cornerRadius: Theme.Radius.panel, style: .continuous)
                                 .fill(OnboardingInverted.surface)
                         )
                         .overlay(alignment: .topTrailing) {
                             Image(systemName: "checkmark.seal.fill")
-                                .font(.sageBold(26))
+                                .font(.sageBold(24))
                                 .foregroundStyle(accent)
                                 .padding(10)
                                 .background(Circle().fill(OnboardingInverted.background))

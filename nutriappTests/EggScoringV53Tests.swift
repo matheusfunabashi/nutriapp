@@ -304,6 +304,18 @@ struct EggScoringV53Tests {
         #expect(formulatedWhites >= rs.bands.good && formulatedWhites < 70, "formulated whites \(formulatedWhites)")
     }
 
+    // MARK: Top Rated shelf
+
+    @Test func eggsHaveTheirOwnShelfAndEggPastaStaysOnPasta() {
+        #expect(SageCategory.shelf(for: egg(categories: ["eggs-and-their-products", "eggs", "chicken-eggs"])) == .eggs)
+        #expect(SageCategory.shelf(for: egg(categories: ["eggs", "egg-white"])) == .eggs)
+        #expect(SageCategory.eggs.anchorTag(for: egg(categories: ["eggs", "chicken-eggs", "free-range-chicken-eggs"])) == "free-range-chicken-eggs")
+        // OFF cross-tags egg pasta under en:eggs; pasta is the more specific shelf.
+        #expect(SageCategory.shelf(for: egg(categories: ["pastas", "egg-pastas", "eggs", "chicken-eggs"])) == .pasta)
+        #expect(SageCategory.topRatedBrowse.contains(.eggs))
+        #expect(SageCategory.eggs.topRatedHeroAsset == "eggs-tr")
+    }
+
     // MARK: Overview plumbing
 
     @Test func overviewNeverClaimsFiberForEggsAndNeverCallsThemLimited() throws {

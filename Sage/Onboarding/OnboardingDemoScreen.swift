@@ -238,7 +238,7 @@ struct OnboardingDemoScreen: View {
                     .font(.sageSemiBold(12)).tracking(0.4)
                     .foregroundStyle(Theme.inkSecondary)
                 Text(OnboardingDemoProduct.candidate?.name ?? "Vanilla Almond Crisp")
-                    .font(.sageBold(17)).tracking(-0.3)
+                    .font(.sageBold(16)).tracking(-0.3)
                     .foregroundStyle(Theme.ink)
                     .fixedSize(horizontal: false, vertical: true)
             }
@@ -246,7 +246,7 @@ struct OnboardingDemoScreen: View {
         }
         .padding(16)
         .background(
-            RoundedRectangle(cornerRadius: 18, style: .continuous).fill(Theme.card)
+            RoundedRectangle(cornerRadius: Theme.Radius.card, style: .continuous).fill(Theme.card)
         )
         .cardShadow()
         .padding(.horizontal, 20)
@@ -287,11 +287,11 @@ struct OnboardingDemoScreen: View {
             .padding(.horizontal, 16).padding(.vertical, 16)
             .frame(maxWidth: .infinity)
             .background(
-                RoundedRectangle(cornerRadius: 14, style: .continuous).fill(Theme.card)
+                RoundedRectangle(cornerRadius: Theme.Radius.control, style: .continuous).fill(Theme.card)
             )
             .overlay(
-                RoundedRectangle(cornerRadius: 14, style: .continuous)
-                    .stroke(guess == option ? accent : Color.black.opacity(0.08),
+                RoundedRectangle(cornerRadius: Theme.Radius.control, style: .continuous)
+                    .stroke(guess == option ? accent : Theme.outline,
                             lineWidth: guess == option ? 2 : 1)
             )
         }
@@ -476,11 +476,11 @@ struct OnboardingDemoRevealSheet: View {
         .frame(maxWidth: .infinity)
         .padding(.vertical, 18)
         .background(
-            RoundedRectangle(cornerRadius: 22, style: .continuous).fill(Theme.card)
+            RoundedRectangle(cornerRadius: Theme.Radius.panel, style: .continuous).fill(Theme.card)
         )
         .overlay(
-            RoundedRectangle(cornerRadius: 22, style: .continuous)
-                .stroke(highlighted ? accent : Color.black.opacity(0.08),
+            RoundedRectangle(cornerRadius: Theme.Radius.panel, style: .continuous)
+                .stroke(highlighted ? accent : Theme.outline,
                         lineWidth: highlighted ? 2 : 1)
         )
         .cardShadow()
@@ -515,7 +515,7 @@ struct OnboardingDemoRevealSheet: View {
         .padding(18)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(
-            RoundedRectangle(cornerRadius: 18, style: .continuous).fill(Theme.card)
+            RoundedRectangle(cornerRadius: Theme.Radius.card, style: .continuous).fill(Theme.card)
         )
         .cardShadow()
     }
@@ -552,7 +552,7 @@ struct OnboardingDemoRevealSheet: View {
                 }
                 .padding(16)
                 .background(
-                    RoundedRectangle(cornerRadius: 18, style: .continuous).fill(Theme.card)
+                    RoundedRectangle(cornerRadius: Theme.Radius.card, style: .continuous).fill(Theme.card)
                 )
                 .cardShadow()
             }
@@ -568,7 +568,7 @@ struct OnboardingDemoRevealSheet: View {
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 16)
                 .background(
-                    RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    RoundedRectangle(cornerRadius: Theme.Radius.control, style: .continuous)
                         .fill(accent.opacity(0.10))
                 )
                 .buttonStyle(.pressable)

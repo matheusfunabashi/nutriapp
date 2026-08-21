@@ -58,7 +58,10 @@ struct ResultView: View {
         }
         .sageScreenBackground()
         .navigationBarTitleDisplayMode(.inline)
-        .toolbar { SageToolbarTitle() }
+        .toolbar {
+            SageToolbarTitle()
+            ToolbarItem(placement: .topBarTrailing) { favoriteToolbarButton }
+        }
         .onAppear {
             store.requestOverview(for: product.id)
             alternativesOutcome = Alternatives.suggest(for: liveProduct, profile: store.user)
@@ -99,7 +102,7 @@ struct ResultView: View {
                 }
             }
             .background(
-                RoundedRectangle(cornerRadius: 24, style: .continuous)
+                RoundedRectangle(cornerRadius: Theme.Radius.panel, style: .continuous)
                     .fill(Theme.card)
             )
             .cardShadow()
@@ -115,7 +118,7 @@ struct ResultView: View {
             .foregroundColor(Theme.inkSecondary)
             .padding(.horizontal, 10).padding(.vertical, 4)
             .background(
-                Capsule().fill(dark ? Color.white.opacity(0.08) : Color.black.opacity(0.05))
+                Capsule().fill(Theme.fillMuted)
             )
             .accessibilityLabel("Among the best in its category")
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -193,7 +196,7 @@ struct ResultView: View {
                     .foregroundColor(Theme.inkSecondary)
                     .padding(.horizontal, 10).padding(.vertical, 4)
                     .background(
-                        Capsule().fill(dark ? Color.white.opacity(0.08) : Color.black.opacity(0.05))
+                        Capsule().fill(Theme.fillMuted)
                     )
                     .accessibilityLabel("Organic certified")
             }
@@ -210,11 +213,10 @@ struct ResultView: View {
                            bindingCap: liveProduct.bindingCap)
             }
             compareButton(dark: dark)
-            favoriteButton(dark: dark)
         }
         .padding(14)
         .background(
-            RoundedRectangle(cornerRadius: 24, style: .continuous)
+            RoundedRectangle(cornerRadius: Theme.Radius.panel, style: .continuous)
                 .fill(Theme.card)
         )
         .cardShadow()
@@ -254,7 +256,6 @@ struct ResultView: View {
                 }
             }
             compareButton(dark: dark)
-            favoriteButton(dark: dark)
             Button(action: onOpenMethodology) {
                 HStack(spacing: 6) {
                     Image(systemName: "info.circle")
@@ -269,7 +270,7 @@ struct ResultView: View {
         .padding(16)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(
-            RoundedRectangle(cornerRadius: 24, style: .continuous)
+            RoundedRectangle(cornerRadius: Theme.Radius.panel, style: .continuous)
                 .fill(Theme.card)
         )
         .cardShadow()
@@ -287,7 +288,7 @@ struct ResultView: View {
         let showCapChip = emphasized && bindingCap != nil
         let panelFill: Color = emphasized
             ? ringColor.opacity(dark ? 0.14 : 0.06)
-            : (dark ? Color.white.opacity(0.04) : Color.black.opacity(0.03))
+            : (Theme.fillQuiet)
         return VStack(spacing: 12) {
             Text(title)
                 .font(.sageBold(11)).tracking(1.2)
@@ -296,13 +297,13 @@ struct ResultView: View {
             Text(label.uppercased())
                 .font(.sageBold(11)).tracking(0.6)
                 .foregroundColor(.white)
-                .padding(.horizontal, 12).padding(.vertical, 5)
+                .padding(.horizontal, 12).padding(.vertical, 4)
                 .background(Capsule().fill(ringColor))
             if showCapChip, let cap = bindingCap {
                 Text("Capped: \(cap.shortLabel)")
                     .font(.sageSemiBold(10))
                     .foregroundColor(Color.cautionMuted)
-                    .padding(.horizontal, 8).padding(.vertical, 3)
+                    .padding(.horizontal, 8).padding(.vertical, 4)
                     .background(
                         Capsule().fill(Color.cautionMuted.opacity(dark ? 0.18 : 0.12))
                     )
@@ -312,17 +313,17 @@ struct ResultView: View {
         .frame(maxWidth: .infinity)
         .padding(.vertical, 18).padding(.horizontal, 8)
         .background(
-            RoundedRectangle(cornerRadius: 18, style: .continuous).fill(panelFill)
+            RoundedRectangle(cornerRadius: Theme.Radius.card, style: .continuous).fill(panelFill)
         )
         .overlay(
-            RoundedRectangle(cornerRadius: 18, style: .continuous)
+            RoundedRectangle(cornerRadius: Theme.Radius.card, style: .continuous)
                 .stroke(emphasized ? ringColor.opacity(0.35) : Color.clear, lineWidth: 1.5)
         )
         .overlay(alignment: .top) {
             if emphasized {
                 HStack(spacing: 3) {
                     Image(systemName: "star.fill").font(.system(size: 8, weight: .bold))
-                    Text("FOR YOU").font(.sageBold(9)).tracking(0.8)
+                    Text("FOR YOU").font(.sageBold(10)).tracking(0.8)
                 }
                 .foregroundColor(.white)
                 .padding(.horizontal, 10).padding(.vertical, 4)
@@ -386,7 +387,7 @@ struct ResultView: View {
                         Text(delta < 0 ? "\(delta)" : "+\(delta)")
                             .font(.sageBold(10))
                             .foregroundColor(.white)
-                            .padding(.horizontal, 8).padding(.vertical, 3)
+                            .padding(.horizontal, 8).padding(.vertical, 4)
                             .background(Capsule().fill(tint))
                             .accessibilityLabel(deltaBadgeLabel(delta: delta) ?? "")
                     }
@@ -408,7 +409,7 @@ struct ResultView: View {
             .padding(14)
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(
-                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                RoundedRectangle(cornerRadius: Theme.Radius.card, style: .continuous)
                     .fill(Theme.card)
             )
             .padding(.horizontal, 16)
@@ -435,11 +436,11 @@ struct ResultView: View {
                     }
                     .padding(.horizontal, 14).padding(.vertical, 10)
                     .background(
-                        RoundedRectangle(cornerRadius: 14, style: .continuous)
+                        RoundedRectangle(cornerRadius: Theme.Radius.control, style: .continuous)
                             .fill(Color.scoreBad.opacity(0.10))
                     )
                     .overlay(
-                        RoundedRectangle(cornerRadius: 14, style: .continuous)
+                        RoundedRectangle(cornerRadius: Theme.Radius.control, style: .continuous)
                             .stroke(Color.scoreBad.opacity(0.35), lineWidth: 1)
                     )
                     .accessibilityLabel(copy)
@@ -498,10 +499,10 @@ struct ResultView: View {
                     .font(.sageSemiBold(14)).tracking(-0.2)
             }
             .foregroundColor(Theme.ink)
-            .padding(.vertical, 13)
+            .padding(.vertical, 12)
             .frame(maxWidth: .infinity)
             .background(
-                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                RoundedRectangle(cornerRadius: Theme.Radius.card, style: .continuous)
                     .stroke(Theme.hairline, lineWidth: 1)
             )
         }
@@ -509,30 +510,21 @@ struct ResultView: View {
         .accessibilityLabel("Compare with another product")
     }
 
-    /// Add / remove this product from the user's favorites shelf (Pantry tab).
-    /// Snapshots the live product so it stays openable even when opened from
-    /// Search or Top Rated without ever being scanned.
-    private func favoriteButton(dark: Bool) -> some View {
+    /// Heart in the nav bar — where every B2C app keeps "save". Snapshots the
+    /// live product so it stays openable from the Pantry even when it was
+    /// opened from Search or Top Rated without ever being scanned.
+    private var favoriteToolbarButton: some View {
         let saved = store.isFavorite(product.id)
         return Button {
             store.toggleFavorite(liveProduct)
             favoriteTick &+= 1
         } label: {
-            HStack(spacing: 8) {
-                Image(systemName: saved ? "heart.fill" : "heart")
-                    .font(.sageSemiBold(14))
-                Text(saved ? "Remove from favorites" : "Add to favorites")
-                    .font(.sageSemiBold(14)).tracking(-0.2)
-            }
-            .foregroundColor(saved ? store.accent : Theme.ink)
-            .padding(.vertical, 13)
-            .frame(maxWidth: .infinity)
-            .background(
-                RoundedRectangle(cornerRadius: 18, style: .continuous)
-                    .stroke(saved ? store.accent.opacity(0.5) : Theme.hairline, lineWidth: 1)
-            )
+            Image(systemName: saved ? "heart.fill" : "heart")
+                .font(.sageSemiBold(16))
+                .foregroundStyle(saved ? Theme.accent : Theme.ink)
+                .contentTransition(.symbolEffect(.replace))
+                .symbolEffect(.bounce, value: favoriteTick)
         }
-        .buttonStyle(.plain)
         .sensoryFeedback(.selection, trigger: favoriteTick)
         .accessibilityLabel(saved ? "Remove from favorites" : "Add to favorites")
     }
@@ -685,9 +677,9 @@ struct ResultView: View {
                                         .font(.sageSemiBold(14))
                                         .foregroundColor(Theme.ink)
                                     Text("INFO")
-                                        .font(.sageBold(9)).tracking(0.6)
+                                        .font(.sageBold(10)).tracking(0.6)
                                         .foregroundColor(Theme.inkSecondary)
-                                        .padding(.horizontal, 7).padding(.vertical, 3)
+                                        .padding(.horizontal, 8).padding(.vertical, 4)
                                         .background(
                                             Capsule().fill(Theme.inkSecondary.opacity(0.12))
                                         )
@@ -783,7 +775,7 @@ struct ResultView: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(14)
             .background(
-                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                RoundedRectangle(cornerRadius: Theme.Radius.card, style: .continuous)
                     .fill(Theme.card)
             )
     }
@@ -925,7 +917,7 @@ struct ResultView: View {
         return VStack(alignment: .leading, spacing: 8) {
             Text("SCORE DEBUG")
                 .font(.sageBold(11)).tracking(1.2)
-                .foregroundColor(Color(hex: "D4A02D"))
+                .foregroundColor(Color(hex: ScoreBandColor.okMid))
             Text("Nutrition source: \(nutritionSourceLabel)")
                 .font(.sageBold(11))
                 .foregroundColor(Theme.ink)
@@ -939,11 +931,11 @@ struct ResultView: View {
         }
         .padding(14)
         .background(
-            RoundedRectangle(cornerRadius: 14, style: .continuous)
-                .fill(dark ? Color.white.opacity(0.04) : Color.black.opacity(0.03))
+            RoundedRectangle(cornerRadius: Theme.Radius.control, style: .continuous)
+                .fill(Theme.fillQuiet)
                 .overlay(
-                    RoundedRectangle(cornerRadius: 14, style: .continuous)
-                        .stroke(Color(hex: "D4A02D").opacity(0.35), lineWidth: 1)
+                    RoundedRectangle(cornerRadius: Theme.Radius.control, style: .continuous)
+                        .stroke(Color(hex: ScoreBandColor.okMid).opacity(0.35), lineWidth: 1)
                 )
         )
         .padding(.horizontal, 16)
@@ -982,10 +974,10 @@ struct NutriScoreCard: View {
         let c = colors[g] ?? Color.neutralMuted
         return HStack(alignment: .center, spacing: 12) {
             Text(g)
-                .font(.sageBold(28)).tracking(-1)
+                .font(.sageHeadline).tracking(-1)
                 .foregroundColor(.white)
                 .frame(width: 52, height: 52)
-                .background(RoundedRectangle(cornerRadius: 14, style: .continuous).fill(c))
+                .background(RoundedRectangle(cornerRadius: Theme.Radius.control, style: .continuous).fill(c))
             VStack(alignment: .leading, spacing: 3) {
                 Text("Nutri-Score \(g)")
                     .font(.sageBold(13)).tracking(-0.2)
@@ -1002,7 +994,7 @@ struct NutriScoreCard: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
         .frame(height: breakdownCardHeight)
         .background(
-            RoundedRectangle(cornerRadius: 18, style: .continuous).fill(Theme.card)
+            RoundedRectangle(cornerRadius: Theme.Radius.card, style: .continuous).fill(Theme.card)
         )
         .cardShadow()
         .accessibilityLabel("Nutri-Score \(g), nutrition grade")
@@ -1015,8 +1007,8 @@ struct NutriScoreCard: View {
                 .foregroundColor(Theme.inkSecondary)
                 .frame(width: 52, height: 52)
                 .background(
-                    RoundedRectangle(cornerRadius: 14, style: .continuous)
-                        .fill(dark ? Color.white.opacity(0.08) : Color.black.opacity(0.06))
+                    RoundedRectangle(cornerRadius: Theme.Radius.control, style: .continuous)
+                        .fill(Theme.fillTrack)
                 )
             VStack(alignment: .leading, spacing: 3) {
                 Text("Nutri-Score")
@@ -1034,7 +1026,7 @@ struct NutriScoreCard: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
         .frame(height: breakdownCardHeight)
         .background(
-            RoundedRectangle(cornerRadius: 18, style: .continuous).fill(Theme.card)
+            RoundedRectangle(cornerRadius: Theme.Radius.card, style: .continuous).fill(Theme.card)
         )
         .cardShadow()
         .accessibilityLabel("Nutri-Score not rated")
@@ -1073,7 +1065,7 @@ struct NovaCard: View {
                 ForEach(1...4, id: \.self) { g in
                     RoundedRectangle(cornerRadius: 2)
                         .fill(g <= group ? c
-                              : (dark ? Color.white.opacity(0.1) : Color.black.opacity(0.06)))
+                              : (Theme.fillTrack))
                         .frame(width: 6, height: CGFloat(8 + g * 7))
                 }
             }
@@ -1094,7 +1086,7 @@ struct NovaCard: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
         .frame(height: breakdownCardHeight)
         .background(
-            RoundedRectangle(cornerRadius: 18, style: .continuous).fill(Theme.card)
+            RoundedRectangle(cornerRadius: Theme.Radius.card, style: .continuous).fill(Theme.card)
         )
         .cardShadow()
         .accessibilityLabel("NOVA \(group), \(labels[group] ?? "")")
@@ -1105,7 +1097,7 @@ struct NovaCard: View {
             HStack(alignment: .bottom, spacing: 3) {
                 ForEach(1...4, id: \.self) { g in
                     RoundedRectangle(cornerRadius: 2)
-                        .fill(dark ? Color.white.opacity(0.1) : Color.black.opacity(0.06))
+                        .fill(Theme.fillTrack)
                         .frame(width: 6, height: CGFloat(8 + g * 7))
                 }
             }
@@ -1126,7 +1118,7 @@ struct NovaCard: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
         .frame(height: breakdownCardHeight)
         .background(
-            RoundedRectangle(cornerRadius: 18, style: .continuous).fill(Theme.card)
+            RoundedRectangle(cornerRadius: Theme.Radius.card, style: .continuous).fill(Theme.card)
         )
         .cardShadow()
         .accessibilityLabel("NOVA not rated")
@@ -1161,7 +1153,7 @@ struct NutrientRow: View {
 
     var body: some View {
         HStack(spacing: 8) {
-            HStack(spacing: 7) {
+            HStack(spacing: 6) {
                 Text(label)
                     .font(.sageSemiBold(14)).tracking(-0.2)
                     .foregroundColor(Theme.ink)
@@ -1171,9 +1163,9 @@ struct NutrientRow: View {
                 if bonus {
                     Text("+ BOOST")
                         .font(.sageBold(10)).tracking(0.3)
-                        .foregroundColor(Color(hex: "1F8A5B"))
-                        .padding(.horizontal, 7).padding(.vertical, 2)
-                        .background(Capsule().fill(Color(hex: "1F8A5B").opacity(0.12)))
+                        .foregroundColor(Theme.accent)
+                        .padding(.horizontal, 8).padding(.vertical, 2)
+                        .background(Capsule().fill(Theme.accent.opacity(0.12)))
                         .fixedSize()
                 }
             }
@@ -1187,7 +1179,7 @@ struct NutrientRow: View {
                 Text(tag.word.uppercased())
                     .font(.sageBold(10)).tracking(0.4)
                     .foregroundColor(tag.fg)
-                    .padding(.horizontal, 9).padding(.vertical, 3)
+                    .padding(.horizontal, 8).padding(.vertical, 4)
                     .background(Capsule().fill(tag.bg))
                     .fixedSize(horizontal: true, vertical: false)
             }
@@ -1238,7 +1230,7 @@ struct AdditiveRow: View {
             Text(RiskStyle.label(additive.risk))
                 .font(.sageBold(10)).tracking(0.2)
                 .foregroundColor(riskFg)
-                .padding(.horizontal, 9).padding(.vertical, 3)
+                .padding(.horizontal, 8).padding(.vertical, 4)
                 .background(Capsule().fill(riskBg))
             Image(systemName: "chevron.right")
                 .font(.sageSemiBold(10))
@@ -1286,12 +1278,12 @@ struct SeverityBar: View {
                 }
             }
             .frame(height: 6)
-            .background(RoundedRectangle(cornerRadius: 3).fill(Color.black.opacity(0.04)))
-            .clipShape(RoundedRectangle(cornerRadius: 3))
+            .background(Capsule().fill(Theme.fillQuiet))
+            .clipShape(Capsule())
 
             HStack(spacing: 10) {
                 ForEach(order, id: \.self) { r in
-                    HStack(spacing: 5) {
+                    HStack(spacing: 4) {
                         RiskDot(risk: r, size: 7, allowAlarmRed: allowAlarmRed)
                         Text("\(counts[r] ?? 0) \(RiskStyle.shortLabel(r))")
                             .font(.sageBold(11))
@@ -1338,7 +1330,7 @@ struct InfoRow: View {
             Text(emoji)
                 .font(.sageRegular(14))
                 .frame(width: 28, height: 28)
-                .background(RoundedRectangle(cornerRadius: 8).fill(Color.black.opacity(0.04)))
+                .background(RoundedRectangle(cornerRadius: Theme.Radius.chip, style: .continuous).fill(Theme.fillQuiet))
             VStack(alignment: .leading, spacing: 1) {
                 Text(label)
                     .font(.sageBold(13)).tracking(-0.2)
@@ -1351,7 +1343,7 @@ struct InfoRow: View {
         }
         .padding(.horizontal, 14).padding(.vertical, 10)
         .background(
-            RoundedRectangle(cornerRadius: 14, style: .continuous).fill(Theme.card)
+            RoundedRectangle(cornerRadius: Theme.Radius.control, style: .continuous).fill(Theme.card)
         )
         .cardShadow()
     }
@@ -1386,11 +1378,11 @@ struct RestrictionBannerView: View {
         }
         .padding(.horizontal, 12).padding(.vertical, 10)
         .background(
-            RoundedRectangle(cornerRadius: 14, style: .continuous)
+            RoundedRectangle(cornerRadius: Theme.Radius.control, style: .continuous)
                 .fill(fg.opacity(dark ? 0.14 : 0.08))
         )
         .overlay(
-            RoundedRectangle(cornerRadius: 14, style: .continuous)
+            RoundedRectangle(cornerRadius: Theme.Radius.control, style: .continuous)
                 .stroke(fg.opacity(0.18), lineWidth: 1)
         )
         .accessibilityLabel("\(headline) Trigger: \(trigger).")
@@ -1423,7 +1415,7 @@ struct SeriousFlag: View {
                 .font(.sageBold(16))
                 .foregroundColor(.white)
                 .frame(width: 36, height: 36)
-                .background(RoundedRectangle(cornerRadius: 10).fill(fg))
+                .background(RoundedRectangle(cornerRadius: Theme.Radius.chip, style: .continuous).fill(fg))
             VStack(alignment: .leading, spacing: 1) {
                 Text("Contains trans fats")
                     .font(.sageBold(14)).tracking(-0.2)
@@ -1436,11 +1428,11 @@ struct SeriousFlag: View {
         }
         .padding(14)
         .background(
-            RoundedRectangle(cornerRadius: 18, style: .continuous)
+            RoundedRectangle(cornerRadius: Theme.Radius.card, style: .continuous)
                 .fill(fg.opacity(0.10))
         )
         .overlay(
-            RoundedRectangle(cornerRadius: 18, style: .continuous)
+            RoundedRectangle(cornerRadius: Theme.Radius.card, style: .continuous)
                 .stroke(fg.opacity(0.20), lineWidth: 1)
         )
     }
@@ -1471,11 +1463,11 @@ struct AllergenBanner: View {
         }
         .padding(14)
         .background(
-            RoundedRectangle(cornerRadius: 18, style: .continuous)
+            RoundedRectangle(cornerRadius: Theme.Radius.card, style: .continuous)
                 .fill(fg.opacity(dark ? 0.14 : 0.08))
         )
         .overlay(
-            RoundedRectangle(cornerRadius: 18, style: .continuous)
+            RoundedRectangle(cornerRadius: Theme.Radius.card, style: .continuous)
                 .stroke(fg.opacity(0.20), lineWidth: 1)
         )
     }
@@ -1500,8 +1492,8 @@ struct AllergenDisclaimer: View {
         }
         .padding(.horizontal, 12).padding(.vertical, 10)
         .background(
-            RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .fill(dark ? Color.white.opacity(0.04) : Color.black.opacity(0.03))
+            RoundedRectangle(cornerRadius: Theme.Radius.control, style: .continuous)
+                .fill(Theme.fillQuiet)
         )
     }
 }
@@ -1613,7 +1605,7 @@ struct AdditiveDetailSheet: View {
         return Text(RiskStyle.label(additive.risk))
             .font(.sageBold(10)).tracking(0.2)
             .foregroundColor(fg)
-            .padding(.horizontal, 9).padding(.vertical, 3)
+            .padding(.horizontal, 8).padding(.vertical, 4)
             .background(Capsule().fill(fg.opacity(0.12)))
     }
 
@@ -1702,7 +1694,7 @@ struct LabelLegendSheet: View {
             Text(word)
                 .font(.sageBold(10)).tracking(0.2)
                 .foregroundColor(fg)
-                .padding(.horizontal, 9).padding(.vertical, 3)
+                .padding(.horizontal, 8).padding(.vertical, 4)
                 .background(Capsule().fill(fg.opacity(0.12)))
                 .frame(minWidth: 72, alignment: .leading)
             Text(meaning)

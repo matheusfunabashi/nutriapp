@@ -61,6 +61,35 @@ enum Theme {
     /// Unfilled portion of a score ring.
     static let ringTrack = Color(light: .black.opacity(0.06),
                                  dark: .white.opacity(0.08))
+    /// Quietest fill — the wash behind glyph tiles, meters, and inset panels.
+    static let fillQuiet = Color(light: .black.opacity(0.04),
+                                 dark: .white.opacity(0.04))
+    /// Neutral pill/track fill, one step up from `fillQuiet`.
+    static let fillMuted = Color(light: .black.opacity(0.05),
+                                 dark: .white.opacity(0.08))
+    /// De-emphasized meter/bar segments (e.g. unlit NOVA bars).
+    static let fillTrack = Color(light: .black.opacity(0.06),
+                                 dark: .white.opacity(0.10))
+    /// Visible outline on controls and selectable cards (unlike `cardEdge`,
+    /// this one shows in light mode too).
+    static let outline = Color(light: .black.opacity(0.08),
+                               dark: .white.opacity(0.10))
+
+    // MARK: Corner radii
+    //
+    // Four sizes, always with `style: .continuous`. Pick by role, not by
+    // eye — new radii are drift, not design. (Capsules and tiny geometric
+    // accents like the 6pt NOVA bars stay literal; they're shape, not radius.)
+    enum Radius {
+        /// Hero surfaces: score panels, comparison cards, pledge card.
+        static let panel: CGFloat = 22
+        /// The standard card everything else sits on.
+        static let card: CGFloat = 18
+        /// Inner elements: inputs, tiles inside cards, banners.
+        static let control: CGFloat = 14
+        /// Small squares behind glyphs and tags.
+        static let chip: CGFloat = 8
+    }
 }
 
 // MARK: - Semantic score / alarm colors (product detail + shared UI)
@@ -267,6 +296,7 @@ final class AppStore: ObservableObject {
         invalidateAndRescoreForV509IfNeeded()
         invalidateAndRescoreForV510IfNeeded()
         invalidateAndRescoreForV520IfNeeded()
+        invalidateAndRescoreForV530IfNeeded()
     }
 
     /// Decode a stored snapshot, migrating legacy `deltaReason` → `overview`.
@@ -337,6 +367,16 @@ final class AppStore: ObservableObject {
     /// tags, raw-milk gate, fortification exemption, powder reconstitution).
     private func invalidateAndRescoreForV520IfNeeded() {
         let key = "rulesetV520Rescored"
+        guard !UserDefaults.standard.bool(forKey: key) else { return }
+        rescoreAll()
+        UserDefaults.standard.set(true, forKey: key)
+        UserDefaults.standard.set(true, forKey: "overviewExpV9Invalidated")
+    }
+
+    /// One-shot V5.3.0 — dedicated `eggs` profile (S12/S13 egg variants,
+    /// egg-dominance routing guard, NOVA inference, S14 token / whitelist fixes).
+    private func invalidateAndRescoreForV530IfNeeded() {
+        let key = "rulesetV530Rescored"
         guard !UserDefaults.standard.bool(forKey: key) else { return }
         rescoreAll()
         UserDefaults.standard.set(true, forKey: key)

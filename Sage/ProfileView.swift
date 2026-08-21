@@ -70,16 +70,16 @@ struct ProfileView: View {
                     colors: [store.accent, store.accent.opacity(0.6)],
                     startPoint: .topLeading, endPoint: .bottomTrailing))
                 Text(initials(store.user.name))
-                    .font(.sageBold(19)).tracking(-0.5)
+                    .font(.sageBold(20)).tracking(-0.5)
                     .foregroundColor(.white)
             }
             .frame(width: 56, height: 56)
 
             VStack(alignment: .leading, spacing: 2) {
                 if isPremium {
-                    HStack(spacing: 5) {
+                    HStack(spacing: 4) {
                         Image(systemName: "crown.fill")
-                            .foregroundColor(Color(hex: "D4A437"))
+                            .foregroundColor(Color(hex: ScoreBandColor.okMid))
                             .font(.sageRegular(11))
                         Text(subLabel)
                             .font(.sageBold(11))
@@ -88,7 +88,7 @@ struct ProfileView: View {
                     }
                 }
                 Text(displayName(store.user.name))
-                    .font(.sageBold(17)).tracking(-0.4)
+                    .font(.sageBold(16)).tracking(-0.4)
                     .foregroundColor(Theme.ink)
             }
             Spacer()

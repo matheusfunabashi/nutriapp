@@ -32,6 +32,11 @@ extension Font {
     // Sized variants — use when a screen needs an exact point size from the
     // current layout (typography-only swaps without changing metrics).
     //
+    // The type scale is closed: 10 · 11 · 12 · 13 · 14 · 15 · 16 · 18 · 20 ·
+    // 22 · 24 · 28 (.sageHeadline) · 34 (.sageDisplay), plus 88 for the one
+    // hero numeral. Don't introduce a new size — pick the neighbor. Off-scale
+    // sizes are drift, and they're what makes screens feel subtly misaligned.
+    //
     // Every one is anchored to a system text style via `relativeTo:`, so the
     // whole app tracks the user's Dynamic Type setting. Without it,
     // `Font.custom(_:size:)` opts out of scaling entirely.

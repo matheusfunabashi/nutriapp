@@ -57,7 +57,7 @@ struct CompareView: View {
         }
         return VStack(alignment: .leading, spacing: 4) {
             Text(headline)
-                .font(.sageBold(26)).tracking(-0.6)
+                .font(.sageBold(24)).tracking(-0.6)
                 .foregroundColor(Theme.ink)
             Text(summary)
                 .font(.sageRegular(14))
@@ -124,7 +124,7 @@ struct CompareCol: View {
             if isWinner {
                 HStack(spacing: 4) {
                     Image(systemName: "checkmark")
-                        .font(.sageBold(9))
+                        .font(.sageBold(10))
                         .foregroundColor(.white)
                     Text("BETTER")
                         .font(.sageBold(10)).tracking(1)
@@ -157,16 +157,16 @@ struct CompareCol: View {
             if !product.restrictions.isEmpty {
                 VStack(alignment: .leading, spacing: 4) {
                     ForEach(product.restrictions) { r in
-                        HStack(spacing: 5) {
+                        HStack(spacing: 4) {
                             Text("⚠️").font(.sageRegular(10))
                             Text(r.trigger)
                                 .font(.sageBold(10))
-                                .foregroundColor(Color(hex: "C9442B"))
+                                .foregroundColor(Color.scoreBad)
                                 .lineLimit(1)
                         }
-                        .padding(.horizontal, 7).padding(.vertical, 4)
-                        .background(Color(hex: "C9442B").opacity(0.08))
-                        .cornerRadius(8)
+                        .padding(.horizontal, 8).padding(.vertical, 4)
+                        .background(Color.scoreBad.opacity(0.08))
+                        .clipShape(RoundedRectangle(cornerRadius: Theme.Radius.chip, style: .continuous))
                     }
                 }
             }
@@ -186,10 +186,10 @@ struct CompareCol: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(14)
         .background(
-            RoundedRectangle(cornerRadius: 22, style: .continuous).fill(Theme.card)
+            RoundedRectangle(cornerRadius: Theme.Radius.panel, style: .continuous).fill(Theme.card)
         )
         .overlay(
-            RoundedRectangle(cornerRadius: 22, style: .continuous)
+            RoundedRectangle(cornerRadius: Theme.Radius.panel, style: .continuous)
                 .stroke(isWinner ? c : Color.clear, lineWidth: 2)
         )
         .cardShadow()
@@ -216,7 +216,7 @@ struct ScoreLine: View {
                     .monospacedDigit().tracking(-0.6)
                     .foregroundColor(c)
                 Text(scoreLabel(score).uppercased())
-                    .font(.sageBold(9)).tracking(0.4)
+                    .font(.sageBold(10)).tracking(0.4)
                     .foregroundColor(c)
             }
         }
@@ -271,9 +271,9 @@ struct ValueCell: View {
     }
     private var winnerMark: some View {
         ZStack {
-            Circle().fill(Color(hex: "1F8A5B")).frame(width: 16, height: 16)
+            Circle().fill(Theme.accent).frame(width: 16, height: 16)
             Image(systemName: "checkmark")
-                .font(.sageBold(9))
+                .font(.sageBold(10))
                 .foregroundColor(.white)
         }
     }
@@ -287,7 +287,7 @@ struct AdditivesCol: View {
         return VStack(alignment: .leading, spacing: 4) {
             if sorted.isEmpty {
                 VStack(spacing: 6) {
-                    Circle().fill(Color(hex: "1F8A5B")).frame(width: 8, height: 8)
+                    Circle().fill(Theme.accent).frame(width: 8, height: 8)
                     Text("No additives")
                         .font(.sageBold(11))
                         .multilineTextAlignment(.center)
@@ -297,7 +297,7 @@ struct AdditivesCol: View {
                 .padding(.vertical, 14)
             } else {
                 ForEach(Array(sorted.enumerated()), id: \.element.id) { (i, a) in
-                    HStack(spacing: 7) {
+                    HStack(spacing: 6) {
                         Circle().fill(RiskStyle.fg(a.risk)).frame(width: 7, height: 7)
                         Text(a.name)
                             .font(.sageSemiBold(11))
@@ -315,7 +315,7 @@ struct AdditivesCol: View {
         .padding(10)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(
-            RoundedRectangle(cornerRadius: 18, style: .continuous).fill(Theme.card)
+            RoundedRectangle(cornerRadius: Theme.Radius.card, style: .continuous).fill(Theme.card)
         )
         .cardShadow()
     }

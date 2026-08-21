@@ -9,7 +9,6 @@ enum Overlay: Identifiable, Hashable {
     /// A category Sage deliberately doesn't rate (water, alcoholic drinks).
     case unsupported(productId: String)
     case compare(aId: String, bId: String)
-    case paywall
     case manual
     case methodology
     case personal
@@ -27,7 +26,6 @@ enum Overlay: Identifiable, Hashable {
         case .insufficientData(let id): return "insufficient_\(id)"
         case .unsupported(let id):      return "unsupported_\(id)"
         case .compare(let a, let b):    return "compare_\(a)_\(b)"
-        case .paywall:               return "paywall"
         case .manual:                return "manual"
         case .methodology:           return "methodology"
         case .personal:              return "personal"
@@ -155,7 +153,10 @@ struct ContentView: View {
                         onTapScan: { startScan() },
                         onTapHistory: { tab = .pantry },
                         onTapSearch: { push(.search) },
-                        onOpenProduct: { id in openProduct(id) }
+                        onOpenProduct: { id in openProduct(id) },
+                        onTapTopRated: { tab = .topRated },
+                        onTapPersonalize: { push(.dietary) },
+                        onOpenCategory: { shelf in push(.topRatedCategory(shelf: shelf.rawValue)) }
                     )
                 }
             }
@@ -325,7 +326,6 @@ struct ContentView: View {
                 onSelect: { code in openFromSearch(barcode: code) },
                 onTapScan: { startScan() }
             )
-        case .paywall:        PaywallView()
         case .manual:         ManualEntryView()
         case .methodology:    MethodologyView()
         case .personal:       PersonalDetailsView()
@@ -699,7 +699,7 @@ struct LookupOverlay: View {
                     .foregroundColor(Theme.inkSecondary)
             }
             .padding(.horizontal, 28)
-            .padding(.vertical, 26)
+            .padding(.vertical, 24)
             .background(
                 RoundedRectangle(cornerRadius: 22, style: .continuous)
                     .fill(Theme.card)
@@ -718,42 +718,6 @@ struct LookupOverlay: View {
 }
 
 // MARK: - Paywall / Manual (lightweight placeholders)
-
-struct PaywallView: View {
-    @Environment(\.dismiss) private var dismiss
-    @EnvironmentObject var store: AppStore
-
-    var body: some View {
-        ZStack {
-            LinearGradient(
-                colors: [store.accent, Color.black.opacity(0.85)],
-                startPoint: .top, endPoint: .bottom
-            ).ignoresSafeArea()
-            VStack(spacing: 16) {
-                Spacer()
-                Image(systemName: "crown.fill").font(.system(size: 56)).foregroundColor(.yellow)
-                Text("Sage Premium").font(.sageBold(32)).foregroundColor(.white)
-                Text("Unlimited scans, AI ingredient analysis, and personalized insights.")
-                    .font(.sageRegular(15))
-                    .multilineTextAlignment(.center)
-                    .foregroundColor(.white.opacity(0.8))
-                    .padding(.horizontal, 30)
-                Spacer()
-                Button("Start free trial") { dismiss() }
-                    .buttonStyle(.borderedProminent)
-                    .controlSize(.large)
-                    .tint(.white)
-                    .foregroundStyle(Theme.inkLight)
-                Button("Restore purchase") { dismiss() }
-                    .font(.sageSemiBold(13))
-                    .foregroundColor(.white.opacity(0.7))
-                    .padding(.bottom, 40)
-            }
-            .padding(.horizontal, 20)
-        }
-        .navigationBarTitleDisplayMode(.inline)
-    }
-}
 
 struct ManualEntryView: View {
     @Environment(\.dismiss) private var dismiss

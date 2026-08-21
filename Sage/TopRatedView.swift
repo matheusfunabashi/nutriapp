@@ -9,6 +9,12 @@ struct TopRatedCategoriesView: View {
     @EnvironmentObject var store: AppStore
     let onOpenCategory: (SageCategory) -> Void
 
+    /// Live pack shot for shelves with no bundled hero asset: the shelf's #1
+    /// product, resolved lazily per card. Emoji was the old fallback, but five
+    /// emoji tiles in a grid of real product photos read as unfinished — now
+    /// the emoji only shows while the photo loads (or offline).
+    @State private var heroProducts: [SageCategory: Product] = [:]
+
     private let columns = [
         GridItem(.flexible(), spacing: 12),
         GridItem(.flexible(), spacing: 12),
@@ -39,32 +45,48 @@ struct TopRatedCategoriesView: View {
                     .multilineTextAlignment(.leading)
                     .frame(maxWidth: .infinity, alignment: .leading)
 
-                if let asset = category.topRatedHeroAsset {
-                    Image(asset)
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 56, height: 56)
-                        .accessibilityHidden(true)
-                } else {
-                    Text(category.emoji)
-                        .font(.sageRegular(34))
-                        .frame(width: 56, height: 56)
-                        .accessibilityHidden(true)
+                Group {
+                    if let asset = category.bundledTopRatedHeroAsset {
+                        Image(asset)
+                            .resizable()
+                            .scaledToFit()
+                    } else if let hero = heroProducts[category] {
+                        ProductThumb(glyph: category.emoji, score: nil, size: 56,
+                                     imageURL: hero.listImageURL,
+                                     fallbackImageURL: hero.imageFallbackURL,
+                                     processCutout: hero.shouldProcessCutout)
+                    } else {
+                        Text(category.emoji)
+                            .font(.sageRegular(32))
+                    }
                 }
+                .frame(width: 56, height: 56)
+                .accessibilityHidden(true)
             }
             .padding(.leading, 14)
             .padding(.trailing, 10)
             .padding(.vertical, 12)
             .frame(maxWidth: .infinity, minHeight: 76, alignment: .center)
             .background(
-                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                RoundedRectangle(cornerRadius: Theme.Radius.card, style: .continuous)
                     .fill(Theme.card)
             )
             .cardShadow()
-            .contentShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+            .contentShape(RoundedRectangle(cornerRadius: Theme.Radius.card, style: .continuous))
         }
         .buttonStyle(.pressable)
         .accessibilityLabel("Top rated \(category.displayName)")
+        .task(id: category.id) {
+            guard category.bundledTopRatedHeroAsset == nil,
+                  heroProducts[category] == nil else { return }
+            // Highest-ranked product that actually has a photo — a top pick
+            // with no image slot would put the barcode fallback on the tile.
+            let ranked = TopRated.items(for: category, profile: store.user)
+            if let hero = ranked.first(where: { $0.product.listImageURL != nil })
+                ?? ranked.first {
+                heroProducts[category] = hero.product
+            }
+        }
     }
 }
 
@@ -145,7 +167,9 @@ private struct TopRatedRow: View {
                     Text(formatted.name)
                         .font(.sageBold(14)).tracking(-0.2)
                         .foregroundColor(Theme.ink)
-                        .lineLimit(1)
+                        // Two lines: "Organic Whole M…" truncations made
+                        // half the ranked names unreadable.
+                        .lineLimit(2)
                     if let size = formatted.size {
                         Text(size)
                             .font(.sageRegular(11))
