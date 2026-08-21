@@ -16,7 +16,9 @@ struct MethodologyView: View {
             ("Why sweeteners aren’t scored",
              "This is essentially pure sugar, and no concentrated sugar is a health food. Sage doesn't score sweeteners, so a number here would only mislead."),
             ("Whole foods",
-             "Minimally processed produce (NOVA 1–2, no additives) gets a clean additive score even when the ingredient list is missing — single-ingredient foods often lack one. Fruits, vegetables, eggs, legumes, nuts, berries, and salads use a produce-focused nutrition blend."),
+             "Minimally processed produce (NOVA 1–2, no additives) gets a clean additive score even when the ingredient list is missing — single-ingredient foods often lack one. Fruits, vegetables, legumes, nuts, berries, and salads use a produce-focused nutrition blend."),
+            ("Eggs",
+             "Eggs have their own profile. Protein is judged per 100 g against a reference whole egg, and the micronutrient rule credits what an egg actually delivers (choline, selenium, B12, vitamin D, riboflavin) — whole eggs and yolks carry that signature, egg whites only part of it. A label that declares more (vitamin D, omega-3, B12) can only raise the credit, never lower it. Processing and additives still count: plain shell, liquid and hard-boiled eggs score alike; preservatives, brines, colors and gums cost points; pickled eggs are judged on their sodium. Housing and feed claims (cage-free, free-range, pasture-raised, organic) are not scored — they are welfare and farming choices, not nutrients, and the measurable nutritional differences between them are small. Cholesterol is not penalized: current guidance treats up to an egg a day as compatible with heart health for most people."),
             ("Provisional scores",
              "When too much of the weighted profile rests on missing evidence, we mark the score provisional. Missing data lowers confidence; it does not invent numbers."),
         ]

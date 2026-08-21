@@ -64,6 +64,15 @@ struct Nutrients: Hashable, Codable {
     var magnesium_mg: Double? = nil
     var zinc_mg: Double? = nil
     var vitaminC_mg: Double? = nil
+    // V5.3 egg signature nutrients — declared per 100 g when the label carries
+    // them (US panels: vitamin D always, choline / B12 / selenium on enriched
+    // brands). Positive-only inputs to the S13 `egg` variant. Optional for
+    // back-compat; nil never penalizes.
+    var vitaminD_ug: Double? = nil
+    var vitaminB12_ug: Double? = nil
+    var choline_mg: Double? = nil
+    var selenium_ug: Double? = nil
+    var omega3_g: Double? = nil
 }
 
 /// One parsed ingredient with its declared or estimated recipe share.

@@ -48,7 +48,7 @@ struct V506HotfixTests {
 
     @Test func rulesetIsV506() throws {
         // Structural weight asserts still hold under V5.0.7; version bumped.
-        #expect(rs.version == "2026.08-v5.2.0")
+        #expect(rs.version == "2026.08-v5.3.0")
         let wf = try #require(rs.profiles["whole_foods"])
         #expect(wf.contains { $0.rule == "S5" && $0.w == 10 })
         #expect(wf.first { $0.rule == "S2" }?.w == 24)
@@ -173,7 +173,8 @@ struct V506HotfixTests {
             ScoringEngineV4.overviewContext(for: scored, profile: profile(), ruleset: rs)
         )
         #expect(!ctx.topNegative.contains { $0.topic.lowercased().contains("sodium") })
-        #expect(ScoringEngineV4.route(scored, ruleset: rs) == "whole_foods")
+        // V5.3: eggs have their own profile (was whole_foods).
+        #expect(ScoringEngineV4.route(scored, ruleset: rs) == "eggs")
     }
 
     @Test func evooNotProvisionalAndAtLeastSeventy() throws {

@@ -154,6 +154,8 @@ enum OverviewTemplate {
         if topic == "fat quality" {
             return "fat quality (refined or industrial oils)"
         }
+        // V5.3 eggs: S12 scores protein only (no fiber axis) — never invent fiber.
+        if topic == "protein" { return "limited protein credit" }
         if topic == "protein and fiber" {
             let n = ctx.nutrientLevels
             let proteinLine = n.first(where: { $0.lowercased().hasPrefix("protein") })?.lowercased() ?? ""
