@@ -112,6 +112,50 @@ struct RulesetV4: Codable {
     }
     let dairyFortification: DairyFortification?
 
+    // V5.3 eggs — optional so older rulesets (and frozen v5.0.9) keep their
+    // behavior when the config is absent.
+    struct EggConfig: Codable {
+        struct Prior: Codable { let whole: Double; let whites: Double }
+        struct WhitesEnvelope: Codable {
+            let maxSatFatG: Double; let maxKcal: Double; let minProteinG: Double
+        }
+        struct RoutingGuard: Codable {
+            let minProteinG: Double; let maxProteinG: Double
+            let maxKcal: Double; let yolkMaxKcal: Double; let maxSugarG: Double
+        }
+        struct Powder: Codable { let factor: Double; let kcalTrigger: Double; let keywords: [String] }
+        /// g protein / 100 g earning full S12 credit (USDA whole egg 12.6).
+        let proteinTargetG: Double
+        let s12UnknownCredit: Double
+        /// S13 reference-composition prior by form (whole/yolk vs whites).
+        let s13Prior: Prior
+        /// S13 lift per declared enrichment nutrient at/above its threshold
+        /// (≈2× a reference egg: vitamin D µg, B12 µg, omega-3 g, selenium µg).
+        let s13EnrichmentStep: Double
+        /// Ceiling on the total lift — an enriched egg is better, not perfect.
+        let s13EnrichmentMaxLift: Double
+        let s13Enrichment: [String: Double]
+        /// S3 credit when sugars are undeclared on a plain egg (structurally <1 g).
+        let s3UnknownCredit: Double
+        let eggWords: [String]
+        let whitesWords: [String]
+        let whitesTags: [String]
+        let yolkWords: [String]
+        let yolkTags: [String]
+        let whitesEnvelope: WhitesEnvelope
+        let routingGuard: RoutingGuard
+        let powder: Powder
+        enum CodingKeys: String, CodingKey {
+            case proteinTargetG, s12UnknownCredit, s13Prior, s13EnrichmentStep
+            case s13EnrichmentMaxLift, s13Enrichment
+            case s3UnknownCredit
+            case eggWords, whitesWords, whitesTags, yolkWords, yolkTags, whitesEnvelope
+            case routingGuard = "guard"
+            case powder
+        }
+    }
+    var eggs: EggConfig? = nil
+
     // S13 — beneficial micronutrient credit (positive-only). NRF-style: each
     // present nutrient contributes min(cap, %DV per 100g); the capped sum is
     // normalized by `target`. Optional so an older ruleset falls back to unknown.
@@ -443,6 +487,19 @@ enum ScoringEngineV4 {
         return q
     }
 
+    /// Profile-specific normalization applied before any rule evaluates
+    /// (dairy: powder reconstitution + fortification exemption; eggs: powder
+    /// reconstitution + evidence-based NOVA). One entry point so the score,
+    /// the overview payload and the evidence summary always see the same product.
+    static func normalizedForRules(_ p: Product, profileId: String, rs: RulesetV4) -> Product {
+        switch profileId {
+        case "dairy_milk": return dairyNormalized(p, rs: rs)
+        case "yogurt_cheese": return dairyNormalized(p, rs: rs, includePowder: false)
+        case "eggs": return eggNormalized(p, rs: rs)
+        default: return p
+        }
+    }
+
     /// nil when the product fails the minimum-data requirement (§3.3) —
     /// callers show the insufficient-data state, never a made-up number.
     static func score(_ p: Product, ruleset rs: RulesetV4 = .bundled) -> V4Result? {
@@ -450,8 +507,7 @@ enum ScoringEngineV4 {
         guard p.hasMinimumData else { return nil }
         let profileId = route(p, ruleset: rs)
         if profileId == "unsupported" || profileId == "unscored_sweetener" { return nil }
-        if profileId == "dairy_milk" { p = dairyNormalized(p, rs: rs) }
-        if profileId == "yogurt_cheese" { p = dairyNormalized(p, rs: rs, includePowder: false) }
+        p = normalizedForRules(p, profileId: profileId, rs: rs)
 
         // Drinks v2.3 — cap-based path (`drinks` + dose-aware `juice_100`).
         if profileId == "drinks" || profileId == "juice_100" {
@@ -510,8 +566,7 @@ enum ScoringEngineV4 {
         let profileId = route(p, ruleset: rs)
         if profileId == "unsupported" { return .unsupported }
         guard p.hasMinimumData else { return .insufficientData }
-        if profileId == "dairy_milk" { p = dairyNormalized(p, rs: rs) }
-        if profileId == "yogurt_cheese" { p = dairyNormalized(p, rs: rs, includePowder: false) }
+        p = normalizedForRules(p, profileId: profileId, rs: rs)
 
         // Diet / avoid flags still run for unscored sweeteners — there is just
         // no number to cap.
@@ -733,7 +788,7 @@ enum ScoringEngineV4 {
     /// avoid conflicts lead; then the rules the user's profile most emphasized.
     static func signedFactors(_ p: Product, profile: UserProfile,
                               ruleset rs: RulesetV4 = .bundled) -> [String] {
-        let p = applyingInferredFVN(to: p)
+        var p = applyingInferredFVN(to: p)
         var factors: [String] = []
         if let r = p.restrictions.first {
             factors.append("- conflicts with your \(r.type) restriction (\(r.trigger))")
@@ -743,6 +798,7 @@ enum ScoringEngineV4 {
         }
         let profileId = route(p, ruleset: rs)
         guard let ruleList = rs.profiles[profileId] else { return factors }
+        p = normalizedForRules(p, profileId: profileId, rs: rs)
         let mult = ruleMultipliers(profile, rs: rs)
         let scored = ruleList.map { pr -> (rule: String, f: Double, m: Double) in
             let (f, _, _) = evaluate(pr.rule, variant: pr.variant, product: p, rs: rs,
@@ -1254,6 +1310,11 @@ enum ScoringEngineV4 {
             if entry.profile == "whole_foods", !(nova == 0 || nova == 1 || nova == 2) {
                 continue
             }
+            // V5.3: the `eggs` tag is inherited by scotch eggs, egg pasta and
+            // egg dishes — only egg-dominant products take the eggs profile.
+            if entry.profile == "eggs", !passesEggGuard(p, rs: rs) {
+                continue
+            }
             var profile = entry.profile
             // Fix 5 — plain water tags with flavor evidence score as drinks.
             if profile == "unsupported",
@@ -1268,6 +1329,16 @@ enum ScoringEngineV4 {
                 return applyRoutingPlausibility(p, attempted: "juice_100", rs: rs)
             }
             return applyRoutingPlausibility(p, attempted: profile, rs: rs)
+        }
+        // V5.3 evidence gate — untagged egg products (OFF US imports often carry
+        // no categories at all): an egg word in the product NAME plus an egg
+        // word as the first ingredient, inside the plain-egg envelope, is an
+        // egg whatever the tags say. Name + list together, never either alone
+        // ("egg noodles" fails the list; "eggs, mayonnaise…" salads fail the
+        // protein floor).
+        if hasEggEvidence(p, rs: rs) {
+            logEvidenceRerail(p, attempted: "general", used: "eggs", gate: "eggEvidence")
+            return "eggs"
         }
         return applyRoutingPlausibility(p, attempted: "general", rs: rs)
     }
@@ -1289,6 +1360,11 @@ enum ScoringEngineV4 {
         let nova = p.novaGroup
         for entry in rs.router where tags.contains(entry.match) {
             if entry.profile == "whole_foods", !(nova == 0 || nova == 1 || nova == 2) {
+                continue
+            }
+            // V5.3: the `eggs` tag is inherited by scotch eggs, egg pasta and
+            // egg dishes — only egg-dominant products take the eggs profile.
+            if entry.profile == "eggs", !passesEggGuard(p, rs: rs) {
                 continue
             }
             if entry.profile == "drinks", DrinksScoring.qualifiesAsJuice100(p) {
@@ -1471,7 +1547,11 @@ enum ScoringEngineV4 {
         let n = p.nutrients
         // The dairy S12 variant runs on protein + calcium; fiber and kcal are
         // not inputs there, so their absence must not shave milk's confidence.
-        let s12IsDairy = results.first { $0.rule == "S12" }?.note?.hasPrefix("dairy") == true
+        // Same for the V5.3 egg variant (protein per 100 g only).
+        let s12IsDairy: Bool = {
+            let note = results.first { $0.rule == "S12" }?.note ?? ""
+            return note.hasPrefix("dairy") || note.hasPrefix("egg")
+        }()
         if n.sugar_g == nil, let w = byRule["S3"] { haircutPP += w / 2 }
         if n.satFat_g == nil, let w = byRule["S5"] { haircutPP += w / 2 }
         if n.sodium_mg == nil, let w = byRule["S4"] { haircutPP += w / 2 }
@@ -1549,8 +1629,16 @@ enum ScoringEngineV4 {
                 let r = s12DairyDenseCredit(p, cfg: rs.s12DairyDense)
                 return (r.0, r.1, "dairyDense: protein+calcium basis")
             }
+            // V5.3: eggs have no fiber/FVN axis either — protein per 100 g
+            // against a reference whole egg; the yolk's micronutrient
+            // signature lives in the S13 egg variant.
+            if variant == "egg" {
+                let r = s12EggCredit(p, cfg: rs.eggs)
+                return (r.0, r.1, "egg: protein basis")
+            }
             let r = s12(p, variant: variant); return (r.0, r.1, nil)
         case "S13":
+            if variant == "egg" { return s13Egg(p, rs: rs) }
             let r = s13(p, rs: rs); return (r.0, r.1, nil)
         case "S14":
             let r = s14(p); return (r.0, r.1, nil)
@@ -1915,6 +2003,13 @@ enum ScoringEngineV4 {
             return (result.0, result.1, note)
         }
 
+        // V5.3 eggs: sugars are structurally <1 g/100 g in an egg; an
+        // undeclared value on a plain egg is a label omission, not a risk.
+        if profileId == "eggs", let cfg = rs.eggs,
+           p.nutrients.sugar_g == nil, (p.nutrients.addedSugar_g ?? 0) <= 0 {
+            return (cfg.s3UnknownCredit, false, "S3 egg: sugar undeclared → structural prior")
+        }
+
         let thresholds = rs.s3Thresholds[variant] ?? rs.s3Thresholds["foods"]!
         // plant_milk etc. still use per-100 ml `drinks` thresholds.
         let useDrinksFvnCap = isDrinksVariant
@@ -1983,6 +2078,173 @@ enum ScoringEngineV4 {
         }
 
         return (f, result.1, note)
+    }
+
+    // MARK: V5.3 — eggs
+
+    enum EggForm: String { case whole, whites, yolk }
+
+    /// Which part of the egg the product is: drives the S13 reference prior.
+    /// Order of evidence: category tags → first ingredient / name words →
+    /// nutrient envelope (no yolk fat = whites).
+    static func eggForm(_ p: Product, rs: RulesetV4) -> EggForm {
+        guard let cfg = rs.eggs else { return .whole }
+        let tags = Set(p.categories ?? [])
+        if !tags.isDisjoint(with: cfg.yolkTags) { return .yolk }
+        if !tags.isDisjoint(with: cfg.whitesTags) { return .whites }
+        let lead: String = {
+            if let text = p.ingredientsText,
+               let first = IngredientIntegrity.tokens(from: text).first { return first }
+            return p.name.lowercased()
+        }()
+        if cfg.yolkWords.contains(where: { matchesWord($0, in: lead) }) { return .yolk }
+        if cfg.whitesWords.contains(where: { matchesWord($0, in: lead) }) { return .whites }
+        let n = p.nutrients
+        let env = cfg.whitesEnvelope
+        if let sat = n.satFat_g, sat <= env.maxSatFatG,
+           let kcal = n.kcal, kcal <= env.maxKcal,
+           (n.protein_g ?? 0) >= env.minProteinG {
+            return .whites
+        }
+        return .whole
+    }
+
+    private static func isEggPowder(_ p: Product, cfg: RulesetV4.EggConfig) -> Bool {
+        guard let kcal = p.nutrients.kcal, kcal >= cfg.powder.kcalTrigger else { return false }
+        let hay = (p.name + " " + (p.ingredientsText ?? "")).lowercased()
+        return cfg.powder.keywords.contains { hay.contains($0) }
+    }
+
+    /// Tag-independent egg evidence: egg word in the name AND as the first
+    /// ingredient AND the egg-dominance guard passes.
+    static func hasEggEvidence(_ p: Product, rs: RulesetV4) -> Bool {
+        guard let cfg = rs.eggs else { return false }
+        let name = p.name.lowercased()
+        guard cfg.eggWords.contains(where: { matchesWord($0, in: name) }) else { return false }
+        guard let text = p.ingredientsText,
+              let first = IngredientIntegrity.tokens(from: text).first,
+              cfg.eggWords.contains(where: { matchesWord($0, in: first) })
+        else { return false }
+        return passesEggGuard(p, rs: rs)
+    }
+
+    /// Egg-dominance routing guard. OFF's `eggs` tag is inherited by scotch
+    /// eggs, egg pasta and egg dishes. With an ingredient list, the first
+    /// ingredient must be an egg word; without one, the composition must look
+    /// like an egg. Declared protein below a plain egg's floor (egg salad,
+    /// quiche) falls through to `general` either way.
+    static func passesEggGuard(_ p: Product, rs: RulesetV4) -> Bool {
+        guard let cfg = rs.eggs else { return true }
+        let n = p.nutrients
+        let g = cfg.routingGuard
+        if let sugar = n.sugar_g, sugar > g.maxSugarG { return false }
+        if let prot = n.protein_g, prot < g.minProteinG { return false }
+        if let text = p.ingredientsText,
+           let first = IngredientIntegrity.tokens(from: text).first {
+            guard cfg.eggWords.contains(where: { matchesWord($0, in: first) }) else { return false }
+            if let kcal = n.kcal, kcal > g.yolkMaxKcal, !isEggPowder(p, cfg: cfg) { return false }
+            return true
+        }
+        guard let prot = n.protein_g, prot <= g.maxProteinG else { return false }
+        if let kcal = n.kcal, kcal > g.maxKcal { return false }
+        return true
+    }
+
+    /// V5.3 egg normalization (`eggs` route only).
+    /// 1. Egg powders are judged per 100 g as reconstituted (×0.25), like milk
+    ///    powders — never as a 48 g-protein / 13 g-sat-fat "food".
+    /// 2. Evidence-based NOVA: an ingredient list that is nothing but egg
+    ///    words, with no additives, is NOVA 1 by NOVA's own definition
+    ///    (pasteurization is allowed in group 1) regardless of the OFF tag;
+    ///    a plain egg with no list and no NOVA is treated as NOVA 1 too —
+    ///    a fifth of OFF eggs carry no NOVA and were scoring 47 as a result.
+    static func eggNormalized(_ p: Product, rs: RulesetV4) -> Product {
+        guard let cfg = rs.eggs else { return p }
+        var q = p
+        if isEggPowder(q, cfg: cfg) {
+            let f = cfg.powder.factor
+            func scale(_ v: inout Double?) { v = v.map { $0 * f } }
+            scale(&q.nutrients.sugar_g); scale(&q.nutrients.sodium_mg)
+            scale(&q.nutrients.satFat_g); scale(&q.nutrients.fiber_g)
+            scale(&q.nutrients.protein_g); scale(&q.nutrients.calcium_mg)
+            scale(&q.nutrients.kcal); scale(&q.nutrients.addedSugar_g)
+            scale(&q.nutrients.transFat_g); scale(&q.nutrients.iron_mg)
+            scale(&q.nutrients.potassium_mg); scale(&q.nutrients.magnesium_mg)
+            scale(&q.nutrients.zinc_mg); scale(&q.nutrients.vitaminC_mg)
+            scale(&q.nutrients.vitaminD_ug); scale(&q.nutrients.vitaminB12_ug)
+            scale(&q.nutrients.choline_mg); scale(&q.nutrients.selenium_ug)
+            scale(&q.nutrients.omega3_g)
+        }
+        guard q.additives.isEmpty else { return q }
+        let tokens = q.ingredientsText.map { IngredientIntegrity.tokens(from: $0) } ?? []
+        let plainEggList = !tokens.isEmpty && tokens.allSatisfy { t in
+            IngredientIntegrity.isWholeFoodToken(t)
+                && cfg.eggWords.contains { matchesWord($0, in: t) }
+        }
+        if plainEggList, q.novaGroup != 1 {
+            q.novaGroup = 1
+        } else if tokens.isEmpty, !(1...4).contains(q.novaGroup) {
+            q.novaGroup = 1
+        }
+        return q
+    }
+
+    /// S12 `egg` — protein per 100 g against a reference whole egg (absolute,
+    /// not per kcal, so whites vs whole stays a micronutrient question).
+    private static func s12EggCredit(_ p: Product, cfg: RulesetV4.EggConfig?) -> (Double, Bool) {
+        let target = cfg?.proteinTargetG ?? 12.6
+        guard let prot = p.nutrients.protein_g else { return (cfg?.s12UnknownCredit ?? 0.5, false) }
+        return (min(1, max(0, prot / target)), true)
+    }
+
+    /// Declared per-100 g value for an S13 nutrient key (generic + egg extras).
+    private static func microValue(_ key: String, _ n: Nutrients) -> Double? {
+        switch key {
+        case "iron_mg": return n.iron_mg
+        case "potassium_mg": return n.potassium_mg
+        case "magnesium_mg": return n.magnesium_mg
+        case "zinc_mg": return n.zinc_mg
+        case "vitaminC_mg": return n.vitaminC_mg
+        case "calcium_mg": return n.calcium_mg
+        case "vitaminD_ug": return n.vitaminD_ug
+        case "vitaminB12_ug": return n.vitaminB12_ug
+        case "choline_mg": return n.choline_mg
+        case "selenium_ug": return n.selenium_ug
+        case "omega3_g": return n.omega3_g
+        default: return nil
+        }
+    }
+
+    /// S13 `egg` — micronutrients from a reference-composition prior plus an
+    /// enrichment lift. A whole egg's real panel (choline, selenium, B12,
+    /// riboflavin, vitamin D, vitamin A, iron, lutein) clears the generic S13
+    /// target outright, but labels rarely declare it — US panels list vitamin
+    /// D, calcium, iron, potassium; choline / B12 only on some brands — so a
+    /// silent label must not rank below a complete one for the same egg. The
+    /// rule therefore starts from a form prior (whole/yolk vs whites, evidenced
+    /// by tags / ingredient / composition) and only values at or above an
+    /// enrichment threshold (≈2× a reference egg: vitamin D, B12, omega-3,
+    /// selenium — what feed programs actually change in the egg) lift it, one
+    /// step each, never lower it. The prior sits below full credit on purpose:
+    /// an assumption about the category must not outrank declared evidence.
+    private static func s13Egg(_ p: Product, rs: RulesetV4) -> (Double, Bool, String?) {
+        guard let cfg = rs.eggs else {
+            let r = s13(p, rs: rs); return (r.0, r.1, nil)
+        }
+        let form = eggForm(p, rs: rs)
+        let prior = form == .whites ? cfg.s13Prior.whites : cfg.s13Prior.whole
+        var hits: [String] = []
+        for (key, threshold) in cfg.s13Enrichment.sorted(by: { $0.key < $1.key }) {
+            guard threshold > 0, let v = microValue(key, p.nutrients), v >= threshold else { continue }
+            hits.append(key)
+        }
+        let lift = min(cfg.s13EnrichmentMaxLift, cfg.s13EnrichmentStep * Double(hits.count))
+        let f = min(1.0, prior + lift)
+        let note = hits.isEmpty
+            ? String(format: "egg: %@ reference prior %.2f", form.rawValue, prior)
+            : String(format: "egg: %@ prior %.2f + enrichment → %.2f (%@)",
+                     form.rawValue, prior, f, hits.joined(separator: ", "))
+        return (f, true, note)
     }
 
     // MARK: S12 — nutrient quality
@@ -2233,11 +2495,12 @@ enum ScoringEngineV4 {
     /// Build the structured overview payload from the live v4 scoring path.
     static func overviewContext(for product: Product, profile: UserProfile,
                                 ruleset rs: RulesetV4) -> OverviewContext? {
-        let product = applyingInferredFVN(to: product)
+        var product = applyingInferredFVN(to: product)
         guard product.hasMinimumData else { return nil }
         let profileId = route(product, ruleset: rs)
         if profileId == "unsupported" || profileId == "unscored_sweetener" { return nil }
         guard let ruleList = rs.profiles[profileId] else { return nil }
+        product = normalizedForRules(product, profileId: profileId, rs: rs)
 
         let multDetail = profile.personalizeScoring ? ruleMultiplierBreakdown(profile, rs: rs) : [:]
         let (evalResults, _) = evaluatedRules(
@@ -2250,9 +2513,12 @@ enum ScoringEngineV4 {
         // Relabel S12 to "protein and calcium" for those profiles. Keyed off the
         // profile's rule variant (authoritative) rather than the result note,
         // which the S12 isolate discount can overwrite.
-        let s12ScoresCalcium: Bool = {
-            guard let v = ruleList.first(where: { $0.rule == "S12" })?.variant else { return false }
-            return v == "dairy" || v == "dairyDense"
+        // V5.3: the egg variant scores protein only → "protein".
+        let s12Display: String? = {
+            guard let v = ruleList.first(where: { $0.rule == "S12" })?.variant else { return nil }
+            if v == "dairy" || v == "dairyDense" { return "protein and calcium" }
+            if v == "egg" { return "protein" }
+            return nil
         }()
         var rules: [OverviewRuleInput] = []
         for r in evalResults {
@@ -2260,7 +2526,7 @@ enum ScoringEngineV4 {
                 print("overview: missing displayName for rule \(r.rule); excluded from prose payload")
                 continue
             }
-            let display = (r.rule == "S12" && s12ScoresCalcium) ? "protein and calcium" : baseDisplay
+            let display = (r.rule == "S12" ? s12Display : nil) ?? baseDisplay
             let detail = multDetail[r.rule]
             let sources = detail?.factors.map {
                 OverviewMultiplierSource(source: $0.source, selection: $0.selection, factor: $0.factor)
@@ -2556,11 +2822,12 @@ enum ScoringEngineV4 {
     /// but not an unknown core driver.
     static func evidenceSummary(_ product: Product, ruleset rs: RulesetV4)
     -> (confidence: Double, maxUnknownWeight: Double)? {
-        let product = applyingInferredFVN(to: product)
+        var product = applyingInferredFVN(to: product)
         guard product.hasMinimumData else { return nil }
         let profileId = route(product, ruleset: rs)
         if profileId == "unsupported" || profileId == "unscored_sweetener" { return nil }
         guard let ruleList = rs.profiles[profileId] else { return nil }
+        product = normalizedForRules(product, profileId: profileId, rs: rs)
         var totalW = 0.0, backed = 0.0, maxUnknown = 0.0
         for pr in ruleList {
             let (_, had, _) = evaluate(pr.rule, variant: pr.variant, product: product, rs: rs,
@@ -2600,7 +2867,7 @@ extension ScoringEngineV4 {
     static func debugText(_ product: Product, for profile: UserProfile,
                           ruleset rs: RulesetV4) -> String {
         let fvnResolution = resolvedFVN(product)
-        let product = applyingInferredFVN(to: product)
+        var product = applyingInferredFVN(to: product)
         let n = product.nutrients
         var lines: [String] = []
 
@@ -2642,6 +2909,7 @@ extension ScoringEngineV4 {
             lines.append("  outcome: insufficientData")
             return lines.joined(separator: "\n")
         }
+        product = normalizedForRules(product, profileId: profileId, rs: rs)
         lines.append("")
 
         lines.append("INPUTS (per 100g)")

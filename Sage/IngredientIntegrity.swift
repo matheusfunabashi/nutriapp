@@ -50,10 +50,20 @@ enum IngredientIntegrity {
               let close = cleaned.range(of: "]", range: open.upperBound..<cleaned.endIndex) {
             cleaned.removeSubrange(open.lowerBound..<close.upperBound)
         }
+        // OFF allergen markup wraps words in underscores ("_Œufs_ frais");
+        // underscores are word characters to a regex, so strip them everywhere.
+        cleaned = cleaned.replacingOccurrences(of: "_", with: "")
         return cleaned
             .components(separatedBy: CharacterSet(charactersIn: ",;•\n"))
             .map { $0.trimmingCharacters(in: .whitespacesAndNewlines).lowercased() }
             .map { $0.replacingOccurrences(of: #"\s+"#, with: " ", options: .regularExpression) }
+            // V5.3: trailing sentence punctuation and OFF allergen markup
+            // ("Eggs." / "_Œufs_ frais" / "honey*") are not part of the
+            // ingredient. Before this, every list ending in a period failed the
+            // whitelist on its last token — a single-ingredient "Eggs." scored
+            // 0.55 instead of 1.0.
+            .map { $0.trimmingCharacters(in: CharacterSet(charactersIn: "._*:")) }
+            .map { $0.trimmingCharacters(in: .whitespaces) }
             .filter { !$0.isEmpty }
     }
 
@@ -64,6 +74,12 @@ enum IngredientIntegrity {
         "organic", "raw", "fresh", "local", "cultured", "pasteurized",
         "pasteurised", "homogenized", "homogenised", "unhomogenized",
         "unhomogenised", "grade a", "100%",
+        // V5.3 egg qualifiers — housing / size / form words that leave the
+        // food itself unchanged ("free range eggs" is still eggs).
+        "free range", "free-range", "cage free", "cage-free", "pasture raised",
+        "pasture-raised", "pastured", "barn", "hen", "liquid", "hard boiled",
+        "hard-boiled", "boiled", "cooked", "large", "medium", "grade aa",
+        "usda grade a", "usda grade aa",
     ]
 
     /// Exact whitelist match, or ingredient that starts with a multi-word whitelist entry.

@@ -95,7 +95,7 @@ struct CompactScoreRing: View {
         ZStack {
             Circle().stroke(Theme.ringTrack, lineWidth: stroke)
             Text("Unscored")
-                .font(.sageFixedBold(9))
+                .font(.sageFixedBold(10))
                 .multilineTextAlignment(.center)
                 .foregroundColor(Theme.inkSecondary)
                 .padding(.horizontal, 4)
@@ -118,7 +118,7 @@ struct CompactScoreRing: View {
                     .monospacedDigit()
                     .foregroundColor(Theme.ink)
                 Text(style.label)
-                    .font(.sageFixedMedium(9))
+                    .font(.sageFixedMedium(10))
                     .foregroundColor(Theme.inkSecondary)
             }
         }
@@ -274,7 +274,7 @@ struct ChipView: View {
 
     var body: some View {
         Button(action: action) {
-            HStack(spacing: 5) {
+            HStack(spacing: 4) {
                 if active {
                     Image(systemName: "checkmark")
                         .font(.sageBold(10))
@@ -285,7 +285,7 @@ struct ChipView: View {
                     .tracking(-0.1)
                     .foregroundColor(active ? accent : Theme.ink)
             }
-            .padding(.horizontal, 13).padding(.vertical, 8)
+            .padding(.horizontal, 12).padding(.vertical, 8)
             .background(Capsule().fill(active ? accent.opacity(0.10) : Self.idle))
             .overlay(Capsule().stroke(active ? accent : Self.idleStroke, lineWidth: 1))
         }
@@ -337,11 +337,11 @@ struct CardView<Content: View>: View {
         content
             .padding(padding)
             .background(
-                RoundedRectangle(cornerRadius: 22, style: .continuous)
+                RoundedRectangle(cornerRadius: Theme.Radius.panel, style: .continuous)
                     .fill(Theme.card)
             )
             .overlay(
-                RoundedRectangle(cornerRadius: 22, style: .continuous)
+                RoundedRectangle(cornerRadius: Theme.Radius.panel, style: .continuous)
                     .stroke(Theme.cardEdge, lineWidth: 0.5)
             )
             .cardShadow()
@@ -496,3 +496,85 @@ extension View {
     }
 }
 
+
+// MARK: - Underline tabs & filter chips
+//
+// Two small primitives that replace the stacked segmented pickers on Pantry.
+// A top-level mode switch reads as underline tabs (the App Store / Instagram /
+// Spotify pattern); a secondary filter reads as a row of capsule chips (Airbnb,
+// Uber Eats). Both animate selection with a spring and fire a selection haptic.
+
+struct SageUnderlineTabs<Item: Hashable>: View {
+    let items: [Item]
+    let title: (Item) -> String
+    @Binding var selection: Item
+    @Namespace private var underline
+
+    var body: some View {
+        // Equal columns, label centered in each, underline spanning the column
+        // — the two tabs mirror each other exactly around the screen's center.
+        HStack(spacing: 0) {
+            ForEach(items, id: \.self) { item in
+                let on = item == selection
+                Button {
+                    withAnimation(.spring(response: 0.32, dampingFraction: 0.85)) {
+                        selection = item
+                    }
+                } label: {
+                    VStack(spacing: 10) {
+                        Text(title(item))
+                            .font(.sageBold(16)).tracking(-0.3)
+                            .foregroundStyle(on ? Theme.ink : Theme.inkSecondary)
+                        ZStack {
+                            Capsule().fill(Color.clear).frame(height: 3)
+                            if on {
+                                Capsule().fill(Theme.accent).frame(height: 3)
+                                    .matchedGeometryEffect(id: "underline", in: underline)
+                            }
+                        }
+                        .padding(.horizontal, 20)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .accessibilityAddTraits(on ? .isSelected : [])
+            }
+        }
+        .overlay(alignment: .bottom) {
+            Rectangle().fill(Theme.hairline).frame(height: 1)
+        }
+        .sensoryFeedback(.selection, trigger: selection)
+    }
+}
+
+/// Capsule filter chip — filled ink when selected, quiet outline otherwise.
+/// The optional count sits after the label in tabular figures so chips don't
+/// jitter as numbers change.
+struct SageChip: View {
+    let title: String
+    var count: Int? = nil
+    let selected: Bool
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: 6) {
+                Text(title)
+                    .font(.sageSemiBold(14)).tracking(-0.2)
+                if let count {
+                    Text("\(count)")
+                        .font(.sageSemiBold(13)).monospacedDigit()
+                        .opacity(0.7)
+                }
+            }
+            .foregroundStyle(selected ? Theme.background : Theme.ink)
+            .padding(.horizontal, 14).padding(.vertical, 8)
+            .background(Capsule().fill(selected ? Theme.ink : Theme.card))
+            .overlay(Capsule().stroke(selected ? Color.clear : Theme.outline, lineWidth: 1))
+        }
+        .buttonStyle(.pressable)
+        .accessibilityAddTraits(selected ? .isSelected : [])
+        .accessibilityLabel(count.map { "\(title), \($0)" } ?? title)
+    }
+}

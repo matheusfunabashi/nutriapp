@@ -1,6 +1,6 @@
 # SCORING V5 — health-only score
 
-**Ruleset version:** `2026.08-v5.2.0`  
+**Ruleset version:** `2026.08-v5.3.0`  
 **Engine:** `ScoringEngineV4.engineVersion = "v5"` (Swift type name retained; behavior is V5)  
 **Config:** `Sage/RulesetV5.json` ↔ `backend/src/ruleset.json` (must stay byte-identical)  
 **Frozen fallback:** `Sage/RulesetV509.json` (`2026.07-v5.0.9`) when `flags.rulesetV510Enabled` is false  
@@ -61,6 +61,7 @@ of \(\sum w\). Confidence haircuts apply for missing nutrition inputs (floor 60%
 | `ice_cream` | S1 20, S3 16, S5 10, S2 20, S12 6, S13 4, S14 16, S15 8 |
 | `snacks` | S1 20, S2 24, S3 10, S4 12, S5 6, S12 4, S13 2, S14 14, S15 8 |
 | `whole_foods` | S2 20, S12 22, S3 14, S1 8, S4 6, S5 8, S13 6, S14 16 |
+| `eggs` | S2 18, S1 12, S3 4, S4 10, S5 8, S12 18 (`egg`), S13 12 (`egg`), S14 12, S15 6 |
 | `general` | S1 20, S2 22, S3 8, S4 8, S5 4, S12 11, S13 5, S14 14, S15 8 |
 | `breads` | S1 18, wholeGrain 12, S3 8, S4 8, S2 16, S12 12, S13 4, S14 14, S15 8 |
 | `meat` | S1 30, S2 14, S4 10, S5 6, S12 14, S13 4, S14 14, S15 8 |
@@ -70,6 +71,98 @@ of \(\sum w\). Confidence haircuts apply for missing nutrition inputs (floor 60%
 | `tea_coffee` | S1 28, S2 24, brewMaterial 12, S3 8 (`foods`), S12 14 (`dryBrew` — redistributes: beans/leaves never carry a micronutrient panel), S14 14 |
 | `drinks` | S1 23, S3 43 (`drinksServing`), S8 15 (caffeine), S6 13 (tiered sweeteners), S4 6 — **no S2, no S7** |
 | `juice_100` | same weights as `drinks`; dose-aware S3 + juice sugar cap + flat +3 micronutrient boost |
+
+## V5.3.0 Eggs (dedicated profile)
+
+Eggs used to route to `whole_foods` (fruit/veg blend). Its S12 is 80 %
+fiber + FVN — axes an egg can never earn — so a whole egg scored S12 ≈ 0.12
+and the overview told users one of the most nutrient-dense whole foods had
+"limited nutritional quality". Real OFF eggs scored **47–76** depending on
+label luck: no NOVA (a fifth of OFF eggs) → 47–51; "Eggs." with a trailing
+period or "Hen eggs" / "Œufs de poules élevées en plein air" → −6 on S14;
+`general` fallback for hard-boiled / liquid eggs. Oasis scores eggs almost
+entirely on sourcing (housing 30 / feed 30 / practices 25 / packaging 15) —
+welfare and farming inputs that Sage's health-only identity excludes. What
+Sage keeps from that line of thinking is the *measurable outcome*: nutrient
+enrichment declared in the egg, never the feed or housing claim.
+
+- **`eggs` profile** — S2 18, S1 12, S3 4, S4 10, S5 8, S12 18, S13 12,
+  S14 12, S15 6. Sugar is structurally ~0.5 g so S3 is small; sodium is
+  weighted up (brines / pickling are the real egg-product sodium story);
+  S15 stays for formulated products that add oils (redistributes on a plain
+  egg, as everywhere).
+- **Routing** — router `eggs` → `eggs`, gated by an **egg-dominance guard**
+  (`eggs.guard`): OFF's `eggs` tag is inherited by scotch eggs, egg pasta
+  and dishes. With a list, the first ingredient must be an egg word
+  (`eggs.eggWords`, multilingual); without one, composition must look like
+  an egg (protein 8–18 g, ≤220 kcal, ≤3 g sugar). Declared protein under
+  8 g/100 g (egg salad, quiche) falls through to `general` either way. A
+  tag-independent **`eggEvidence` gate** (egg word in the NAME *and* as the
+  first ingredient *and* the guard) catches OFF US imports that carry no
+  categories at all (field QA: a "Liquid Eggs" carton with `categories:
+  ["undefined"]`). Name or list alone never qualifies ("egg noodles",
+  "eggnog").
+- **Normalization** (`eggNormalized`, `eggs` route only) — (1) egg powders
+  are judged per 100 g as reconstituted (×0.25, keyword + kcal ≥ 400 trigger,
+  mirrors `dairyPowder`); (2) **evidence-based NOVA**: a list that is nothing
+  but egg words with no additives is NOVA 1 by NOVA's own definition
+  (pasteurization is group-1 processing) regardless of the OFF tag, and a
+  plain egg with no list and no NOVA is NOVA 1 too. A preserved list
+  ("eggs, water, citric acid, sodium benzoate") is never inferred.
+- **S12 `egg`** — protein per 100 g against a reference large egg
+  (`proteinTargetG` 12 — the US label value; USDA 12.6). Absolute, not per
+  kcal, so whites-vs-whole is answered by S13, not here. Unknown → 0.5.
+  Fiber/kcal confidence haircuts don't apply (no fiber axis). Overview topic
+  is relabelled **"protein"** (never "protein and fiber").
+- **S13 `egg`** — reference-composition **prior by form** (`s13Prior`:
+  whole/yolk 0.85, whites 0.45; form from tags → first ingredient / name
+  words → no-yolk-fat envelope) plus an **enrichment lift**: declared
+  vitamin D ≥ 4 µg, B12 ≥ 1.8 µg, omega-3 ≥ 0.3 g or selenium ≥ 60 µg per
+  100 g (≈2× a reference egg — what feed programs actually change in the egg)
+  adds 0.05 each, capped at +0.10. A full *ordinary* panel (vitamin D 2 µg,
+  choline 294 mg, selenium 31 µg) is the reference egg and lifts nothing —
+  label completeness must not separate identical eggs. The prior is marked
+  `hadData` (the form is evidenced), sits below full credit on purpose
+  (assumption < evidence), and declared values can only raise it. New
+  `Nutrients` fields: `vitaminD_ug`, `vitaminB12_ug`, `choline_mg`,
+  `selenium_ug`, `omega3_g` (OFF g/100 g → µg/mg with implausibility guards).
+- **S3 prior** — undeclared sugars on an `eggs`-routed product → 0.95
+  (`s3UnknownCredit`, unknown-tier): sugars in an egg are bounded far below
+  the first threshold; a label omission is not a risk.
+- **S14 fixes (generic)** — `IngredientIntegrity.tokens` now strips trailing
+  sentence punctuation and OFF allergen underscores (`"Eggs."`,
+  `"_Œufs_ frais"`, `"honey*"`); before, the last token of *every*
+  period-terminated list failed the whitelist. Qualifier stripping gains
+  housing / size / form words (free range, cage free, pasture raised, barn,
+  hen, liquid, hard boiled, boiled, cooked, large, medium, grade aa);
+  whitelist gains whole egg / egg white(s) / yolk / hen / quail / duck eggs
+  and FR / ES / PT / IT / DE / NL egg terms. Shelf-wide drift: 64 / 1 775
+  Alternatives products move, all +1/+2 except "MANGO." baby food +7,
+  "grade A nonfat _milk_" yogurt +6, one noodle −2 (a now-detected palm-oil
+  token); **no routing changes**.
+- **Overview** — S12 topic "protein" for eggs; template / Worker negative
+  phrase "limited protein credit"; the fiber-claim validator rejects fiber
+  prose for eggs automatically (no fiber topic in payload).
+- **Calibration (harness, real OFF records):** plain shell eggs 97–98 regardless of organic / free-range / pasture claims;
+  enriched (Eggland's Best: vitamin D 12 µg + B12 2 µg) 99; hard-boiled
+  clean = 100 % liquid = shell; egg whites 91; yolks 94; duck / quail 97–98;
+  hard-boiled with citric acid + sodium benzoate 81; century egg 76; pickled
+  74–75; formulated whites with gums / colors (Egg Beaters type) 60–61;
+  scotch eggs / egg salad → `general` (48 / 53); plant-based substitutes
+  untouched (not eggs). Eggs with no NOVA / no list now 98 (were 47–51).
+- **Deliberately not scored:** housing (cage-free / free-range / pasture —
+  welfare, and the measured nutrient differences are small and not on the
+  label), feed claims (corn-&-soy-free, organic feed), antibiotics, yolk
+  colorants, packaging, lab testing; **cholesterol** (DGA 2020–25 dropped the
+  300 mg cap; AHA 2019: up to an egg a day compatible with heart health for
+  most people — a dose / individual matter, not a product-ranking axis);
+  pasteurized-shell safety (a badge candidate, not points). Whole egg ≈ 98
+  vs plain milk 93: the framework places a clean single-ingredient animal
+  food near the ceiling; cholesterol is the only caveat and is documented,
+  not scored.
+- `rulesetV530Rescored` one-shot migration; overview cache stays `exp-v9`
+  (invalidated by the migration flag). `RulesetV509.json` untouched (kill
+  switch path keeps eggs on `whole_foods`).
 
 ## V5.2.0 Dairy milk (health-only, dairy-aware)
 

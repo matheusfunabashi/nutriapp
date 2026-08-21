@@ -29,3 +29,7 @@ TopRatedBuilder/fixtures/candidates-live.json
 TopRatedBuilder/fixtures/alternatives.json
 TopRatedBuilder/fixtures/top-rated.json
 __pycache__/
+TopRatedBuilder/fixtures/candidates-retry.json
+
+# Top Rated image-QA venv (see TopRatedBuilder/README.md)
+TopRatedBuilder/.imgenv/

@@ -85,6 +85,13 @@ extension SageCategory {
                  rootTags: ["pastas"],
                  subTags: ["dry-pastas", "fresh-pastas", "stuffed-pastas",
                            "whole-grain-pastas", "egg-pastas", "spaghetti", "penne", "macaroni"]),
+        // Eggs AFTER pasta: egg pasta / lasagne sheets are cross-tagged en:eggs
+        // in OFF; shell eggs never carry pasta tags, so nothing legit is stolen.
+        ShelfDef(shelf: .eggs,
+                 rootTags: ["eggs", "chicken-eggs"],
+                 subTags: ["free-range-chicken-eggs", "barn-chicken-eggs", "cage-chicken-eggs",
+                           "fresh-eggs", "egg-white", "egg-yolk", "hard-boiled-egg",
+                           "boiled-eggs", "quail-eggs", "duck-eggs"]),
         ShelfDef(shelf: .juice,
                  rootTags: ["fruit-juices", "juices", "vegetable-juices"],
                  subTags: ["orange-juices", "apple-juices", "grape-juices", "pineapple-juices",

@@ -214,6 +214,14 @@ struct OnboardingFlow: View {
         var u = store.user
         state.apply(to: &u)
         store.user = u
+
+        // Seed History with the granola the user just scored in the demo step,
+        // so the Pantry is never a blank slate on day one. It's a real product
+        // they interacted with, and it shows the row format before any scan.
+        if store.history.isEmpty,
+           let demo = OnboardingDemoProduct.scored(for: store.user) {
+            store.recordScan(demo)
+        }
         // Results is an inverted step, so drop the override explicitly rather
         // than relying on `onDisappear` racing the swap to main content.
         store.schemeOverride = nil

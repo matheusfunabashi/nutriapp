@@ -75,7 +75,7 @@ struct OnboardingTitle: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             Text(title)
-                .font(.sageBold(28)).tracking(-0.7)
+                .font(.sageHeadline).tracking(-0.7)
                 .foregroundColor(Theme.ink)
                 .fixedSize(horizontal: false, vertical: true)
                 .multilineTextAlignment(.leading)
@@ -103,6 +103,13 @@ struct OnboardingCTAButton: View {
     var inverted: Bool = false
     let action: () -> Void
 
+    @Environment(\.colorScheme) private var colorScheme
+
+    /// The pill must contrast with whatever ground it sits on: dark pill on
+    /// the light background, light pill on the dark background or the
+    /// inverted green steps. A black pill in dark mode disappears.
+    private var flipped: Bool { inverted || colorScheme == .dark }
+
     var body: some View {
         Button(action: action) {
             Text(title)
@@ -113,11 +120,8 @@ struct OnboardingCTAButton: View {
         .buttonStyle(.borderedProminent)
         .buttonBorderShape(.capsule)
         .controlSize(.large)
-        // Locked to black (or white when inverted) across the whole flow,
-        // regardless of color scheme — onboarding's CTA must read as the
-        // same neutral primary action on every step, not flip mid-flow.
-        .tint(inverted ? .white : .black)
-        .foregroundStyle(inverted ? Color.black : Color.white)
+        .tint(flipped ? .white : .black)
+        .foregroundStyle(flipped ? Color.black : Color.white)
         .disabled(!enabled)
         .opacity(enabled ? 1 : 0.45)
         .animation(.easeOut(duration: 0.18), value: enabled) // soft enable/disable
@@ -262,7 +266,7 @@ struct OnboardingInvertedTitle: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             Text(title)
-                .font(.sageBold(28)).tracking(-0.7)
+                .font(.sageHeadline).tracking(-0.7)
                 .foregroundStyle(OnboardingInverted.ink)
                 .fixedSize(horizontal: false, vertical: true)
             if let subtitle {
@@ -308,7 +312,7 @@ struct OnboardingHeroImage: View {
                     .scaleEffect(scale, anchor: .top)
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
             } else {
-                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                RoundedRectangle(cornerRadius: Theme.Radius.card, style: .continuous)
                     .stroke(Color.black.opacity(0.10),
                             style: StrokeStyle(lineWidth: 1, dash: [6, 5]))
                     .frame(maxWidth: .infinity, maxHeight: .infinity)

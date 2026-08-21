@@ -57,6 +57,7 @@ SHELF_TAGS = {
     # funnels ordinary dry pasta through en:noodles, duplicating the pasta shelf.
     "instantNoodles": ["en:instant-noodles"],
     "energyDrinks": ["en:energy-drinks"],
+    "eggs": ["en:eggs"],
 }
 
 # Shelf id → OFF tags that DISQUALIFY a candidate even though the pull query
@@ -108,6 +109,13 @@ SHELF_EXCLUDE = {
     "iceCream": ["en:cheeses", "en:fresh-cheeses"],
     "fatsAndOils": ["en:sugars", "en:sweeteners"],
     "chips": ["en:french-fries", "en:frozen-french-fries", "en:frozen-foods"],
+    # OFF parents egg pasta, scotch eggs, egg dishes and plant substitutes
+    # under en:eggs. The shelf means eggs you crack (shell / liquid / boiled).
+    "eggs": ["en:pastas", "en:egg-pastas", "en:lasagna-sheets", "en:scotch-eggs",
+             "en:egg-substitutes", "en:meat-analogues", "en:plant-based-foods",
+             "en:meals", "en:prepared-salads", "en:desserts", "en:sweet-snacks",
+             "en:confectioneries", "en:snacks", "en:sauces", "en:mayonnaises",
+             "en:egg-preparations", "en:scrambled-egg", "en:fried-egg"],
 }
 
 # Shelf id → product-name regex that disqualifies. Last resort for products
@@ -125,6 +133,7 @@ SHELF_NAME_EXCLUDE = {
     # Soups without noodles ("Vegan Split Pea Soup") are mis-tagged; noodle
     # soups ("Ramen Noodle Soup") are the genre itself.
     "instantNoodles": re.compile(r"^(?!.*(noodle|ramen)).*soup", re.I | re.S),
+    "eggs": re.compile(r"noodle|pasta|lasagn|scotch|salad|substitute|vegan|plant|quiche|omelet|bites|egg ?roll|mayo|nog|custard|egg ?white ?protein", re.I),
 }
 
 # Never a beverage regardless of shelf tags ("Original Canola Spray" has been
@@ -218,7 +227,16 @@ def fetch_page(tag, country_tag, page):
         try:
             req = urllib.request.Request(url, headers={"User-Agent": "Sage-TopRated/1.0"})
             with urllib.request.urlopen(req, timeout=60) as r:
-                return json.load(r).get("products", [])
+                body = r.read()
+            try:
+                return json.loads(body).get("products", [])
+            except ValueError:
+                # OFF's search backend serves an HTML "Page temporarily
+                # unavailable" with a 200 when it is down — not a transient
+                # blip worth eight retries.
+                raise SearchUnavailable(f"{tag} × {country_tag}: search returned non-JSON")
+        except SearchUnavailable:
+            raise
         except urllib.error.HTTPError as e:
             if e.code in (429, 500, 502, 503, 504):
                 time.sleep(min(2 ** attempt, 30)); continue
@@ -228,12 +246,94 @@ def fetch_page(tag, country_tag, page):
     raise PullFailed(f"{tag} × {country_tag} page {page} failed after retries")
 
 
+class SearchUnavailable(Exception):
+    """The v2 search endpoint is down (HTML body / persistent 5xx)."""
+
+
+# --- Fallback: search-a-licious index + per-product hydration --------------
+# OFF's search.pl / api/v2/search share one backend that goes down for hours
+# at a time. search-a-licious (search.openfoodfacts.org) stays up but its
+# index only carries codes / names / tags / nutriments — no ingredient text,
+# additives or images — so we take the popularity-sorted codes from it and
+# hydrate each one from the (separate, reliable) product endpoint.
+SAL_BASE = "https://search.openfoodfacts.org/search"
+PRODUCT_BASE = "https://world.openfoodfacts.org/api/v2/product"
+
+
+def sal_codes(tag, country_tag, per_shelf):
+    codes = []
+    pages = max(1, -(-per_shelf // PAGE_SIZE))
+    for page in range(1, pages + 1):
+        q = urllib.parse.urlencode({
+            "q": f'categories_tags:"{tag}" AND countries_tags:"{country_tag}"',
+            "page_size": PAGE_SIZE, "page": page, "fields": "code",
+            "sort_by": "-unique_scans_n",
+        })
+        req = urllib.request.Request(f"{SAL_BASE}?{q}",
+                                     headers={"User-Agent": "Sage-TopRated/1.0"})
+        for attempt in range(6):
+            try:
+                with urllib.request.urlopen(req, timeout=60) as r:
+                    hits = json.load(r).get("hits", [])
+                break
+            except Exception:
+                time.sleep(min(2 ** attempt, 30))
+        else:
+            raise PullFailed(f"{tag} × {country_tag}: search-a-licious page {page} failed")
+        codes.extend(h["code"] for h in hits if h.get("code"))
+        if len(hits) < PAGE_SIZE:
+            break
+        time.sleep(1.0)
+    return codes[:per_shelf]
+
+
+def hydrate(code):
+    """Full product record from the v2 product endpoint (rate-limited: ~30
+    rapid calls → 429, so back off and pace)."""
+    q = urllib.parse.urlencode({"fields": FIELDS})
+    req = urllib.request.Request(f"{PRODUCT_BASE}/{code}.json?{q}",
+                                 headers={"User-Agent": "Sage-TopRated/1.0"})
+    for attempt in range(8):
+        try:
+            with urllib.request.urlopen(req, timeout=60) as r:
+                return json.load(r).get("product")
+        except urllib.error.HTTPError as e:
+            if e.code == 404:
+                return None
+            if e.code in (429, 500, 502, 503, 504):
+                time.sleep(min(5 * (attempt + 1), 60)); continue
+            raise
+        except Exception:
+            time.sleep(min(2 ** attempt, 30)); continue
+    return None
+
+
+def fetch_via_sal(tag, country_tag, per_shelf):
+    codes = sal_codes(tag, country_tag, per_shelf)
+    print(f"  (search fallback) {tag} × {country_tag}: {len(codes)} codes, hydrating…",
+          file=sys.stderr)
+    out = []
+    for i, code in enumerate(codes):
+        p = hydrate(code)
+        if p:
+            p.setdefault("code", code)
+            out.append(p)
+        time.sleep(1.2)
+        if (i + 1) % 50 == 0:
+            print(f"    {i + 1}/{len(codes)}", file=sys.stderr)
+    return out
+
+
 def fetch(tag, country_tag, per_shelf):
     out = []
     pages = max(1, -(-per_shelf // PAGE_SIZE))  # ceil
     for page in range(1, pages + 1):
         try:
             batch = fetch_page(tag, country_tag, page)
+        except SearchUnavailable:
+            if out:
+                break
+            return fetch_via_sal(tag, country_tag, per_shelf)
         except PullFailed:
             if out:
                 # Page 1 landed; a flaky later page must not void the pull.

@@ -134,7 +134,7 @@ struct NutritionGoalsView: View {
                   systemImage: "chart.line.uptrend.xyaxis", color: Color(hex: "E16B5E")),
         Objective(id: "eat healthier", title: "Eat healthier",
                   desc: "Penalize ultra-processed, reward whole-food ingredients.",
-                  systemImage: "leaf.fill", color: Color(hex: "1F8A5B")),
+                  systemImage: "leaf.fill", color: Theme.accent),
     ]
 
     var body: some View {
@@ -148,7 +148,7 @@ struct NutritionGoalsView: View {
                                 .foregroundColor(o.color)
                                 .frame(width: 44, height: 44)
                                 .background(
-                                    RoundedRectangle(cornerRadius: 14, style: .continuous)
+                                    RoundedRectangle(cornerRadius: Theme.Radius.control, style: .continuous)
                                         .fill(o.color.opacity(0.10))
                                 )
                             VStack(alignment: .leading, spacing: 2) {

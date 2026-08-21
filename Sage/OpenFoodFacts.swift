@@ -273,7 +273,14 @@ struct OpenFoodFactsService {
             potassium_mg: n?.potassium.map { $0 * 1000 },
             magnesium_mg: n?.magnesium.map { $0 * 1000 },
             zinc_mg: n?.zinc.map { $0 * 1000 },
-            vitaminC_mg: n?.vitaminC.map { $0 * 1000 }
+            vitaminC_mg: n?.vitaminC.map { $0 * 1000 },
+            // V5.3 egg signature — g/100 g → µg or mg, with implausibility
+            // guards (unit mistakes in community data must never inflate S13).
+            vitaminD_ug: plausible(n?.vitaminD.map { $0 * 1_000_000 }, max: 100),
+            vitaminB12_ug: plausible(n?.vitaminB12.map { $0 * 1_000_000 }, max: 50),
+            choline_mg: plausible(n?.choline.map { $0 * 1000 }, max: 2000),
+            selenium_ug: plausible(n?.selenium.map { $0 * 1_000_000 }, max: 500),
+            omega3_g: plausible(n?.omega3, max: 30)
         )
 
         let additivesScan = scanAdditives(off)
@@ -363,6 +370,12 @@ struct OpenFoodFactsService {
     }
 
     // MARK: Scoring-v4 field mapping
+
+    /// Drops values outside a sane per-100 g range (nil-safe, >0 only).
+    private static func plausible(_ v: Double?, max: Double) -> Double? {
+        guard let v, v > 0, v <= max else { return nil }
+        return v
+    }
 
     private static func normalizedTags(_ tags: [String]?) -> [String]? {
         guard let tags, !tags.isEmpty else { return nil }
@@ -769,6 +782,13 @@ struct OFFNutriments: Codable {
     let magnesium: Double?
     let zinc: Double?
     let vitaminC: Double?
+    // V5.3 egg signature nutrients (OFF stores all of these in g/100 g;
+    // scaled to µg / mg at the mapping site).
+    let vitaminD: Double?
+    let vitaminB12: Double?
+    let choline: Double?
+    let selenium: Double?
+    let omega3: Double?
 
     enum CodingKeys: String, CodingKey {
         case sugars = "sugars_100g"
@@ -790,6 +810,11 @@ struct OFFNutriments: Codable {
         case magnesium = "magnesium_100g"
         case zinc = "zinc_100g"
         case vitaminC = "vitamin-c_100g"
+        case vitaminD = "vitamin-d_100g"
+        case vitaminB12 = "vitamin-b12_100g"
+        case choline = "choline_100g"
+        case selenium = "selenium_100g"
+        case omega3 = "omega-3-fat_100g"
     }
 
     init(from decoder: Decoder) throws {
@@ -819,6 +844,11 @@ struct OFFNutriments: Codable {
         magnesium = value(.magnesium)
         zinc = value(.zinc)
         vitaminC = value(.vitaminC)
+        vitaminD = value(.vitaminD)
+        vitaminB12 = value(.vitaminB12)
+        choline = value(.choline)
+        selenium = value(.selenium)
+        omega3 = value(.omega3)
     }
 
     func encode(to encoder: Encoder) throws {
@@ -841,5 +871,10 @@ struct OFFNutriments: Codable {
         try c.encodeIfPresent(magnesium, forKey: .magnesium)
         try c.encodeIfPresent(zinc, forKey: .zinc)
         try c.encodeIfPresent(vitaminC, forKey: .vitaminC)
+        try c.encodeIfPresent(vitaminD, forKey: .vitaminD)
+        try c.encodeIfPresent(vitaminB12, forKey: .vitaminB12)
+        try c.encodeIfPresent(choline, forKey: .choline)
+        try c.encodeIfPresent(selenium, forKey: .selenium)
+        try c.encodeIfPresent(omega3, forKey: .omega3)
     }
 }

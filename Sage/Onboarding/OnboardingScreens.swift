@@ -35,7 +35,7 @@ struct OnboardingWelcomeScreen: View {
 
             StaggeredAppear(index: 2) {
                 Text("Know exactly\nwhat's inside.")
-                    .font(.sageBold(34)).tracking(-1)
+                    .font(.sageDisplay).tracking(-1)
                     .foregroundColor(Theme.ink)
                     .multilineTextAlignment(.center)
                     .lineSpacing(2)
@@ -213,7 +213,7 @@ struct OnboardingScoresScreen: View {
                 .padding(20)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .background(
-                    RoundedRectangle(cornerRadius: 18, style: .continuous)
+                    RoundedRectangle(cornerRadius: Theme.Radius.card, style: .continuous)
                         .fill(Theme.card)
                 )
                 .cardShadow()
@@ -250,11 +250,11 @@ struct OnboardingScoresScreen: View {
         .frame(maxWidth: .infinity)
         .padding(.vertical, 16)
         .background(
-            RoundedRectangle(cornerRadius: 22, style: .continuous)
+            RoundedRectangle(cornerRadius: Theme.Radius.panel, style: .continuous)
                 .fill(Theme.card)
         )
         .overlay(
-            RoundedRectangle(cornerRadius: 22, style: .continuous)
+            RoundedRectangle(cornerRadius: Theme.Radius.panel, style: .continuous)
                 .stroke(borderColor, lineWidth: borderWidth)
         )
         .cardShadow()
@@ -279,7 +279,7 @@ struct OnboardingScoresScreen: View {
                 Text(reason)
                     .font(.sageSemiBold(11))
                     .foregroundColor(Theme.inkSecondary)
-                    .padding(.horizontal, 8).padding(.vertical, 3)
+                    .padding(.horizontal, 8).padding(.vertical, 4)
                     .background(Capsule().fill(Theme.hairline))
             }
             Spacer(minLength: 0)
@@ -369,7 +369,7 @@ struct OnboardingAlternativesScreen: View {
         .padding(.bottom, 8)
         .frame(height: 128, alignment: .topLeading)
         .background(
-            RoundedRectangle(cornerRadius: 18, style: .continuous)
+            RoundedRectangle(cornerRadius: Theme.Radius.card, style: .continuous)
                 .fill(Theme.card)
         )
         .cardShadow()
@@ -389,7 +389,7 @@ struct OnboardingAlternativesScreen: View {
                     .resizable()
                     .scaledToFit()
             } else {
-                Text(item.glyph).font(.sageRegular(34))
+                Text(item.glyph).font(.sageRegular(32))
             }
         }
         .frame(width: 70, height: 70)
@@ -481,12 +481,12 @@ struct OnboardingDietaryRestrictionsScreen: View {
             .padding(.vertical, 14)
             .frame(maxWidth: .infinity, minHeight: 52, alignment: .leading)
             .background(
-                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                RoundedRectangle(cornerRadius: Theme.Radius.control, style: .continuous)
                     .fill(selected ? accent.opacity(0.10) : Theme.card)
             )
             .overlay(
-                RoundedRectangle(cornerRadius: 14, style: .continuous)
-                    .stroke(selected ? accent : Color.black.opacity(0.08),
+                RoundedRectangle(cornerRadius: Theme.Radius.control, style: .continuous)
+                    .stroke(selected ? accent : Theme.outline,
                             lineWidth: selected ? 1.5 : 1)
             )
             .cardShadow()
@@ -589,12 +589,12 @@ struct OnboardingAllergensScreen: View {
             .padding(.vertical, 14)
             .frame(maxWidth: .infinity, minHeight: 52, alignment: .leading)
             .background(
-                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                RoundedRectangle(cornerRadius: Theme.Radius.control, style: .continuous)
                     .fill(selected ? accent.opacity(0.10) : Theme.card)
             )
             .overlay(
-                RoundedRectangle(cornerRadius: 14, style: .continuous)
-                    .stroke(selected ? accent : Color.black.opacity(0.08),
+                RoundedRectangle(cornerRadius: Theme.Radius.control, style: .continuous)
+                    .stroke(selected ? accent : Theme.outline,
                             lineWidth: selected ? 1.5 : 1)
             )
             .cardShadow()
@@ -803,7 +803,7 @@ struct OnboardingResultsScreen: View {
                     StaggeredAppear(index: 0) {
                         VStack(alignment: .leading, spacing: 10) {
                             Text("Here's where you stand")
-                                .font(.sageBold(28)).tracking(-0.6)
+                                .font(.sageHeadline).tracking(-0.6)
                                 .foregroundColor(.white)
                             Text("Based on your goals, here's a rough sense of where a typical pantry starts — and where Sage users land after a few weeks.")
                                 .font(.sageRegular(15))
@@ -827,7 +827,7 @@ struct OnboardingResultsScreen: View {
                             .font(.sageBold(11)).tracking(1.4)
                             .foregroundColor(Color.white.opacity(0.55))
                             .frame(maxWidth: .infinity, alignment: .leading)
-                            .padding(.horizontal, 24).padding(.top, 26).padding(.bottom, 10)
+                            .padding(.horizontal, 24).padding(.top, 24).padding(.bottom, 10)
                     }
 
                     StaggeredAppear(index: 3) {
@@ -839,7 +839,7 @@ struct OnboardingResultsScreen: View {
                             .font(.sageBold(11)).tracking(1.4)
                             .foregroundColor(Color.white.opacity(0.55))
                             .frame(maxWidth: .infinity, alignment: .leading)
-                            .padding(.horizontal, 24).padding(.top, 30).padding(.bottom, 8)
+                            .padding(.horizontal, 24).padding(.top, 32).padding(.bottom, 8)
                     }
 
                     StaggeredAppear(index: 5) {
@@ -855,15 +855,25 @@ struct OnboardingResultsScreen: View {
                         .padding(.horizontal, 16)
                     }
 
-                    Spacer().frame(height: 100)
+                    Spacer().frame(height: 12)
                 }
             }
-
-            VStack {
-                Spacer()
+            // Pinned as a safe-area inset so the scroll view knows about the
+            // pill and the last row can always scroll clear of it — a ZStack
+            // overlay left the final section trapped underneath.
+            .safeAreaInset(edge: .bottom) {
                 OnboardingCTAButton(title: "Start scanning", action: onStart)
                     .padding(.horizontal, 20)
-                    .padding(.bottom, 36)
+                    .padding(.top, 8)
+                    .padding(.bottom, 24)
+                    .background(
+                        // Soft scrim so scrolled-under content fades out
+                        // instead of colliding with the pill's edge.
+                        LinearGradient(colors: [bg.opacity(0), bg],
+                                       startPoint: .top, endPoint: .bottom)
+                            .padding(.top, -24)
+                            .ignoresSafeArea(edges: .bottom)
+                    )
             }
         }
     }
@@ -911,16 +921,16 @@ struct OnboardingResultsScreen: View {
         .padding(18)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(
-            RoundedRectangle(cornerRadius: 18, style: .continuous).fill(surface)
+            RoundedRectangle(cornerRadius: Theme.Radius.card, style: .continuous).fill(surface)
         )
     }
 
     private var statsCard: some View {
         VStack(spacing: 14) {
             statRow(title: "Your pantry today", score: 53,
-                    color: Color(hex: "D4A02D"))
+                    color: Color(hex: ScoreBandColor.okMid))
             statRow(title: "Avg Sage user (30 days)", score: 88,
-                    color: Color(hex: "3FBF7B"))
+                    color: Color(hex: ScoreBandColor.goodMid))
             Text("Illustrative estimate — not your actual pantry.")
                 .font(.sageRegular(11))
                 .foregroundColor(Color.white.opacity(0.40))
@@ -929,7 +939,7 @@ struct OnboardingResultsScreen: View {
         }
         .padding(20)
         .background(
-            RoundedRectangle(cornerRadius: 18, style: .continuous).fill(surface)
+            RoundedRectangle(cornerRadius: Theme.Radius.card, style: .continuous).fill(surface)
         )
     }
 

@@ -1,11 +1,14 @@
 import Foundation
+#if canImport(UIKit)
+import UIKit
+#endif
 
 /// Browse / Top Rated categories — single source for Sage shelves.
 enum SageCategory: String, CaseIterable, Identifiable, Hashable {
     case soda, water, chocolate, cookies, cereal, cheese, yogurt, bread
     case juice, chips, coffee, pasta, iceCream, babyFood
     case nutButtersAndSpreads, snackBars, milks, fatsAndOils, instantNoodles
-    case energyDrinks
+    case energyDrinks, eggs
 
     var id: String { rawValue }
 
@@ -31,6 +34,7 @@ enum SageCategory: String, CaseIterable, Identifiable, Hashable {
         case .fatsAndOils:            return "Fats & oils"
         case .instantNoodles:         return "Instant noodles"
         case .energyDrinks:           return "Energy drinks"
+        case .eggs:                   return "Eggs"
         }
     }
 
@@ -56,6 +60,7 @@ enum SageCategory: String, CaseIterable, Identifiable, Hashable {
         case .fatsAndOils:            return "🫒"
         case .instantNoodles:         return "🍜"
         case .energyDrinks:           return "⚡"
+        case .eggs:                   return "🥚"
         }
     }
 
@@ -76,8 +81,29 @@ enum SageCategory: String, CaseIterable, Identifiable, Hashable {
         case .snackBars:    return "snackbar-tr"
         case .soda:         return "soda-tr"
         case .yogurt:       return "yogurt-tr"
+        // Not yet bundled — drop a `<name>.imageset` (1x/2x/3x PNG cutouts,
+        // same format as soda-tr) into Assets.xcassets and the grid picks it
+        // up automatically; until then the tile shows the shelf's top product
+        // photo (see TopRatedCategoriesView).
+        case .cookies:              return "cookies-tr"
+        case .nutButtersAndSpreads: return "nut-butter-tr"
+        case .instantNoodles:       return "instant-noodles-tr"
+        case .fatsAndOils:          return "fats-oils-tr"
+        case .babyFood:             return "baby-food-tr"
+        case .eggs:                 return "eggs-tr"
         default:            return nil
         }
+    }
+
+    /// `topRatedHeroAsset`, but only when the imageset actually exists in the
+    /// bundle — a named-but-missing asset would render an empty tile.
+    var bundledTopRatedHeroAsset: String? {
+        #if canImport(UIKit)
+        guard let name = topRatedHeroAsset, UIImage(named: name) != nil else { return nil }
+        return name
+        #else
+        return nil   // macOS tools (TopRatedBuilder) have no asset catalog
+        #endif
     }
 
     /// Browse order for the Top Rated grid (two-up cards). Every populated
@@ -86,7 +112,7 @@ enum SageCategory: String, CaseIterable, Identifiable, Hashable {
     /// scores poorly, and a "Top Rated" list of red pills is not a
     /// recommendation.
     static let topRatedBrowse: [SageCategory] = [
-        .soda, .juice, .milks, .yogurt,
+        .soda, .juice, .milks, .eggs, .yogurt,
         .cheese, .iceCream, .cereal, .bread,
         .pasta, .chips, .snackBars, .chocolate,
         .cookies, .nutButtersAndSpreads, .instantNoodles,

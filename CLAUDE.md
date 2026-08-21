@@ -1,3 +1,118 @@
+**Follow [design.md](design.md) for all UI work** — typography scale, color tokens, radii, spacing grid, and interaction rules. No raw hex values, off-scale font sizes, or ad-hoc radii in views.
+
+# Session Changelog — 2026-08-21 — Egg scoring (v5.3.0)
+
+Audit of egg scoring against the live engine (CLI harness over 29 real OFF
+records + 40 fixtures) and Oasis' egg methodology. Eggs rode `whole_foods`,
+whose S12 is 80 % fiber+FVN — structurally zero for an egg — so real eggs
+scored 47–76 on label luck and the overview called them "limited nutritional
+quality". Oasis scores eggs on sourcing (housing/feed/practices/packaging);
+Sage keeps only the measurable health outcome. Ruleset `2026.08-v5.3.0`;
+full rationale in SCORING_V5.md §"V5.3.0 Eggs"; tests `EggScoringV53Tests`.
+
+- **`eggs` profile** (S2 18, S1 12, S3 4, S4 10, S5 8, S12 18 `egg`, S13 12
+  `egg`, S14 12, S15 6) with an egg-dominance routing guard (scotch eggs,
+  egg pasta, egg salad fall through) and a tag-independent `eggEvidence`
+  gate for untagged US liquid-egg cartons.
+- **S12 `egg`** = protein per 100 g vs a reference egg (no fiber axis;
+  overview topic "protein"). **S13 `egg`** = reference prior by form
+  (whole/yolk 0.85, whites 0.45) + enrichment lift (declared vitamin D /
+  B12 / omega-3 / selenium ≥ ~2× reference; +0.05 each, cap +0.10). Ordinary
+  full panels lift nothing — label completeness can't separate identical eggs.
+- **Evidence-based NOVA**: egg-only ingredient list (or no list + no NOVA)
+  → NOVA 1; egg powders scored as reconstituted.
+- **S14 generic fixes**: trailing punctuation + OFF `_allergen_` underscores
+  stripped from tokens; egg qualifiers strippable; multilingual egg whitelist.
+  Shelf drift 64/1 775, all +1/+2 (two +6/+7 single-ingredient lists), no
+  routing changes.
+- New `Nutrients` fields (vitamin D, B12, choline, selenium, omega-3) decoded
+  from OFF with implausibility guards.
+- Calibration: plain eggs 97–98 regardless of housing/organic claims,
+  enriched 99, whites 91, hard-boiled clean = liquid = shell, HB with
+  preservatives 81, pickled 74, Egg Beaters-type 60. Cholesterol, housing,
+  feed, packaging, lab testing deliberately unscored (see SCORING_V5.md).
+- Not done (follow-ups): Top Rated "Eggs" shelf (TopRatedBuilder
+  `SHELF_TAGS`), pasteurized-shell badge, cholesterol / vitamin D rows on the
+  product page, `meat` profile has the same dead-S12 structure.
+
+---
+
+# Session Changelog — 2026-08-20 — Design-system audit & consolidation
+
+Audited the app against an app-design playbook (design-as-trust-signal:
+one type scale, tokens everywhere, squircles, funnel-ordered polish) via a
+full simulator walkthrough in both schemes. Wrote **design.md** (the system
+of record; header line above enforces it) and fixed what the audit found.
+All changes build clean; verified visually in the simulator.
+
+- **Light by default is a product decision** — the seed profile's
+  `appearance: "light"` is intentional: fresh installs open light regardless
+  of the device setting; users opt into Dark/System in Preferences. (Was
+  briefly flipped to "system" during this audit and reverted on request.)
+- **Onboarding CTA visible in dark mode** — the pill was "locked to black
+  regardless of color scheme", i.e. invisible on the dark background.
+  `OnboardingCTAButton` now flips black/white by environment scheme.
+- **Results-screen pinned CTA** ("Here's where you stand") moved from a
+  ZStack overlay to `.safeAreaInset(edge: .bottom)` + gradient scrim — the
+  "WE'LL WATCH FOR" section could never scroll clear of the pill.
+- **Dead fake paywall removed** — `PaywallView` (unreachable; "Start free
+  trial" just dismissed) + `Overlay.paywall`. The real paywall is Superwall's
+  remote `app_access` template; its broken price interpolation ("Subscribe
+  for /" with a dead button when products don't load) must be fixed in the
+  Superwall dashboard, not here.
+- **Radius tokens** — `Theme.Radius` (panel 22 / card 18 / control 14 /
+  chip 8), all 76 call sites migrated, stragglers (24/20/16/12/10/8/3)
+  snapped, last non-continuous corners fixed, deprecated `.cornerRadius()`
+  modifier replaced.
+- **Gray tokens** — `Theme.fillQuiet/.fillMuted/.fillTrack/.outline`
+  replace ~30 scattered `Color.black/white.opacity(…)` and `dark ?`
+  ternaries; near-duplicate hexes (`1F8A5B`, `C9442B`, `D4A02D`, `D4A437`,
+  `3FBF7B`) folded into `Theme.accent` / score-band tokens. Nutri-Score and
+  NOVA ladders deliberately keep their own palettes.
+- **Type scale closed** — outlier sizes snapped (9→10, 17→16, 19→20,
+  26→24, emoji 34→32); `sageBold(28)`→`.sageHeadline`,
+  `sageBold(34)`→`.sageDisplay`; scale documented in `Typography.swift`.
+- **Spacing on-grid** — odd paddings/spacings (3/5/7/9/13/26/30) snapped to
+  the 2·4pt grid.
+- **Top Rated grid** — the five categories with no bundled `-tr` pack shot
+  (cookies, nut butters, instant noodles, fats & oils, baby food) showed
+  emoji next to nine photo tiles; they now resolve their shelf's
+  highest-ranked product *with an image* via `ProductThumb` (emoji only as
+  load/offline fallback). Ideal endgame: curated pack-shot assets like the
+  other nine. Ranked-row names now wrap to 2 lines (were truncating).
+- Known cosmetic nit kept as-is: demo reveal ring at 55 is green because
+  Good ≥55 — band color, not a bug.
+- **Pantry controls** — the two stacked segmented pickers (History/Favorites,
+  All/Good/Avoid) read as a form. Now `SageUnderlineTabs` (sliding accent
+  underline, App Store / Spotify pattern) for the mode switch and `SageChip`
+  capsules with tabular counts for the filter (Airbnb / Uber Eats pattern);
+  both in `Shared.swift`.
+- **Product page** — "Add to favorites" button under Compare replaced by a
+  heart in the nav bar (top-right, accent-filled when saved, bounce +
+  selection haptic on toggle).
+- **First-run empty states** (research: Mobbin empty-state collection, Spotify
+  genre cards, Gemini suggestion cards, Airbnb Wishlist) — no more icon-in-a-void:
+  Home shows a goal-aware "Top picks" rail of real scored products + a
+  "Sage is watching for" chip strip until the first real scan; History is
+  seeded with the onboarding demo scan and, when empty, shows a compact
+  top-anchored intro card + "Meanwhile, worth a look" rows; Favorites shows
+  the same intro + "Worth saving" rows with inline hearts. Filter chips hide
+  at zero items. All from bundled shelves via `StarterPicks.swift`.
+- **Home restructure** (competitor teardown of Oasis + Mobbin home patterns):
+  the green scan card became a **Pantry Score hero** — `ScoreRing` of the
+  average Your Score over the last 20 real scans with a weekly trend line and
+  the Scan CTA folded in; before 3 scored scans it's an unlock-progress ring
+  ("0/3"), never a demotivating zero. A **Browse top rated** rail of pack-shot
+  chips sits under search (tap → that shelf's list). **Top picks** cards now
+  carry a one-line "why for you" from `ScoringEngine.signedFactors` and an
+  inline heart. Deliberately not borrowed from Oasis: sky-gradient half-screen
+  hero, community/trending (no social layer), corner glass buttons, search FAB.
+- **Top Rated pack shots** — `-tr` hero assets wired for cookies / nut-butter /
+  instant-noodles / fats-oils / baby-food via `bundledTopRatedHeroAsset`
+  (falls back to the live top product photo if the imageset is missing).
+
+---
+
 # Session Changelog — 2026-08-14 — Dairy-aware milk scoring (v5.2.0)
 
 Milk scoring audit against the engine's live per-rule output (CLI harness) found

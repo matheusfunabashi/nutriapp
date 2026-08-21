@@ -278,6 +278,8 @@ function negativePhrase(topic: string, input: ExplainRequest): string {
   }
   if (topic === "quality labels") return "no quality certification labels on file";
   if (topic === "certifications") return "no certification labels on file";
+  // V5.3 eggs: S12 scores protein only (no fiber axis) — never invent fiber.
+  if (topic === "protein") return "limited protein credit";
   if (topic === "protein and fiber") {
     const levels = (input.nutrientLevels ?? []).map((l) => l.toLowerCase());
     const fiberGood = levels.some(

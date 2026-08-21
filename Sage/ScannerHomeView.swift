@@ -6,6 +6,14 @@ struct ScannerHomeView: View {
     let onTapHistory: () -> Void
     let onTapSearch: () -> Void
     let onOpenProduct: (String) -> Void
+    /// First-run starter section hooks (Top Rated tab / Personalize screen).
+    var onTapTopRated: (() -> Void)? = nil
+    var onTapPersonalize: (() -> Void)? = nil
+    /// Browse rail → one Top Rated shelf.
+    var onOpenCategory: ((SageCategory) -> Void)? = nil
+
+    /// Goal-aware starter picks, resolved once; shown until the first scan.
+    @State private var starterPicks: [Alternative] = []
 
     var body: some View {
         ScrollView(showsIndicators: false) {
@@ -18,16 +26,36 @@ struct ScannerHomeView: View {
                         .padding(.horizontal, 16).padding(.top, 4).padding(.bottom, 8)
                 }
                 StaggeredAppear(index: 2) {
-                    heroCard()
+                    pantryScoreHero()
                         .padding(.horizontal, 16).padding(.bottom, 6)
                 }
-                StaggeredAppear(index: 3) { recentSection() }
+                StaggeredAppear(index: 3) { browseRail() }
+                StaggeredAppear(index: 4) {
+                    if hasRealScans {
+                        recentSection()
+                    } else {
+                        starterSection()
+                    }
+                }
             }
         }
         .sageScreenBackground()
+        .task(id: store.user.healthGoals) {
+            // Only worth scoring while there's no history to show instead.
+            guard !hasRealScans else { return }
+            starterPicks = StarterPicks.picks(for: store.user, limit: 6)
+        }
         // The brand lockup is the title here, so the system bar would only add
         // an empty strip above it. Pushed screens still get their own bar.
         .toolbar(.hidden, for: .navigationBar)
+    }
+
+    /// History minus the onboarding demo scan the flow seeds — one demo row
+    /// under "Recent scans" would read as thin, so Home keeps the starter
+    /// section until the user has scanned something of their own.
+    private var hasRealScans: Bool {
+        let demoId = OnboardingDemoProduct.candidate?.barcode
+        return store.history.contains { $0.productId != demoId }
     }
 
     /// Mark and wordmark as one horizontal lockup, sitting directly on the
@@ -83,7 +111,7 @@ struct ScannerHomeView: View {
             }
             .padding(.horizontal, 14).padding(.vertical, 12)
             .background(
-                RoundedRectangle(cornerRadius: 14, style: .continuous).fill(Theme.card)
+                RoundedRectangle(cornerRadius: Theme.Radius.control, style: .continuous).fill(Theme.card)
             )
             .cardShadow()
         }
@@ -91,40 +119,189 @@ struct ScannerHomeView: View {
         .accessibilityLabel("Search a product or brand")
     }
 
-    private func heroCard() -> some View {
-        Button(action: onTapScan) {
-            HStack(spacing: 14) {
-                VStack(alignment: .leading, spacing: 3) {
-                    Text("Scan a barcode")
-                        .font(.sageBold(17))
-                        .tracking(-0.4)
-                        .foregroundColor(.white)
-                    Text("Point your camera at any food barcode.")
-                        .font(.sageRegular(13))
-                        .foregroundColor(.white.opacity(0.8))
-                        .lineLimit(1)
-                }
-                Spacer(minLength: 8)
-                ZStack {
-                    Circle().fill(Color.white.opacity(0.2))
-                    Image(systemName: "viewfinder")
-                        .font(.sageBold(18))
-                        .foregroundColor(.white)
-                }
-                .frame(width: 44, height: 44)
-            }
-            .padding(.horizontal, 18).padding(.vertical, 16)
-            .background(
-                LinearGradient(
-                    colors: [store.accent, Color(hex: "0C5A3B")],
-                    startPoint: .topLeading, endPoint: .bottomTrailing
-                )
-            )
-            .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
-            .shadow(color: store.accent.opacity(0.25), radius: 16, x: 0, y: 8)
+    // MARK: Pantry Score hero
+    //
+    // The one personal number on Home — the average Your Score of what the
+    // user has actually scanned — so the screen has a reason to be revisited
+    // (Duolingo's streak, Oasis's "Your Score"). Never shows a 0: until three
+    // scored scans exist it's a progress ring toward unlocking, which keeps the
+    // scan CTA purposeful instead of generic.
+
+    private static let unlockCount = 3
+    /// Recent window the score is averaged over — a pantry, not a lifetime.
+    private static let scoreWindow = 20
+
+    /// Real scans only (the onboarding demo seed is excluded), newest first,
+    /// paired with their Your Score when the product is scored.
+    private var scoredScans: [(entry: HistoryEntry, score: Int)] {
+        let demoId = OnboardingDemoProduct.candidate?.barcode
+        return store.history.compactMap { h in
+            guard h.productId != demoId,
+                  let s = store.products[h.productId]?.yourScore else { return nil }
+            return (h, s)
         }
-        .buttonStyle(.pressable)
-        .accessibilityLabel("Scan a barcode")
+    }
+
+    private var pantryScore: Int? {
+        let recent = scoredScans.prefix(Self.scoreWindow)
+        guard recent.count >= Self.unlockCount else { return nil }
+        return Int((Double(recent.reduce(0) { $0 + $1.score }) / Double(recent.count)).rounded())
+    }
+
+    /// This week's average minus the prior week's; nil until both have ≥2 scans.
+    private var weeklyTrend: Int? {
+        let now = Date.now
+        guard let weekAgo = Calendar.current.date(byAdding: .day, value: -7, to: now),
+              let twoWeeksAgo = Calendar.current.date(byAdding: .day, value: -14, to: now) else { return nil }
+        let thisWeek = scoredScans.filter { $0.entry.scannedAt >= weekAgo }
+        let lastWeek = scoredScans.filter { $0.entry.scannedAt >= twoWeeksAgo && $0.entry.scannedAt < weekAgo }
+        guard thisWeek.count >= 2, lastWeek.count >= 2 else { return nil }
+        let a = Double(thisWeek.reduce(0) { $0 + $1.score }) / Double(thisWeek.count)
+        let b = Double(lastWeek.reduce(0) { $0 + $1.score }) / Double(lastWeek.count)
+        return Int((a - b).rounded())
+    }
+
+    private func pantryScoreHero() -> some View {
+        let scanned = min(scoredScans.count, Self.unlockCount)
+        return VStack(spacing: 14) {
+            HStack(spacing: 16) {
+                if let score = pantryScore {
+                    ScoreRing(score: score, size: 84, stroke: 8)
+                } else {
+                    unlockRing(progress: scanned)
+                }
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("PANTRY SCORE")
+                        .font(.sageBold(11)).tracking(1.4)
+                        .foregroundColor(Theme.inkSecondary)
+                    if let score = pantryScore {
+                        Text(scoreLabel(score))
+                            .font(.sageBold(20)).tracking(-0.4)
+                            .foregroundColor(Theme.ink)
+                        Text(trendLine(score: score))
+                            .font(.sageRegular(13))
+                            .foregroundColor(Theme.inkSecondary)
+                            .fixedSize(horizontal: false, vertical: true)
+                    } else {
+                        Text(scanned == 0 ? "Unlock your score" : "\(Self.unlockCount - scanned) to go")
+                            .font(.sageBold(20)).tracking(-0.4)
+                            .foregroundColor(Theme.ink)
+                        Text("Scan \(Self.unlockCount) products and Sage averages how your pantry scores for you.")
+                            .font(.sageRegular(13))
+                            .foregroundColor(Theme.inkSecondary)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                }
+                Spacer(minLength: 0)
+            }
+
+            Button(action: onTapScan) {
+                HStack(spacing: 8) {
+                    Image(systemName: "viewfinder")
+                        .font(.sageBold(15))
+                    Text("Scan a product")
+                        .font(.sageBold(15)).tracking(-0.2)
+                }
+                .foregroundColor(.white)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 14)
+                .background(Capsule().fill(store.accent))
+            }
+            .buttonStyle(.pressable)
+            .accessibilityLabel("Scan a product barcode")
+        }
+        .padding(16)
+        .background(
+            RoundedRectangle(cornerRadius: Theme.Radius.panel, style: .continuous).fill(Theme.card)
+        )
+        .cardShadow()
+        .accessibilityElement(children: .contain)
+    }
+
+    /// Progress toward the first Pantry Score — accent arc over the track,
+    /// "n/3" in the middle. Same geometry as `ScoreRing` so the swap at
+    /// unlock doesn't shift the layout.
+    private func unlockRing(progress: Int) -> some View {
+        ZStack {
+            Circle().stroke(Theme.ringTrack, lineWidth: 8)
+            Circle()
+                .trim(from: 0, to: CGFloat(progress) / CGFloat(Self.unlockCount))
+                .stroke(store.accent, style: StrokeStyle(lineWidth: 8, lineCap: .round))
+                .rotationEffect(.degrees(-90))
+                .animation(.easeOut(duration: 0.6), value: progress)
+            Text("\(progress)/\(Self.unlockCount)")
+                .font(.sageFixedBold(16)).monospacedDigit()
+                .foregroundColor(Theme.ink)
+        }
+        .frame(width: 84, height: 84)
+        .accessibilityLabel("\(progress) of \(Self.unlockCount) scans toward your Pantry Score")
+    }
+
+    private func trendLine(score: Int) -> String {
+        let n = min(scoredScans.count, Self.scoreWindow)
+        let base = "Across your last \(n) scans"
+        guard let t = weeklyTrend, t != 0 else { return base + "." }
+        return base + " · \(t > 0 ? "up" : "down") \(abs(t)) this week."
+    }
+
+    // MARK: Browse rail
+    //
+    // A browse path on Home (the Top Rated tab stays the deep version):
+    // pack-shot chips for every shelf, tap → that shelf's ranked list.
+
+    private func browseRail() -> some View {
+        VStack(spacing: 8) {
+            HStack(alignment: .firstTextBaseline) {
+                Text("Browse top rated")
+                    .font(.sageSemiBold(18))
+                    .tracking(-0.4)
+                    .foregroundColor(Theme.ink)
+                Spacer()
+                if let onTapTopRated {
+                    Button(action: onTapTopRated) {
+                        Text("See all")
+                            .font(.sageMedium(13))
+                            .foregroundColor(Theme.inkSecondary)
+                            .padding(.vertical, 8).padding(.leading, 12)
+                    }
+                    .buttonStyle(.pressable)
+                    .accessibilityLabel("See all top rated categories")
+                }
+            }
+            .padding(.horizontal, 24).padding(.top, 14)
+
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 10) {
+                    ForEach(SageCategory.topRatedBrowse) { category in
+                        Button {
+                            onOpenCategory?(category)
+                        } label: {
+                            HStack(spacing: 8) {
+                                Group {
+                                    if let asset = category.bundledTopRatedHeroAsset {
+                                        Image(asset).resizable().scaledToFit()
+                                    } else {
+                                        Text(category.emoji).font(.sageRegular(20))
+                                    }
+                                }
+                                .frame(width: 32, height: 32)
+                                Text(category.displayName)
+                                    .font(.sageSemiBold(14)).tracking(-0.2)
+                                    .foregroundColor(Theme.ink)
+                                    .lineLimit(1)
+                            }
+                            .padding(.leading, 8).padding(.trailing, 14).padding(.vertical, 8)
+                            .background(Capsule().fill(Theme.card))
+                            .overlay(Capsule().stroke(Theme.outline, lineWidth: 1))
+                        }
+                        .buttonStyle(.pressable)
+                        .accessibilityLabel("Top rated \(category.displayName)")
+                    }
+                }
+                .padding(.horizontal, 16)
+                .padding(.bottom, 4)
+            }
+        }
     }
 
     // MARK: Recent scans (display-time grouping)
@@ -194,35 +371,7 @@ struct ScannerHomeView: View {
             }
             .padding(.horizontal, 24).padding(.top, 20).padding(.bottom, 10)
 
-            if recent.isEmpty {
-                VStack(spacing: 12) {
-                    VStack(spacing: 4) {
-                        Text("No scans yet")
-                            .font(.sageSemiBold(14))
-                            .tracking(-0.2)
-                            .foregroundColor(Theme.ink)
-                        Text("Point Sage at a barcode and your recent picks will land here.")
-                            .font(.sageRegular(12))
-                            .foregroundColor(Theme.inkSecondary)
-                            .multilineTextAlignment(.center)
-                    }
-                    Button(action: onTapScan) {
-                        Text("Scan a product")
-                            .font(.sageSemiBold(14))
-                            .tracking(-0.2)
-                    }
-                        .buttonStyle(.borderedProminent)
-                        .tint(store.accent)
-                        .controlSize(.small)
-                }
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 24).padding(.horizontal, 16)
-                .background(
-                    RoundedRectangle(cornerRadius: 18, style: .continuous).fill(Theme.card)
-                )
-                .cardShadow()
-                .padding(.horizontal, 16)
-            } else {
+            if !recent.isEmpty {
                 VStack(spacing: 8) {
                     ForEach(recent) { group in
                         if let p = store.products[group.productId] {
@@ -233,6 +382,95 @@ struct ScannerHomeView: View {
                     }
                 }
                 .padding(.horizontal, 16)
+            }
+        }
+    }
+
+    // MARK: First-run starter content (before the first scan)
+    //
+    // "Recent scans" has nothing to show on day one, and a card that says so is
+    // a placeholder for content that doesn't exist yet. Instead the slot holds
+    // real, goal-personalized products the user can open right now, plus the
+    // watchlist they just set up — the section hands over to Recent scans the
+    // moment history exists.
+
+    private func starterSection() -> some View {
+        let watch = StarterPicks.watchlist(for: store.user)
+        let personalized = !(store.user.healthGoals ?? []).isEmpty
+        return VStack(spacing: 0) {
+            HStack(alignment: .firstTextBaseline) {
+                Text(personalized ? "Top picks for you" : "Top picks to start with")
+                    .font(.sageSemiBold(18))
+                    .tracking(-0.4)
+                    .foregroundColor(Theme.ink)
+                Spacer()
+                if let onTapTopRated {
+                    Button(action: onTapTopRated) {
+                        Text("See all")
+                            .font(.sageMedium(13))
+                            .foregroundColor(Theme.inkSecondary)
+                            .padding(.vertical, 8).padding(.leading, 12)
+                    }
+                    .buttonStyle(.pressable)
+                    .accessibilityLabel("See all top rated")
+                }
+            }
+            .padding(.horizontal, 24).padding(.top, 20).padding(.bottom, 10)
+
+            if starterPicks.isEmpty {
+                // Scoring is near-instant, but never flash an empty rail.
+                HStack(spacing: 12) {
+                    ForEach(0..<3, id: \.self) { _ in
+                        RoundedRectangle(cornerRadius: Theme.Radius.card, style: .continuous)
+                            .fill(Theme.fillQuiet)
+                            .frame(width: 148, height: 176)
+                    }
+                }
+                .padding(.horizontal, 16)
+                .frame(maxWidth: .infinity, alignment: .leading)
+            } else {
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 12) {
+                        ForEach(starterPicks) { pick in
+                            StarterPickCard(pick: pick) {
+                                store.saveProduct(pick.product)
+                                onOpenProduct(pick.product.id)
+                            }
+                        }
+                    }
+                    .padding(.horizontal, 16)
+                    .padding(.bottom, 8) // room for the card shadow
+                }
+                .scrollClipDisabled()
+            }
+
+            if !watch.isEmpty {
+                VStack(alignment: .leading, spacing: 10) {
+                    Text("SAGE IS WATCHING FOR")
+                        .font(.sageBold(11)).tracking(1.4)
+                        .foregroundColor(Theme.inkSecondary)
+                        .padding(.horizontal, 24)
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: 8) {
+                            ForEach(watch, id: \.self) { item in
+                                SageChip(title: item, selected: false) {
+                                    onTapPersonalize?()
+                                }
+                            }
+                            if let onTapPersonalize {
+                                Button(action: onTapPersonalize) {
+                                    Label("Edit", systemImage: "slider.horizontal.3")
+                                        .font(.sageSemiBold(13))
+                                        .foregroundStyle(store.accent)
+                                        .padding(.horizontal, 12).padding(.vertical, 8)
+                                }
+                                .buttonStyle(.pressable)
+                            }
+                        }
+                        .padding(.horizontal, 16)
+                    }
+                }
+                .padding(.top, 14)
             }
         }
     }
@@ -279,7 +517,7 @@ private struct RecentRow: View {
             }
             .padding(12)
             .background(
-                RoundedRectangle(cornerRadius: 18, style: .continuous).fill(Theme.card)
+                RoundedRectangle(cornerRadius: Theme.Radius.card, style: .continuous).fill(Theme.card)
             )
             .cardShadow()
         }

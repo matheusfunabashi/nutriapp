@@ -1,5 +1,5 @@
 {
-  "version": "2026.08-v5.2.0",
+  "version": "2026.08-v5.3.0",
   "bands": {
     "excellent": 75,
     "good": 55,
@@ -617,6 +617,47 @@
       {
         "rule": "S13",
         "w": 4
+      }
+    ],
+    "eggs": [
+      {
+        "rule": "S2",
+        "w": 18
+      },
+      {
+        "rule": "S1",
+        "w": 12
+      },
+      {
+        "rule": "S3",
+        "w": 4,
+        "variant": "foods"
+      },
+      {
+        "rule": "S4",
+        "w": 10
+      },
+      {
+        "rule": "S5",
+        "w": 8
+      },
+      {
+        "rule": "S12",
+        "w": 18,
+        "variant": "egg"
+      },
+      {
+        "rule": "S13",
+        "w": 12,
+        "variant": "egg"
+      },
+      {
+        "rule": "S14",
+        "w": 12
+      },
+      {
+        "rule": "S15",
+        "w": 6
       }
     ]
   },
@@ -1335,7 +1376,7 @@
     },
     {
       "match": "eggs",
-      "profile": "whole_foods"
+      "profile": "eggs"
     },
     {
       "match": "legumes",
@@ -1546,6 +1587,51 @@
       "retinyl palmitate",
       "lactase"
     ]
+  },
+  "eggs": {
+    "proteinTargetG": 12.0,
+    "s12UnknownCredit": 0.5,
+    "s13Prior": { "whole": 0.85, "whites": 0.45 },
+    "s13EnrichmentStep": 0.05,
+    "s13EnrichmentMaxLift": 0.1,
+    "s13Enrichment": {
+      "vitaminD_ug": 4,
+      "vitaminB12_ug": 1.8,
+      "omega3_g": 0.3,
+      "selenium_ug": 60
+    },
+    "s3UnknownCredit": 0.95,
+    "eggWords": [
+      "egg", "eggs", "œuf", "œufs", "oeuf", "oeufs", "huevo", "huevos",
+      "ovo", "ovos", "uovo", "uova", "ei", "eier", "hühnerei", "hühnereier",
+      "vollei", "flüssigei", "albumen", "albume", "albumi", "eiweiß", "eiweiss",
+      "eiklar", "eigelb", "clara", "claras", "gema", "gemas", "yema", "yemas",
+      "tuorlo", "tuorli"
+    ],
+    "whitesWords": [
+      "egg white", "egg whites", "liquid egg white", "liquid egg whites",
+      "albumen", "albume", "albumi", "eiweiß", "eiweiss", "eiklar",
+      "clara de huevo", "claras de huevo", "clara de ovo", "claras de ovo",
+      "blanc d'œuf", "blancs d'œuf", "blancs d'œufs", "blanc d'oeuf", "blancs d'oeufs"
+    ],
+    "whitesTags": ["egg-white", "egg-whites", "egg-white-powder", "egg-white-cooked", "liquid-egg-whites"],
+    "yolkWords": [
+      "egg yolk", "egg yolks", "tuorlo", "tuorli", "gema", "gemas", "yema", "yemas",
+      "jaune d'œuf", "jaunes d'œufs", "jaune d'oeuf", "jaunes d'oeufs", "eigelb"
+    ],
+    "yolkTags": ["egg-yolk", "egg-yolks", "egg-yolk-powder", "cooked-egg-yolk"],
+    "whitesEnvelope": { "maxSatFatG": 0.3, "maxKcal": 70, "minProteinG": 8 },
+    "guard": { "minProteinG": 8, "maxProteinG": 18, "maxKcal": 220, "yolkMaxKcal": 340, "maxSugarG": 3 },
+    "powder": {
+      "factor": 0.25,
+      "kcalTrigger": 400,
+      "keywords": [
+        "egg powder", "powdered egg", "powdered eggs", "dried egg", "dried eggs",
+        "dried whole egg", "dehydrated egg", "egg white powder", "whole egg powder",
+        "œuf en poudre", "oeuf en poudre", "poudre d'œuf", "huevo en polvo",
+        "ovo em pó", "uovo in polvere", "eipulver", "volleipulver"
+      ]
+    }
   },
   "brewMaterial": [
     {
