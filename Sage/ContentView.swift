@@ -283,7 +283,8 @@ struct ContentView: View {
                     fromScan: fromScan,
                     onCompare: { beginCompare(productId: id) },
                     onOpenMethodology: { showMethodModal = true },
-                    onSelectAlternative: { alt in openAlternative(alt) }
+                    onSelectAlternative: { alt in openAlternative(alt) },
+                    onOpenShelf: { shelf in push(.topRatedCategory(shelf: shelf.rawValue)) }
                 )
             } else {
                 UnavailableView(title: "Couldn't open this product",

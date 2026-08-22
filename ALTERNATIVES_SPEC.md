@@ -1,6 +1,6 @@
 # Sage — "Better Alternatives" feature spec
 
-**Status: DRAFT for build.** After every scan, show up to three products of the
+**Status: shipped (v1 2026-07, v2 gates 2026-08-22).** After every scan, show up to three products of the
 same kind that score genuinely better. Grounded in the V5 engine + the
 `TopRatedBuilder` / `SageCategory` infrastructure already in the repo.
 
@@ -110,6 +110,35 @@ struct Alternative { let product: Product; let score: Int; let sharedTag: Bool }
 
 ## 3. On-device selection contract
 
+> **v2 (2026-08-22 audit).** The v1 algorithm below still describes the shape;
+> the gates in §3.5 are what actually decide a suggestion today. Rationale for
+> each gate lives in the header of `Sage/Alternatives.swift`.
+
+### 3.5 What a suggestion must clear (v2)
+
+| # | Gate | Why |
+|---|------|-----|
+| 1 | **Evidence** — `TopRated.isEligible`: ingredients, known NOVA, a real nutrition table, rule confidence ≥ 0.80, no unknown core rule ≥ 20 w. | Thin OFF records score high *because* information is missing (the shipped soda shelf had a NOVA-less "Diet Mountain Dew" with an OCR ingredient list re-scoring **100**, suggested to every soda incl. Olipop 74; Tropicana OJ with no nutrition table 71; nuun caffeine *tablets* 61). Top Rated already gated this; Better Options never did. |
+| 2 | **Market** — `countries` contains `us` **and** barcode evidence: UPC / UPC-E prefix 000–139, an ALDI-US / Lidl-US store-brand prefix, or (instant-noodle shelf only) an Asian import prefix. | OFF's community country tags leaked Hungarian Coke, Indian Thumbs Up, Polish Hortex, Hebrew juice, Latvian curd snacks, German oats and UK M&S crisps into the `us` pull. "Declared added sugars" was tried as a US-label signal and rejected (community-typed zeros on EU records). |
+| 3 | **Safety** — no restriction conflict (engine `restrictions`), no allergen hit (`AllergenMatcher`), no avoid-list hit. | A nut-allergic or vegan shopper must never be handed almond butter / cottage cheese as a "better option". |
+| 4 | **Fit** — same shelf, `SageCategory.isSwapCompatible` (form groups), not the scanned barcode or a size/region SKU (`TopRated.listKey`). | Cheddar → cottage cheese ×3, cookies → Larabar + oatcakes + energy bar, chocolate bars → baking bar / Lindt 100 %, Cheerios → raw rolled oats ×3, loaf → Ezekiel *tortillas*, pasta → ramen, apple juice → tomato juice, oat milk ↔ cow's milk, formula → fruit pouch. Forms: per-shelf tag + name-regex table in `SageCategoryShelf.swift`; non-suggestible forms (formula, baking chocolate, crackers/bars in cookies, lemon juice, popsicles, caffeine tablets). |
+| 5 | **Better** — `axis ≥ baseline + 10`, preferring picks ≥ 55 ("Good"), margin-only fallback on junk shelves. Axis = **Your Score** when personalization is on (the number the page emphasizes), else Overall. | Rows used to show Overall in a "Your Score" pill next to a page built around Your Score. |
+| 6 | **Useful** — one pick per brand, near-duplicate names collapsed, same anchor tag first, then same form, then score; max 3. | poppi cola ×2, Häagen-Dazs ×2, RXBAR ×3, Ezekiel ×3. |
+
+Each pick carries `delta` (on the axis) and up to two `reasons`
+(`AlternativeReasons`: less sugar / minimally or less processed / no or fewer
+additives / no artificial sweeteners / less sodium / less saturated fat / more
+protein / more fiber / no trans fat) — label-derived, thresholded per 100 g/ml
+so 0.2 g vs 0.1 g never reads as "less sugar".
+
+Routing fixes that rode along: `chips` no longer roots on `chips-and-fries`
+(frozen fries got crisps), `instantNoodles` only on the instant family (plain
+`noodles` / dehydrated soups / dried meals fell in), `babyFood` no longer
+roots on `baby-milks` / `infant-formulas` (formula → `.noShelf`), `yogurt`
+is matched before `milks` (kefir / yogurt drinks carry `dairy-drinks`), and
+`milks` also roots on `milk-substitutes`.
+
+
 ```swift
 enum Alternatives {
     /// Up to 3 same-shelf products that beat `scanned` by a margin, best first.
@@ -164,13 +193,17 @@ bundled copy.
 
 ## 5. Behavior rules & empty states
 
-- **Show suggestions:** a "Better options" row under the score card, max 3 cards
-  (image · name · brand · score pill), each tappable → its own ResultView —
-  when `Alternatives.suggest` returns `.suggestions([...])`.
-- **Show already-top chip:** when the outcome is `.alreadyTopOfShelf` (shelf
-  peers exist, but `baseline + MARGIN > max(live peer scores)`), render a single
-  positive line — checkmark + "Among the best in its category" — styled like the
-  Organic ✓ chip. No empty suggestion cards.
+- **Show suggestions:** a "Better options" **horizontal rail** under the
+  score card (same shape as the Home "Top picks" rail — Scout-style), max 3
+  compact cards (photo with the score ring in the corner · brand + name (2
+  lines) · **one reason** "Less sugar"), each tappable → its own ResultView;
+  "See all" in the header → `TopRatedListView` for shelves in
+  `topRatedBrowse` — when `Alternatives.suggest` returns `.suggestions([...])`.
+- **Show already-top line:** when the outcome is `.alreadyTopOfShelf` (shelf
+  peers exist, but `baseline + MARGIN > max(live peer scores)`), render one
+  positive line — seal icon + "Among the best <shelf> we've scored", tappable
+  into the ranking when one exists. No empty suggestion cards.
+- Selection runs in `.task` off the main thread (≈50 re-scores per shelf).
 - **Hide entirely when:** `.noShelf` · `.unscored` · `.noBetterPeers` (shelf has
   peers but none clear the margin for a reason other than "already top").
 - **Fire after** the result screen renders; never block score/scan.
@@ -186,11 +219,18 @@ bundled copy.
 Implemented in `TopRatedBuilder/`:
 
 1. **`generate_candidates.py`** — per shelf, pulls OFF products matching
-   `SHELF_TAGS` + `countries_tags` for each market (`us`, `br` by default),
-   stamps `countries`, merges duplicate barcodes, emits `candidates.json`.
-2. **`TopRatedBuilder`** — scores with the real engine + bundled ruleset, keeps
-   top **25 per shelf per country**, merges by barcode, stamps
-   `ruleset_version`, writes `alternatives.json`.
+   `SHELF_TAGS` + `countries_tags` for each market (US only since 2026-08-22;
+   Top Rated and Better Options are US-only and the UK/CA rows were never
+   surfaced), applies shelf hygiene (`SHELF_EXCLUDE` / `SHELF_NAME_EXCLUDE`),
+   keeps `allergens_tags` / `ingredients_analysis_tags` / `countries_tags` /
+   `unique_scans_n`, stamps `countries`, merges duplicate barcodes, emits
+   `candidates.json`.
+2. **`TopRatedBuilder`** — scores with the real engine + bundled ruleset,
+   drops rows that fail the evidence gate (mirror of `TopRated.isEligible`)
+   or lack US barcode evidence (mirror of `Alternatives.hasUSMarketEvidence`),
+   keeps top **80 per shelf**, stamps `ruleset_version`, writes
+   `alternatives.json`. Build it with `swiftc` for now (README: the Xcode
+   target links PIL dylibs from `.imgenv` and won't launch).
 3. **Regenerate on:** every ruleset version bump (enforced by
    `AlternativesSyncTests`) **and** a periodic OFF-freshness cadence (~monthly).
    See `TopRatedBuilder/README.md` for the two-country command.
@@ -202,7 +242,8 @@ Implemented in `TopRatedBuilder/`:
 **Decided:**
 - **Junk-shelf floor** — `GOOD_FLOOR` is a per-scan preference with a margin-only
   fallback (§3.5), so guilty-pleasure shelves still surface a less-bad pick.
-- **Compare axis** — Overall for v1 (`yourScore` is v2).
+- **Compare axis** — **Your Score** when `personalizeScoring` is on, Overall
+  otherwise (v2, shipped 2026-08-22). Top Rated stays on Overall.
 - **Empty-reason contract** — `Alternatives.suggest` returns
   `AlternativesOutcome`:
   - `.suggestions` — up to 3 peers clearing the +10 margin (US-market only).
@@ -243,8 +284,14 @@ tail.
   **US-only** suggestions, bundle+refresh delivery. Instrument scan→shelf hit-rate.
 - **v1.5 (coverage):** on-demand OFF-tag anchoring + backend cache for scans
   outside curated shelves — coverage grows to real demand.
-- **v2:** `yourScore` personalization · finer within-shelf sub-tag clustering ·
-  more countries.
+- **v2 (shipped 2026-08-22):** `yourScore` axis · evidence / market / safety /
+  form gates · brand diversity · per-row reasons · "See all" hand-off.
+- **v2.5 (next):** regenerate the dataset with the builder-side gates (US cap
+  80, `allergens_tags` / `ingredients_analysis_tags` / `countries_tags` /
+  `unique_scans_n` in the candidate schema) · per-form quotas at build time
+  so every form has peers · more shelves (crackers, yogurt drinks, sauces,
+  deli meat) · an engine-side confidence haircut so a thin record cannot
+  score 100 in the first place.
 - **v3:** embeddings (Cloudflare Vectorize) for cross-category swaps.
 
 ---

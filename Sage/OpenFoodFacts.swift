@@ -245,7 +245,9 @@ struct OpenFoodFactsService {
                              imageURL: String?,
                              categoriesTags: [String]?,
                              labelsTags: [String]?,
-                             servingSize: String? = nil) -> Product {
+                             servingSize: String? = nil,
+                             allergensTags: [String]? = nil,
+                             ingredientsAnalysisTags: [String]? = nil) -> Product {
         let off = OFFProduct(
             productName: name,
             brands: brands,
@@ -253,6 +255,10 @@ struct OpenFoodFactsService {
             novaGroup: novaGroup,
             nutriments: nutriments,
             additivesTags: additivesTags,
+            // Structured allergen / vegan-vegetarian tags when the dataset
+            // carries them (Better Options safety filter).
+            ingredientsAnalysisTags: ingredientsAnalysisTags,
+            allergensTags: allergensTags,
             ingredientsText: ingredientsText,
             categoriesTags: categoriesTags,
             // Curated / candidate URLs are typically front-of-pack.

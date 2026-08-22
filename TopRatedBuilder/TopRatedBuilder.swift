@@ -24,10 +24,19 @@ private struct CandidateEntry: Decodable {
     let countries: [String]?
     /// V5.5 — OFF `serving_size`; protein-bar S12 scores protein per serving.
     let servingSize: String?
+    /// Better Options safety filter inputs + market-audit fields (2026-08-22).
+    let allergensTags: [String]?
+    let ingredientsAnalysisTags: [String]?
+    let countriesTags: [String]?
+    let uniqueScansN: Int?
 
     enum CodingKeys: String, CodingKey {
         case barcode, countries
         case servingSize = "serving_size"
+        case allergensTags = "allergens_tags"
+        case ingredientsAnalysisTags = "ingredients_analysis_tags"
+        case countriesTags = "countries_tags"
+        case uniqueScansN = "unique_scans_n"
         case offName = "off_name"
         case offBrands = "off_brands"
         case ingredientsText = "ingredients_text"
@@ -49,7 +58,11 @@ private struct CandidateEntry: Decodable {
             novaGroup: novaGroup, imageURL: imageURL,
             categoriesTags: categoriesTags, labelsTags: labelsTags,
             dataProblems: dataProblems, countries: countries,
-            servingSize: servingSize)
+            servingSize: servingSize,
+            allergensTags: allergensTags,
+            ingredientsAnalysisTags: ingredientsAnalysisTags,
+            countriesTags: countriesTags,
+            uniqueScansN: uniqueScansN)
     }
 }
 
@@ -115,10 +128,14 @@ private struct AltCandidate: Encodable {
     let nutriments: OFFNutriments?
     let countries: [String]?
     let servingSize: String?
+    let allergensTags: [String]?
+    let ingredientsAnalysisTags: [String]?
 
     enum CodingKeys: String, CodingKey {
         case barcode, name, brand, nutriments, countries
         case servingSize = "serving_size"
+        case allergensTags = "allergens_tags"
+        case ingredientsAnalysisTags = "ingredients_analysis_tags"
         case imageURL = "image_url"
         case precomputedScore = "precomputed_score"
         case categoriesTags = "categories_tags"
@@ -165,6 +182,7 @@ private struct CategoryStats {
     var skippedDataProblems = 0
     var skippedUnsupported = 0
     var skippedInsufficient = 0
+    var skippedMarket = 0
     var deduped = 0
     var scored = 0
 }
@@ -226,11 +244,27 @@ enum TopRatedBuilder {
                         imageURL: entry.imageURL,
                         categoriesTags: entry.categoriesTags,
                         labelsTags: entry.labelsTags,
-                        servingSize: entry.servingSize
+                        servingSize: entry.servingSize,
+                        allergensTags: entry.allergensTags,
+                        ingredientsAnalysisTags: entry.ingredientsAnalysisTags
                     )
 
                     switch ScoringEngineV4.scoreProduct(raw, for: profile, ruleset: ruleset) {
                     case .scored(let product):
+                        // Ship only what the app could ever show: the Top
+                        // Rated / Better Options evidence gate (ingredients,
+                        // NOVA, nutrition table, confidence) and, for the US
+                        // market, barcode evidence that it is a US-shelf
+                        // product. Mirrors Alternatives.swift (not in this
+                        // target) — keep the two in step.
+                        guard isEligible(product, ruleset: ruleset) else {
+                            stats.skippedInsufficient += 1
+                            continue
+                        }
+                        guard hasMarketEvidence(entry, shelf: categoryId) else {
+                            stats.skippedMarket += 1
+                            continue
+                        }
                         scored.append(ScoredCandidate(entry: entry, product: product,
                                                       score: product.overallScore ?? product.yourScore ?? 0))
                     case .unsupported:
@@ -318,7 +352,60 @@ enum TopRatedBuilder {
     /// Rated eligibility gate (ingredients + NOVA + nutrition + evidence)
     /// prunes the pool at runtime, and the browse tab is US-only.
     private static func marketCap(_ market: String) -> Int {
-        market == "us" ? 50 : 25
+        market == "us" ? 80 : 25
+    }
+
+    // MARK: Gates (mirror Alternatives.swift / TopRated.isEligible)
+
+    static let minConfidence = 0.80
+    static let maxUnknownRuleWeight = 20.0
+
+    /// Ingredients + known NOVA + a real nutrition table + rule evidence above
+    /// the confidence floor. A record that scores high *because* data is
+    /// missing (a NOVA-less diet soda re-scored 100) never ships.
+    private static func isEligible(_ product: Product, ruleset: RulesetV4) -> Bool {
+        guard product.hasIngredientData, product.hasKnownNova, product.hasNutritionData,
+              let evidence = ScoringEngineV4.evidenceSummary(product, ruleset: ruleset)
+        else { return false }
+        return evidence.confidence >= minConfidence
+            && evidence.maxUnknownWeight < maxUnknownRuleWeight
+    }
+
+    private static func gs1Prefix(_ barcode: String) -> Int? {
+        let digits = barcode.filter(\.isNumber)
+        let padded: String
+        switch digits.count {
+        case 12: padded = "0" + digits
+        case 13: padded = digits
+        case 14 where digits.hasPrefix("0"): padded = String(digits.dropFirst())
+        default: return nil
+        }
+        return Int(padded.prefix(3))
+    }
+
+    /// UPC / UPC-E, ALDI-US / Lidl-US store-brand prefixes, or (instant
+    /// noodles only) an Asian import prefix — OFF's community `countries`
+    /// tag alone let Hungarian Coke and Polish tomato juice into the US pull.
+    private static func hasUSBarcodeEvidence(_ barcode: String, shelf: String) -> Bool {
+        let digits = barcode.filter(\.isNumber)
+        if digits.count == 8 { return digits.hasPrefix("0") }
+        if ["4099100", "4061462", "4061464", "4056489"].contains(where: { digits.hasPrefix($0) }) { return true }
+        guard let p = gs1Prefix(barcode) else { return false }
+        if (0...139).contains(p) { return true }
+        if shelf == "instantNoodles" {
+            return (450...459).contains(p) || (490...499).contains(p) || p == 471 || p == 489
+                || (690...699).contains(p) || p == 880 || p == 885 || p == 888 || p == 890
+                || p == 893 || p == 899 || p == 955
+        }
+        return false
+    }
+
+    /// Rows pulled for the US market must carry US barcode evidence; other
+    /// markets keep OFF's country tag as-is (they are not surfaced today).
+    private static func hasMarketEvidence(_ entry: CandidateEntry, shelf: String) -> Bool {
+        let markets = entry.countries ?? []
+        guard markets.contains("us") else { return true }
+        return hasUSBarcodeEvidence(entry.barcode, shelf: shelf)
     }
 
     /// Keep top `limit(market)` per market code, then merge duplicate barcodes.
@@ -415,7 +502,9 @@ enum TopRatedBuilder {
             labelsTags: item.entry.labelsTags,
             nutriments: item.entry.nutriments,
             countries: item.entry.countries,
-            servingSize: item.entry.servingSize)
+            servingSize: item.entry.servingSize,
+            allergensTags: item.entry.allergensTags,
+            ingredientsAnalysisTags: item.entry.ingredientsAnalysisTags)
     }
 
     private static func dedupe(_ items: [ScoredCandidate], stats: inout CategoryStats) -> [ScoredCandidate] {
@@ -487,6 +576,7 @@ enum TopRatedBuilder {
         }
         if stats.skippedInsufficient > 0 {
             print("  skipped insufficient data: \(stats.skippedInsufficient)")
+            print("  skipped no US barcode evidence: \(stats.skippedMarket)")
         }
         if stats.deduped > 0 {
             print("  deduped collisions: \(stats.deduped)")

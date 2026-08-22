@@ -1,5 +1,70 @@
 **Follow [design.md](design.md) for all UI work** — typography scale, color tokens, radii, spacing grid, and interaction rules. No raw hex values, off-scale font sizes, or ad-hoc radii in views.
 
+# Session Changelog — 2026-08-22 — Better Options v2 (gates, fit, reasons, UI)
+
+Audit of the "Better options" feature against the live engine (CLI harness:
+simulate scanning every US candidate on every shelf, run
+`Alternatives.suggest`, flag what comes back) plus Yuka / Fooducate / Oasis
+teardown. Findings: Top Rated gated on evidence, Better Options never did —
+a NOVA-less, OCR-ingredient *Diet Mountain Dew* re-scored **100** and was
+suggested to every soda (incl. Olipop 74); Hungarian Coke Zero (no
+ingredients, 73), Tropicana OJ (no nutrition table, 71), nuun caffeine
+*tablets* (61) likewise. OFF community country tags stamped Hungarian /
+Indian / Polish / Israeli / Latvian / German / UK SKUs as `us`. Similarity was
+shelf-only: cheddar → cottage cheese ×3, cookies → Larabar + oatcakes, bars →
+baking chocolate, Cheerios → raw oats ×3, loaf → tortillas, pasta → ramen,
+oat milk ↔ cow's milk. No restriction / allergen / avoid-list filter. Rows
+compared Overall in a "Your Score" pill, no reason given. Full rationale:
+ALTERNATIVES_SPEC.md §3.5; tests `AlternativesTests`.
+
+- **Gates** (`Alternatives.rankOutcome`): evidence (`TopRated.isEligible`),
+  market (`countries` ∋ us **and** barcode evidence: UPC/UPC-E 000–139,
+  ALDI-US / Lidl-US prefixes, Asian import prefixes on `instantNoodles`
+  only — "declared added sugars" tried and rejected), safety (engine
+  restrictions + `AllergenMatcher` + avoid-list), fit (`isSwapCompatible`),
+  better (margin 10 on **Your Score** when personalized, else Overall; Good
+  floor preference), useful (1 per brand, `listKey` dedupe, anchor tag →
+  form → score).
+- **Forms** (`SageCategoryShelf.swift`): per-shelf tag + name-regex form table
+  with compatibility groups and non-suggestible forms (formula, baking
+  chocolate / 100 % cocoa, crackers & bars in cookies, lemon juice,
+  popsicles, caffeine tablets; plant vs dairy milks & yogurts; fresh vs
+  firm vs soft cheese; hot vs RTE cereal; loaf / flat / bagel / bun;
+  noodle vs pasta; novelty vs tub). Routing fixes: `chips` no longer roots
+  on `chips-and-fries`, `instantNoodles` only on the instant family,
+  `babyFood` no longer on `baby-milks` / `infant-formulas`, `yogurt` def
+  before `milks` (kefir / yogurt drinks are cross-tagged `dairy-drinks` and
+  were told to buy plain milk), `milks` also roots on `milk-substitutes`
+  (Elmhurst / Three Trees / soy beverages carried no `plant-milks` tag).
+- **Reasons** (`AlternativeReasons`): ≤ 2 label-derived, thresholded lines
+  (less sugar, minimally/less processed, no/fewer additives, no artificial
+  sweeteners, less sodium / sat fat, more protein / fiber, no trans fat).
+- **UI** (`ResultView`): Scout-style horizontal rail of compact cards
+  (photo + score ring in the corner, brand + name, one reason line), "See
+  all" in the header (`onOpenShelf` → `TopRatedListView`); already-top is a
+  one-line seal row that opens the ranking. Selection moved to `.task`
+  off-main. (A first pass used a stacked list with subtitle / delta / footer;
+  the owner asked for something cleaner — keep it to one reason per card.)
+- **Dataset pipeline**: `generate_candidates.py` pulls `allergens_tags`,
+  `ingredients_analysis_tags`, `countries_tags`, `unique_scans_n`; shelf
+  hygiene for formula / baking chocolate / crackers & bars / lemon juice /
+  tablets; `TopRatedBuilder` applies the same evidence + US-barcode gates at
+  build time, US cap 80. `mapCandidate` gained optional `allergensTags:` /
+  `ingredientsAnalysisTags:`; `AlternativeCandidate` decodes them.
+  Regenerated `Alternatives.json` US-only (19 shelves, 80 max/shelf, image
+  annotated) — UK/CA rows were never surfaced and are gone.
+- **Gotcha**: the Xcode `TopRatedBuilder` target links the PIL dylibs from
+  `TopRatedBuilder/.imgenv` (LIBRARY_SEARCH_PATHS + synchronized folder) and
+  the binary won't launch; build it with `swiftc` (see README) until that
+  search path is removed.
+- Not done (follow-ups): engine-side confidence haircut so a thin record
+  can't score 100 at all (the provisional banner is the only guard today);
+  per-form quotas at build time (some forms have < 3 peers); more shelves
+  (crackers, yogurt drinks, sauces, deli meat); `PC` / Canadian brands still
+  pass the UPC test; re-annotate images after every regen.
+
+---
+
 # Session Changelog — 2026-08-21 — Protein bar scoring (v5.5.0)
 
 Audit of protein-bar scoring against the live engine (CLI harness over 390

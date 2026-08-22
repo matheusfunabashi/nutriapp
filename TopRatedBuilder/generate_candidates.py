@@ -78,6 +78,7 @@ SHELF_EXCLUDE = {
     "juice": [
         "en:syrups", "en:concentrates", "en:squashes", "en:sodas",
         "en:applesauces", "en:compotes", "en:plant-milks", "en:almond-milks",
+        "en:lemon-juices", "en:lime-juices", "en:popsicles", "en:ice-pops",
     ],
     "milks": [
         "en:creamers", "en:coffee-whiteners", "en:condensed-milks",
@@ -93,10 +94,20 @@ SHELF_EXCLUDE = {
         "en:crisps", "en:salty-snacks", "en:desserts",
     ],
     "yogurt": ["en:cheeses"],
+    # Infant formula / baby milks are never a swap for a fruit pouch (and the
+    # app no longer routes them to this shelf).
+    "babyFood": ["en:infant-formulas", "en:baby-milks", "en:follow-on-formulas",
+                 "en:baby-milks-in-powder", "en:toddler-milks"],
+    # Baking chocolate / chips / nibs / cocoa powder are ingredients; energy
+    # bars and canned fish leak in via vandal tags.
+    "chocolate": ["en:baking-chocolates", "en:cocoa-nibs", "en:cocoa-powders",
+                  "en:chocolate-chips", "en:cereal-bars", "en:fruit-bars", "en:bars",
+                  "en:fishes", "en:canned-fishes"],
     # US crackers are tagged en:crackers-appetizers, not en:crackers; Ready
     # Brek-style breakfast biscuits carry en:breakfasts.
     "cookies": ["en:crackers", "en:crackers-appetizers", "en:crispbreads",
-                "en:breakfast-cereals", "en:breakfasts"],
+                "en:breakfast-cereals", "en:breakfasts", "en:oatcakes",
+                "en:bars", "en:cereal-bars", "en:energy-bars", "en:curd-snacks"],
     "bread": ["en:crispbreads", "en:crackers", "en:bread-crumbs"],
     "cereal": ["en:cereal-bars", "en:granola-bars", "en:biscuits", "en:cookies"],
     "snackBars": ["en:granolas", "en:breakfast-cereals"],
@@ -123,10 +134,12 @@ SHELF_EXCLUDE = {
 # shakes filed as energy drinks, taco shells filed as cookies, split-pea soup
 # cups filed as instant noodles.
 SHELF_NAME_EXCLUDE = {
-    "energyDrinks": re.compile(r"protein|collagen|powder|sticks", re.I),
+    "energyDrinks": re.compile(r"protein|collagen|powder|sticks|tablet|sachet|\bmix\b", re.I),
+    "chocolate": re.compile(r"l[äa]rabar|energy bar|protein bar|macrobar|fillets?|mackerel|sardine|baking|morsels|\bnibs\b|cocoa powder|cacao powder", re.I),
+    "babyFood": re.compile(r"formula|infant milk|toddler milk|nutritional supplement", re.I),
     "bread": re.compile(r"taco shell|bread ?crumbs|panko", re.I),
-    "cookies": re.compile(r"taco shell", re.I),
-    "juice": re.compile(r"apple ?sauce", re.I),
+    "cookies": re.compile(r"taco shell|oatcake|cracker|triscuit|sausage|energy bar|l[äa]rabar|macrobar", re.I),
+    "juice": re.compile(r"apple ?sauce|lemon juice|lime juice|realemon|popsicle|\bpops\b", re.I),
     # Still/flavored waters mis-tagged en:sodas ("Organic Lemon Water"). The
     # \b keeps Watermelon sodas alive.
     "soda": re.compile(r"\bwater\b", re.I),
@@ -206,7 +219,10 @@ NUTRIMENT_KEYS = [
 ]
 FIELDS = ("code,product_name,brands,ingredients_text,additives_tags,nutriments,"
           "nutriscore_grade,nova_group,image_front_url,image_url,"
-          "categories_tags,labels_tags,lang,serving_size")
+          "categories_tags,labels_tags,lang,serving_size,"
+          # Better Options safety filter (allergens / vegan-vegetarian) and
+          # market evidence (countries, scan popularity) — see ALTERNATIVES_SPEC §3.5.
+          "allergens_tags,ingredients_analysis_tags,countries_tags,unique_scans_n")
 
 BASE = "https://world.openfoodfacts.org/api/v2/search"
 
@@ -381,6 +397,12 @@ def entry(off, country_code):
         "lang": off.get("lang"),
         # V5.5 — protein-bar S12 scores protein per serving.
         "serving_size": off.get("serving_size") or None,
+        # Structured allergen / vegan-vegetarian tags for the Better Options
+        # safety filter; raw OFF country tags + scan count for market audits.
+        "allergens_tags": off.get("allergens_tags") or [],
+        "ingredients_analysis_tags": off.get("ingredients_analysis_tags") or [],
+        "countries_tags": off.get("countries_tags") or [],
+        "unique_scans_n": off.get("unique_scans_n"),
         "data_problems": problems,
         "countries": [country_code],
     }

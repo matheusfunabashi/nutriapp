@@ -10,6 +10,8 @@ struct ResultView: View {
     /// Open a "better alternative" the user tapped. Defaulted so other call
     /// sites (previews/tests) compile unchanged.
     var onSelectAlternative: (Product) -> Void = { _ in }
+    /// Open the Top Rated list for the scanned product's shelf ("See all").
+    var onOpenShelf: (SageCategory) -> Void = { _ in }
 
     @State private var showLabelLegend = false
     @State private var selectedAdditive: ProductAdditive? = nil
@@ -64,7 +66,23 @@ struct ResultView: View {
         }
         .onAppear {
             store.requestOverview(for: product.id)
-            alternativesOutcome = Alternatives.suggest(for: liveProduct, profile: store.user)
+        }
+        .task(id: liveProduct.id) {
+            // Re-scoring ~50 shelf candidates is cheap but not free; keep it
+            // off the main thread so the header animates in untouched.
+            let scanned = liveProduct
+            let profile = store.user
+            let ruleset = RulesetStore.current
+            let shelfCandidates: [SageCategory: [AlternativeCandidate]] = {
+                guard let shelf = SageCategory.shelf(for: scanned) else { return [:] }
+                return [shelf: AlternativesStore.candidates(for: shelf)]
+            }()
+            let outcome = await Task.detached(priority: .userInitiated) {
+                Alternatives.suggest(for: scanned,
+                                     candidates: { shelfCandidates[$0] ?? [] },
+                                     profile: profile, ruleset: ruleset)
+            }.value
+            alternativesOutcome = outcome
         }
         .sheet(isPresented: $showLabelLegend) {
             LabelLegendSheet(dark: dark)
@@ -87,43 +105,78 @@ struct ResultView: View {
         return scoreTier(score) == .bad
     }
 
-    /// "Better options" / already-top chip (ALTERNATIVES_SPEC.md §5 / §7).
+    /// "Better options" rail / already-top line (ALTERNATIVES_SPEC.md §5 / §7).
+    ///
+    /// A horizontal rail of compact cards — photo, score ring, name, one short
+    /// reason — the same shape as the Home "Top picks" rail, so the product
+    /// page stays calm. The list ranks on the axis the page emphasizes (Your
+    /// Score when personalization is on).
     @ViewBuilder private func betterOptionsSection(dark: Bool) -> some View {
+        let shelf = SageCategory.shelf(for: liveProduct)
+        let shelfName = shelf?.displayName.lowercased() ?? "category"
+        let canSeeAll = shelf.map { SageCategory.topRatedBrowse.contains($0) } ?? false
         switch alternativesOutcome {
         case .suggestions(let alternatives):
-            let baseline = liveProduct.overallScore ?? 0
-            SectionTitle(title: "Better options")
             VStack(spacing: 0) {
-                ForEach(Array(alternatives.enumerated()), id: \.element.id) { idx, alt in
-                    AlternativeRow(alt: alt, delta: alt.score - baseline,
-                                   divider: idx > 0, dark: dark) {
-                        onSelectAlternative(alt.product)
+                HStack(alignment: .firstTextBaseline) {
+                    Text("Better options")
+                        .font(.sageSemiBold(18))
+                        .tracking(-0.4)
+                        .foregroundColor(Theme.ink)
+                    Spacer()
+                    if canSeeAll, let shelf {
+                        Button { onOpenShelf(shelf) } label: {
+                            Text("See all")
+                                .font(.sageMedium(13))
+                                .foregroundColor(Theme.inkSecondary)
+                                .padding(.vertical, 8).padding(.leading, 12)
+                        }
+                        .buttonStyle(.pressable)
+                        .accessibilityLabel("See all top rated \(shelfName)")
                     }
                 }
+                .padding(.horizontal, 24).padding(.top, 20).padding(.bottom, 10)
+
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 12) {
+                        ForEach(alternatives) { alt in
+                            AlternativeCard(alt: alt) { onSelectAlternative(alt.product) }
+                        }
+                    }
+                    .padding(.horizontal, 16)
+                    .padding(.bottom, 8) // room for the card shadow
+                }
+                .scrollClipDisabled()
             }
-            .background(
-                RoundedRectangle(cornerRadius: Theme.Radius.panel, style: .continuous)
-                    .fill(Theme.card)
-            )
-            .cardShadow()
-            .padding(.horizontal, 16)
-            .padding(.top, 8)
         case .alreadyTopOfShelf:
-            HStack(spacing: 6) {
-                Image(systemName: "checkmark")
-                    .font(.sageSemiBold(11))
-                Text("Among the best in its category")
-                    .font(.sageSemiBold(11))
+            Button {
+                if let shelf, canSeeAll { onOpenShelf(shelf) }
+            } label: {
+                HStack(spacing: 8) {
+                    Image(systemName: "checkmark.seal.fill")
+                        .font(.sageSemiBold(14))
+                        .foregroundColor(Color.scoreGood)
+                    Text("Among the best \(shelfName) we've scored")
+                        .font(.sageSemiBold(13))
+                        .foregroundColor(Theme.ink)
+                    Spacer(minLength: 4)
+                    if canSeeAll {
+                        Image(systemName: "chevron.right")
+                            .font(.sageBold(11))
+                            .foregroundColor(Theme.inkSecondary)
+                    }
+                }
+                .padding(.horizontal, 14).padding(.vertical, 12)
+                .background(
+                    RoundedRectangle(cornerRadius: Theme.Radius.control, style: .continuous)
+                        .fill(Theme.card)
+                )
+                .contentShape(Rectangle())
             }
-            .foregroundColor(Theme.inkSecondary)
-            .padding(.horizontal, 10).padding(.vertical, 4)
-            .background(
-                Capsule().fill(Theme.fillMuted)
-            )
-            .accessibilityLabel("Among the best in its category")
-            .frame(maxWidth: .infinity, alignment: .leading)
+            .buttonStyle(canSeeAll ? .pressable : .pressableStatic)
+            .accessibilityLabel("Among the best \(shelfName) we've scored")
             .padding(.horizontal, 16)
-            .padding(.top, 10)
+            .padding(.top, 12)
         case .noShelf, .unscored, .noBetterPeers:
             EmptyView()
         }
@@ -1719,55 +1772,57 @@ func sweetenerLabel(_ key: String) -> String {
     }
 }
 
-// MARK: - Better-options row
+// MARK: - Better-options card
 
-/// One "Better options" card (ALTERNATIVES_SPEC.md §5) — mirrors ProductRow, with
-/// a green "+N vs. this" delta instead of a timestamp.
-private struct AlternativeRow: View {
+/// One "Better options" card (ALTERNATIVES_SPEC.md §5): photo with the score
+/// ring in the corner, name, and one short reason it beats the scanned product.
+private struct AlternativeCard: View {
     let alt: Alternative
-    let delta: Int
-    let divider: Bool
-    let dark: Bool
     let onTap: () -> Void
 
     var body: some View {
         let formatted = ProductNameFormatter.format(alt.product)
+        let why = alt.reasons.first ?? "+\(alt.delta) for you"
+        let title = [formatted.brand, formatted.name]
+            .compactMap { $0?.trimmingCharacters(in: .whitespaces) }
+            .filter { !$0.isEmpty }
+            .joined(separator: " ")
         return Button(action: onTap) {
-            HStack(spacing: 12) {
-                ProductThumb(glyph: alt.product.glyph, score: alt.score, size: 56,
-                             imageURL: alt.product.listImageURL,
-                             fallbackImageURL: alt.product.imageFallbackURL,
-                             processCutout: alt.product.shouldProcessCutout)
-                VStack(alignment: .leading, spacing: 1) {
-                    if let brand = formatted.brand {
-                        Text(brand.uppercased())
-                            .font(.sageBold(10)).tracking(1.2)
-                            .foregroundColor(Theme.inkSecondary)
-                            .lineLimit(1)
-                    }
-                    Text(formatted.name)
-                        .font(.sageBold(14)).tracking(-0.2)
+            VStack(alignment: .leading, spacing: 10) {
+                ZStack(alignment: .topTrailing) {
+                    ProductThumb(glyph: alt.product.glyph, score: alt.score, size: 96,
+                                 neutral: true,
+                                 imageURL: alt.product.listImageURL,
+                                 fallbackImageURL: alt.product.imageFallbackURL,
+                                 processCutout: alt.product.shouldProcessCutout)
+                        .frame(maxWidth: .infinity)
+                        .padding(.top, 6)
+                    ScoreRing(score: alt.score, size: 44, stroke: 4)
+                        .background(Circle().fill(Theme.card).padding(-3))
+                }
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(title)
+                        .font(.sageSemiBold(13)).tracking(-0.2)
                         .foregroundColor(Theme.ink)
-                        .lineLimit(1)
-                    Text("+\(delta) vs. this")
-                        .font(.sageBold(11))
+                        .lineLimit(2)
+                        .multilineTextAlignment(.leading)
+                        .frame(minHeight: 34, alignment: .top)
+                    Text(why)
+                        .font(.sageSemiBold(11))
                         .foregroundColor(Color.scoreGood)
-                }
-                Spacer(minLength: 8)
-                YourScorePill(score: alt.score, isUnscored: false)
-                Image(systemName: "chevron.right")
-                    .font(.sageBold(12))
-                    .foregroundColor(Theme.inkSecondary)
-            }
-            .padding(.horizontal, 14).padding(.vertical, 12)
-            .overlay(alignment: .top) {
-                if divider {
-                    Theme.hairline.frame(height: 0.5).padding(.horizontal, 12)
+                        .lineLimit(1)
                 }
             }
-            .accessibilityElement(children: .combine)
-            .accessibilityLabel("\(formatted.accessibilityLabel), +\(delta) vs. this")
+            .padding(12)
+            .frame(width: 160, alignment: .leading)
+            .background(
+                RoundedRectangle(cornerRadius: Theme.Radius.card, style: .continuous).fill(Theme.card)
+            )
+            .cardShadow()
+            .contentShape(RoundedRectangle(cornerRadius: Theme.Radius.card, style: .continuous))
         }
         .buttonStyle(.pressable)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("\(formatted.accessibilityLabel), scored \(alt.score), +\(alt.delta), \(why)")
     }
 }
