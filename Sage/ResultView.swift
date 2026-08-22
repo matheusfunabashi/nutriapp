@@ -21,6 +21,15 @@ struct ResultView: View {
     /// Computed once on appear (re-scoring candidates is cheap but not free, so
     /// it stays off the per-render path).
     @State private var alternativesOutcome: AlternativesOutcome = .noShelf
+    /// True once the hero + title have scrolled under the nav bar; the bar
+    /// then carries thumb · name · mini ring so the verdict never leaves the
+    /// screen (Scout / App Store pattern).
+    @State private var headerCollapsed = false
+    @State private var overviewExpanded = true
+
+    /// Offset (pt) past which the nav bar swaps to the compact product title —
+    /// roughly the hero + title block height.
+    private static let collapseThreshold: CGFloat = 300
 
     var body: some View {
         let dark = colorScheme == .dark
@@ -57,11 +66,16 @@ struct ResultView: View {
                        minHeight: geo.size.height, alignment: .top)
             }
             .scrollBounceBehavior(.basedOnSize, axes: .vertical)
+            .onScrollGeometryChange(for: Bool.self) { g in
+                g.contentOffset.y + g.contentInsets.top > Self.collapseThreshold
+            } action: { _, collapsed in
+                withAnimation(.easeInOut(duration: 0.2)) { headerCollapsed = collapsed }
+            }
         }
         .sageScreenBackground()
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
-            SageToolbarTitle()
+            ToolbarItem(placement: .principal) { toolbarTitle }
             ToolbarItem(placement: .topBarTrailing) { favoriteToolbarButton }
         }
         .onAppear {
@@ -182,97 +196,234 @@ struct ResultView: View {
         }
     }
 
+    // MARK: Header
+    //
+    // One hero, and it's the product: a large pack shot, then name + brand on
+    // the left and a single ring on the right — Your Score when the profile
+    // personalizes anything, Overall otherwise. Overall and the delta live in
+    // one caption line under the title; they are Sage's differentiator, but
+    // they don't need two dials and three pills to say "+1".
+
     private func scrollableHeader(dark: Bool) -> some View {
         let p = liveProduct
-        return VStack(spacing: 8) {
-            productHeader(dark: dark)
-            VStack(spacing: 12) {
-                if p.isUnscored {
-                    unscoredScoreCard(dark: dark, product: p)
-                        .padding(.horizontal, 16)
-                } else {
-                    overviewSection(dark: dark, product: p)
-                    scoreComparisonCard(dark: dark)
-                        .padding(.horizontal, 16)
-                    dataConfidenceLine(dark: dark)
-                }
+        return VStack(spacing: 0) {
+            productHero(dark: dark)
+            titleBlock(dark: dark)
+                .padding(.top, 12)
+            if p.isUnscored {
+                unscoredScoreCard(dark: dark, product: p)
+                    .padding(.horizontal, 16)
+                    .padding(.top, 16)
+            } else {
+                scoreCaptionRow(dark: dark)
+                    .padding(.top, 10)
+                actionRow(dark: dark)
+                    .padding(.top, 14)
+                dataConfidenceLine(dark: dark)
+                    .padding(.top, 10)
+                overviewSection(dark: dark, product: p)
+                    .padding(.top, 8)
             }
-            .padding(.top, 14)
         }
-        .padding(.bottom, 8)
+        .padding(.bottom, 4)
     }
 
-    private func productHeader(dark: Bool) -> some View {
-        let formatted = ProductNameFormatter.format(liveProduct)
-        return HStack(alignment: .center, spacing: 12) {
-            ProductThumb(glyph: product.glyph, score: product.yourScore,
+    /// The score the page leads with: Your Score when present, else Overall.
+    private var primaryScore: Int? { liveProduct.yourScore ?? liveProduct.overallScore }
+
+    private func productHero(dark: Bool) -> some View {
+        let tint = primaryScore.map(scoreColor) ?? Theme.inkSecondary
+        return ZStack {
+            // Soft tinted glow behind the pack shot — a background, not a
+            // shadow, so it doesn't fight the one-card-shadow rule.
+            Circle()
+                .fill(tint.opacity(dark ? 0.16 : 0.09))
+                .frame(width: 220, height: 220)
+                .blur(radius: 40)
+            ProductThumb(glyph: product.glyph, score: product.yourScore, size: 176,
                          neutral: true, imageURL: product.detailImageURL,
                          fallbackImageURL: product.imageFallbackURL,
-                         processCutout: product.shouldProcessCutout,
-                         isDetail: true)
-
-            VStack(alignment: .leading, spacing: 2) {
-                if let brand = formatted.brand {
-                    Text(brand.uppercased())
-                        .font(.sageBold(12)).tracking(1.2)
-                        .foregroundColor(store.accent)
-                }
-                Text(formatted.name)
-                    .font(.sageBold(22)).tracking(-0.5)
-                    .foregroundColor(Theme.ink)
-                    .lineLimit(2)
-                    .truncationMode(.tail)
-                    .minimumScaleFactor(0.9)
-                if let size = formatted.size {
-                    Text(size)
-                        .font(.sageRegular(13))
-                        .foregroundColor(Theme.inkSecondary)
-                }
-            }
-            .frame(minWidth: 0, maxWidth: .infinity, alignment: .leading)
-            .layoutPriority(1)
-            .accessibilityElement(children: .ignore)
-            .accessibilityLabel(formatted.accessibilityLabel)
+                         processCutout: product.shouldProcessCutout)
         }
-        .padding(.horizontal, 16)
+        .frame(maxWidth: .infinity)
+        .frame(height: 204)
+        .padding(.top, 4)
+        .accessibilityHidden(true)
     }
 
-    /// Side-by-side dials for scored products, or the single "Not scored" card
-    /// for pure sweeteners (no dials / tier / Organic chip).
-    private func scoreComparisonCard(dark: Bool) -> some View {
-        let showOrganic = ScoringEngineV4.showsOrganicChip(product: liveProduct,
-                                                           profile: store.user)
-        return VStack(spacing: 12) {
-            if showOrganic {
-                Text("Organic ✓")
-                    .font(.sageSemiBold(11))
-                    .foregroundColor(Theme.inkSecondary)
-                    .padding(.horizontal, 10).padding(.vertical, 4)
-                    .background(
-                        Capsule().fill(Theme.fillMuted)
-                    )
-                    .accessibilityLabel("Organic certified")
+    private func titleBlock(dark: Bool) -> some View {
+        let formatted = ProductNameFormatter.format(liveProduct)
+        let showOrganic = !liveProduct.isUnscored
+            && ScoringEngineV4.showsOrganicChip(product: liveProduct, profile: store.user)
+        let meta = [formatted.brand, formatted.size]
+            .compactMap { $0 }
+            .filter { !$0.isEmpty }
+            .joined(separator: " · ")
+        return HStack(alignment: .center, spacing: 16) {
+            VStack(alignment: .leading, spacing: 6) {
+                Text(formatted.name)
+                    .font(.sageBold(24)).tracking(-0.5)
+                    .foregroundColor(Theme.ink)
+                    .lineLimit(3)
+                    .fixedSize(horizontal: false, vertical: true)
+                if !meta.isEmpty || showOrganic {
+                    HStack(spacing: 8) {
+                        if !meta.isEmpty {
+                            Text(meta)
+                                .font(.sageRegular(15))
+                                .foregroundColor(Theme.inkSecondary)
+                                .lineLimit(2)
+                        }
+                        if showOrganic {
+                            Text("Organic ✓")
+                                .font(.sageSemiBold(11))
+                                .foregroundColor(Theme.inkSecondary)
+                                .padding(.horizontal, 8).padding(.vertical, 4)
+                                .background(Capsule().fill(Theme.fillMuted))
+                                .accessibilityLabel("Organic certified")
+                        }
+                    }
+                }
             }
-            HStack(alignment: .top, spacing: 12) {
-                // Band color/label always follow the number — same cuts everywhere.
-                scorePanel(title: "OVERALL",
-                           score: liveProduct.overallScore ?? 0,
-                           ringColor: scoreColor(liveProduct.overallScore ?? 0),
-                           emphasized: false, dark: dark)
-                scorePanel(title: "YOUR SCORE",
-                           score: liveProduct.yourScore ?? 0,
-                           ringColor: scoreColor(liveProduct.yourScore ?? 0),
-                           emphasized: true, dark: dark,
-                           bindingCap: liveProduct.bindingCap)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel(formatted.accessibilityLabel)
+
+            if !liveProduct.isUnscored, let score = primaryScore {
+                heroRing(score: score, personalized: liveProduct.yourScore != nil)
             }
-            compareButton(dark: dark)
         }
-        .padding(14)
-        .background(
-            RoundedRectangle(cornerRadius: Theme.Radius.panel, style: .continuous)
-                .fill(Theme.card)
-        )
-        .cardShadow()
+        .padding(.horizontal, 20)
+    }
+
+    /// The one ring. "FOR YOU" above it only when the number is the
+    /// personalized one; the tier word below always follows the number.
+    private func heroRing(score: Int, personalized: Bool) -> some View {
+        let color = scoreColor(score)
+        return VStack(spacing: 6) {
+            if personalized {
+                Text("FOR YOU")
+                    .font(.sageBold(10)).tracking(1.2)
+                    .foregroundColor(store.accent)
+            }
+            ScoreRing(score: score, size: 84, stroke: 7, ringColor: color)
+            Text(scoreLabel(score))
+                .font(.sageSemiBold(14)).tracking(-0.2)
+                .foregroundColor(color)
+        }
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("\(personalized ? "Your score" : "Score") \(score), \(scoreLabel(score))")
+    }
+
+    /// "Overall 93 · +1 for you" — the second number, demoted to a caption.
+    /// A binding cap (diet / avoid list) rides along as a small chip.
+    @ViewBuilder private func scoreCaptionRow(dark: Bool) -> some View {
+        let p = liveProduct
+        if let overall = p.overallScore, let your = p.yourScore {
+            let delta = your - overall
+            HStack(spacing: 8) {
+                HStack(spacing: 4) {
+                    Text("Overall \(overall)")
+                        .font(.sageMedium(14))
+                        .monospacedDigit()
+                        .foregroundColor(Theme.inkSecondary)
+                    if delta != 0 {
+                        Text("·")
+                            .font(.sageMedium(14))
+                            .foregroundColor(Theme.inkSecondary)
+                        Text(delta > 0 ? "+\(delta) for you" : "\(delta) for you")
+                            .font(.sageSemiBold(14))
+                            .monospacedDigit()
+                            .foregroundColor(delta > 0 ? Color.scoreGood : Color.scoreBad)
+                    } else {
+                        Text("· same for you")
+                            .font(.sageMedium(14))
+                            .foregroundColor(Theme.inkSecondary)
+                    }
+                }
+                if let cap = p.bindingCap {
+                    Text("Capped: \(cap.shortLabel)")
+                        .font(.sageSemiBold(11))
+                        .foregroundColor(Color.cautionMuted)
+                        .padding(.horizontal, 8).padding(.vertical, 4)
+                        .background(Capsule().fill(Color.cautionMuted.opacity(dark ? 0.18 : 0.12)))
+                        .accessibilityLabel("Capped by \(cap.shortLabel)")
+                }
+                Spacer(minLength: 0)
+            }
+            .padding(.horizontal, 20)
+            .accessibilityElement(children: .combine)
+            .accessibilityLabel("Overall \(overall). " + (deltaBadgeLabel(delta: delta) ?? "Same as overall"))
+        }
+    }
+
+    /// Secondary actions as quiet capsules — Compare and "How we score" —
+    /// instead of a full-width button inside the score card.
+    private func actionRow(dark: Bool) -> some View {
+        HStack(spacing: 8) {
+            actionPill(icon: "arrow.left.arrow.right", title: "Compare",
+                       accessibility: "Compare with another product", action: onCompare)
+            actionPill(icon: "info.circle", title: "How we score",
+                       accessibility: "How scoring works: multipliers reweight rules; caps are ceilings from your restrictions",
+                       action: onOpenMethodology)
+            Spacer(minLength: 0)
+        }
+        .padding(.horizontal, 20)
+    }
+
+    private func actionPill(icon: String, title: String, accessibility: String,
+                            action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            HStack(spacing: 6) {
+                Image(systemName: icon)
+                    .font(.sageSemiBold(12))
+                Text(title)
+                    .font(.sageSemiBold(13)).tracking(-0.1)
+            }
+            .foregroundColor(Theme.ink)
+            .padding(.horizontal, 14).padding(.vertical, 10)
+            .background(Capsule().fill(Theme.fillMuted))
+        }
+        .buttonStyle(.pressable)
+        .accessibilityLabel(accessibility)
+    }
+
+    /// Nav-bar title: the brand lockup until the hero scrolls away, then
+    /// thumb · name · mini ring.
+    private var toolbarTitle: some View {
+        let formatted = ProductNameFormatter.format(liveProduct)
+        return ZStack {
+            HStack(spacing: 8) {
+                SageMark(size: 28, color: Theme.accent)
+                Text("Sage")
+                    .font(.sageBold(24)).tracking(-0.6)
+                    .foregroundStyle(Theme.ink)
+            }
+            .opacity(headerCollapsed ? 0 : 1)
+            .accessibilityHidden(headerCollapsed)
+
+            HStack(spacing: 10) {
+                ProductThumb(glyph: product.glyph, score: product.yourScore, size: 30,
+                             neutral: true, imageURL: product.listImageURL,
+                             fallbackImageURL: product.imageFallbackURL,
+                             processCutout: product.shouldProcessCutout)
+                Text(formatted.name)
+                    .font(.sageSemiBold(15)).tracking(-0.2)
+                    .foregroundStyle(Theme.ink)
+                    .lineLimit(1)
+                    .truncationMode(.tail)
+                if !liveProduct.isUnscored, let score = primaryScore {
+                    MiniScoreRing(score: score, size: 32, stroke: 3)
+                }
+            }
+            .opacity(headerCollapsed ? 1 : 0)
+            .offset(y: headerCollapsed ? 0 : 6)
+            .accessibilityHidden(!headerCollapsed)
+        }
+        .animation(.easeInOut(duration: 0.2), value: headerCollapsed)
+        .accessibilityElement(children: .combine)
+        .accessibilityAddTraits(.isHeader)
+        .accessibilityLabel(headerCollapsed ? formatted.accessibilityLabel : "Sage")
     }
 
     private func unscoredScoreCard(dark: Bool, product p: Product) -> some View {
@@ -331,75 +482,6 @@ struct ResultView: View {
         .accessibilityLabel(Text("Not scored"))
     }
 
-    private func scorePanel(title: String, score: Int, ringColor: Color,
-                            emphasized: Bool, dark: Bool,
-                            bindingCap: ScoreCap? = nil,
-                            bandLabelOverride: String? = nil) -> some View {
-        let label = bandLabelOverride ?? scoreLabel(score)
-        // Cap chips only under YOUR SCORE (diet/avoid). Band color/label always
-        // follow the number via scoreLabel / scoreColor.
-        let showCapChip = emphasized && bindingCap != nil
-        let panelFill: Color = emphasized
-            ? ringColor.opacity(dark ? 0.14 : 0.06)
-            : (Theme.fillQuiet)
-        return VStack(spacing: 12) {
-            Text(title)
-                .font(.sageBold(11)).tracking(1.2)
-                .foregroundColor(Theme.inkSecondary)
-            ScoreRing(score: score, size: 96, stroke: 7, ringColor: ringColor)
-            Text(label.uppercased())
-                .font(.sageBold(11)).tracking(0.6)
-                .foregroundColor(.white)
-                .padding(.horizontal, 12).padding(.vertical, 4)
-                .background(Capsule().fill(ringColor))
-            if showCapChip, let cap = bindingCap {
-                Text("Capped: \(cap.shortLabel)")
-                    .font(.sageSemiBold(10))
-                    .foregroundColor(Color.cautionMuted)
-                    .padding(.horizontal, 8).padding(.vertical, 4)
-                    .background(
-                        Capsule().fill(Color.cautionMuted.opacity(dark ? 0.18 : 0.12))
-                    )
-                    .accessibilityLabel("Capped by \(cap.shortLabel)")
-            }
-        }
-        .frame(maxWidth: .infinity)
-        .padding(.vertical, 18).padding(.horizontal, 8)
-        .background(
-            RoundedRectangle(cornerRadius: Theme.Radius.card, style: .continuous).fill(panelFill)
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: Theme.Radius.card, style: .continuous)
-                .stroke(emphasized ? ringColor.opacity(0.35) : Color.clear, lineWidth: 1.5)
-        )
-        .overlay(alignment: .top) {
-            if emphasized {
-                HStack(spacing: 3) {
-                    Image(systemName: "star.fill").font(.system(size: 8, weight: .bold))
-                    Text("FOR YOU").font(.sageBold(10)).tracking(0.8)
-                }
-                .foregroundColor(.white)
-                .padding(.horizontal, 10).padding(.vertical, 4)
-                .background(Capsule().fill(store.accent))
-                .offset(y: -9)
-            }
-        }
-        .overlay(alignment: .topTrailing) {
-            if emphasized {
-                Button(action: onOpenMethodology) {
-                    Image(systemName: "info.circle")
-                        .font(.sageSemiBold(13))
-                        .foregroundColor(Theme.inkSecondary)
-                }
-                .buttonStyle(.plain)
-                .padding(8)
-                .accessibilityLabel("How scoring works: multipliers reweight rules; caps are ceilings from your restrictions")
-            }
-        }
-        .accessibilityElement(children: .combine)
-        .accessibilityLabel("\(title) \(score), \(label)")
-    }
-
     /// Engine confidence is the source of truth — additive undercount notes stay
     /// local to the Additives section and must not drive this banner.
     @ViewBuilder private func dataConfidenceLine(dark: Bool) -> some View {
@@ -424,50 +506,47 @@ struct ResultView: View {
         let generating = store.overviewGenerating.contains(p.id)
         let show = !p.isUnscored && (generating || p.overviewStale == true || p.overview != nil)
         if show {
-            let overall = p.overallScore ?? 0
-            let your = p.yourScore ?? overall
-            let delta = your - overall
-            VStack(alignment: .leading, spacing: 6) {
-                HStack(spacing: 8) {
-                    Image(systemName: "doc.text")
-                        .font(.sageBold(12))
-                        .foregroundColor(store.accent)
-                    Text("Overview")
-                        .font(.sageBold(12)).tracking(-0.1)
-                        .foregroundColor(Theme.inkSecondary)
-                    if delta != 0 {
-                        let tint = delta < 0 ? Color.scoreBad : Color.scoreGood
-                        Text(delta < 0 ? "\(delta)" : "+\(delta)")
-                            .font(.sageBold(10))
-                            .foregroundColor(.white)
-                            .padding(.horizontal, 8).padding(.vertical, 4)
-                            .background(Capsule().fill(tint))
-                            .accessibilityLabel(deltaBadgeLabel(delta: delta) ?? "")
+            // Prose sits straight on the background (no card) under a
+            // collapsible section header — the delta now lives in the score
+            // caption, so the header carries no badge.
+            VStack(alignment: .leading, spacing: 8) {
+                Button {
+                    withAnimation(.easeInOut(duration: 0.2)) { overviewExpanded.toggle() }
+                } label: {
+                    HStack(spacing: 8) {
+                        Text("Overview")
+                            .font(.sageSemiBold(18)).tracking(-0.4)
+                            .foregroundColor(Theme.ink)
+                        Spacer(minLength: 0)
+                        Image(systemName: "chevron.up")
+                            .font(.sageSemiBold(12))
+                            .foregroundColor(Theme.inkSecondary)
+                            .rotationEffect(.degrees(overviewExpanded ? 0 : 180))
                     }
-                    Spacer(minLength: 0)
+                    .contentShape(Rectangle())
                 }
-                if generating || (p.overviewStale == true && p.overview == nil) {
-                    Text("Generating overview…")
-                        .font(.sageRegular(13))
-                        .foregroundColor(Theme.inkSecondary)
-                        .italic()
-                } else if let text = p.overview?.text {
-                    Text(text)
-                        .font(.sageRegular(13))
-                        .foregroundColor(Theme.ink)
-                        .lineSpacing(2)
-                        .frame(maxWidth: .infinity, alignment: .leading)
+                .buttonStyle(.plain)
+                .accessibilityLabel("Overview")
+                .accessibilityHint(overviewExpanded ? "Collapse" : "Expand")
+
+                if overviewExpanded {
+                    if generating || (p.overviewStale == true && p.overview == nil) {
+                        Text("Generating overview…")
+                            .font(.sageRegular(16))
+                            .foregroundColor(Theme.inkSecondary)
+                            .italic()
+                    } else if let text = p.overview?.text {
+                        Text(text)
+                            .font(.sageRegular(16))
+                            .foregroundColor(Theme.ink)
+                            .lineSpacing(4)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
                 }
             }
-            .padding(14)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .background(
-                RoundedRectangle(cornerRadius: Theme.Radius.card, style: .continuous)
-                    .fill(Theme.card)
-            )
-            .padding(.horizontal, 16)
+            .padding(.horizontal, 20)
+            .padding(.top, 12)
             .accessibilityElement(children: .contain)
-            .accessibilityLabel("Overview")
         }
     }
 

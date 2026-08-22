@@ -74,7 +74,9 @@ struct ProductImageView: View {
     @State private var loadTask: Task<Void, Never>?
 
     private var size: CGFloat { style.size }
-    private var corner: CGFloat { 10 }
+    /// Chrome radius scales with the frame — a 176pt hero on a 10pt corner
+    /// reads as a web thumbnail; large frames take the card radius.
+    private var corner: CGFloat { size >= 120 ? Theme.Radius.card : 10 }
     private var dark: Bool { colorScheme == .dark }
 
     /// True only for a real transparent cutout (failed Vision keeps chrome).
