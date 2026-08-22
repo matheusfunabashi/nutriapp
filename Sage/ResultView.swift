@@ -15,6 +15,7 @@ struct ResultView: View {
 
     @State private var showLabelLegend = false
     @State private var selectedAdditive: ProductAdditive? = nil
+    @State private var selectedIngredient: KeyIngredients.Item? = nil
     @State private var ingredientsExpanded = false
     /// Edge for `.sensoryFeedback` — bumped each time the favorite is toggled.
     @State private var favoriteTick = 0
@@ -30,6 +31,14 @@ struct ResultView: View {
     /// Offset (pt) past which the nav bar swaps to the compact product title —
     /// roughly the hero + title block height.
     private static let collapseThreshold: CGFloat = 300
+    /// Rows shown in "Key ingredients" before deferring to the full list.
+    private static let keyIngredientLimit = 8
+
+    /// Label-derived per-ingredient verdicts (tokenizing ~50 tokens against
+    /// the keyword tables is sub-millisecond; no need to cache).
+    private var keyIngredients: KeyIngredients.Analysis? {
+        KeyIngredients.analyze(liveProduct)
+    }
 
     var body: some View {
         let dark = colorScheme == .dark
@@ -40,6 +49,7 @@ struct ResultView: View {
                     allergenSection(dark: dark)
                     avoidFlagsSection(dark: dark)
                     betterOptionsSection(dark: dark)
+                    keyIngredientsSection(dark: dark)
                     processingSection(dark: dark)
                     if product.showsTransFatFlag {
                         SeriousFlag(
@@ -100,6 +110,11 @@ struct ResultView: View {
         }
         .sheet(item: $selectedAdditive) { additive in
             AdditiveDetailSheet(additive: additive, dark: dark)
+                .presentationDetents([.medium, .large])
+                .presentationDragIndicator(.visible)
+        }
+        .sheet(item: $selectedIngredient) { item in
+            IngredientDetailSheet(item: item, total: keyIngredients?.total ?? 0)
                 .presentationDetents([.medium, .large])
                 .presentationDragIndicator(.visible)
         }
@@ -215,9 +230,66 @@ struct ResultView: View {
                     .padding(.top, 10)
                 overviewSection(dark: dark, product: p)
                     .padding(.top, 8)
+                if let analysis = keyIngredients {
+                    IngredientTallyRows(analysis: analysis)
+                        .padding(.top, 20)
+                }
             }
         }
         .padding(.bottom, 4)
+    }
+
+    // MARK: Key ingredients
+    //
+    // Scout-style per-ingredient verdicts, but every word is label-derived
+    // (see `KeyIngredients`). Additive rows open the additive sheet so the
+    // code / tier / sources stay in one place.
+
+    @ViewBuilder private func keyIngredientsSection(dark: Bool) -> some View {
+        if let analysis = keyIngredients, !analysis.items.isEmpty {
+            let shown = Array(analysis.items.prefix(Self.keyIngredientLimit))
+            let hidden = analysis.items.count - shown.count
+            VStack(spacing: 0) {
+                sectionHeader("Key ingredients") {
+                    Text("\(analysis.total)")
+                        .font(.sageMedium(15))
+                        .monospacedDigit()
+                        .foregroundColor(Theme.inkSecondary)
+                        .accessibilityLabel("\(analysis.total) ingredients")
+                }
+                ForEach(shown) { item in
+                    Button {
+                        if let additive = item.additive {
+                            selectedAdditive = additive
+                        } else {
+                            selectedIngredient = item
+                        }
+                    } label: {
+                        KeyIngredientRow(item: item)
+                    }
+                    .buttonStyle(.plain)
+                }
+                if hidden > 0 {
+                    Button {
+                        withAnimation(.easeInOut(duration: 0.2)) { ingredientsExpanded = true }
+                    } label: {
+                        HStack(spacing: 6) {
+                            Text("+ \(hidden) more in full ingredients")
+                                .font(.sageSemiBold(13))
+                            Image(systemName: "arrow.down")
+                                .font(.sageSemiBold(11))
+                        }
+                        .foregroundColor(Theme.inkSecondary)
+                        .padding(.horizontal, 20).padding(.vertical, 12)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .overlay(alignment: .top) { rowDivider }
+                        .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                }
+                rowDivider
+            }
+        }
     }
 
     /// The score the page leads with: Your Score when present, else Overall.

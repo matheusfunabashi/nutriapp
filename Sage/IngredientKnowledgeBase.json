@@ -1,0 +1,1828 @@
+[
+ {
+  "id": "sugar",
+  "name": {
+   "en": "Sugar"
+  },
+  "verdict": "limit",
+  "match": [
+   "sugar",
+   "sugars",
+   "cane sugar",
+   "raw cane sugar",
+   "evaporated cane juice",
+   "brown sugar",
+   "white sugar",
+   "granulated sugar",
+   "beet sugar",
+   "invert sugar",
+   "icing sugar",
+   "powdered sugar",
+   "caster sugar",
+   "demerara sugar",
+   "turbinado sugar",
+   "muscovado",
+   "sucrose",
+   "açúcar",
+   "acucar",
+   "zucchero",
+   "azúcar",
+   "azucar",
+   "sucre",
+   "zucker"
+  ],
+  "summary": {
+   "en": "Sucrose refined from cane or beet. Brown, raw, turbinado and 'evaporated cane juice' are the same molecule with a little molasses left in."
+  },
+  "why": {
+   "en": "Added sugar. Its position in the list says how much: near the front means it's a main ingredient. Sage scores the sugar on the panel and the sweetener system, not the word on the label."
+  }
+ },
+ {
+  "id": "coconut-sugar",
+  "name": {
+   "en": "Coconut sugar"
+  },
+  "verdict": "limit",
+  "match": [
+   "coconut sugar",
+   "coconut palm sugar",
+   "palm sugar",
+   "date sugar"
+  ],
+  "summary": {
+   "en": "Sap or fruit dried into crystals — marketed as unrefined, nutritionally almost pure sucrose."
+  },
+  "why": {
+   "en": "Added sugar with a health halo. Trace minerals don't change how the body handles it."
+  }
+ },
+ {
+  "id": "glucose-syrup",
+  "name": {
+   "en": "Glucose syrup"
+  },
+  "verdict": "limit",
+  "match": [
+   "glucose syrup",
+   "glucose-fructose syrup",
+   "fructose-glucose syrup",
+   "corn syrup",
+   "corn syrup solids",
+   "tapioca syrup",
+   "rice syrup",
+   "brown rice syrup",
+   "wheat syrup",
+   "glucose",
+   "xarope de glicose",
+   "sciroppo di glucosio",
+   "sirop de glucose"
+  ],
+  "summary": {
+   "en": "Starch broken down into sugars — a cheap, neutral-tasting sweetener and bulking agent."
+  },
+  "why": {
+   "en": "Added sugar in syrup form; brown rice syrup is no exception. Counts fully toward the sugar Sage scores."
+  }
+ },
+ {
+  "id": "hfcs",
+  "name": {
+   "en": "High-fructose corn syrup"
+  },
+  "verdict": "limit",
+  "match": [
+   "high fructose corn syrup",
+   "high-fructose corn syrup",
+   "hfcs",
+   "isoglucose",
+   "glucose-fructose"
+  ],
+  "summary": {
+   "en": "Corn syrup with part of its glucose converted to fructose — close to table sugar in composition."
+  },
+  "why": {
+   "en": "Added sugar. The evidence that HFCS is worse than sucrose at equal doses is thin; Sage treats it as sugar and flags it when it's on your avoid list."
+  }
+ },
+ {
+  "id": "dextrose",
+  "name": {
+   "en": "Dextrose"
+  },
+  "verdict": "limit",
+  "match": [
+   "dextrose",
+   "maltodextrin",
+   "maltodextrina",
+   "destrosio",
+   "maltodestrina"
+  ],
+  "summary": {
+   "en": "Glucose (dextrose) or short glucose chains (maltodextrin) made from starch — sweet, fast-absorbing, often used as filler."
+  },
+  "why": {
+   "en": "Acts like sugar in the body even when the label's sugar line is low; Sage counts these as sugar and as isolate markers."
+  }
+ },
+ {
+  "id": "fructose",
+  "name": {
+   "en": "Fructose"
+  },
+  "verdict": "limit",
+  "match": [
+   "fructose",
+   "crystalline fructose",
+   "frutose",
+   "fruttosio"
+  ],
+  "summary": {
+   "en": "The sugar that makes fruit sweet, isolated as a sweetener. Same effect as added sugar without the fruit's fiber."
+  },
+  "why": {
+   "en": "Added sugar."
+  }
+ },
+ {
+  "id": "honey",
+  "name": {
+   "en": "Honey"
+  },
+  "verdict": "limit",
+  "match": [
+   "honey",
+   "raw honey",
+   "manuka honey",
+   "mel",
+   "miele",
+   "miel"
+  ],
+  "summary": {
+   "en": "Bee-made sugar syrup — mostly fructose and glucose, with trace enzymes and antioxidants."
+  },
+  "why": {
+   "en": "Still added sugar: the trace compounds don't offset the sugar at the amounts used in food. Sage counts it as a whole-food ingredient but scores its sugar on the panel."
+  }
+ },
+ {
+  "id": "maple-syrup",
+  "name": {
+   "en": "Maple syrup"
+  },
+  "verdict": "limit",
+  "match": [
+   "maple syrup",
+   "pure maple syrup",
+   "agave",
+   "agave syrup",
+   "agave nectar",
+   "molasses",
+   "blackstrap molasses",
+   "date syrup",
+   "yacon syrup",
+   "golden syrup",
+   "treacle"
+  ],
+  "summary": {
+   "en": "Concentrated plant sap or juice — natural in origin, mostly sugar by weight."
+  },
+  "why": {
+   "en": "Added sugar. Agave is especially high in fructose."
+  }
+ },
+ {
+  "id": "juice-concentrate",
+  "name": {
+   "en": "Fruit juice concentrate"
+  },
+  "verdict": "limit",
+  "match": [
+   "fruit juice concentrate",
+   "juice concentrate",
+   "apple juice concentrate",
+   "grape juice concentrate",
+   "pear juice concentrate",
+   "fruit concentrate",
+   "concentrated fruit juice",
+   "fruit juice"
+  ],
+  "summary": {
+   "en": "Fruit juice with the water removed — a sweetener that lets the label read 'no added sugar'."
+  },
+  "why": {
+   "en": "Functions as added sugar: the fiber is gone and the sugar is concentrated. Sage doesn't launder it."
+  }
+ },
+ {
+  "id": "sucralose",
+  "name": {
+   "en": "Sucralose"
+  },
+  "verdict": "limit",
+  "match": [
+   "sucralose",
+   "splenda",
+   "sucralosio"
+  ],
+  "summary": {
+   "en": "A chlorinated sugar derivative about 600× sweeter than sugar, not metabolized for energy."
+  },
+  "why": {
+   "en": "Non-nutritive sweetener: safe at regulated levels, but part of a sweetener system Sage docks. Flagged when it's on your avoid list."
+  }
+ },
+ {
+  "id": "aspartame",
+  "name": {
+   "en": "Aspartame"
+  },
+  "verdict": "limit",
+  "match": [
+   "aspartame",
+   "aspartamo"
+  ],
+  "summary": {
+   "en": "A dipeptide sweetener ~200× sweeter than sugar. IARC lists it as 'possibly carcinogenic' (2B, limited evidence); regulators kept the ADI."
+  },
+  "why": {
+   "en": "Non-nutritive sweetener. Sage docks sweetener systems and flags it on your avoid list; the 2B listing is about weak evidence, not proven harm."
+  }
+ },
+ {
+  "id": "ace-k",
+  "name": {
+   "en": "Acesulfame K"
+  },
+  "verdict": "limit",
+  "match": [
+   "acesulfame k",
+   "acesulfame-k",
+   "acesulfame potassium",
+   "acesulfame",
+   "ace-k"
+  ],
+  "summary": {
+   "en": "A potassium-salt sweetener, usually blended with sucralose or aspartame to round off the taste."
+  },
+  "why": {
+   "en": "Non-nutritive sweetener in a blend — Sage docks the sweetener system as a whole."
+  }
+ },
+ {
+  "id": "saccharin",
+  "name": {
+   "en": "Saccharin"
+  },
+  "verdict": "limit",
+  "match": [
+   "saccharin",
+   "sacarina",
+   "saccharine"
+  ],
+  "summary": {
+   "en": "The oldest artificial sweetener. The 1970s bladder-cancer scare was rat-specific and was withdrawn."
+  },
+  "why": {
+   "en": "Non-nutritive sweetener; part of the sweetener system Sage docks."
+  }
+ },
+ {
+  "id": "stevia",
+  "name": {
+   "en": "Stevia"
+  },
+  "verdict": "limit",
+  "match": [
+   "stevia",
+   "steviol glycosides",
+   "steviol",
+   "rebaudioside a",
+   "rebaudioside m",
+   "reb a",
+   "reb m",
+   "stevia leaf extract",
+   "stevia extract"
+  ],
+  "summary": {
+   "en": "Sweet glycosides extracted and purified from the stevia leaf, ~300× sweeter than sugar."
+  },
+  "why": {
+   "en": "Plant-derived, but still a high-intensity sweetener: it keeps the palate tuned to sweet. Sage docks it lighter than a multi-sweetener system."
+  }
+ },
+ {
+  "id": "monk-fruit",
+  "name": {
+   "en": "Monk fruit extract"
+  },
+  "verdict": "limit",
+  "match": [
+   "monk fruit",
+   "monkfruit",
+   "monk fruit extract",
+   "luo han guo",
+   "mogroside",
+   "mogrosides"
+  ],
+  "summary": {
+   "en": "Mogrosides extracted from the luo han guo fruit; usually blended with erythritol for bulk."
+  },
+  "why": {
+   "en": "High-intensity sweetener; check the blend — the erythritol that usually rides along is the bulk of the 'monk fruit' in the jar."
+  }
+ },
+ {
+  "id": "polyols",
+  "name": {
+   "en": "Sugar alcohol"
+  },
+  "verdict": "limit",
+  "match": [
+   "erythritol",
+   "xylitol",
+   "maltitol",
+   "sorbitol",
+   "mannitol",
+   "isomalt",
+   "lactitol",
+   "allulose",
+   "eritritol",
+   "xilitol",
+   "maltitol syrup",
+   "polyols",
+   "polydextrose"
+  ],
+  "summary": {
+   "en": "Sugar alcohols: bulk sweeteners with fewer calories. Maltitol and sorbitol are laxative above ~20–30 g; xylitol is toxic to dogs."
+  },
+  "why": {
+   "en": "Counted in the sweetener system and, when declared, as polyol load. A 'sugar-free' bar can carry 15 g of these."
+  }
+ },
+ {
+  "id": "evoo",
+  "name": {
+   "en": "Extra virgin olive oil"
+  },
+  "verdict": "good",
+  "match": [
+   "extra virgin olive oil",
+   "extra-virgin olive oil",
+   "virgin olive oil",
+   "olive oil",
+   "azeite",
+   "azeite de oliva",
+   "olio di oliva",
+   "olio extravergine di oliva",
+   "huile d'olive"
+  ],
+  "summary": {
+   "en": "Oil pressed from olives without heat or solvents; rich in oleic acid and polyphenols."
+  },
+  "why": {
+   "en": "Sage's top fat tier — minimally refined, with the strongest human evidence of any culinary fat."
+  }
+ },
+ {
+  "id": "avocado-oil",
+  "name": {
+   "en": "Avocado oil"
+  },
+  "verdict": "good",
+  "match": [
+   "avocado oil",
+   "extra virgin avocado oil",
+   "macadamia oil",
+   "walnut oil",
+   "flaxseed oil",
+   "flax oil",
+   "linseed oil",
+   "hemp seed oil",
+   "hempseed oil"
+  ],
+  "summary": {
+   "en": "Pressed from the fruit or nut. Mostly monounsaturated (avocado, macadamia) or omega-3 rich (flax, walnut, hemp)."
+  },
+  "why": {
+   "en": "Top fat tier when cold-pressed; refined versions lose some of the case."
+  }
+ },
+ {
+  "id": "butter",
+  "name": {
+   "en": "Butter"
+  },
+  "verdict": "neutral",
+  "match": [
+   "butter",
+   "unsalted butter",
+   "salted butter",
+   "cultured butter",
+   "ghee",
+   "clarified butter",
+   "manteiga",
+   "burro",
+   "beurre",
+   "cream",
+   "heavy cream",
+   "double cream",
+   "whipping cream",
+   "sour cream"
+  ],
+  "summary": {
+   "en": "Dairy fat — butter, ghee or cream. Mostly saturated fat, a little short-chain fatty acid."
+  },
+  "why": {
+   "en": "Fine as an ingredient: it's real food. Its saturated fat is judged on the nutrition panel, not here."
+  }
+ },
+ {
+  "id": "coconut-oil",
+  "name": {
+   "en": "Coconut oil"
+  },
+  "verdict": "neutral",
+  "match": [
+   "coconut oil",
+   "virgin coconut oil",
+   "coconut cream",
+   "coconut milk",
+   "coconut butter",
+   "mct oil",
+   "cocoa butter",
+   "cacao butter",
+   "shea butter",
+   "shea"
+  ],
+  "summary": {
+   "en": "Plant fats that are solid at room temperature — coconut, cocoa, shea. High in saturated fat; cocoa butter is the fat in real chocolate."
+  },
+  "why": {
+   "en": "Fine as an ingredient. Saturated fat is scored on the panel; Sage doesn't buy the 'superfood' framing either way."
+  }
+ },
+ {
+  "id": "palm-oil",
+  "name": {
+   "en": "Palm oil"
+  },
+  "verdict": "limit",
+  "match": [
+   "palm oil",
+   "palm fat",
+   "palm kernel oil",
+   "palm kernel fat",
+   "palm olein",
+   "palm stearin",
+   "fractionated palm oil",
+   "palmolein",
+   "óleo de palma",
+   "olio di palma",
+   "huile de palme",
+   "vegetable fat"
+  ],
+  "summary": {
+   "en": "Refined, semi-solid tropical oil — the cheap structural fat in spreads, biscuits and bars. Heavily refined and deodorized."
+  },
+  "why": {
+   "en": "Low fat-quality tier: high in palmitic saturated fat and refined hard. The environmental record isn't scored — only the health side is."
+  }
+ },
+ {
+  "id": "seed-oils",
+  "name": {
+   "en": "Refined seed oil"
+  },
+  "verdict": "limit",
+  "match": [
+   "soybean oil",
+   "soya oil",
+   "soy oil",
+   "canola oil",
+   "rapeseed oil",
+   "sunflower oil",
+   "high oleic sunflower oil",
+   "corn oil",
+   "maize oil",
+   "cottonseed oil",
+   "safflower oil",
+   "grapeseed oil",
+   "grape seed oil",
+   "rice bran oil",
+   "peanut oil",
+   "groundnut oil",
+   "sesame oil",
+   "óleo de soja",
+   "óleo de girassol",
+   "óleo de canola",
+   "olio di semi di girasole",
+   "olio di soia",
+   "huile de tournesol",
+   "huile de colza"
+  ],
+  "summary": {
+   "en": "Oils extracted from seeds with heat and solvent, then refined, bleached and deodorized. Mostly polyunsaturated (omega-6) or, for canola and high-oleic versions, monounsaturated."
+  },
+  "why": {
+   "en": "Low fat tier. The omega-6 'inflammation' claim is weak in human trials; Sage docks these for the refining and the missing polyphenols — not as toxins. They're flagged when seed oils are on your avoid list."
+  }
+ },
+ {
+  "id": "vegetable-oil",
+  "name": {
+   "en": "Vegetable oil"
+  },
+  "verdict": "limit",
+  "match": [
+   "vegetable oil",
+   "vegetable oils",
+   "vegetable oil blend",
+   "blend of vegetable oils",
+   "vegetable oil (palm)",
+   "óleo vegetal",
+   "olio vegetale",
+   "huile végétale"
+  ],
+  "summary": {
+   "en": "An unspecified refined oil — in practice palm, soybean or rapeseed blends."
+  },
+  "why": {
+   "en": "Low fat tier: refined, and the source isn't even declared. Sage can't give credit for an oil it can't identify."
+  }
+ },
+ {
+  "id": "hydrogenated",
+  "name": {
+   "en": "Hydrogenated oil"
+  },
+  "verdict": "avoid",
+  "match": [
+   "hydrogenated",
+   "partially hydrogenated",
+   "hydrogenated vegetable oil",
+   "partially hydrogenated oil",
+   "hydrogenated palm oil",
+   "interesterified",
+   "interesterified fat",
+   "gordura hidrogenada",
+   "gordura vegetal hidrogenada",
+   "grasso idrogenato",
+   "huile hydrogénée",
+   "shortening",
+   "vegetable shortening"
+  ],
+  "summary": {
+   "en": "Oil hardened by forcing in hydrogen. Partial hydrogenation creates industrial trans fat; full hydrogenation and interesterification avoid it but produce hard, highly engineered fats."
+  },
+  "why": {
+   "en": "Avoid: the trans-fat family has no safe intake, and Sage caps the overall score when trans fat shows on the panel. Even the trans-free versions sit in the lowest fat tier."
+  }
+ },
+ {
+  "id": "lard",
+  "name": {
+   "en": "Lard"
+  },
+  "verdict": "neutral",
+  "match": [
+   "lard",
+   "tallow",
+   "beef tallow",
+   "beef fat",
+   "pork fat",
+   "duck fat",
+   "chicken fat",
+   "schmaltz",
+   "bacon fat",
+   "banha",
+   "strutto"
+  ],
+  "summary": {
+   "en": "Rendered animal fat — mostly monounsaturated and saturated, with no refining beyond melting."
+  },
+  "why": {
+   "en": "Fine as an ingredient; saturated fat is judged on the panel."
+  }
+ },
+ {
+  "id": "whole-wheat",
+  "name": {
+   "en": "Whole wheat flour"
+  },
+  "verdict": "good",
+  "match": [
+   "whole wheat flour",
+   "whole-wheat flour",
+   "wholemeal flour",
+   "wholemeal wheat flour",
+   "whole grain wheat flour",
+   "whole grain flour",
+   "whole wheat",
+   "whole grain wheat",
+   "stoneground wholemeal",
+   "farinha integral",
+   "farina integrale",
+   "farine complète",
+   "sprouted wheat",
+   "sprouted whole wheat",
+   "whole grain spelt",
+   "whole spelt flour",
+   "whole rye flour",
+   "rye meal",
+   "whole grain rye"
+  ],
+  "summary": {
+   "en": "Flour milled from the entire kernel — bran, germ and endosperm — so the fiber and micronutrients stay in."
+  },
+  "why": {
+   "en": "A whole grain. Sage's graded whole-grain rule credits it by position in the list, not by the claim on the front."
+  }
+ },
+ {
+  "id": "oats",
+  "name": {
+   "en": "Oats"
+  },
+  "verdict": "good",
+  "match": [
+   "oats",
+   "whole grain oats",
+   "whole rolled oats",
+   "rolled oats",
+   "oat flakes",
+   "oat flour",
+   "whole oat flour",
+   "oatmeal",
+   "steel cut oats",
+   "porridge oats",
+   "aveia",
+   "avena",
+   "gluten free oats",
+   "gluten-free oats"
+  ],
+  "summary": {
+   "en": "The whole oat kernel, rolled or milled. Naturally high in beta-glucan fiber."
+  },
+  "why": {
+   "en": "A whole grain — counts toward Sage's real-food ratio and its whole-grain credit."
+  }
+ },
+ {
+  "id": "whole-grains",
+  "name": {
+   "en": "Whole grain"
+  },
+  "verdict": "good",
+  "match": [
+   "brown rice",
+   "whole grain brown rice",
+   "quinoa",
+   "buckwheat",
+   "millet",
+   "sorghum",
+   "teff",
+   "amaranth",
+   "bulgur",
+   "wild rice",
+   "barley",
+   "pearl barley",
+   "whole barley",
+   "whole grain corn",
+   "whole corn",
+   "whole grain cornmeal",
+   "whole grain rice",
+   "whole grain sorghum",
+   "chia seeds",
+   "chia",
+   "flax seeds",
+   "flaxseed",
+   "ground flaxseed",
+   "linseed"
+  ],
+  "summary": {
+   "en": "Intact or minimally milled grains and seeds with their bran and germ."
+  },
+  "why": {
+   "en": "Whole food and whole grain — credited in the real-food ratio and, where the profile scores it, the whole-grain rule."
+  }
+ },
+ {
+  "id": "wheat-flour",
+  "name": {
+   "en": "Wheat flour"
+  },
+  "verdict": "neutral",
+  "match": [
+   "wheat flour",
+   "enriched wheat flour",
+   "enriched flour",
+   "unbleached wheat flour",
+   "unbleached enriched wheat flour",
+   "bleached wheat flour",
+   "bleached flour",
+   "white flour",
+   "all-purpose flour",
+   "plain flour",
+   "flour",
+   "refined wheat flour",
+   "fortified wheat flour",
+   "durum wheat semolina",
+   "semolina",
+   "durum wheat",
+   "farinha de trigo",
+   "farina di grano tenero",
+   "farine de blé",
+   "wheat",
+   "spelt flour",
+   "rye flour",
+   "rice flour",
+   "white rice",
+   "rice"
+  ],
+  "summary": {
+   "en": "Flour or grain with the bran and germ removed. 'Enriched' means a few B vitamins and iron were added back; the fiber wasn't."
+  },
+  "why": {
+   "en": "Fine — a staple, not a hazard. It just isn't a whole grain, so it earns no whole-grain credit and contributes little fiber."
+  }
+ },
+ {
+  "id": "starch",
+  "name": {
+   "en": "Starch"
+  },
+  "verdict": "neutral",
+  "match": [
+   "corn starch",
+   "cornstarch",
+   "maize starch",
+   "modified starch",
+   "modified corn starch",
+   "modified food starch",
+   "modified tapioca starch",
+   "tapioca starch",
+   "potato starch",
+   "wheat starch",
+   "rice starch",
+   "pea starch",
+   "starch",
+   "amido",
+   "amido modificado",
+   "amido modificato",
+   "fécula",
+   "fecula"
+  ],
+  "summary": {
+   "en": "Purified starch — a thickener and bulking agent. 'Modified' means treated to hold up under heat, acid or freezing."
+  },
+  "why": {
+   "en": "Fine on its own; it's a processing marker Sage uses to recognize formulation, not an ingredient it docks."
+  }
+ },
+ {
+  "id": "milk",
+  "name": {
+   "en": "Milk"
+  },
+  "verdict": "good",
+  "match": [
+   "milk",
+   "whole milk",
+   "skim milk",
+   "skimmed milk",
+   "semi-skimmed milk",
+   "low-fat milk",
+   "reduced fat milk",
+   "nonfat milk",
+   "pasteurized milk",
+   "organic milk",
+   "grass-fed milk",
+   "goat milk",
+   "sheep milk",
+   "leite",
+   "latte",
+   "lait",
+   "buttermilk",
+   "kefir",
+   "yogurt",
+   "yoghurt",
+   "greek yogurt",
+   "cheese",
+   "cheddar cheese",
+   "mozzarella",
+   "parmesan",
+   "cream cheese",
+   "cottage cheese",
+   "ricotta"
+  ],
+  "summary": {
+   "en": "Fluid milk or a traditional dairy food made from it."
+  },
+  "why": {
+   "en": "A whole food — counts toward Sage's real-food ratio. Fat and sodium are judged on the panel."
+  }
+ },
+ {
+  "id": "milk-powder",
+  "name": {
+   "en": "Milk powder"
+  },
+  "verdict": "neutral",
+  "match": [
+   "skimmed milk powder",
+   "skim milk powder",
+   "nonfat dry milk",
+   "non-fat dry milk",
+   "dried skimmed milk",
+   "milk powder",
+   "whole milk powder",
+   "dried whole milk",
+   "milk solids",
+   "nonfat milk solids",
+   "dairy solids",
+   "leite em pó",
+   "leite em pó desnatado",
+   "latte in polvere",
+   "lait en poudre",
+   "whey",
+   "whey powder",
+   "sweet whey",
+   "whey solids",
+   "milk protein concentrate",
+   "casein",
+   "caseinate",
+   "sodium caseinate",
+   "calcium caseinate"
+  ],
+  "summary": {
+   "en": "Milk with the water removed, or a fraction of it (whey, casein). Common in chocolate spreads, bars and baked goods."
+  },
+  "why": {
+   "en": "Fine — a dairy ingredient, not a concern on its own. Sage treats milk and whey powders as whole-food-derived, not as isolates."
+  }
+ },
+ {
+  "id": "protein-isolate",
+  "name": {
+   "en": "Protein isolate"
+  },
+  "verdict": "neutral",
+  "match": [
+   "whey protein isolate",
+   "whey protein concentrate",
+   "whey protein",
+   "milk protein isolate",
+   "soy protein isolate",
+   "soy protein",
+   "pea protein",
+   "pea protein isolate",
+   "rice protein",
+   "brown rice protein",
+   "hemp protein",
+   "egg white protein",
+   "collagen",
+   "hydrolyzed collagen",
+   "collagen peptides",
+   "bovine collagen",
+   "protein blend",
+   "protein crisps",
+   "soy protein crisps",
+   "milk protein crisps"
+  ],
+  "summary": {
+   "en": "Protein separated from milk, soy, peas or rice for protein bars, powders and shakes. Collagen is an incomplete protein (low in tryptophan)."
+  },
+  "why": {
+   "en": "Fine: isolates are how a protein bar delivers protein, and Sage's protein-bar profile never docks them. Source quality is scored — collagen earns far less than whey or egg."
+  }
+ },
+ {
+  "id": "eggs",
+  "name": {
+   "en": "Eggs"
+  },
+  "verdict": "good",
+  "match": [
+   "eggs",
+   "egg",
+   "whole eggs",
+   "whole egg",
+   "egg whites",
+   "egg white",
+   "liquid egg",
+   "egg yolk",
+   "egg yolks",
+   "pasteurized eggs",
+   "free range eggs",
+   "cage free eggs",
+   "ovos",
+   "uova",
+   "oeufs",
+   "dried egg",
+   "egg powder"
+  ],
+  "summary": {
+   "en": "Whole egg, white or yolk — fresh, liquid or dried."
+  },
+  "why": {
+   "en": "A whole food; high-quality complete protein. Counts toward Sage's real-food ratio."
+  }
+ },
+ {
+  "id": "nuts",
+  "name": {
+   "en": "Nuts"
+  },
+  "verdict": "good",
+  "match": [
+   "hazelnuts",
+   "hazelnut",
+   "roasted hazelnuts",
+   "almonds",
+   "almond",
+   "roasted almonds",
+   "peanuts",
+   "peanut",
+   "roasted peanuts",
+   "cashews",
+   "cashew",
+   "walnuts",
+   "walnut",
+   "pecans",
+   "pecan",
+   "pistachios",
+   "pistachio",
+   "macadamia",
+   "macadamias",
+   "brazil nuts",
+   "pine nuts",
+   "nuts",
+   "mixed nuts",
+   "peanut butter",
+   "almond butter",
+   "cashew butter",
+   "hazelnut paste",
+   "almond paste",
+   "ground almonds",
+   "almond flour",
+   "avelãs",
+   "nocciole",
+   "noisettes",
+   "amendoim",
+   "mandorle",
+   "amêndoas"
+  ],
+  "summary": {
+   "en": "Tree nuts, peanuts or a butter ground from them."
+  },
+  "why": {
+   "en": "Whole food — fiber, unsaturated fat and protein. Counts toward the real-food ratio; hero-ingredient rules check whether it's actually there in quantity."
+  }
+ },
+ {
+  "id": "seeds",
+  "name": {
+   "en": "Seeds"
+  },
+  "verdict": "good",
+  "match": [
+   "sunflower seeds",
+   "pumpkin seeds",
+   "pepitas",
+   "sesame seeds",
+   "sesame",
+   "hemp seeds",
+   "hemp hearts",
+   "poppy seeds",
+   "tahini",
+   "sunflower seed butter",
+   "sunflower kernels",
+   "watermelon seeds"
+  ],
+  "summary": {
+   "en": "Whole or ground seeds."
+  },
+  "why": {
+   "en": "Whole food — counts toward Sage's real-food ratio."
+  }
+ },
+ {
+  "id": "cocoa",
+  "name": {
+   "en": "Cocoa"
+  },
+  "verdict": "good",
+  "match": [
+   "cocoa",
+   "cocoa powder",
+   "cacao",
+   "cacao powder",
+   "raw cacao",
+   "cocoa mass",
+   "cocoa liquor",
+   "cocoa solids",
+   "cacao nibs",
+   "cocoa nibs",
+   "chocolate liquor",
+   "unsweetened chocolate",
+   "cacau",
+   "cacau em pó",
+   "cacao en poudre",
+   "alkalized cocoa",
+   "dutch processed cocoa",
+   "cocoa powder processed with alkali"
+  ],
+  "summary": {
+   "en": "The ground cocoa bean or its defatted powder. Alkalizing ('Dutch process') mellows the flavor and reduces flavanols somewhat."
+  },
+  "why": {
+   "en": "Whole food — flavanol-rich. Counts toward the real-food ratio; the sugar that usually travels with it is scored separately."
+  }
+ },
+ {
+  "id": "chocolate",
+  "name": {
+   "en": "Chocolate"
+  },
+  "verdict": "neutral",
+  "match": [
+   "chocolate",
+   "dark chocolate",
+   "milk chocolate",
+   "chocolate chips",
+   "chocolate chunks",
+   "semi-sweet chocolate",
+   "semisweet chocolate",
+   "white chocolate",
+   "compound chocolate",
+   "chocolate coating",
+   "chocolate flavored coating",
+   "chocolatey coating",
+   "cocoa butter substitute"
+  ],
+  "summary": {
+   "en": "A sub-recipe of cocoa, sugar and fat. 'Compound' or 'chocolatey coating' swaps cocoa butter for palm or other vegetable fat."
+  },
+  "why": {
+   "en": "Neutral as a whole; look at what's in the parentheses — the sugar and fat inside it are what Sage actually scores."
+  }
+ },
+ {
+  "id": "dried-fruit",
+  "name": {
+   "en": "Dried fruit"
+  },
+  "verdict": "good",
+  "match": [
+   "dates",
+   "date paste",
+   "medjool dates",
+   "raisins",
+   "sultanas",
+   "dried cranberries",
+   "dried blueberries",
+   "dried apricots",
+   "prunes",
+   "dried figs",
+   "figs",
+   "dried mango",
+   "dried cherries",
+   "dried fruit",
+   "banana chips",
+   "dried banana",
+   "tâmaras",
+   "uvas passas"
+  ],
+  "summary": {
+   "en": "Fruit with the water removed — fiber and micronutrients intact, sugar concentrated."
+  },
+  "why": {
+   "en": "Whole food, and Sage credits it as such. But it is sugar-dense: a date bar can carry 30 g of sugar per 100 g, and the fruit-sugar discount is capped so that can't hide entirely."
+  }
+ },
+ {
+  "id": "fruit",
+  "name": {
+   "en": "Fruit"
+  },
+  "verdict": "good",
+  "match": [
+   "strawberries",
+   "strawberry",
+   "blueberries",
+   "blueberry",
+   "raspberries",
+   "bananas",
+   "banana",
+   "apples",
+   "apple",
+   "apple puree",
+   "apple purée",
+   "mango",
+   "pineapple",
+   "orange",
+   "oranges",
+   "lemon",
+   "lemons",
+   "lime",
+   "cherries",
+   "peaches",
+   "pears",
+   "grapes",
+   "coconut",
+   "shredded coconut",
+   "desiccated coconut",
+   "tomatoes",
+   "tomato",
+   "tomato paste",
+   "tomato puree",
+   "vegetables",
+   "spinach",
+   "kale",
+   "carrots",
+   "carrot",
+   "onion",
+   "onions",
+   "garlic",
+   "peppers",
+   "potatoes",
+   "potato",
+   "sweet potato",
+   "beans",
+   "black beans",
+   "chickpeas",
+   "lentils",
+   "peas",
+   "soybeans",
+   "edamame",
+   "tofu",
+   "olives"
+  ],
+  "summary": {
+   "en": "Fruit, vegetables or legumes — fresh, frozen, puréed or cooked."
+  },
+  "why": {
+   "en": "Whole food — counts toward the real-food ratio and the fruit/vegetable/nut share."
+  }
+ },
+ {
+  "id": "salt",
+  "name": {
+   "en": "Salt"
+  },
+  "verdict": "neutral",
+  "match": [
+   "salt",
+   "sea salt",
+   "iodized salt",
+   "iodised salt",
+   "kosher salt",
+   "himalayan salt",
+   "pink salt",
+   "rock salt",
+   "sal",
+   "sale",
+   "sel",
+   "salt substitute"
+  ],
+  "summary": {
+   "en": "Sodium chloride — sea, rock or mined, iodized or not. Nutritionally identical."
+  },
+  "why": {
+   "en": "Fine as an ingredient: how much sodium ends up in the food is judged on the panel, not by the word 'salt'."
+  }
+ },
+ {
+  "id": "water",
+  "name": {
+   "en": "Water"
+  },
+  "verdict": "neutral",
+  "match": [
+   "water",
+   "filtered water",
+   "purified water",
+   "spring water",
+   "carbonated water",
+   "sparkling water",
+   "mineral water",
+   "água",
+   "acqua",
+   "eau"
+  ],
+  "summary": {
+   "en": "Water."
+  },
+  "why": {
+   "en": "Not judged, and left out of Sage's real-food ratio so it can't pad a short list."
+  }
+ },
+ {
+  "id": "natural-flavor",
+  "name": {
+   "en": "Natural flavor"
+  },
+  "verdict": "neutral",
+  "match": [
+   "natural flavor",
+   "natural flavors",
+   "natural flavour",
+   "natural flavours",
+   "natural flavoring",
+   "natural flavourings",
+   "flavor",
+   "flavors",
+   "flavour",
+   "flavours",
+   "flavoring",
+   "flavorings",
+   "flavouring",
+   "flavourings",
+   "artificial flavor",
+   "artificial flavors",
+   "artificial flavour",
+   "natural and artificial flavors",
+   "natural and artificial flavor",
+   "aroma",
+   "aromas",
+   "aroma natural",
+   "aromi",
+   "aromi naturali",
+   "arôme",
+   "arômes",
+   "arômes naturels",
+   "vanilla flavor",
+   "vanilla flavour",
+   "vanilla extract",
+   "natural vanilla flavor",
+   "smoke flavor",
+   "smoke flavour"
+  ],
+  "summary": {
+   "en": "A proprietary mix of flavor compounds. 'Natural' means the starting material was plant or animal; the processing can be extensive and the recipe is never disclosed."
+  },
+  "why": {
+   "en": "Fine on its own — no evidence of harm at food-use levels. Sage uses flavorings as one marker of ultra-processing, not as a dock by itself."
+  }
+ },
+ {
+  "id": "caffeine",
+  "name": {
+   "en": "Caffeine"
+  },
+  "verdict": "neutral",
+  "match": [
+   "caffeine",
+   "natural caffeine",
+   "green coffee extract",
+   "guarana",
+   "guarana extract",
+   "guaraná",
+   "yerba mate",
+   "green tea extract",
+   "taurine"
+  ],
+  "summary": {
+   "en": "A stimulant, added or from guarana / coffee / tea extracts. Taurine is an amino acid common in energy drinks, not a stimulant itself."
+  },
+  "why": {
+   "en": "Neutral at typical amounts; Sage shows the milligrams in the Detected section and the drinks profile caps heavily caffeinated products."
+  }
+ },
+ {
+  "id": "vinegar",
+  "name": {
+   "en": "Vinegar"
+  },
+  "verdict": "neutral",
+  "match": [
+   "vinegar",
+   "white vinegar",
+   "apple cider vinegar",
+   "cider vinegar",
+   "distilled vinegar",
+   "white wine vinegar",
+   "red wine vinegar",
+   "balsamic vinegar",
+   "rice vinegar",
+   "malt vinegar",
+   "vinagre",
+   "aceto",
+   "vinaigre",
+   "lemon juice",
+   "lime juice",
+   "lemon juice concentrate",
+   "lime juice concentrate",
+   "citric acid"
+  ],
+  "summary": {
+   "en": "Acids used for preservation, tang and pH control — vinegar, citrus juice or citric acid (which is fermented from sugar, not squeezed from lemons)."
+  },
+  "why": {
+   "en": "Fine. Traditional preservation; citric acid (E330) is a low-risk additive."
+  }
+ },
+ {
+  "id": "yeast",
+  "name": {
+   "en": "Yeast"
+  },
+  "verdict": "neutral",
+  "match": [
+   "yeast",
+   "baker's yeast",
+   "bakers yeast",
+   "dry yeast",
+   "active dry yeast",
+   "instant yeast",
+   "nutritional yeast",
+   "sourdough",
+   "sourdough starter",
+   "sourdough culture",
+   "levain",
+   "fermento",
+   "lievito",
+   "levure",
+   "baking soda",
+   "sodium bicarbonate",
+   "bicarbonate of soda",
+   "baking powder",
+   "leavening",
+   "leavening agents",
+   "cream of tartar",
+   "live cultures",
+   "active cultures",
+   "live and active cultures",
+   "lactic cultures",
+   "bacterial cultures",
+   "cultures",
+   "probiotics",
+   "probiotic cultures",
+   "rennet",
+   "microbial rennet",
+   "vegetable rennet",
+   "enzymes",
+   "lactase",
+   "bifidobacterium",
+   "lactobacillus",
+   "ammonium bicarbonate",
+   "ammonium carbonate",
+   "ammonium carbonates",
+   "hartshorn",
+   "baking ammonia",
+   "raising agent",
+   "raising agents",
+   "raising agent (sodium bicarbonate)",
+   "raising agents (sodium bicarbonate)",
+   "sodium acid pyrophosphate",
+   "monocalcium phosphate",
+   "sodium aluminum phosphate",
+   "leavening (baking soda)",
+   "leavening (sodium bicarbonate)"
+  ],
+  "summary": {
+   "en": "Leavening or fermentation agents — yeast, sourdough culture, baking soda / powder, or the live cultures and enzymes in dairy."
+  },
+  "why": {
+   "en": "Fine — traditional food processing, not a formulation trick. No effect on the score by itself."
+  }
+ },
+ {
+  "id": "spices",
+  "name": {
+   "en": "Spices"
+  },
+  "verdict": "neutral",
+  "match": [
+   "spices",
+   "spice",
+   "spice blend",
+   "herbs",
+   "herb",
+   "dried herbs",
+   "seasoning",
+   "seasonings",
+   "natural seasoning",
+   "garlic powder",
+   "onion powder",
+   "paprika",
+   "smoked paprika",
+   "black pepper",
+   "pepper",
+   "cinnamon",
+   "ground cinnamon",
+   "turmeric",
+   "ginger",
+   "nutmeg",
+   "cumin",
+   "oregano",
+   "basil",
+   "rosemary",
+   "thyme",
+   "parsley",
+   "chili",
+   "chilli",
+   "cayenne",
+   "vanilla",
+   "vanilla bean",
+   "vanilla beans",
+   "vanilla powder",
+   "cocoa extract",
+   "mustard",
+   "mustard seed",
+   "mustard flour",
+   "celery seed",
+   "especiarias",
+   "spezie",
+   "épices",
+   "natural spices"
+  ],
+  "summary": {
+   "en": "Dried herbs and spices, alone or as a blend."
+  },
+  "why": {
+   "en": "Fine — flavor from real plants. 'Seasoning' and 'spices' can hide salt, but that shows up on the sodium line."
+  }
+ },
+ {
+  "id": "lecithin",
+  "name": {
+   "en": "Lecithin"
+  },
+  "verdict": "neutral",
+  "match": [
+   "soy lecithin",
+   "soya lecithin",
+   "sunflower lecithin",
+   "lecithin",
+   "lecithins",
+   "rapeseed lecithin",
+   "emulsifier (soy lecithin)",
+   "emulsifier: soy lecithin",
+   "emulsifier (sunflower lecithin)",
+   "emulsifier: sunflower lecithin",
+   "emulsifier (lecithins)",
+   "emulsifier lecithin",
+   "lecitina de soja",
+   "lecitina di soia",
+   "lécithine de soja",
+   "lécithine de tournesol"
+  ],
+  "summary": {
+   "en": "A fatty emulsifier extracted from soybeans or sunflower seeds (E322); it keeps chocolate smooth and fat from separating."
+  },
+  "why": {
+   "en": "Fine: low-risk additive at food levels. It is still an emulsifier, so it counts as a processing marker — not a dock on its own."
+  }
+ },
+ {
+  "id": "fiber-isolate",
+  "name": {
+   "en": "Added fiber"
+  },
+  "verdict": "neutral",
+  "match": [
+   "inulin",
+   "chicory root fiber",
+   "chicory root fibre",
+   "chicory fiber",
+   "chicory fibre",
+   "chicory root",
+   "chicory root extract",
+   "soluble corn fiber",
+   "soluble corn fibre",
+   "soluble tapioca fiber",
+   "soluble tapioca fibre",
+   "resistant dextrin",
+   "resistant maltodextrin",
+   "isomalto-oligosaccharides",
+   "imo",
+   "oligofructose",
+   "fructooligosaccharides",
+   "fos",
+   "oat fiber",
+   "oat fibre",
+   "cellulose",
+   "powdered cellulose",
+   "wheat fiber",
+   "wheat fibre",
+   "pea fiber",
+   "pea fibre",
+   "psyllium",
+   "psyllium husk",
+   "acacia fiber",
+   "acacia gum",
+   "gum acacia",
+   "gum arabic",
+   "beta-glucan",
+   "oat beta-glucan"
+  ],
+  "summary": {
+   "en": "Fiber isolated from chicory, corn or oats and added back to lift the fiber line. Inulin and IMO can cause bloating in larger doses."
+  },
+  "why": {
+   "en": "Fine, with a caveat: Sage counts isolated fiber at half weight on bars and refined-grain breads, because a fiber line inflated this way doesn't behave like the fiber in whole grains."
+  }
+ },
+ {
+  "id": "gums",
+  "name": {
+   "en": "Gums & thickeners"
+  },
+  "verdict": "neutral",
+  "match": [
+   "xanthan gum",
+   "guar gum",
+   "locust bean gum",
+   "carob bean gum",
+   "gellan gum",
+   "carrageenan",
+   "agar",
+   "agar-agar",
+   "pectin",
+   "fruit pectin",
+   "gelatin",
+   "gelatine",
+   "tapioca fiber",
+   "cellulose gum",
+   "carboxymethylcellulose",
+   "goma xantana",
+   "goma guar",
+   "carragena",
+   "carragenina"
+  ],
+  "summary": {
+   "en": "Thickeners and stabilizers — plant gums, seaweed extracts (carrageenan, agar), pectin or gelatin."
+  },
+  "why": {
+   "en": "Fine at food levels; carrageenan is on some avoid lists for gut-irritation evidence that is mostly from animal and cell studies. Sage flags it when it's on yours."
+  }
+ },
+ {
+  "id": "preservatives",
+  "name": {
+   "en": "Preservative"
+  },
+  "verdict": "neutral",
+  "match": [
+   "potassium sorbate",
+   "sodium benzoate",
+   "calcium propionate",
+   "sodium propionate",
+   "propionic acid",
+   "sorbic acid",
+   "benzoic acid",
+   "sodium nitrite",
+   "sodium nitrate",
+   "potassium nitrate",
+   "sulfites",
+   "sulphites",
+   "sodium metabisulfite",
+   "sodium metabisulphite",
+   "sulfur dioxide",
+   "sulphur dioxide",
+   "ascorbic acid",
+   "sodium ascorbate",
+   "tocopherols",
+   "mixed tocopherols",
+   "vitamin e (mixed tocopherols)",
+   "rosemary extract",
+   "natamycin",
+   "nisin",
+   "cultured dextrose",
+   "cultured celery powder",
+   "celery powder",
+   "vinegar powder"
+  ],
+  "summary": {
+   "en": "A preservative — chemical (sorbate, benzoate, propionate), curing (nitrite / nitrate, including 'cultured celery' which is nitrite by another route) or antioxidant (ascorbate, tocopherols, rosemary)."
+  },
+  "why": {
+   "en": "Most are fine at food levels; Sage rates each in the Additives section by its own evidence. Nitrite-cured meat is the exception worth limiting — the additive rating says so."
+  }
+ },
+ {
+  "id": "colors",
+  "name": {
+   "en": "Color"
+  },
+  "verdict": "neutral",
+  "match": [
+   "color",
+   "colour",
+   "colors",
+   "colours",
+   "color added",
+   "colour added",
+   "natural color",
+   "natural colour",
+   "natural colors",
+   "natural colours",
+   "colored with",
+   "coloured with",
+   "fruit and vegetable juice for color",
+   "vegetable juice for color",
+   "vegetable juice (color)",
+   "beet juice",
+   "beetroot juice",
+   "beet juice concentrate",
+   "paprika extract",
+   "paprika oleoresin",
+   "annatto",
+   "annatto extract",
+   "turmeric extract",
+   "turmeric (color)",
+   "spirulina extract",
+   "carmine",
+   "cochineal",
+   "caramel color",
+   "caramel colour",
+   "corante",
+   "colorante",
+   "colorant"
+  ],
+  "summary": {
+   "en": "A colorant — plant-derived (beet, paprika, annatto, turmeric, spirulina), insect-derived (carmine) or a class-IV caramel."
+  },
+  "why": {
+   "en": "Plant colors are fine. Synthetic dyes and ammonia caramels are rated individually in the Additives section and flagged if artificial colors are on your avoid list."
+  }
+ },
+ {
+  "id": "soy",
+  "name": {
+   "en": "Soy"
+  },
+  "verdict": "neutral",
+  "match": [
+   "soy",
+   "soya",
+   "soy flour",
+   "soya flour",
+   "soybean",
+   "soy milk",
+   "soymilk",
+   "soya milk",
+   "soy beverage",
+   "textured soy protein",
+   "textured vegetable protein",
+   "tvp",
+   "soy nuggets",
+   "soy crisps",
+   "tempeh",
+   "miso",
+   "soy sauce",
+   "tamari"
+  ],
+  "summary": {
+   "en": "Soy in a processed form — flour, milk, textured protein or fermented (miso, tamari, tempeh)."
+  },
+  "why": {
+   "en": "Fine: a legitimate protein source. Tofu, tempeh and edamame count as whole foods; the textured and isolated forms are neutral processed ingredients."
+  }
+ },
+ {
+  "id": "plant-milk",
+  "name": {
+   "en": "Plant milk base"
+  },
+  "verdict": "neutral",
+  "match": [
+   "oat base",
+   "oat milk",
+   "oatmilk",
+   "almond milk",
+   "almondmilk",
+   "almond base",
+   "coconut beverage",
+   "rice milk",
+   "cashew milk",
+   "pea milk",
+   "pea protein base",
+   "plant-based milk",
+   "oat drink",
+   "almond drink"
+  ],
+  "summary": {
+   "en": "A plant 'milk' — a small share of oat, almond, pea or rice blended into water, usually with added oil, salt and fortification."
+  },
+  "why": {
+   "en": "Neutral: what matters is the rest of the list (oil, sugar, gums) and the fortification. The name promises more nut or grain than the recipe usually contains."
+  }
+ },
+ {
+  "id": "gluten",
+  "name": {
+   "en": "Vital wheat gluten"
+  },
+  "verdict": "neutral",
+  "match": [
+   "vital wheat gluten",
+   "wheat gluten",
+   "gluten",
+   "seitan"
+  ],
+  "summary": {
+   "en": "Wheat protein concentrated from flour; lifts bread dough and doesn't behave like an isolate sweetener."
+  },
+  "why": {
+   "en": "Fine — Sage's bread profile deliberately doesn't treat it as an ultra-processing marker."
+  }
+ },
+ {
+  "id": "vitamins",
+  "name": {
+   "en": "Vitamins & minerals"
+  },
+  "verdict": "neutral",
+  "match": [
+   "vitamin d",
+   "vitamin d3",
+   "vitamin d2",
+   "cholecalciferol",
+   "vitamin a",
+   "vitamin a palmitate",
+   "retinyl palmitate",
+   "vitamin b12",
+   "cyanocobalamin",
+   "methylcobalamin",
+   "vitamin c",
+   "vitamin e",
+   "folic acid",
+   "folate",
+   "niacin",
+   "niacinamide",
+   "riboflavin",
+   "thiamin",
+   "thiamine",
+   "thiamine mononitrate",
+   "pyridoxine",
+   "pyridoxine hydrochloride",
+   "vitamin b6",
+   "biotin",
+   "pantothenic acid",
+   "calcium pantothenate",
+   "zinc oxide",
+   "zinc gluconate",
+   "iron",
+   "reduced iron",
+   "ferrous sulfate",
+   "ferrous fumarate",
+   "calcium carbonate",
+   "tricalcium phosphate",
+   "calcium citrate",
+   "calcium phosphate",
+   "dicalcium phosphate",
+   "magnesium oxide",
+   "magnesium citrate",
+   "potassium iodide",
+   "potassium chloride",
+   "potassium citrate",
+   "sodium citrate",
+   "selenium",
+   "vitamins",
+   "minerals",
+   "vitamins and minerals",
+   "iodine",
+   "fluoride"
+  ],
+  "summary": {
+   "en": "Fortification — vitamins and minerals added to the food, or (potassium / sodium citrate, calcium phosphate) acidity and mineral salts."
+  },
+  "why": {
+   "en": "Fine. Sage exempts fortification from the additive and processing docks — vitamin D in milk or iron in flour isn't a formulation trick."
+  }
+ },
+ {
+  "id": "alcohol",
+  "name": {
+   "en": "Alcohol"
+  },
+  "verdict": "limit",
+  "match": [
+   "alcohol",
+   "ethanol",
+   "ethyl alcohol",
+   "wine",
+   "red wine",
+   "white wine",
+   "beer",
+   "spirits",
+   "rum",
+   "vodka",
+   "whisky",
+   "whiskey",
+   "brandy",
+   "liqueur",
+   "álcool",
+   "alcool"
+  ],
+  "summary": {
+   "en": "Ethanol, as an ingredient or carrier."
+  },
+  "why": {
+   "en": "Worth limiting: no level of alcohol is neutral for health, though the trace amounts in extracts and flavorings don't matter."
+  }
+ }
+]
