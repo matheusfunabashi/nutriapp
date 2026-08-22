@@ -42,6 +42,12 @@ cp fixtures/alternatives.json ../Sage/Alternatives.json
 cp fixtures/alternatives.json ../backend/src/alternatives.json
 ```
 
+When `world.openfoodfacts.org/api/v2/search` is down (it serves an HTML
+"temporarily unavailable" page for hours at a time), `generate_candidates.py`
+falls back automatically: popularity-sorted codes from search-a-licious
+(`search.openfoodfacts.org`) hydrated one by one from the product endpoint
+(paced ~1.2 s — it 429s after ~30 rapid calls). Slower, same output.
+
 `generate_candidates.py` stamps each row with `countries: ["us"]` / `["uk"]` /
 `["ca"]` (merged when the barcode appears in multiple pulls). `TopRatedBuilder`
 keeps the per-market top N, then merges by barcode. The **Top Rated browse tab

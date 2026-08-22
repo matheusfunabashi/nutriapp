@@ -34,7 +34,18 @@ enum DrinksScanDebug {
     }
 
     /// Last live-scan snapshot (tests and console).
-    static var last: Snapshot?
+    /// Lock-protected: `OpenFoodFactsService.map` writes this from whatever
+    /// thread maps a product, and Swift Testing runs suites in parallel — an
+    /// unsynchronized static optional struct was a use-after-free waiting to
+    /// happen (SIGSEGV in `outlined destroy of Snapshot?` under
+    /// AlternativesTests).
+    static var last: Snapshot? {
+        get { stateLock.withLock { _last } }
+        set { stateLock.withLock { _last = newValue } }
+    }
+    private static let stateLock = NSLock()
+    nonisolated(unsafe) private static var _last: Snapshot?
+    nonisolated(unsafe) private static var _lastRerail: RerailEvent?
 
     struct RerailEvent: Equatable {
         let productId: String
@@ -45,7 +56,10 @@ enum DrinksScanDebug {
     }
 
     /// Last routing plausibility rerail (Fix 4).
-    static var lastRerail: RerailEvent?
+    static var lastRerail: RerailEvent? {
+        get { stateLock.withLock { _lastRerail } }
+        set { stateLock.withLock { _lastRerail = newValue } }
+    }
 
     static func logRerail(
         productId: String,

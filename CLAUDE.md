@@ -31,9 +31,25 @@ full rationale in SCORING_V5.md §"V5.3.0 Eggs"; tests `EggScoringV53Tests`.
   enriched 99, whites 91, hard-boiled clean = liquid = shell, HB with
   preservatives 81, pickled 74, Egg Beaters-type 60. Cholesterol, housing,
   feed, packaging, lab testing deliberately unscored (see SCORING_V5.md).
-- Not done (follow-ups): Top Rated "Eggs" shelf (TopRatedBuilder
-  `SHELF_TAGS`), pasteurized-shell badge, cholesterol / vitamin D rows on the
-  product page, `meat` profile has the same dead-S12 structure.
+- **Top Rated "Eggs" shelf** — `SageCategory.eggs` (🥚, hero asset
+  `eggs-tr` — drop an `eggs-tr.imageset` into Assets like the other `-tr`
+  shots; until then the tile shows the shelf's top product photo), shelf
+  routing (after pasta: OFF cross-tags egg pasta under `en:eggs`), StarterPicks
+  for protein / less-processed goals, builder `SHELF_TAGS` / `SHELF_EXCLUDE`
+  / name filter (frittatas, scotch eggs, substitutes, pasta out). Pulled
+  US/UK/CA candidates, scored, image-annotated, merged into `Alternatives.json`
+  (other shelves' `precomputed_score` restamped under v5.3.0; OFF not
+  re-pulled). `generate_candidates.py` gained a search-a-licious +
+  product-endpoint fallback for when OFF's search backend is down.
+  `SageCategory.swift` UIKit import is now `#if canImport(UIKit)` so the macOS
+  builder compiles again.
+- **DEBUG logger data race fixed** — `DrinksScanDebug.last` / `lastRerail`
+  were unsynchronized statics written from `OpenFoodFactsService.map`; under
+  Swift Testing's parallel suites this segfaulted (`outlined destroy of
+  Snapshot?`) and took all of `AlternativesTests` down with it. Now
+  `NSLock`-protected. Pre-existing and intermittent, not egg-related.
+- Not done (follow-ups): pasteurized-shell badge, cholesterol / vitamin D rows
+  on the product page, `meat` profile has the same dead-S12 structure.
 
 ---
 

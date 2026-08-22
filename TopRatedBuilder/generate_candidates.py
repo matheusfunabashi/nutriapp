@@ -133,7 +133,7 @@ SHELF_NAME_EXCLUDE = {
     # Soups without noodles ("Vegan Split Pea Soup") are mis-tagged; noodle
     # soups ("Ramen Noodle Soup") are the genre itself.
     "instantNoodles": re.compile(r"^(?!.*(noodle|ramen)).*soup", re.I | re.S),
-    "eggs": re.compile(r"noodle|pasta|lasagn|scotch|salad|substitute|vegan|plant|quiche|omelet|bites|egg ?roll|mayo|nog|custard|egg ?white ?protein", re.I),
+    "eggs": re.compile(r"noodle|pasta|lasagn|scotch|salad|substitute|vegan|plant|quiche|omelet|frittata|scramble|bites|egg ?roll|mayo|nog|custard|egg ?white ?protein", re.I),
 }
 
 # Never a beverage regardless of shelf tags ("Original Canola Spray" has been
@@ -198,6 +198,9 @@ NUTRIMENT_KEYS = [
     "fruits-vegetables-legumes-estimate-from-ingredients_100g",
     "added-sugars_100g", "iron_100g", "potassium_100g", "magnesium_100g",
     "zinc_100g", "vitamin-c_100g",
+    # V5.3 egg signature (S13 egg enrichment lift).
+    "vitamin-d_100g", "vitamin-b12_100g", "choline_100g", "selenium_100g",
+    "omega-3-fat_100g",
 ]
 FIELDS = ("code,product_name,brands,ingredients_text,additives_tags,nutriments,"
           "nutriscore_grade,nova_group,image_front_url,image_url,"
