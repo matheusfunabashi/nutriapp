@@ -84,6 +84,26 @@ dark mode must still be fully correct, it just isn't the default.
   (5 tabs), `.sheet` + detents, `.alert`, `.searchable`, swipe actions,
   `ContentUnavailableView` for empty states.
 
+## Section chrome (content screens)
+
+- Sections sit **on the background**: one header (`.sageSemiBold(18)`,
+  20pt gutter) with an optional trailing pill / count / caption, then rows
+  separated by `Theme.hairline` at 20pt insets. No card-in-card: cards are
+  for alerts (allergen / avoid-list / diet), rails, and the one "In this
+  product" panel on a sheet. The product page is the reference
+  (`ResultView.sectionHeader` / `rowDivider`).
+- Prose blocks (overview, explainers) are `.sageRegular(15–16)` with
+  `lineSpacing(3–4)`; eyebrow-style 12pt labels are for chips, not headers.
+- Verdict words follow the score bands: Good → `scoreGood`, Fine →
+  `neutralMuted`, Limit → `scoreOk`, Avoid → `scoreBad` (see
+  `KeyIngredients.Verdict.color`). Never introduce a fifth.
+- Rails of product photos (Home browse, Recent scans, Better options, Top
+  picks) let the **pack shot be the affordance**: cutouts float on the
+  background with the label under; no capsule or card around a photo that
+  already reads as one.
+- Product detail keeps the verdict on screen: the nav title swaps to
+  thumb · name · `MiniScoreRing` once the hero scrolls away.
+
 ## Screens with pinned CTAs
 
 A pinned primary button must be a `.safeAreaInset(edge: .bottom)` on the
