@@ -38,23 +38,10 @@ enum OverviewTemplate {
             }
         }
 
-        if let nova = ctx.novaGroup, nova >= 4,
-           !(ctx.topNegative.contains(where: { $0.topic.contains("processing") })) {
-            parts.append("It's ultra-processed (NOVA \(nova)).")
-        }
-
-        if !ctx.avoidMatches.isEmpty {
-            let items = englishList(ctx.avoidMatches.map { $0.lowercased() })
-            parts.append("It also contains \(items), which \(ctx.avoidMatches.count == 1 ? "is" : "are") on your avoid list.")
-        }
-
-        if !ctx.detectedAdditives.isEmpty, ctx.hasScoreableIngredientSignal {
-            let n = ctx.detectedAdditives.count
-            let label = n == 1
-                ? "one additive (\(ctx.detectedAdditives[0]))"
-                : "\(n) additives"
-            parts.append("\(label.prefix(1).uppercased() + label.dropFirst()) detected.")
-        }
+        // The NOVA group, the additive count and the avoid-list hits each have
+        // their own row on the page (Processing pill, Additives header, flag
+        // rows), so the overview doesn't repeat them — it stays to what drove
+        // the number and, when it differs, why yours differs.
 
         let overallPara = parts.joined(separator: " ")
         return (overallPara + " " + personalSentence(ctx)).trimmingCharacters(in: .whitespaces)
@@ -73,53 +60,38 @@ enum OverviewTemplate {
         }
     }
 
+    /// One short sentence, and none at all when the delta is 0 — the score
+    /// caption already says "same for you".
     static func personalSentence(_ ctx: ScoringEngineV4.OverviewContext) -> String {
         let delta = ctx.deltaValue
-        if delta == 0 {
-            return "Your score matches the overall because your profile didn't change the outcome."
-        }
-        let points = pointPhrase(abs(delta))
-        let direction = delta < 0 ? "below" : "above"
+        if delta == 0 { return "" }
+        // "4 points lower for you" — the caption carries the signed number.
+        let signed = "\(pointPhrase(abs(delta))) \(delta < 0 ? "lower" : "higher")"
 
         // Binding preference cap only — never attribute a non-binding fired cap.
         if let gate = ctx.hardGate, delta < 0 {
             if gate.intensity == "partial" {
-                return "Your score is \(points) \(direction) the overall because \(gate.detail)."
+                return "\(signed) for you because \(gate.detail)."
             }
-            return "Your score is \(points) \(direction) the overall because this product \(gate.detail)."
+            return "\(signed) for you because this product \(gate.detail)."
         }
 
         let drivers = ctx.deltaDrivers
         let goal = ctx.objective
         if drivers.isEmpty {
-            return "Your score is \(points) \(direction) the overall from how your \"\(goal)\" goal reweights the rules."
+            return "\(signed) for you from how your \"\(goal)\" goal reweights the rules."
         }
         let down = drivers.filter { $0.direction == "down" }.map(\.topic)
         let up = drivers.filter { $0.direction == "up" }.map(\.topic)
 
-        let variant = abs(delta + ctx.overall + ctx.your) % 3
         if delta < 0, !down.isEmpty {
-            switch variant {
-            case 0:
-                return "Your score is \(points) \(direction) the overall: your \"\(goal)\" goal puts more weight on \(englishList(down)), which pulls this product down."
-            case 1:
-                return "Relative to overall, you're \(points) \(direction) because \"\(goal)\" emphasizes \(englishList(down))."
-            default:
-                return "The \(points) drop vs overall comes from \"\(goal)\" stressing \(englishList(down)), where this product loses ground."
-            }
+            return "\(signed) for you: \"\(goal)\" weighs \(englishList(down)) more."
         }
         if delta > 0, !up.isEmpty {
-            switch variant {
-            case 0:
-                return "Your score is \(points) \(direction) the overall because \"\(goal)\" emphasizes \(englishList(up)), where this product does better."
-            case 1:
-                return "You're \(points) \(direction) overall: \"\(goal)\" boosts \(englishList(up)) for this product."
-            default:
-                return "The \(points) lift vs overall tracks \"\(goal)\" and stronger \(englishList(up))."
-            }
+            return "\(signed) for you: \"\(goal)\" rewards \(englishList(up))."
         }
         let topics = drivers.map(\.topic)
-        return "Your score is \(points) \(direction) the overall because your \"\(goal)\" goal weighs \(englishList(topics)) differently."
+        return "\(signed) for you: \"\(goal)\" weighs \(englishList(topics)) differently."
     }
 
     static func pointPhrase(_ n: Int) -> String {

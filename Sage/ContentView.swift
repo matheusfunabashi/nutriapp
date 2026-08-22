@@ -196,6 +196,7 @@ struct ContentView: View {
                 }
             }
         }
+        .modifier(TabBarMinimizeOnScroll())
         // Let TabView select `.scan`, then immediately bounce back — rejecting
         // the value in a custom Binding leaves the bar on Scan with a blank page.
         .onChange(of: tab) { _, newValue in
@@ -497,6 +498,22 @@ struct ContentView: View {
     private func beginCompare(productId: String) {
         pendingCompareA = store.products[productId]
         showCamera = true
+    }
+}
+
+// MARK: - Tab bar behaviour
+
+/// On iOS 26 the system tab bar is already the floating glass pill; letting
+/// it tuck away on scroll-down gives the content-first feel of a custom
+/// floating bar (Scout's) without hand-rolling chrome. Earlier systems keep
+/// the standard bar — the modifier doesn't exist there.
+private struct TabBarMinimizeOnScroll: ViewModifier {
+    func body(content: Content) -> some View {
+        if #available(iOS 26.0, *) {
+            content.tabBarMinimizeBehavior(.onScrollDown)
+        } else {
+            content
+        }
     }
 }
 

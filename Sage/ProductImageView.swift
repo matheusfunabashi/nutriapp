@@ -74,7 +74,9 @@ struct ProductImageView: View {
     @State private var loadTask: Task<Void, Never>?
 
     private var size: CGFloat { style.size }
-    private var corner: CGFloat { 10 }
+    /// Chrome radius scales with the frame — a 176pt hero on a 10pt corner
+    /// reads as a web thumbnail; large frames take the card radius.
+    private var corner: CGFloat { size >= 120 ? Theme.Radius.card : 10 }
     private var dark: Bool { colorScheme == .dark }
 
     /// True only for a real transparent cutout (failed Vision keeps chrome).
@@ -87,8 +89,11 @@ struct ProductImageView: View {
     var body: some View {
         ZStack {
             if showsCardChrome {
+                // Large frames (the product-page hero) keep the skeleton quiet:
+                // a 176pt white tile with a barcode glyph shouts; a soft fill
+                // reads as "photo pending".
                 RoundedRectangle(cornerRadius: corner, style: .continuous)
-                    .fill(Theme.card)
+                    .fill(finished == nil && size >= 120 ? Theme.fillQuiet : Theme.card)
             }
 
             if let finished {
@@ -211,7 +216,7 @@ struct ProductImageSkeleton: View {
 
     var body: some View {
         Image(systemName: "barcode")
-            .font(.system(size: size * 0.34, weight: .regular))
+            .font(.system(size: size * (size >= 120 ? 0.22 : 0.34), weight: .regular))
             .foregroundStyle(Theme.inkSecondary.opacity(0.35))
             .accessibilityHidden(true)
     }

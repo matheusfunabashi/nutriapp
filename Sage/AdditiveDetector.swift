@@ -486,3 +486,19 @@ private let definitions: [String: AdditiveDef] = [
     "E948": .init(tier: .exempt, commonName: "Oxygen",
         synonyms: ["oxigenio", "ossigeno", "oxigeno", "oxygene", "oxygen"]),
 ]
+
+// MARK: - Label-term lookup (Key ingredients)
+
+extension AdditiveDetector {
+    /// Normalized label synonyms + common name for a canonical code ("E150c",
+    /// "e150c", "en:e150c"). Lets the product page map an ingredient token
+    /// back to the detected additive it came from. `definitions` is
+    /// file-private, hence the accessor lives here.
+    static func matchTerms(forCode code: String) -> [String] {
+        let canonical = canonicalENumber(code.lowercased().hasPrefix("e") ? code : "e" + code)
+        guard !canonical.isEmpty else { return [] }
+        let key = definitions[canonical] != nil ? canonical : parentENumber(canonical)
+        guard let def = definitions[key] else { return [] }
+        return def.normalizedSynonyms + [normalize(def.commonName)]
+    }
+}

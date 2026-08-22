@@ -1,5 +1,91 @@
 **Follow [design.md](design.md) for all UI work** — typography scale, color tokens, radii, spacing grid, and interaction rules. No raw hex values, off-scale font sizes, or ad-hoc radii in views.
 
+# Session Changelog — 2026-08-22 — Scout-pass: product page, Key ingredients, Home rails
+
+Teardown of Scout's UI (six screenshots) against Sage's live simulator
+screens, then a five-commit pass on branch `feat/product-page-scout-pass`
+(one commit per item so any piece reverts alone). What Scout did better:
+one product hero, score that never leaves the screen, per-ingredient
+verdicts, a scannable tally before the prose, far fewer containers, photos
+as UI on Home. What we kept on purpose: Your Score vs Overall (demoted to a
+caption, never dropped), evidence-tiered language (no "Very Bad"), the
+nutrient table, Pantry Score, our palette/typeface, native chrome.
+
+- **Header** (`ResultView`): large pack shot on a soft tinted glow (no glow
+  and a 120pt quiet tile when the record has no photo — `ProductImageView`
+  skeleton is `fillQuiet` at ≥120pt and takes the card radius), name + brand
+  left, **one** ring right (Your Score when present, else Overall) with
+  "FOR YOU" eyebrow + tier word; caption "Overall 93 · +1 for you" (+ cap
+  chip); Compare / How we score as `fillMuted` capsules. Two-dial card,
+  "EXCELLENT" pills, boxed Overview removed. Overview is a collapsible
+  16pt prose section. **Sticky compact nav title** past 300pt
+  (`onScrollGeometryChange`, iOS 18): thumb · name · `MiniScoreRing`
+  (new in `Shared.swift`).
+- **Flattening**: every section = `sectionHeader(title) { trailing }`
+  (18pt semibold, 20pt gutters) + hairline rows on the background; cards
+  only for alerts and the Better-options rail. Breakdown tiles → **Processing**
+  header with NOVA pill + per-group explainer + "grades processing, not
+  nutrition" footnote + Nutri-Score row (`NutriScoreCard`/`NovaCard` deleted).
+  Nutrition header carries "Per 100 g / ml ⓘ"; Additives header carries
+  "4 detected / may be undercounted"; Full ingredients is prose without a card;
+  `NutrientRow`/`AdditiveRow` gained `horizontalPadding`.
+- **Key ingredients** (`KeyIngredients.swift`, `KeyIngredientsView.swift`,
+  `IngredientKnowledgeBase.json`, tests `KeyIngredientsTests`): tokens via
+  `IngredientIntegrity.tokens`, classified in order — detected additives
+  (risk → Avoid/Limit/Fine, row opens `AdditiveDetailSheet`;
+  `AdditiveDetector.matchTerms(forCode:)` exposes the file-private synonym
+  table; class stems so "caramel color" ↔ E150c), curated KB (57 entries,
+  longest match wins: "organic cane sugar" → sugar, "whole wheat flour" beats
+  "wheat flour"; KB beats the S14 whitelist so honey/wheat flour/butter read
+  Limit/Fine/Fine, not Good), then engine tables (S15 tiers, sweetener
+  systems, whitelist, isolate markers); unknown → Fine, never guessed.
+  Verdicts Good / Fine / Limit / Avoid with evidence-tiered copy (refined seed
+  oil = Limit "not as a toxin"; flavorings Fine; hydrogenated Avoid). UI:
+  tally rows under Overview ("Whole-food ingredients N" / "Worth limiting N"),
+  "Key ingredients · N" rows (avoid→limit→good→fine, recipe order within, 8
+  then "+ N more"), `IngredientDetailSheet` (verdict, "In this product" with
+  position + declared/estimated share + reason, About, four-word legend).
+  Additive rows show the curated additive name, not OFF's OCR token.
+- **Home** (`ScannerHomeView`): Browse rail = 76pt pack shots with the shelf
+  name under (no capsule); Recent scans = photo rail (`RecentScanTile`, 128pt
+  shot, `CompactScoreRing` in the corner) replacing the stacked rows.
+- **Tab bar** (`ContentView`): `.tabBarMinimizeBehavior(.onScrollDown)`
+  behind `#available(iOS 26)` via `TabBarMinimizeOnScroll`. Compiles against
+  the 26.5 SDK; **not visually verified on an iOS 26 simulator** (none
+  created on this Mac).
+- Verified in the iPhone 16 Pro (iOS 18.4) sim, light and dark: header,
+  sticky title, Processing/Nutrition/Additives, Key ingredients + sheet on
+  Coke Zero / Danish Butter Cookies, Home browse rail. Recent-scans rail only
+  compile-checked (no real scans in the sim profile).
+- Sim workflow gotcha: the fresh install resets onboarding + Superwall gate;
+  the `hasAccess = true` hack (see memory) was kept out of every commit.
+  `xcodebuild test` shuts the booted simulator down — reboot before
+  screenshotting again.
+- **Owner feedback pass (same day)**: Overview took too much room → 15pt,
+  clamped to 3 lines until tapped (header chevron / tap toggles), and the
+  template (`OverviewTemplate`) no longer repeats the NOVA group, the additive
+  count or avoid-list hits (each has its own row now); the personal sentence is
+  one short clause ("4 points lower for you: …") and is omitted when the delta
+  is 0. Backend prompt (`backend/src/explanation.ts`) tightened to 2–3
+  sentences, ≤ 55 words, no additive/NOVA enumeration, no sentence at delta 0 —
+  **needs a Worker deploy**; cached overviews on devices refresh when
+  `overviewStale` flips. The tinted, stroked banners (avoid list "Seed oils —
+  on your avoid list", diet-conflict "caps your score", allergen, trans fat)
+  didn't fit the flattened page → all four are `FlagRow`s (tinted icon, title,
+  detail, hairline) grouped directly under the tallies (diet-conflict rows
+  moved up from the page bottom).
+- Not done (follow-ups): onboarding screens still show **screenshots of the
+  old product page** (two-dial card) — re-shoot `OnboardingScreens` assets;
+  `StarterPickCard` still boxes its thumb (could drop the tile like the
+  rails); tally "Whole-food" count uses the KB verdicts, which are stricter
+  than S14's whitelist (butter/wheat flour count for the engine, not here) —
+  decide which the copy should follow; Key ingredients KB has no pt-BR yet;
+  Compare is now a capsule under the caption (watch its tap rate); consider
+  showing the brand's parent company (Scout's "owned by") from OFF
+  `brand_owner`.
+
+---
+
 # Session Changelog — 2026-08-22 — Better Options v2 (gates, fit, reasons, UI)
 
 Audit of the "Better options" feature against the live engine (CLI harness:

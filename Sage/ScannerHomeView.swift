@@ -270,35 +270,38 @@ struct ScannerHomeView: View {
             }
             .padding(.horizontal, 24).padding(.top, 14)
 
+            // Photos as the UI: the pack shot floats on the background with the
+            // shelf name under it — no capsule, no card (App Store / Scout
+            // "Rankings" pattern). The shot is the affordance.
             ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 10) {
+                HStack(alignment: .top, spacing: 18) {
                     ForEach(SageCategory.topRatedBrowse) { category in
                         Button {
                             onOpenCategory?(category)
                         } label: {
-                            HStack(spacing: 8) {
+                            VStack(spacing: 8) {
                                 Group {
                                     if let asset = category.bundledTopRatedHeroAsset {
                                         Image(asset).resizable().scaledToFit()
                                     } else {
-                                        Text(category.emoji).font(.sageRegular(20))
+                                        Text(category.emoji).font(.sageRegular(32))
                                     }
                                 }
-                                .frame(width: 32, height: 32)
+                                .frame(width: 76, height: 76)
                                 Text(category.displayName)
-                                    .font(.sageSemiBold(14)).tracking(-0.2)
+                                    .font(.sageSemiBold(13)).tracking(-0.2)
                                     .foregroundColor(Theme.ink)
                                     .lineLimit(1)
+                                    .minimumScaleFactor(0.85)
                             }
-                            .padding(.leading, 8).padding(.trailing, 14).padding(.vertical, 8)
-                            .background(Capsule().fill(Theme.card))
-                            .overlay(Capsule().stroke(Theme.outline, lineWidth: 1))
+                            .frame(width: 84)
                         }
                         .buttonStyle(.pressable)
                         .accessibilityLabel("Top rated \(category.displayName)")
                     }
                 }
-                .padding(.horizontal, 16)
+                .padding(.horizontal, 20)
+                .padding(.top, 4)
                 .padding(.bottom, 4)
             }
         }
@@ -372,16 +375,21 @@ struct ScannerHomeView: View {
             .padding(.horizontal, 24).padding(.top, 20).padding(.bottom, 10)
 
             if !recent.isEmpty {
-                VStack(spacing: 8) {
-                    ForEach(recent) { group in
-                        if let p = store.products[group.productId] {
-                            RecentRow(product: p, subtitle: recentSubtitle(for: group)) {
-                                onOpenProduct(p.id)
+                // Big pack shots with the ring in the corner — the product is
+                // the row. Same rail shape as Top picks / Better options.
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(alignment: .top, spacing: 16) {
+                        ForEach(recent) { group in
+                            if let p = store.products[group.productId] {
+                                RecentScanTile(product: p, subtitle: recentSubtitle(for: group)) {
+                                    onOpenProduct(p.id)
+                                }
                             }
                         }
                     }
+                    .padding(.horizontal, 20)
+                    .padding(.bottom, 4)
                 }
-                .padding(.horizontal, 16)
             }
         }
     }
@@ -476,50 +484,40 @@ struct ScannerHomeView: View {
     }
 }
 
-private struct RecentRow: View {
+private struct RecentScanTile: View {
     let product: Product
     let subtitle: String
     let onTap: () -> Void
 
     var body: some View {
         let formatted = ProductNameFormatter.format(product)
-        // Size is deliberately not shown: the row already carries brand, name
-        // and score, and "350 g" was the least useful of the four at a glance.
         return Button(action: onTap) {
-            HStack(spacing: 12) {
-                ProductThumb(glyph: product.glyph, score: product.yourScore, size: 48,
-                             imageURL: product.listImageURL,
-                             processCutout: product.shouldProcessCutout)
-                VStack(alignment: .leading, spacing: 1) {
-                    if let brand = formatted.brand {
-                        // `ProductNameFormatter` already canonicalizes casing
-                        // ("COCA-COLA" → "Coca-Cola"); uppercasing it again
-                        // threw that away.
-                        Text(brand)
-                            .font(.sageBold(11)).tracking(0.2)
-                            .foregroundColor(Theme.inkSecondary)
-                            .lineLimit(1)
-                    }
-                    Text(formatted.name)
-                        .font(.sageSemiBold(14))
-                        .foregroundColor(Theme.ink)
-                        .lineLimit(1)
-                    Text(subtitle)
-                        .font(.sageRegular(11))
-                        .foregroundColor(Theme.inkSecondary)
+            VStack(alignment: .leading, spacing: 8) {
+                ZStack(alignment: .bottomTrailing) {
+                    ProductThumb(glyph: product.glyph, score: product.yourScore, size: 128,
+                                 neutral: true,
+                                 imageURL: product.listImageURL,
+                                 fallbackImageURL: product.imageFallbackURL,
+                                 processCutout: product.shouldProcessCutout)
+                    CompactScoreRing(score: product.yourScore, isUnscored: product.isUnscored)
+                        .background(Circle().fill(Theme.background).padding(-3))
+                        .offset(x: 8, y: 8)
                 }
-                Spacer(minLength: 8)
-                CompactScoreRing(score: product.yourScore,
-                                 isUnscored: product.isUnscored)
-                Image(systemName: "chevron.right")
-                    .font(.sageBold(12))
-                    .foregroundColor(Theme.inkSecondary)
+                .padding(.trailing, 8).padding(.bottom, 8)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(formatted.name)
+                        .font(.sageSemiBold(14)).tracking(-0.2)
+                        .foregroundColor(Theme.ink)
+                        .lineLimit(2)
+                        .multilineTextAlignment(.leading)
+                        .fixedSize(horizontal: false, vertical: true)
+                    Text(subtitle)
+                        .font(.sageRegular(12))
+                        .foregroundColor(Theme.inkSecondary)
+                        .lineLimit(1)
+                }
             }
-            .padding(12)
-            .background(
-                RoundedRectangle(cornerRadius: Theme.Radius.card, style: .continuous).fill(Theme.card)
-            )
-            .cardShadow()
+            .frame(width: 136, alignment: .leading)
         }
         .buttonStyle(.pressable)
         .accessibilityLabel("\(formatted.accessibilityLabel), \(subtitle)")

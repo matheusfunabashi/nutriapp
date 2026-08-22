@@ -133,6 +133,33 @@ struct CompactScoreRing: View {
     }
 }
 
+/// Smallest ring — numeral only, no tier word. For the collapsed product
+/// title in the nav bar and the corner of pack-shot tiles, where the number
+/// has to stay legible at 30–40pt.
+struct MiniScoreRing: View {
+    let score: Int
+    var size: CGFloat = 32
+    var stroke: CGFloat = 3
+
+    var body: some View {
+        let tier = scoreTier(score)
+        ZStack {
+            Circle().stroke(Theme.ringTrack, lineWidth: stroke)
+            Circle()
+                .trim(from: 0, to: CGFloat(max(0, min(100, score))) / 100)
+                .stroke(tier.mid, style: StrokeStyle(lineWidth: stroke, lineCap: .round))
+                .rotationEffect(.degrees(-90))
+            Text("\(score)")
+                .font(.sageFixedBold(size * 0.38))
+                .monospacedDigit()
+                .foregroundColor(tier.mid)
+        }
+        .frame(width: size, height: size)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("\(score), \(tier.label)")
+    }
+}
+
 // MARK: - Product thumbnail
 
 struct ProductThumb: View {
