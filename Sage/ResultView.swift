@@ -26,7 +26,9 @@ struct ResultView: View {
     /// then carries thumb · name · mini ring so the verdict never leaves the
     /// screen (Scout / App Store pattern).
     @State private var headerCollapsed = false
-    @State private var overviewExpanded = true
+    /// Overview shows three lines until tapped — the verdict lives in the ring
+    /// and the tallies; the prose is the footnote, not the headline.
+    @State private var overviewExpanded = false
 
     /// Offset (pt) past which the nav bar swaps to the compact product title —
     /// roughly the hero + title block height.
@@ -46,8 +48,11 @@ struct ResultView: View {
             ScrollView(.vertical, showsIndicators: false) {
                 VStack(spacing: 0) {
                     scrollableHeader(dark: dark)
+                    // Personal flags — allergen, avoid list, diet conflict — as
+                    // rows in the same language as the tallies above them.
                     allergenSection(dark: dark)
                     avoidFlagsSection(dark: dark)
+                    restrictionBanners(dark: dark)
                     betterOptionsSection(dark: dark)
                     keyIngredientsSection(dark: dark)
                     processingSection(dark: dark)
@@ -55,13 +60,12 @@ struct ResultView: View {
                         SeriousFlag(
                             isHeaviestScorePenalty: TransFatAttribution.isHeaviestPenalty(in: product)
                         )
-                        .padding(.horizontal, 16).padding(.top, 20)
+                        .padding(.top, 12)
                     }
                     nutritionSection(dark: dark)
                     additivesSection(dark: dark)
                     fullIngredientsSection(dark: dark)
                     detectedSection(dark: dark)
-                    restrictionBanners(dark: dark)
                     disclaimer(dark: dark)
 #if DEBUG
                     scoreDebugSection(dark: dark)
@@ -588,30 +592,33 @@ struct ResultView: View {
                             .font(.sageSemiBold(18)).tracking(-0.4)
                             .foregroundColor(Theme.ink)
                         Spacer(minLength: 0)
-                        Image(systemName: "chevron.up")
+                        Image(systemName: "chevron.down")
                             .font(.sageSemiBold(12))
                             .foregroundColor(Theme.inkSecondary)
-                            .rotationEffect(.degrees(overviewExpanded ? 0 : 180))
+                            .rotationEffect(.degrees(overviewExpanded ? 180 : 0))
                     }
                     .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
                 .accessibilityLabel("Overview")
-                .accessibilityHint(overviewExpanded ? "Collapse" : "Expand")
+                .accessibilityHint(overviewExpanded ? "Show less" : "Show more")
 
-                if overviewExpanded {
-                    if generating || (p.overviewStale == true && p.overview == nil) {
-                        Text("Generating overview…")
-                            .font(.sageRegular(16))
-                            .foregroundColor(Theme.inkSecondary)
-                            .italic()
-                    } else if let text = p.overview?.text {
-                        Text(text)
-                            .font(.sageRegular(16))
-                            .foregroundColor(Theme.ink)
-                            .lineSpacing(4)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                    }
+                if generating || (p.overviewStale == true && p.overview == nil) {
+                    Text("Generating overview…")
+                        .font(.sageRegular(15))
+                        .foregroundColor(Theme.inkSecondary)
+                        .italic()
+                } else if let text = p.overview?.text {
+                    Text(text)
+                        .font(.sageRegular(15))
+                        .foregroundColor(Theme.ink)
+                        .lineSpacing(3)
+                        .lineLimit(overviewExpanded ? nil : 3)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .contentShape(Rectangle())
+                        .onTapGesture {
+                            withAnimation(.easeInOut(duration: 0.2)) { overviewExpanded.toggle() }
+                        }
                 }
             }
             .padding(.horizontal, 20)
@@ -624,46 +631,27 @@ struct ResultView: View {
         let hits = ScoringEngineV4.avoidListHits(liveProduct, profile: store.user,
                                                  rs: RulesetStore.current)
         if !hits.isEmpty {
-            VStack(spacing: 6) {
+            VStack(spacing: 0) {
                 ForEach(hits, id: \.self) { item in
-                    let copy = avoidChipCopy(for: item)
-                    HStack(spacing: 8) {
-                        Image(systemName: "exclamationmark.triangle.fill")
-                            .font(.sageSemiBold(12))
-                            .foregroundColor(Color.scoreBad)
-                        Text(copy)
-                            .font(.sageSemiBold(13))
-                            .foregroundColor(Theme.ink)
-                        Spacer(minLength: 0)
-                    }
-                    .padding(.horizontal, 14).padding(.vertical, 10)
-                    .background(
-                        RoundedRectangle(cornerRadius: Theme.Radius.control, style: .continuous)
-                            .fill(Color.scoreBad.opacity(0.10))
-                    )
-                    .overlay(
-                        RoundedRectangle(cornerRadius: Theme.Radius.control, style: .continuous)
-                            .stroke(Color.scoreBad.opacity(0.35), lineWidth: 1)
-                    )
-                    .accessibilityLabel(copy)
+                    let copy = avoidFlagCopy(for: item)
+                    FlagRow(icon: "exclamationmark.triangle.fill", tint: Color.scoreBad,
+                            title: copy.title, detail: copy.detail)
                 }
             }
-            .padding(.horizontal, 16)
-            .padding(.bottom, 8)
         }
     }
 
     /// Cite the binding avoid cap when it binds; otherwise "on your avoid list" only.
     /// Unscored products never mention caps — there is no score to ceiling.
-    private func avoidChipCopy(for item: String) -> String {
+    private func avoidFlagCopy(for item: String) -> (title: String, detail: String?) {
         let titled = item.prefix(1).uppercased() + item.dropFirst().lowercased()
         if !liveProduct.isUnscored,
            let cap = liveProduct.bindingCap,
            cap.kind == "avoidList",
            cap.shortLabel == item.lowercased() {
-            return "\(titled) — on your avoid list. Caps your score at \(cap.value)."
+            return ("\(titled) — on your avoid list", "Caps your score at \(cap.value).")
         }
-        return "\(titled) — on your avoid list"
+        return ("\(titled) — on your avoid list", nil)
     }
 
     // MARK: Section chrome
@@ -1194,7 +1182,7 @@ struct ResultView: View {
         let fired = product.firedCaps ?? []
         return Group {
             if !valid.isEmpty {
-                VStack(spacing: 6) {
+                VStack(spacing: 0) {
                     ForEach(valid) { r in
                         let capValue = fired.first {
                             $0.kind == "dietConflict" && $0.shortLabel == r.type.lowercased()
@@ -1206,7 +1194,6 @@ struct ResultView: View {
                         )
                     }
                 }
-                .padding(.horizontal, 16).padding(.top, 8)
             }
         }
     }
@@ -1216,13 +1203,12 @@ struct ResultView: View {
         let warnings = AllergenMatcher.warnings(product: product, allergies: userAllergies)
         return Group {
             if !userAllergies.isEmpty {
-                VStack(spacing: 8) {
+                VStack(spacing: 0) {
                     ForEach(warnings) { w in
                         AllergenBanner(label: w.label, fromTag: w.fromTag, dark: dark)
                     }
                     AllergenDisclaimer(hasMatch: !warnings.isEmpty, dark: dark)
                 }
-                .padding(.horizontal, 16).padding(.bottom, 14)
             }
         }
     }
@@ -1527,28 +1513,8 @@ struct RestrictionBannerView: View {
             }
             return String(format: String(localized: "Conflicts with your %@."), type.lowercased())
         }()
-        HStack(alignment: .top, spacing: 10) {
-            Text("⚠️").font(.sageRegular(14))
-            VStack(alignment: .leading, spacing: 1) {
-                Text(headline)
-                    .font(.sageBold(13)).tracking(-0.1)
-                    .foregroundColor(fg)
-                Text(type.uppercased())
-                    .font(.sageBold(11)).tracking(0.4)
-                    .foregroundColor(fg.opacity(0.85))
-            }
-            Spacer()
-        }
-        .padding(.horizontal, 12).padding(.vertical, 10)
-        .background(
-            RoundedRectangle(cornerRadius: Theme.Radius.control, style: .continuous)
-                .fill(fg.opacity(dark ? 0.14 : 0.08))
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: Theme.Radius.control, style: .continuous)
-                .stroke(fg.opacity(0.18), lineWidth: 1)
-        )
-        .accessibilityLabel("\(headline) Trigger: \(trigger).")
+        FlagRow(icon: "exclamationmark.triangle.fill", tint: fg,
+                title: headline, detail: "Trigger: \(trigger)")
     }
 }
 
@@ -1573,31 +1539,50 @@ struct SeriousFlag: View {
         let subtitle = isHeaviestScorePenalty
             ? "Caps the overall score at 35 — industrial trans fat has no safe intake."
             : "Industrial trans fats have no safe intake level. Overall score capped at 34 when above 0.2 g/100 g."
-        HStack(spacing: 12) {
-            Text("!")
-                .font(.sageBold(16))
-                .foregroundColor(.white)
-                .frame(width: 36, height: 36)
-                .background(RoundedRectangle(cornerRadius: Theme.Radius.chip, style: .continuous).fill(fg))
-            VStack(alignment: .leading, spacing: 1) {
-                Text("Contains trans fats")
-                    .font(.sageBold(14)).tracking(-0.2)
-                    .foregroundColor(fg)
-                Text(subtitle)
-                    .font(.sageRegular(11))
-                    .foregroundColor(fg.opacity(0.85))
+        FlagRow(icon: "exclamationmark.circle.fill", tint: fg,
+                title: "Contains trans fats", detail: subtitle)
+    }
+}
+
+// MARK: - Flag rows
+
+/// Personal / safety flags (avoid list, diet conflict, allergen, trans fat)
+/// in the same row language as the tallies and every other section: tinted
+/// icon, title, optional detail, hairline underneath — no tinted card.
+struct FlagRow: View {
+    let icon: String
+    let tint: Color
+    let title: String
+    var detail: String? = nil
+
+    var body: some View {
+        HStack(alignment: .top, spacing: 12) {
+            Image(systemName: icon)
+                .font(.sageSemiBold(15))
+                .foregroundColor(tint)
+                .frame(width: 24)
+                .padding(.top, 1)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title)
+                    .font(.sageSemiBold(16)).tracking(-0.2)
+                    .foregroundColor(Theme.ink)
+                    .fixedSize(horizontal: false, vertical: true)
+                if let detail, !detail.isEmpty {
+                    Text(detail)
+                        .font(.sageRegular(13))
+                        .foregroundColor(Theme.inkSecondary)
+                        .lineSpacing(2)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
             }
-            Spacer()
+            Spacer(minLength: 0)
         }
-        .padding(14)
-        .background(
-            RoundedRectangle(cornerRadius: Theme.Radius.card, style: .continuous)
-                .fill(fg.opacity(0.10))
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: Theme.Radius.card, style: .continuous)
-                .stroke(fg.opacity(0.20), lineWidth: 1)
-        )
+        .padding(.horizontal, 20).padding(.vertical, 14)
+        .overlay(alignment: .bottom) {
+            Theme.hairline.frame(height: 0.5).padding(.horizontal, 20)
+        }
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel(detail.map { "\(title). \($0)" } ?? title)
     }
 }
 
@@ -1608,31 +1593,10 @@ struct AllergenBanner: View {
     let fromTag: Bool
     let dark: Bool
     var body: some View {
-        let fg = Color.cautionMuted
-        HStack(spacing: 12) {
-            Image(systemName: "exclamationmark.octagon.fill")
-                .font(.sageRegular(18))
-                .foregroundColor(fg)
-            VStack(alignment: .leading, spacing: 1) {
-                Text("\(fromTag ? "Contains" : "May contain") \(label.lowercased())")
-                    .font(.sageBold(14)).tracking(-0.2)
-                    .foregroundColor(fg)
-                Text(fromTag ? "Listed as an allergen for this product"
-                             : "Detected in the ingredient list")
-                    .font(.sageRegular(11))
-                    .foregroundColor(fg.opacity(0.85))
-            }
-            Spacer()
-        }
-        .padding(14)
-        .background(
-            RoundedRectangle(cornerRadius: Theme.Radius.card, style: .continuous)
-                .fill(fg.opacity(dark ? 0.14 : 0.08))
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: Theme.Radius.card, style: .continuous)
-                .stroke(fg.opacity(0.20), lineWidth: 1)
-        )
+        FlagRow(icon: "exclamationmark.octagon.fill", tint: Color.scoreBad,
+                title: "\(fromTag ? "Contains" : "May contain") \(label.lowercased())",
+                detail: fromTag ? "Listed as an allergen for this product"
+                                : "Detected in the ingredient list")
     }
 }
 
@@ -1640,24 +1604,23 @@ struct AllergenDisclaimer: View {
     let hasMatch: Bool
     let dark: Bool
     var body: some View {
-        HStack(spacing: 8) {
+        HStack(alignment: .top, spacing: 8) {
             Image(systemName: "info.circle")
                 .font(.sageRegular(12))
                 .foregroundColor(Theme.inkSecondary)
             Text(hasMatch
                  ? "Always confirm on the product packaging — allergen data can be incomplete."
                  : "No declared allergens matched your profile, but data may be incomplete — always check the packaging.")
-                .font(.sageRegular(11))
+                .font(.sageRegular(12))
                 .foregroundColor(Theme.inkSecondary)
-                .lineSpacing(1)
+                .lineSpacing(2)
                 .fixedSize(horizontal: false, vertical: true)
-            Spacer()
+            Spacer(minLength: 0)
         }
-        .padding(.horizontal, 12).padding(.vertical, 10)
-        .background(
-            RoundedRectangle(cornerRadius: Theme.Radius.control, style: .continuous)
-                .fill(Theme.fillQuiet)
-        )
+        .padding(.horizontal, 20).padding(.vertical, 10)
+        .overlay(alignment: .bottom) {
+            Theme.hairline.frame(height: 0.5).padding(.horizontal, 20)
+        }
     }
 }
 

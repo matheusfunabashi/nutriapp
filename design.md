@@ -89,9 +89,14 @@ dark mode must still be fully correct, it just isn't the default.
 - Sections sit **on the background**: one header (`.sageSemiBold(18)`,
   20pt gutter) with an optional trailing pill / count / caption, then rows
   separated by `Theme.hairline` at 20pt insets. No card-in-card: cards are
-  for alerts (allergen / avoid-list / diet), rails, and the one "In this
-  product" panel on a sheet. The product page is the reference
-  (`ResultView.sectionHeader` / `rowDivider`).
+  for rails and the one "In this product" panel on a sheet. The product page
+  is the reference (`ResultView.sectionHeader` / `rowDivider`).
+- Personal and safety flags (avoid list, diet conflict, allergen, trans fat)
+  are `FlagRow`s — tinted SF symbol, title, optional detail, hairline — never
+  a tinted, stroked banner. The color lives in the icon, not the container.
+- Long generated prose (the product Overview) renders at 15pt, clamped to
+  three lines until tapped; the verdict is the ring and the tallies, the
+  prose is the footnote.
 - Prose blocks (overview, explainers) are `.sageRegular(15–16)` with
   `lineSpacing(3–4)`; eyebrow-style 12pt labels are for chips, not headers.
 - Verdict words follow the score bands: Good → `scoreGood`, Fine →

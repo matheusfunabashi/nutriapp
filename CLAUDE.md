@@ -61,6 +61,19 @@ nutrient table, Pantry Score, our palette/typeface, native chrome.
   the `hasAccess = true` hack (see memory) was kept out of every commit.
   `xcodebuild test` shuts the booted simulator down — reboot before
   screenshotting again.
+- **Owner feedback pass (same day)**: Overview took too much room → 15pt,
+  clamped to 3 lines until tapped (header chevron / tap toggles), and the
+  template (`OverviewTemplate`) no longer repeats the NOVA group, the additive
+  count or avoid-list hits (each has its own row now); the personal sentence is
+  one short clause ("4 points lower for you: …") and is omitted when the delta
+  is 0. Backend prompt (`backend/src/explanation.ts`) tightened to 2–3
+  sentences, ≤ 55 words, no additive/NOVA enumeration, no sentence at delta 0 —
+  **needs a Worker deploy**; cached overviews on devices refresh when
+  `overviewStale` flips. The tinted, stroked banners (avoid list "Seed oils —
+  on your avoid list", diet-conflict "caps your score", allergen, trans fat)
+  didn't fit the flattened page → all four are `FlagRow`s (tinted icon, title,
+  detail, hairline) grouped directly under the tallies (diet-conflict rows
+  moved up from the page bottom).
 - Not done (follow-ups): onboarding screens still show **screenshots of the
   old product page** (two-dial card) — re-shoot `OnboardingScreens` assets;
   `StarterPickCard` still boxes its thumb (could drop the tile like the
