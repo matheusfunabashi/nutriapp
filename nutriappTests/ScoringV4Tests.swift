@@ -138,11 +138,11 @@ struct ScoringV4Tests {
 
     @Test func bundledRulesetLoads() {
         let rs = RulesetV4.bundled
-        #expect(rs.version == "2026.08-v5.4.0")
+        #expect(rs.version == "2026.08-v5.5.0")
         #expect(rs.bands.excellent == 75)
         #expect(rs.bands.good == 55)
         #expect(rs.bands.ok == 35)
-        #expect(rs.profiles.count == 15)
+        #expect(rs.profiles.count == 16)
         #expect(rs.bandLabel(80) == "Excellent")
         #expect(rs.bandLabel(55) == "Good")
         #expect(rs.bandLabel(35) == "OK")

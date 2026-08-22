@@ -201,10 +201,12 @@ NUTRIMENT_KEYS = [
     # V5.3 egg signature (S13 egg enrichment lift).
     "vitamin-d_100g", "vitamin-b12_100g", "choline_100g", "selenium_100g",
     "omega-3-fat_100g",
+    # V5.5 protein bars (S6 polyol-load dock).
+    "polyols_100g",
 ]
 FIELDS = ("code,product_name,brands,ingredients_text,additives_tags,nutriments,"
           "nutriscore_grade,nova_group,image_front_url,image_url,"
-          "categories_tags,labels_tags,lang")
+          "categories_tags,labels_tags,lang,serving_size")
 
 BASE = "https://world.openfoodfacts.org/api/v2/search"
 
@@ -377,6 +379,8 @@ def entry(off, country_code):
         "categories_tags": off.get("categories_tags") or [],
         "labels_tags": off.get("labels_tags") or [],
         "lang": off.get("lang"),
+        # V5.5 — protein-bar S12 scores protein per serving.
+        "serving_size": off.get("serving_size") or None,
         "data_problems": problems,
         "countries": [country_code],
     }

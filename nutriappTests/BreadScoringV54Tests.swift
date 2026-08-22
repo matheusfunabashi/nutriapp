@@ -65,7 +65,7 @@ struct BreadScoringV54Tests {
         #expect(!profile.contains { $0.rule == "S13" })
         #expect(rs.bread != nil)
         #expect(rs.s4ThresholdsByVariant?["bread"] != nil)
-        #expect(rs.version >= "2026.08-v5.4.0")
+        #expect(rs.version >= "2026.08-v5.5.0")
     }
 
     @Test func grainStaplesStayOnGrainsProfile() {

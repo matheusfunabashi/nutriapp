@@ -168,7 +168,15 @@ enum IngredientIntegrity {
         }
     }
 
-    static func evaluate(ingredientsText: String?) -> Breakdown {
+    /// - `neutralTokenKw`: tokens containing any of these are dropped from the
+    ///   whole-food ratio (neither whole food nor a dock) — V5.5 protein bars
+    ///   pass their protein sources here. Never dropped from the count.
+    /// - `neutralIsolateMarkers`: isolate markers that don't count against the
+    ///   list (protein isolate markers on a protein bar); syrups, maltodextrin
+    ///   and modified starch still do.
+    static func evaluate(ingredientsText: String?,
+                         neutralTokenKw: [String] = [],
+                         neutralIsolateMarkers: [String] = []) -> Breakdown {
         guard let raw = ingredientsText?.trimmingCharacters(in: .whitespacesAndNewlines),
               !raw.isEmpty
         else {
@@ -180,7 +188,9 @@ enum IngredientIntegrity {
         // V5.4: water is excluded from the whole-food ratio (never from the
         // ingredient count — a long list is still a long list).
         let allParts = tokens(from: raw)
-        let parts = allParts.filter { !isWaterToken($0) }
+        let parts = allParts.filter { t in
+            !isWaterToken(t) && !neutralTokenKw.contains { t.contains($0) }
+        }
         let count = allParts.count
         guard count > 0 else {
             return Breakdown(fraction: 0, hadData: false, wholeFoodRatio: 0, countScore: 0,
@@ -206,7 +216,10 @@ enum IngredientIntegrity {
         default: sweetenerScore = 0.15
         }
 
-        let isolateMatches = uniqueMatches(in: raw.lowercased(), needles: keywords.isolate_markers)
+        let isolateNeedles = neutralIsolateMarkers.isEmpty
+            ? keywords.isolate_markers
+            : keywords.isolate_markers.filter { !neutralIsolateMarkers.contains($0) }
+        let isolateMatches = uniqueMatches(in: raw.lowercased(), needles: isolateNeedles)
         let isolateScore: Double
         switch isolateMatches.count {
         case 0: isolateScore = 1.0

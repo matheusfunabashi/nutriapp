@@ -5,8 +5,8 @@
     "ca"
   ],
   "country": "multi",
-  "generated_at": "2026-08-22T01:29:12Z",
-  "ruleset_version": "2026.08-v5.4.0",
+  "generated_at": "2026-08-22T13:56:28Z",
+  "ruleset_version": "2026.08-v5.5.0",
   "shelves": {
     "babyFood": [
       {
@@ -221,7 +221,7 @@
           "sugars_100g": 3.1
         },
         "nutriscore_grade": "not-applicable",
-        "precomputed_score": 88
+        "precomputed_score": 89
       },
       {
         "additives_tags": [],
@@ -421,7 +421,7 @@
           "sugars_100g": 55
         },
         "nutriscore_grade": "not-applicable",
-        "precomputed_score": 86
+        "precomputed_score": 88
       },
       {
         "additives_tags": [],
@@ -453,7 +453,7 @@
           "sugars_100g": 4.040404040404
         },
         "nutriscore_grade": "not-applicable",
-        "precomputed_score": 86
+        "precomputed_score": 87
       },
       {
         "additives_tags": [],
@@ -630,7 +630,7 @@
           "sugars_100g": 9.8
         },
         "nutriscore_grade": "not-applicable",
-        "precomputed_score": 85
+        "precomputed_score": 87
       },
       {
         "additives_tags": [],
@@ -665,7 +665,7 @@
           "sugars_100g": 2
         },
         "nutriscore_grade": "not-applicable",
-        "precomputed_score": 84
+        "precomputed_score": 85
       },
       {
         "additives_tags": [],
@@ -739,7 +739,7 @@
           "sugars_100g": 6.9
         },
         "nutriscore_grade": "not-applicable",
-        "precomputed_score": 84
+        "precomputed_score": 86
       },
       {
         "additives_tags": [],
@@ -1131,7 +1131,7 @@
           "sugars_100g": 11.2
         },
         "nutriscore_grade": "not-applicable",
-        "precomputed_score": 83
+        "precomputed_score": 85
       },
       {
         "additives_tags": [],
@@ -1320,7 +1320,7 @@
           "vitamin-c_100g": 0.01
         },
         "nutriscore_grade": "not-applicable",
-        "precomputed_score": 82
+        "precomputed_score": 84
       },
       {
         "additives_tags": [],
@@ -1536,7 +1536,7 @@
           "sugars_100g": 14
         },
         "nutriscore_grade": "not-applicable",
-        "precomputed_score": 82
+        "precomputed_score": 84
       },
       {
         "additives_tags": [],
@@ -1635,7 +1635,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "not-applicable",
-        "precomputed_score": 84
+        "precomputed_score": 85
       },
       {
         "additives_tags": [],
@@ -1665,7 +1665,7 @@
           "sugars_100g": 12.389380530973
         },
         "nutriscore_grade": "not-applicable",
-        "precomputed_score": 79
+        "precomputed_score": 80
       },
       {
         "additives_tags": [],
@@ -1698,7 +1698,7 @@
           "sugars_100g": 2.5
         },
         "nutriscore_grade": "not-applicable",
-        "precomputed_score": 82
+        "precomputed_score": 83
       },
       {
         "additives_tags": [],
@@ -1809,7 +1809,7 @@
           "vitamin-c_100g": 0.0225
         },
         "nutriscore_grade": "not-applicable",
-        "precomputed_score": 80
+        "precomputed_score": 81
       },
       {
         "additives_tags": [],
@@ -1839,7 +1839,7 @@
           "sugars_100g": 8.7912087912088
         },
         "nutriscore_grade": "not-applicable",
-        "precomputed_score": 76
+        "precomputed_score": 79
       },
       {
         "additives_tags": [],
@@ -1912,7 +1912,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "not-applicable",
-        "precomputed_score": 78
+        "precomputed_score": 79
       },
       {
         "additives_tags": [],
@@ -1964,7 +1964,7 @@
           "sugars_100g": 3.030303030303
         },
         "nutriscore_grade": "not-applicable",
-        "precomputed_score": 76
+        "precomputed_score": 80
       },
       {
         "additives_tags": [],
@@ -2324,7 +2324,7 @@
           "sugars_100g": 14.1176
         },
         "nutriscore_grade": "not-applicable",
-        "precomputed_score": 77
+        "precomputed_score": 79
       },
       {
         "additives_tags": [],
@@ -2415,7 +2415,7 @@
           "sugars_100g": 6.0606060606061
         },
         "nutriscore_grade": "not-applicable",
-        "precomputed_score": 73
+        "precomputed_score": 74
       },
       {
         "additives_tags": [
@@ -2463,7 +2463,7 @@
           "sugars_100g": 9
         },
         "nutriscore_grade": "not-applicable",
-        "precomputed_score": 72
+        "precomputed_score": 71
       },
       {
         "additives_tags": [],
@@ -2494,7 +2494,7 @@
           "sugars_100g": 10.7143
         },
         "nutriscore_grade": "not-applicable",
-        "precomputed_score": 74
+        "precomputed_score": 77
       },
       {
         "additives_tags": [],
@@ -2527,7 +2527,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "not-applicable",
-        "precomputed_score": 72
+        "precomputed_score": 74
       },
       {
         "additives_tags": [],
@@ -2577,7 +2577,7 @@
           "sugars_100g": 86.95652173913
         },
         "nutriscore_grade": "not-applicable",
-        "precomputed_score": 76
+        "precomputed_score": 79
       },
       {
         "additives_tags": [],
@@ -2860,7 +2860,7 @@
           "sugars_100g": 14.285715502136
         },
         "nutriscore_grade": "not-applicable",
-        "precomputed_score": 55
+        "precomputed_score": 54
       },
       {
         "additives_tags": [],
@@ -3066,7 +3066,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "not-applicable",
-        "precomputed_score": 51
+        "precomputed_score": 50
       },
       {
         "additives_tags": [
@@ -3153,7 +3153,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "not-applicable",
-        "precomputed_score": 51
+        "precomputed_score": 50
       },
       {
         "additives_tags": [
@@ -3195,7 +3195,7 @@
           "zinc_100g": 0.045
         },
         "nutriscore_grade": "not-applicable",
-        "precomputed_score": 53
+        "precomputed_score": 52
       },
       {
         "additives_tags": [
@@ -3662,7 +3662,7 @@
           "zinc_100g": 0.263038548752834
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 84
+        "precomputed_score": 85
       },
       {
         "additives_tags": [],
@@ -3949,7 +3949,7 @@
           "zinc_100g": 0.00351351351351351
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 90
+        "precomputed_score": 91
       },
       {
         "additives_tags": [],
@@ -4116,7 +4116,7 @@
           "zinc_100g": 0.00277777777777778
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 89
+        "precomputed_score": 90
       },
       {
         "additives_tags": [],
@@ -4382,7 +4382,7 @@
           "sugars_100g": 0.517241379310345
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 69
+        "precomputed_score": 71
       },
       {
         "additives_tags": [],
@@ -4428,7 +4428,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 87
+        "precomputed_score": 88
       },
       {
         "additives_tags": [],
@@ -4514,7 +4514,7 @@
           "sugars_100g": 1.4
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 71
+        "precomputed_score": 73
       },
       {
         "additives_tags": [
@@ -5022,7 +5022,7 @@
           "zinc_100g": 0.0009
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 69
+        "precomputed_score": 68
       },
       {
         "additives_tags": [],
@@ -5187,7 +5187,7 @@
           "sugars_100g": 3
         },
         "nutriscore_grade": "b",
-        "precomputed_score": 69
+        "precomputed_score": 70
       },
       {
         "additives_tags": [
@@ -5234,7 +5234,7 @@
           "sugars_100g": 2.5
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 84
+        "precomputed_score": 87
       },
       {
         "additives_tags": [
@@ -6336,7 +6336,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "unknown",
-        "precomputed_score": 81
+        "precomputed_score": 80
       },
       {
         "additives_tags": [],
@@ -6574,7 +6574,7 @@
           "sugars_100g": 10.7142857142857
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 83
+        "precomputed_score": 82
       },
       {
         "additives_tags": [],
@@ -6623,7 +6623,7 @@
           "sugars_100g": 6.31578947368421
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 72
+        "precomputed_score": 71
       },
       {
         "additives_tags": [],
@@ -6924,7 +6924,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "b",
-        "precomputed_score": 71
+        "precomputed_score": 70
       },
       {
         "additives_tags": [
@@ -8342,7 +8342,7 @@
           "zinc_100g": 0.00325
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 86
+        "precomputed_score": 93
       },
       {
         "additives_tags": [],
@@ -8446,7 +8446,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 85
+        "precomputed_score": 92
       },
       {
         "additives_tags": [],
@@ -8710,7 +8710,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 84
+        "precomputed_score": 91
       },
       {
         "additives_tags": [],
@@ -8814,7 +8814,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 84
+        "precomputed_score": 91
       },
       {
         "additives_tags": [],
@@ -9042,7 +9042,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 84
+        "precomputed_score": 91
       },
       {
         "additives_tags": [],
@@ -9357,7 +9357,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 84
+        "precomputed_score": 91
       },
       {
         "additives_tags": [],
@@ -9758,7 +9758,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 84
+        "precomputed_score": 91
       },
       {
         "additives_tags": [],
@@ -10038,7 +10038,7 @@
           "zinc_100g": 0.001
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 81
+        "precomputed_score": 87
       },
       {
         "additives_tags": [
@@ -10132,7 +10132,7 @@
           "sugars_100g": 14.7
         },
         "nutriscore_grade": "b",
-        "precomputed_score": 81
+        "precomputed_score": 82
       },
       {
         "additives_tags": [],
@@ -10272,7 +10272,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 82
+        "precomputed_score": 83
       },
       {
         "additives_tags": [],
@@ -10322,7 +10322,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 78
+        "precomputed_score": 79
       },
       {
         "additives_tags": [
@@ -10623,7 +10623,7 @@
           "zinc_100g": 0.0105263157894737
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 79
+        "precomputed_score": 80
       },
       {
         "additives_tags": [
@@ -10832,7 +10832,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 76
+        "precomputed_score": 77
       },
       {
         "additives_tags": [],
@@ -10883,7 +10883,7 @@
           "zinc_100g": 0.0034375
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 76
+        "precomputed_score": 78
       },
       {
         "additives_tags": [],
@@ -10938,7 +10938,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "b",
-        "precomputed_score": 75
+        "precomputed_score": 77
       },
       {
         "additives_tags": [
@@ -11136,7 +11136,7 @@
           "sugars_100g": 8.42105263157895
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 75
+        "precomputed_score": 77
       },
       {
         "additives_tags": [],
@@ -11184,7 +11184,7 @@
           "zinc_100g": 0.0085
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 71
+        "precomputed_score": 72
       },
       {
         "additives_tags": [],
@@ -11229,7 +11229,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 72
+        "precomputed_score": 74
       },
       {
         "additives_tags": [],
@@ -11320,7 +11320,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 73
+        "precomputed_score": 75
       },
       {
         "additives_tags": [],
@@ -11369,7 +11369,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 72
+        "precomputed_score": 71
       },
       {
         "additives_tags": [
@@ -11476,7 +11476,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 71
+        "precomputed_score": 72
       },
       {
         "additives_tags": [],
@@ -11627,7 +11627,7 @@
           "zinc_100g": 0.00025
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 71
+        "precomputed_score": 70
       },
       {
         "additives_tags": [],
@@ -11679,7 +11679,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "e",
-        "precomputed_score": 71
+        "precomputed_score": 72
       },
       {
         "additives_tags": [],
@@ -11807,7 +11807,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 69
+        "precomputed_score": 72
       },
       {
         "additives_tags": [],
@@ -11855,7 +11855,7 @@
           "zinc_100g": 0.00254237288135593
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 69
+        "precomputed_score": 68
       },
       {
         "additives_tags": [],
@@ -11942,7 +11942,7 @@
           "vitamin-c_100g": 0
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 71
+        "precomputed_score": 70
       },
       {
         "additives_tags": [
@@ -12001,7 +12001,7 @@
           "zinc_100g": 0.003
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 71
+        "precomputed_score": 70
       },
       {
         "additives_tags": [],
@@ -12147,7 +12147,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "e",
-        "precomputed_score": 67
+        "precomputed_score": 68
       },
       {
         "additives_tags": [
@@ -12249,7 +12249,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 69
+        "precomputed_score": 70
       },
       {
         "additives_tags": [],
@@ -12300,7 +12300,7 @@
           "zinc_100g": 0.00180327868852459
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 67
+        "precomputed_score": 65
       },
       {
         "additives_tags": [
@@ -12451,7 +12451,7 @@
           "sugars_100g": 20
         },
         "nutriscore_grade": "e",
-        "precomputed_score": 65
+        "precomputed_score": 66
       },
       {
         "additives_tags": [],
@@ -12503,7 +12503,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 65
+        "precomputed_score": 67
       },
       {
         "additives_tags": [
@@ -12604,7 +12604,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "e",
-        "precomputed_score": 65
+        "precomputed_score": 66
       },
       {
         "additives_tags": [],
@@ -12807,7 +12807,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "e",
-        "precomputed_score": 64
+        "precomputed_score": 66
       },
       {
         "additives_tags": [
@@ -12953,7 +12953,7 @@
           "zinc_100g": 0.00145454545454545
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 63
+        "precomputed_score": 64
       }
     ],
     "cheese": [
@@ -13937,7 +13937,7 @@
           "sugars_100g": 5.88235294117647
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 77
+        "precomputed_score": 76
       },
       {
         "additives_tags": [
@@ -14524,7 +14524,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 74
+        "precomputed_score": 73
       },
       {
         "additives_tags": [],
@@ -19163,7 +19163,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 67
+        "precomputed_score": 73
       },
       {
         "additives_tags": [],
@@ -20065,7 +20065,7 @@
           "sugars_100g": 10
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 65
+        "precomputed_score": 64
       },
       {
         "additives_tags": [],
@@ -21365,7 +21365,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 64
+        "precomputed_score": 63
       },
       {
         "additives_tags": [],
@@ -21454,7 +21454,7 @@
           "sugars_100g": 4
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 64
+        "precomputed_score": 63
       },
       {
         "additives_tags": [],
@@ -21718,7 +21718,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "e",
-        "precomputed_score": 64
+        "precomputed_score": 63
       },
       {
         "additives_tags": [],
@@ -22010,7 +22010,7 @@
           "sugars_100g": 17.5
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 76
+        "precomputed_score": 75
       },
       {
         "additives_tags": [],
@@ -22051,7 +22051,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "e",
-        "precomputed_score": 76
+        "precomputed_score": 74
       },
       {
         "additives_tags": [],
@@ -22170,7 +22170,7 @@
           "sugars_100g": 10.4
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 75
+        "precomputed_score": 73
       },
       {
         "additives_tags": [],
@@ -22212,7 +22212,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 75
+        "precomputed_score": 74
       },
       {
         "additives_tags": [],
@@ -22308,7 +22308,7 @@
           "sugars_100g": 35.5555555555556
         },
         "nutriscore_grade": "e",
-        "precomputed_score": 74
+        "precomputed_score": 77
       },
       {
         "additives_tags": [],
@@ -22384,7 +22384,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 74
+        "precomputed_score": 73
       },
       {
         "additives_tags": [],
@@ -22471,7 +22471,7 @@
           "sugars_100g": 15.5
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 74
+        "precomputed_score": 72
       },
       {
         "additives_tags": [],
@@ -22682,7 +22682,7 @@
           "sugars_100g": 26
         },
         "nutriscore_grade": "e",
-        "precomputed_score": 73
+        "precomputed_score": 70
       },
       {
         "additives_tags": [],
@@ -22720,7 +22720,7 @@
           "sugars_100g": 10.4
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 72
+        "precomputed_score": 70
       },
       {
         "additives_tags": [],
@@ -22764,7 +22764,7 @@
           "vitamin-c_100g": 0
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 72
+        "precomputed_score": 70
       },
       {
         "additives_tags": [],
@@ -22804,7 +22804,7 @@
           "sugars_100g": 25.5
         },
         "nutriscore_grade": "e",
-        "precomputed_score": 72
+        "precomputed_score": 70
       },
       {
         "additives_tags": [],
@@ -22891,7 +22891,7 @@
           "sugars_100g": 23.7
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 72
+        "precomputed_score": 70
       },
       {
         "additives_tags": [],
@@ -22930,7 +22930,7 @@
           "sugars_100g": 34.7
         },
         "nutriscore_grade": "e",
-        "precomputed_score": 71
+        "precomputed_score": 70
       },
       {
         "additives_tags": [],
@@ -23015,7 +23015,7 @@
           "sugars_100g": 29
         },
         "nutriscore_grade": "e",
-        "precomputed_score": 71
+        "precomputed_score": 70
       },
       {
         "additives_tags": [],
@@ -23147,7 +23147,7 @@
           "sugars_100g": 28
         },
         "nutriscore_grade": "e",
-        "precomputed_score": 70
+        "precomputed_score": 68
       },
       {
         "additives_tags": [],
@@ -23191,7 +23191,7 @@
           "sugars_100g": 28.5
         },
         "nutriscore_grade": "e",
-        "precomputed_score": 70
+        "precomputed_score": 69
       },
       {
         "additives_tags": [],
@@ -23238,7 +23238,7 @@
           "sugars_100g": 29
         },
         "nutriscore_grade": "e",
-        "precomputed_score": 70
+        "precomputed_score": 68
       },
       {
         "additives_tags": [],
@@ -23284,7 +23284,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "e",
-        "precomputed_score": 69
+        "precomputed_score": 67
       },
       {
         "additives_tags": [],
@@ -23470,7 +23470,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "not-applicable",
-        "precomputed_score": 69
+        "precomputed_score": 70
       },
       {
         "additives_tags": [],
@@ -23518,7 +23518,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "not-applicable",
-        "precomputed_score": 68
+        "precomputed_score": 80
       },
       {
         "additives_tags": [],
@@ -23562,7 +23562,7 @@
           "sugars_100g": 27.2727272727273
         },
         "nutriscore_grade": "e",
-        "precomputed_score": 68
+        "precomputed_score": 66
       },
       {
         "additives_tags": [],
@@ -23603,7 +23603,7 @@
           "sugars_100g": 15
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 68
+        "precomputed_score": 66
       },
       {
         "additives_tags": [],
@@ -23783,7 +23783,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 68
+        "precomputed_score": 75
       },
       {
         "additives_tags": [],
@@ -23869,7 +23869,7 @@
           "vitamin-c_100g": 0
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 67
+        "precomputed_score": 74
       },
       {
         "additives_tags": [],
@@ -24059,7 +24059,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "e",
-        "precomputed_score": 66
+        "precomputed_score": 65
       },
       {
         "additives_tags": [],
@@ -24104,7 +24104,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "e",
-        "precomputed_score": 66
+        "precomputed_score": 65
       },
       {
         "additives_tags": [],
@@ -24248,7 +24248,7 @@
           "sugars_100g": 10
         },
         "nutriscore_grade": "unknown",
-        "precomputed_score": 66
+        "precomputed_score": 65
       },
       {
         "additives_tags": [],
@@ -24488,7 +24488,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "e",
-        "precomputed_score": 64
+        "precomputed_score": 62
       },
       {
         "additives_tags": [],
@@ -24711,7 +24711,7 @@
           "fruits-vegetables-nuts-estimate-from-ingredients_100g": 0
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 63
+        "precomputed_score": 61
       },
       {
         "additives_tags": [],
@@ -24857,7 +24857,7 @@
           "vitamin-c_100g": 0
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 63
+        "precomputed_score": 62
       },
       {
         "additives_tags": [
@@ -24912,7 +24912,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 62
+        "precomputed_score": 61
       },
       {
         "additives_tags": [
@@ -24995,7 +24995,7 @@
           "sugars_100g": 3.57142857142857
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 61
+        "precomputed_score": 59
       },
       {
         "additives_tags": [],
@@ -25368,7 +25368,7 @@
           "sugars_100g": 25
         },
         "nutriscore_grade": "e",
-        "precomputed_score": 58
+        "precomputed_score": 63
       },
       {
         "additives_tags": [
@@ -25416,7 +25416,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 58
+        "precomputed_score": 57
       },
       {
         "additives_tags": [
@@ -25514,7 +25514,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 57
+        "precomputed_score": 60
       },
       {
         "additives_tags": [
@@ -25675,7 +25675,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "e",
-        "precomputed_score": 55
+        "precomputed_score": 56
       },
       {
         "additives_tags": [
@@ -25723,7 +25723,7 @@
           "sugars_100g": 37
         },
         "nutriscore_grade": "e",
-        "precomputed_score": 55
+        "precomputed_score": 54
       },
       {
         "additives_tags": [
@@ -25773,7 +25773,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "e",
-        "precomputed_score": 53
+        "precomputed_score": 55
       },
       {
         "additives_tags": [
@@ -25822,7 +25822,7 @@
           "vitamin-c_100g": 0
         },
         "nutriscore_grade": "e",
-        "precomputed_score": 54
+        "precomputed_score": 53
       },
       {
         "additives_tags": [
@@ -25873,7 +25873,7 @@
           "sugars_100g": 47.7
         },
         "nutriscore_grade": "e",
-        "precomputed_score": 54
+        "precomputed_score": 53
       },
       {
         "additives_tags": [
@@ -25922,7 +25922,7 @@
           "sugars_100g": 30
         },
         "nutriscore_grade": "e",
-        "precomputed_score": 53
+        "precomputed_score": 51
       },
       {
         "additives_tags": [
@@ -26017,7 +26017,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "e",
-        "precomputed_score": 53
+        "precomputed_score": 52
       },
       {
         "additives_tags": [
@@ -26156,7 +26156,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "e",
-        "precomputed_score": 52
+        "precomputed_score": 50
       },
       {
         "additives_tags": [
@@ -26299,7 +26299,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "unknown",
-        "precomputed_score": 51
+        "precomputed_score": 48
       },
       {
         "additives_tags": [
@@ -26491,7 +26491,7 @@
           "sugars_100g": 39.2
         },
         "nutriscore_grade": "not-applicable",
-        "precomputed_score": 78
+        "precomputed_score": 82
       },
       {
         "additives_tags": [],
@@ -26548,7 +26548,7 @@
           "sugars_100g": 39.2
         },
         "nutriscore_grade": "not-applicable",
-        "precomputed_score": 78
+        "precomputed_score": 82
       },
       {
         "additives_tags": [],
@@ -26604,7 +26604,7 @@
           "sugars_100g": 35.5555555555556
         },
         "nutriscore_grade": "e",
-        "precomputed_score": 74
+        "precomputed_score": 77
       },
       {
         "additives_tags": [],
@@ -26641,7 +26641,7 @@
           "sugars_100g": 13.1
         },
         "nutriscore_grade": "e",
-        "precomputed_score": 72
+        "precomputed_score": 71
       },
       {
         "additives_tags": [],
@@ -26686,7 +26686,7 @@
           "zinc_100g": 0.0025
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 76
+        "precomputed_score": 77
       },
       {
         "additives_tags": [
@@ -26784,7 +26784,7 @@
           "zinc_100g": 0.00111111111111111
         },
         "nutriscore_grade": "e",
-        "precomputed_score": 71
+        "precomputed_score": 70
       },
       {
         "additives_tags": [],
@@ -26902,7 +26902,7 @@
           "sugars_100g": 16.2
         },
         "nutriscore_grade": "e",
-        "precomputed_score": 70
+        "precomputed_score": 68
       },
       {
         "additives_tags": [
@@ -26978,7 +26978,7 @@
           "sugars_100g": 15.9
         },
         "nutriscore_grade": "e",
-        "precomputed_score": 70
+        "precomputed_score": 69
       },
       {
         "additives_tags": [],
@@ -27017,7 +27017,7 @@
           "sugars_100g": 16.1
         },
         "nutriscore_grade": "e",
-        "precomputed_score": 70
+        "precomputed_score": 68
       },
       {
         "additives_tags": [],
@@ -27062,7 +27062,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "e",
-        "precomputed_score": 65
+        "precomputed_score": 63
       },
       {
         "additives_tags": [
@@ -27195,7 +27195,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "e",
-        "precomputed_score": 67
+        "precomputed_score": 66
       },
       {
         "additives_tags": [],
@@ -27529,7 +27529,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 64
+        "precomputed_score": 65
       },
       {
         "additives_tags": [
@@ -27617,7 +27617,7 @@
           "zinc_100g": 0.001222
         },
         "nutriscore_grade": "e",
-        "precomputed_score": 64
+        "precomputed_score": 63
       },
       {
         "additives_tags": [
@@ -27710,7 +27710,7 @@
           "sugars_100g": 18
         },
         "nutriscore_grade": "e",
-        "precomputed_score": 62
+        "precomputed_score": 61
       },
       {
         "additives_tags": [
@@ -27845,7 +27845,7 @@
           "sugars_100g": 10
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 58
+        "precomputed_score": 57
       },
       {
         "additives_tags": [],
@@ -27899,7 +27899,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 60
+        "precomputed_score": 61
       },
       {
         "additives_tags": [],
@@ -27993,7 +27993,7 @@
           "sugars_100g": 23.3333333333333
         },
         "nutriscore_grade": "e",
-        "precomputed_score": 58
+        "precomputed_score": 57
       },
       {
         "additives_tags": [
@@ -28042,7 +28042,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "e",
-        "precomputed_score": 59
+        "precomputed_score": 58
       },
       {
         "additives_tags": [],
@@ -28079,7 +28079,7 @@
           "sugars_100g": 17
         },
         "nutriscore_grade": "unknown",
-        "precomputed_score": 59
+        "precomputed_score": 60
       },
       {
         "additives_tags": [
@@ -28468,7 +28468,7 @@
           "zinc_100g": 0.001415
         },
         "nutriscore_grade": "e",
-        "precomputed_score": 56
+        "precomputed_score": 55
       },
       {
         "additives_tags": [
@@ -28512,7 +28512,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "e",
-        "precomputed_score": 55
+        "precomputed_score": 54
       },
       {
         "additives_tags": [],
@@ -28686,7 +28686,7 @@
           "trans-fat_100g": 0.18
         },
         "nutriscore_grade": "e",
-        "precomputed_score": 55
+        "precomputed_score": 54
       },
       {
         "additives_tags": [
@@ -28828,7 +28828,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "e",
-        "precomputed_score": 51
+        "precomputed_score": 50
       },
       {
         "additives_tags": [],
@@ -28922,7 +28922,7 @@
           "sugars_100g": 9.09090909090909
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 50
+        "precomputed_score": 48
       },
       {
         "additives_tags": [
@@ -29018,7 +29018,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "e",
-        "precomputed_score": 52
+        "precomputed_score": 53
       },
       {
         "additives_tags": [
@@ -29307,7 +29307,7 @@
           "sugars_100g": 6.66666666666667
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 48
+        "precomputed_score": 47
       },
       {
         "additives_tags": [
@@ -29363,7 +29363,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 51
+        "precomputed_score": 50
       },
       {
         "additives_tags": [],
@@ -29541,7 +29541,7 @@
           "sugars_100g": 26.9230769230769
         },
         "nutriscore_grade": "e",
-        "precomputed_score": 49
+        "precomputed_score": 50
       },
       {
         "additives_tags": [
@@ -29592,7 +29592,7 @@
           "sugars_100g": 33.3333333333333
         },
         "nutriscore_grade": "e",
-        "precomputed_score": 47
+        "precomputed_score": 46
       },
       {
         "additives_tags": [
@@ -29685,7 +29685,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 50
+        "precomputed_score": 49
       },
       {
         "additives_tags": [
@@ -29776,7 +29776,7 @@
           "vitamin-c_100g": 0
         },
         "nutriscore_grade": "e",
-        "precomputed_score": 46
+        "precomputed_score": 43
       },
       {
         "additives_tags": [
@@ -29967,7 +29967,7 @@
           "sugars_100g": 26.1904761904762
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 44
+        "precomputed_score": 43
       },
       {
         "additives_tags": [
@@ -30027,7 +30027,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 45
+        "precomputed_score": 44
       },
       {
         "additives_tags": [
@@ -30070,7 +30070,7 @@
           "sugars_100g": 15.1
         },
         "nutriscore_grade": "e",
-        "precomputed_score": 45
+        "precomputed_score": 44
       },
       {
         "additives_tags": [
@@ -30118,7 +30118,7 @@
           "sugars_100g": 26.4705882352941
         },
         "nutriscore_grade": "e",
-        "precomputed_score": 43
+        "precomputed_score": 42
       },
       {
         "additives_tags": [
@@ -30168,7 +30168,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "e",
-        "precomputed_score": 42
+        "precomputed_score": 41
       },
       {
         "additives_tags": [
@@ -30215,7 +30215,7 @@
           "sugars_100g": 1.8
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 45
+        "precomputed_score": 44
       },
       {
         "additives_tags": [],
@@ -30251,7 +30251,7 @@
           "sugars_100g": 38.9
         },
         "nutriscore_grade": "e",
-        "precomputed_score": 42
+        "precomputed_score": 41
       },
       {
         "additives_tags": [
@@ -30353,7 +30353,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "e",
-        "precomputed_score": 41
+        "precomputed_score": 40
       },
       {
         "additives_tags": [
@@ -30507,7 +30507,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "e",
-        "precomputed_score": 42
+        "precomputed_score": 41
       },
       {
         "additives_tags": [
@@ -30613,7 +30613,7 @@
           "sugars_100g": 35
         },
         "nutriscore_grade": "e",
-        "precomputed_score": 40
+        "precomputed_score": 39
       },
       {
         "additives_tags": [
@@ -30661,7 +30661,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 40
+        "precomputed_score": 39
       },
       {
         "additives_tags": [],
@@ -30742,7 +30742,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "e",
-        "precomputed_score": 40
+        "precomputed_score": 39
       },
       {
         "additives_tags": [
@@ -30837,7 +30837,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "e",
-        "precomputed_score": 38
+        "precomputed_score": 37
       },
       {
         "additives_tags": [
@@ -30899,7 +30899,7 @@
           "sugars_100g": 19.2982456140351
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 39
+        "precomputed_score": 38
       },
       {
         "additives_tags": [
@@ -42203,7 +42203,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 89
+        "precomputed_score": 94
       },
       {
         "additives_tags": [],
@@ -43037,7 +43037,7 @@
           "sugars_100g": 12.1
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 74
+        "precomputed_score": 72
       },
       {
         "additives_tags": [],
@@ -43079,7 +43079,7 @@
           "sugars_100g": 17.8
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 75
+        "precomputed_score": 73
       },
       {
         "additives_tags": [],
@@ -43164,7 +43164,7 @@
           "trans-fat_100g": 0.531914893617021
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 73
+        "precomputed_score": 72
       },
       {
         "additives_tags": [],
@@ -43203,7 +43203,7 @@
           "trans-fat_100g": 0.775193798449612
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 72
+        "precomputed_score": 71
       },
       {
         "additives_tags": [],
@@ -43244,7 +43244,7 @@
           "sugars_100g": 21
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 73
+        "precomputed_score": 72
       },
       {
         "additives_tags": [],
@@ -43288,7 +43288,7 @@
           "trans-fat_100g": 0.265957446808511
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 74
+        "precomputed_score": 72
       },
       {
         "additives_tags": [],
@@ -43327,7 +43327,7 @@
           "sugars_100g": 21.8
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 72
+        "precomputed_score": 71
       },
       {
         "additives_tags": [],
@@ -43371,7 +43371,7 @@
           "trans-fat_100g": 0.265957446808511
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 74
+        "precomputed_score": 72
       },
       {
         "additives_tags": [
@@ -43459,7 +43459,7 @@
           "sugars_100g": 19.3798449612403
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 74
+        "precomputed_score": 71
       },
       {
         "additives_tags": [],
@@ -43491,7 +43491,7 @@
           "fruits-vegetables-nuts-estimate-from-ingredients_100g": 0
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 72
+        "precomputed_score": 71
       },
       {
         "additives_tags": [],
@@ -43531,7 +43531,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 73
+        "precomputed_score": 71
       },
       {
         "additives_tags": [],
@@ -43575,7 +43575,7 @@
           "trans-fat_100g": 0.265957446808511
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 73
+        "precomputed_score": 71
       },
       {
         "additives_tags": [],
@@ -43706,7 +43706,7 @@
           "trans-fat_100g": 0.265957446808511
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 72
+        "precomputed_score": 71
       },
       {
         "additives_tags": [],
@@ -43745,7 +43745,7 @@
           "sugars_100g": 18.8
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 70
+        "precomputed_score": 68
       },
       {
         "additives_tags": [],
@@ -43783,7 +43783,7 @@
           "sugars_100g": 19.9
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 69
+        "precomputed_score": 68
       },
       {
         "additives_tags": [],
@@ -43826,7 +43826,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 68
+        "precomputed_score": 67
       },
       {
         "additives_tags": [],
@@ -43900,7 +43900,7 @@
           "sugars_100g": 19.5
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 68
+        "precomputed_score": 67
       },
       {
         "additives_tags": [],
@@ -43936,7 +43936,7 @@
           "sugars_100g": 17.5
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 67
+        "precomputed_score": 66
       },
       {
         "additives_tags": [],
@@ -44061,7 +44061,7 @@
           "sugars_100g": 13
         },
         "nutriscore_grade": "e",
-        "precomputed_score": 67
+        "precomputed_score": 66
       },
       {
         "additives_tags": [],
@@ -44102,7 +44102,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 64
+        "precomputed_score": 63
       },
       {
         "additives_tags": [
@@ -44147,7 +44147,7 @@
           "sugars_100g": 24.7
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 64
+        "precomputed_score": 63
       },
       {
         "additives_tags": [],
@@ -44232,7 +44232,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 62
+        "precomputed_score": 61
       },
       {
         "additives_tags": [
@@ -44315,7 +44315,7 @@
           "sugars_100g": 27
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 61
+        "precomputed_score": 60
       },
       {
         "additives_tags": [],
@@ -44392,7 +44392,7 @@
           "sugars_100g": 26.7
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 60
+        "precomputed_score": 59
       },
       {
         "additives_tags": [],
@@ -44472,7 +44472,7 @@
           "sugars_100g": 13
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 60
+        "precomputed_score": 59
       },
       {
         "additives_tags": [
@@ -44508,7 +44508,7 @@
           "sugars_100g": 9.57446808510638
         },
         "nutriscore_grade": "unknown",
-        "precomputed_score": 62
+        "precomputed_score": 61
       },
       {
         "additives_tags": [
@@ -44548,7 +44548,7 @@
           "sugars_100g": 9.9
         },
         "nutriscore_grade": "b",
-        "precomputed_score": 56
+        "precomputed_score": 57
       },
       {
         "additives_tags": [
@@ -44586,7 +44586,7 @@
           "sugars_100g": 18.7
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 59
+        "precomputed_score": 58
       },
       {
         "additives_tags": [
@@ -44782,7 +44782,7 @@
           "sugars_100g": 12.6
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 59
+        "precomputed_score": 58
       },
       {
         "additives_tags": [
@@ -44820,7 +44820,7 @@
           "sugars_100g": 24.8
         },
         "nutriscore_grade": "e",
-        "precomputed_score": 57
+        "precomputed_score": 56
       },
       {
         "additives_tags": [
@@ -44860,7 +44860,7 @@
           "sugars_100g": 21.3
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 58
+        "precomputed_score": 57
       },
       {
         "additives_tags": [
@@ -44898,7 +44898,7 @@
           "sugars_100g": 22.8
         },
         "nutriscore_grade": "e",
-        "precomputed_score": 59
+        "precomputed_score": 57
       },
       {
         "additives_tags": [
@@ -45042,7 +45042,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 56
+        "precomputed_score": 54
       },
       {
         "additives_tags": [
@@ -45130,7 +45130,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 55
+        "precomputed_score": 54
       },
       {
         "additives_tags": [
@@ -45268,7 +45268,7 @@
           "sugars_100g": 9.45945945945946
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 54
+        "precomputed_score": 53
       },
       {
         "additives_tags": [
@@ -45310,7 +45310,7 @@
           "sugars_100g": 22.1052631578947
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 54
+        "precomputed_score": 53
       },
       {
         "additives_tags": [
@@ -45395,7 +45395,7 @@
           "sugars_100g": 21.8
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 55
+        "precomputed_score": 54
       },
       {
         "additives_tags": [
@@ -45504,7 +45504,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "e",
-        "precomputed_score": 53
+        "precomputed_score": 54
       },
       {
         "additives_tags": [
@@ -45546,7 +45546,7 @@
           "sugars_100g": 21
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 54
+        "precomputed_score": 53
       },
       {
         "additives_tags": [],
@@ -45568,7 +45568,7 @@
         "name": "Milkiest Chocolate",
         "nova_group": 4,
         "nutriscore_grade": "unknown",
-        "precomputed_score": 53
+        "precomputed_score": 52
       },
       {
         "additives_tags": [
@@ -45615,7 +45615,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 53
+        "precomputed_score": 52
       },
       {
         "additives_tags": [
@@ -45661,7 +45661,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 54
+        "precomputed_score": 53
       },
       {
         "additives_tags": [
@@ -45858,7 +45858,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 51
+        "precomputed_score": 50
       },
       {
         "additives_tags": [
@@ -45955,7 +45955,7 @@
           "vitamin-c_100g": 0
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 51
+        "precomputed_score": 50
       },
       {
         "additives_tags": [],
@@ -46121,7 +46121,7 @@
           "sugars_100g": 20.6896551724138
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 50
+        "precomputed_score": 49
       },
       {
         "additives_tags": [
@@ -46165,7 +46165,7 @@
           "vitamin-c_100g": 0
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 50
+        "precomputed_score": 51
       },
       {
         "additives_tags": [],
@@ -46457,7 +46457,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "e",
-        "precomputed_score": 48
+        "precomputed_score": 46
       },
       {
         "additives_tags": [
@@ -46590,7 +46590,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 48
+        "precomputed_score": 47
       },
       {
         "additives_tags": [
@@ -46640,7 +46640,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 48
+        "precomputed_score": 47
       },
       {
         "additives_tags": [
@@ -46683,7 +46683,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 47
+        "precomputed_score": 48
       },
       {
         "additives_tags": [
@@ -46727,7 +46727,7 @@
           "sugars_100g": 24.812030075188
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 47
+        "precomputed_score": 48
       },
       {
         "additives_tags": [
@@ -46818,7 +46818,7 @@
           "vitamin-c_100g": 0.0012
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 47
+        "precomputed_score": 46
       },
       {
         "additives_tags": [
@@ -46916,7 +46916,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 46
+        "precomputed_score": 45
       },
       {
         "additives_tags": [
@@ -46964,7 +46964,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "e",
-        "precomputed_score": 46
+        "precomputed_score": 45
       },
       {
         "additives_tags": [
@@ -47057,7 +47057,7 @@
           "vitamin-c_100g": 0
         },
         "nutriscore_grade": "e",
-        "precomputed_score": 46
+        "precomputed_score": 47
       },
       {
         "additives_tags": [],
@@ -47134,7 +47134,7 @@
           "sugars_100g": 10.3448275862069
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 46
+        "precomputed_score": 45
       }
     ],
     "instantNoodles": [
@@ -47504,7 +47504,7 @@
           "sugars_100g": 3.7
         },
         "nutriscore_grade": "unknown",
-        "precomputed_score": 70
+        "precomputed_score": 69
       },
       {
         "additives_tags": [],
@@ -47761,7 +47761,7 @@
           "sugars_100g": 6.98412698412699
         },
         "nutriscore_grade": "unknown",
-        "precomputed_score": 63
+        "precomputed_score": 62
       },
       {
         "additives_tags": [],
@@ -48093,7 +48093,7 @@
           "fruits-vegetables-nuts-estimate-from-ingredients_100g": 0.347222222222229
         },
         "nutriscore_grade": "unknown",
-        "precomputed_score": 59
+        "precomputed_score": 58
       },
       {
         "additives_tags": [],
@@ -48134,7 +48134,7 @@
           "sugars_100g": 1.51162790697674
         },
         "nutriscore_grade": "unknown",
-        "precomputed_score": 58
+        "precomputed_score": 57
       },
       {
         "additives_tags": [],
@@ -48299,7 +48299,7 @@
           "sugars_100g": 1.2
         },
         "nutriscore_grade": "unknown",
-        "precomputed_score": 59
+        "precomputed_score": 58
       },
       {
         "additives_tags": [
@@ -48340,7 +48340,7 @@
           "sugars_100g": 2.5
         },
         "nutriscore_grade": "unknown",
-        "precomputed_score": 58
+        "precomputed_score": 57
       },
       {
         "additives_tags": [],
@@ -49002,7 +49002,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "unknown",
-        "precomputed_score": 52
+        "precomputed_score": 51
       },
       {
         "additives_tags": [
@@ -49328,7 +49328,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "unknown",
-        "precomputed_score": 40
+        "precomputed_score": 39
       },
       {
         "additives_tags": [
@@ -49430,7 +49430,7 @@
           "sugars_100g": 5
         },
         "nutriscore_grade": "unknown",
-        "precomputed_score": 44
+        "precomputed_score": 43
       },
       {
         "additives_tags": [
@@ -50503,7 +50503,7 @@
           "sugars_100g": 5.26315789473684
         },
         "nutriscore_grade": "unknown",
-        "precomputed_score": 38
+        "precomputed_score": 37
       },
       {
         "additives_tags": [],
@@ -50905,7 +50905,7 @@
           "sugars_100g": 7.05882352941176
         },
         "nutriscore_grade": "unknown",
-        "precomputed_score": 37
+        "precomputed_score": 36
       },
       {
         "additives_tags": [],
@@ -51313,7 +51313,7 @@
           "sugars_100g": 2.1
         },
         "nutriscore_grade": "unknown",
-        "precomputed_score": 35
+        "precomputed_score": 34
       },
       {
         "additives_tags": [],
@@ -52236,7 +52236,7 @@
           "vitamin-c_100g": 0.0048
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 67
+        "precomputed_score": 69
       },
       {
         "additives_tags": [],
@@ -52837,7 +52837,7 @@
           "vitamin-c_100g": 0.023
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 63
+        "precomputed_score": 64
       },
       {
         "additives_tags": [],
@@ -53694,7 +53694,7 @@
           "sugars_100g": 8.9
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 59
+        "precomputed_score": 60
       },
       {
         "additives_tags": [],
@@ -54000,7 +54000,7 @@
           "vitamin-c_100g": 0.012
         },
         "nutriscore_grade": "unknown",
-        "precomputed_score": 51
+        "precomputed_score": 50
       },
       {
         "additives_tags": [
@@ -54046,7 +54046,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 50
+        "precomputed_score": 49
       },
       {
         "additives_tags": [],
@@ -54544,7 +54544,7 @@
           "sugars_100g": 6.67
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 42
+        "precomputed_score": 41
       },
       {
         "additives_tags": [
@@ -59683,7 +59683,7 @@
           "zinc_100g": 0.00329
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 91
+        "precomputed_score": 97
       },
       {
         "additives_tags": [],
@@ -59732,7 +59732,7 @@
           "zinc_100g": 0.00396
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 91
+        "precomputed_score": 97
       },
       {
         "additives_tags": [],
@@ -59792,7 +59792,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 89
+        "precomputed_score": 94
       },
       {
         "additives_tags": [],
@@ -59837,7 +59837,7 @@
           "sugars_100g": 4
         },
         "nutriscore_grade": "unknown",
-        "precomputed_score": 89
+        "precomputed_score": 94
       },
       {
         "additives_tags": [],
@@ -59890,7 +59890,7 @@
           "sugars_100g": 6.66666666666667
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 89
+        "precomputed_score": 91
       },
       {
         "additives_tags": [],
@@ -59941,7 +59941,7 @@
           "sugars_100g": 4
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 88
+        "precomputed_score": 94
       },
       {
         "additives_tags": [],
@@ -60036,7 +60036,7 @@
           "sugars_100g": 4
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 87
+        "precomputed_score": 93
       },
       {
         "additives_tags": [],
@@ -60078,7 +60078,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 87
+        "precomputed_score": 90
       },
       {
         "additives_tags": [],
@@ -60120,7 +60120,7 @@
           "sugars_100g": 4.9
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 87
+        "precomputed_score": 93
       },
       {
         "additives_tags": [],
@@ -60161,7 +60161,7 @@
           "sugars_100g": 6.66666666666667
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 87
+        "precomputed_score": 93
       },
       {
         "additives_tags": [],
@@ -60206,7 +60206,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 87
+        "precomputed_score": 93
       },
       {
         "additives_tags": [],
@@ -60244,7 +60244,7 @@
           "sugars_100g": 4
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 87
+        "precomputed_score": 93
       },
       {
         "additives_tags": [],
@@ -60286,7 +60286,7 @@
           "sugars_100g": 4
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 87
+        "precomputed_score": 93
       },
       {
         "additives_tags": [],
@@ -60338,7 +60338,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 87
+        "precomputed_score": 93
       },
       {
         "additives_tags": [],
@@ -60381,7 +60381,7 @@
           "sugars_100g": 6.2
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 87
+        "precomputed_score": 93
       },
       {
         "additives_tags": [],
@@ -60421,7 +60421,7 @@
           "sugars_100g": 6.2
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 86
+        "precomputed_score": 93
       },
       {
         "additives_tags": [],
@@ -60462,7 +60462,7 @@
           "sugars_100g": 6
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 86
+        "precomputed_score": 93
       },
       {
         "additives_tags": [],
@@ -60506,7 +60506,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 86
+        "precomputed_score": 92
       },
       {
         "additives_tags": [],
@@ -60551,7 +60551,7 @@
           "sugars_100g": 6.4
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 86
+        "precomputed_score": 93
       },
       {
         "additives_tags": [],
@@ -60590,7 +60590,7 @@
           "sugars_100g": 5.7
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 86
+        "precomputed_score": 92
       },
       {
         "additives_tags": [],
@@ -60632,7 +60632,7 @@
           "sugars_100g": 44.4444666666667
         },
         "nutriscore_grade": "e",
-        "precomputed_score": 86
+        "precomputed_score": 93
       },
       {
         "additives_tags": [],
@@ -60672,7 +60672,7 @@
           "sugars_100g": 5.4
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 86
+        "precomputed_score": 92
       },
       {
         "additives_tags": [],
@@ -60712,7 +60712,7 @@
           "sugars_100g": 5.9
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 86
+        "precomputed_score": 92
       },
       {
         "additives_tags": [],
@@ -60761,7 +60761,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 86
+        "precomputed_score": 92
       },
       {
         "additives_tags": [],
@@ -60813,7 +60813,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 86
+        "precomputed_score": 93
       },
       {
         "additives_tags": [],
@@ -60855,7 +60855,7 @@
           "sugars_100g": 5.9
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 86
+        "precomputed_score": 93
       },
       {
         "additives_tags": [],
@@ -60954,7 +60954,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 88
+        "precomputed_score": 91
       },
       {
         "additives_tags": [],
@@ -61002,7 +61002,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 86
+        "precomputed_score": 92
       },
       {
         "additives_tags": [],
@@ -61050,7 +61050,7 @@
           "trans-fat_100g": 14.0625
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 86
+        "precomputed_score": 92
       },
       {
         "additives_tags": [],
@@ -61098,7 +61098,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 86
+        "precomputed_score": 92
       },
       {
         "additives_tags": [],
@@ -61147,7 +61147,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "unknown",
-        "precomputed_score": 86
+        "precomputed_score": 92
       },
       {
         "additives_tags": [],
@@ -61195,7 +61195,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 86
+        "precomputed_score": 92
       },
       {
         "additives_tags": [],
@@ -61245,7 +61245,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 86
+        "precomputed_score": 92
       },
       {
         "additives_tags": [],
@@ -61285,7 +61285,7 @@
           "sugars_100g": 6
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 86
+        "precomputed_score": 92
       },
       {
         "additives_tags": [],
@@ -61325,7 +61325,7 @@
           "sugars_100g": 5.9
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 86
+        "precomputed_score": 93
       },
       {
         "additives_tags": [],
@@ -61365,7 +61365,7 @@
           "sugars_100g": 6
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 86
+        "precomputed_score": 92
       },
       {
         "additives_tags": [],
@@ -61456,7 +61456,7 @@
           "sugars_100g": 5.7
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 86
+        "precomputed_score": 92
       },
       {
         "additives_tags": [],
@@ -61500,7 +61500,7 @@
           "sugars_100g": 4.8
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 86
+        "precomputed_score": 93
       },
       {
         "additives_tags": [],
@@ -61550,7 +61550,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 85
+        "precomputed_score": 92
       },
       {
         "additives_tags": [],
@@ -61647,7 +61647,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 85
+        "precomputed_score": 88
       },
       {
         "additives_tags": [],
@@ -61695,7 +61695,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 85
+        "precomputed_score": 89
       },
       {
         "additives_tags": [],
@@ -61740,7 +61740,7 @@
           "sugars_100g": 6.66666666666667
         },
         "nutriscore_grade": "b",
-        "precomputed_score": 85
+        "precomputed_score": 91
       },
       {
         "additives_tags": [],
@@ -61792,7 +61792,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 85
+        "precomputed_score": 92
       },
       {
         "additives_tags": [],
@@ -61902,7 +61902,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "b",
-        "precomputed_score": 84
+        "precomputed_score": 88
       },
       {
         "additives_tags": [],
@@ -61954,7 +61954,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 84
+        "precomputed_score": 87
       },
       {
         "additives_tags": [],
@@ -61993,7 +61993,7 @@
           "vitamin-c_100g": 0
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 84
+        "precomputed_score": 91
       },
       {
         "additives_tags": [],
@@ -62031,7 +62031,7 @@
           "vitamin-c_100g": 0
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 84
+        "precomputed_score": 90
       },
       {
         "additives_tags": [],
@@ -62078,7 +62078,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 84
+        "precomputed_score": 86
       },
       {
         "additives_tags": [],
@@ -62117,7 +62117,7 @@
           "vitamin-c_100g": 0
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 84
+        "precomputed_score": 91
       },
       {
         "additives_tags": [],
@@ -62222,7 +62222,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "b",
-        "precomputed_score": 84
+        "precomputed_score": 86
       },
       {
         "additives_tags": [],
@@ -62302,7 +62302,7 @@
           "vitamin-c_100g": 0
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 83
+        "precomputed_score": 89
       },
       {
         "additives_tags": [],
@@ -62342,7 +62342,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 83
+        "precomputed_score": 90
       },
       {
         "additives_tags": [],
@@ -62388,7 +62388,7 @@
           "sugars_100g": 6.25
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 83
+        "precomputed_score": 86
       },
       {
         "additives_tags": [],
@@ -62426,7 +62426,7 @@
           "vitamin-c_100g": 0
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 83
+        "precomputed_score": 86
       },
       {
         "additives_tags": [],
@@ -62464,7 +62464,7 @@
           "vitamin-c_100g": 0
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 83
+        "precomputed_score": 90
       },
       {
         "additives_tags": [],
@@ -62514,7 +62514,7 @@
           "sugars_100g": 6.25
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 82
+        "precomputed_score": 86
       },
       {
         "additives_tags": [],
@@ -62565,7 +62565,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "b",
-        "precomputed_score": 82
+        "precomputed_score": 86
       },
       {
         "additives_tags": [],
@@ -62607,7 +62607,7 @@
           "sugars_100g": 6.6667
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 82
+        "precomputed_score": 89
       },
       {
         "additives_tags": [],
@@ -62660,7 +62660,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 82
+        "precomputed_score": 85
       },
       {
         "additives_tags": [],
@@ -62707,7 +62707,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 82
+        "precomputed_score": 88
       },
       {
         "additives_tags": [],
@@ -62754,7 +62754,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 82
+        "precomputed_score": 85
       },
       {
         "additives_tags": [],
@@ -62807,7 +62807,7 @@
           "zinc_100g": 0.00592592592592593
         },
         "nutriscore_grade": "b",
-        "precomputed_score": 82
+        "precomputed_score": 86
       },
       {
         "additives_tags": [],
@@ -62862,7 +62862,7 @@
           "zinc_100g": 0.003125
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 82
+        "precomputed_score": 85
       },
       {
         "additives_tags": [],
@@ -62899,7 +62899,7 @@
           "sugars_100g": 3.125
         },
         "nutriscore_grade": "unknown",
-        "precomputed_score": 81
+        "precomputed_score": 87
       },
       {
         "additives_tags": [],
@@ -63000,7 +63000,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "unknown",
-        "precomputed_score": 81
+        "precomputed_score": 84
       },
       {
         "additives_tags": [],
@@ -63091,7 +63091,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 81
+        "precomputed_score": 88
       },
       {
         "additives_tags": [],
@@ -63147,7 +63147,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 81
+        "precomputed_score": 88
       },
       {
         "additives_tags": [],
@@ -63247,7 +63247,7 @@
           "sugars_100g": 7.69230769230769
         },
         "nutriscore_grade": "unknown",
-        "precomputed_score": 81
+        "precomputed_score": 83
       },
       {
         "additives_tags": [],
@@ -63350,7 +63350,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "b",
-        "precomputed_score": 81
+        "precomputed_score": 88
       },
       {
         "additives_tags": [],
@@ -63449,7 +63449,7 @@
           "sugars_100g": 9.375
         },
         "nutriscore_grade": "b",
-        "precomputed_score": 80
+        "precomputed_score": 81
       },
       {
         "additives_tags": [],
@@ -63500,7 +63500,7 @@
           "vitamin-c_100g": 0
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 80
+        "precomputed_score": 83
       },
       {
         "additives_tags": [],
@@ -63670,7 +63670,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 80
+        "precomputed_score": 87
       },
       {
         "additives_tags": [],
@@ -63718,7 +63718,7 @@
           "sugars_100g": 6.25
         },
         "nutriscore_grade": "b",
-        "precomputed_score": 80
+        "precomputed_score": 83
       },
       {
         "additives_tags": [],
@@ -63765,7 +63765,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 80
+        "precomputed_score": 87
       },
       {
         "additives_tags": [],
@@ -63819,7 +63819,7 @@
           "sugars_100g": 9.375
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 80
+        "precomputed_score": 81
       },
       {
         "additives_tags": [],
@@ -63919,7 +63919,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 79
+        "precomputed_score": 81
       },
       {
         "additives_tags": [],
@@ -64142,7 +64142,7 @@
           "sugars_100g": 6.66666666666667
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 72
+        "precomputed_score": 78
       },
       {
         "additives_tags": [],
@@ -64185,7 +64185,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "b",
-        "precomputed_score": 72
+        "precomputed_score": 71
       },
       {
         "additives_tags": [],
@@ -64227,7 +64227,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 70
+        "precomputed_score": 73
       }
     ],
     "pasta": [
@@ -65393,7 +65393,7 @@
           "sugars_100g": 2.3
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 76
+        "precomputed_score": 80
       },
       {
         "additives_tags": [],
@@ -68596,7 +68596,7 @@
           "sugars_100g": 2.35294117647059
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 63
+        "precomputed_score": 65
       }
     ],
     "snackBars": [
@@ -68653,7 +68653,7 @@
           "vitamin-c_100g": 0.075
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 79
+        "precomputed_score": 77
       },
       {
         "additives_tags": [],
@@ -68703,7 +68703,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "not-applicable",
-        "precomputed_score": 77
+        "precomputed_score": 75
       },
       {
         "additives_tags": [],
@@ -68746,7 +68746,7 @@
           "sugars_100g": 27.5
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 78
+        "precomputed_score": 80
       },
       {
         "additives_tags": [],
@@ -68842,7 +68842,7 @@
           "sugars_100g": 62.6666666666667
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 74
+        "precomputed_score": 77
       },
       {
         "additives_tags": [],
@@ -68883,7 +68883,7 @@
           "sugars_100g": 38
         },
         "nutriscore_grade": "not-applicable",
-        "precomputed_score": 75
+        "precomputed_score": 67
       },
       {
         "additives_tags": [],
@@ -68926,7 +68926,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "not-applicable",
-        "precomputed_score": 73
+        "precomputed_score": 67
       },
       {
         "additives_tags": [],
@@ -69016,7 +69016,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "not-applicable",
-        "precomputed_score": 73
+        "precomputed_score": 78
       },
       {
         "additives_tags": [],
@@ -69051,7 +69051,7 @@
           "sugars_100g": 38.2
         },
         "nutriscore_grade": "not-applicable",
-        "precomputed_score": 75
+        "precomputed_score": 68
       },
       {
         "additives_tags": [],
@@ -69106,7 +69106,7 @@
           "sugars_100g": 10.7692307692308
         },
         "nutriscore_grade": "not-applicable",
-        "precomputed_score": 73
+        "precomputed_score": 77
       },
       {
         "additives_tags": [],
@@ -69152,7 +69152,7 @@
           "sugars_100g": 11.5942028985507
         },
         "nutriscore_grade": "not-applicable",
-        "precomputed_score": 73
+        "precomputed_score": 74
       },
       {
         "additives_tags": [],
@@ -69201,7 +69201,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "not-applicable",
-        "precomputed_score": 71
+        "precomputed_score": 70
       },
       {
         "additives_tags": [],
@@ -69378,7 +69378,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 72
+        "precomputed_score": 73
       },
       {
         "additives_tags": [],
@@ -69421,7 +69421,7 @@
           "sugars_100g": 12.9
         },
         "nutriscore_grade": "not-applicable",
-        "precomputed_score": 70
+        "precomputed_score": 73
       },
       {
         "additives_tags": [],
@@ -69507,7 +69507,7 @@
           "sugars_100g": 23.6
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 70
+        "precomputed_score": 71
       },
       {
         "additives_tags": [],
@@ -69555,7 +69555,7 @@
           "zinc_100g": 0.00176470588235294
         },
         "nutriscore_grade": "not-applicable",
-        "precomputed_score": 71
+        "precomputed_score": 74
       },
       {
         "additives_tags": [],
@@ -69654,7 +69654,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "not-applicable",
-        "precomputed_score": 73
+        "precomputed_score": 74
       },
       {
         "additives_tags": [],
@@ -69691,7 +69691,7 @@
           "sugars_100g": 2.28571428571429
         },
         "nutriscore_grade": "not-applicable",
-        "precomputed_score": 69
+        "precomputed_score": 67
       },
       {
         "additives_tags": [],
@@ -69738,7 +69738,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "not-applicable",
-        "precomputed_score": 69
+        "precomputed_score": 70
       },
       {
         "additives_tags": [],
@@ -69781,7 +69781,7 @@
           "sugars_100g": 15.8
         },
         "nutriscore_grade": "not-applicable",
-        "precomputed_score": 69
+        "precomputed_score": 71
       },
       {
         "additives_tags": [],
@@ -69879,7 +69879,7 @@
           "sugars_100g": 29
         },
         "nutriscore_grade": "not-applicable",
-        "precomputed_score": 68
+        "precomputed_score": 75
       },
       {
         "additives_tags": [],
@@ -69926,7 +69926,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "not-applicable",
-        "precomputed_score": 68
+        "precomputed_score": 79
       },
       {
         "additives_tags": [],
@@ -69966,7 +69966,7 @@
           "sugars_100g": 30.769230769231
         },
         "nutriscore_grade": "not-applicable",
-        "precomputed_score": 69
+        "precomputed_score": 78
       },
       {
         "additives_tags": [],
@@ -70070,7 +70070,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "not-applicable",
-        "precomputed_score": 68
+        "precomputed_score": 80
       },
       {
         "additives_tags": [],
@@ -70171,7 +70171,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "not-applicable",
-        "precomputed_score": 68
+        "precomputed_score": 70
       },
       {
         "additives_tags": [],
@@ -70217,7 +70217,7 @@
           "sugars_100g": 25.6
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 68
+        "precomputed_score": 69
       },
       {
         "additives_tags": [],
@@ -70269,7 +70269,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 67
+        "precomputed_score": 69
       },
       {
         "additives_tags": [],
@@ -70360,7 +70360,7 @@
           "sugars_100g": 35
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 68
+        "precomputed_score": 69
       },
       {
         "additives_tags": [],
@@ -70447,7 +70447,7 @@
           "sugars_100g": 22
         },
         "nutriscore_grade": "not-applicable",
-        "precomputed_score": 67
+        "precomputed_score": 76
       },
       {
         "additives_tags": [],
@@ -70494,7 +70494,7 @@
           "sugars_100g": 33
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 68
+        "precomputed_score": 69
       },
       {
         "additives_tags": [],
@@ -70591,7 +70591,7 @@
           "sugars_100g": 15.151515151515
         },
         "nutriscore_grade": "not-applicable",
-        "precomputed_score": 65
+        "precomputed_score": 59
       },
       {
         "additives_tags": [],
@@ -70626,7 +70626,7 @@
           "sugars_100g": 20
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 65
+        "precomputed_score": 67
       },
       {
         "additives_tags": [],
@@ -70666,7 +70666,7 @@
           "sugars_100g": 14.705882352941
         },
         "nutriscore_grade": "not-applicable",
-        "precomputed_score": 64
+        "precomputed_score": 58
       },
       {
         "additives_tags": [],
@@ -70710,7 +70710,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "not-applicable",
-        "precomputed_score": 64
+        "precomputed_score": 76
       },
       {
         "additives_tags": [],
@@ -70746,7 +70746,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "not-applicable",
-        "precomputed_score": 63
+        "precomputed_score": 80
       },
       {
         "additives_tags": [
@@ -70789,7 +70789,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 63
+        "precomputed_score": 65
       },
       {
         "additives_tags": [
@@ -70882,7 +70882,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "not-applicable",
-        "precomputed_score": 62
+        "precomputed_score": 82
       },
       {
         "additives_tags": [
@@ -70927,7 +70927,7 @@
           "sugars_100g": 5
         },
         "nutriscore_grade": "not-applicable",
-        "precomputed_score": 63
+        "precomputed_score": 66
       },
       {
         "additives_tags": [],
@@ -70963,7 +70963,7 @@
           "sugars_100g": 26.9230769230769
         },
         "nutriscore_grade": "not-applicable",
-        "precomputed_score": 60
+        "precomputed_score": 77
       },
       {
         "additives_tags": [],
@@ -71013,7 +71013,7 @@
           "zinc_100g": 0.0211267605633803
         },
         "nutriscore_grade": "not-applicable",
-        "precomputed_score": 62
+        "precomputed_score": 73
       },
       {
         "additives_tags": [
@@ -71105,7 +71105,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "not-applicable",
-        "precomputed_score": 60
+        "precomputed_score": 58
       },
       {
         "additives_tags": [
@@ -71156,7 +71156,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "not-applicable",
-        "precomputed_score": 61
+        "precomputed_score": 76
       },
       {
         "additives_tags": [],
@@ -71202,7 +71202,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "not-applicable",
-        "precomputed_score": 59
+        "precomputed_score": 77
       },
       {
         "additives_tags": [
@@ -71297,7 +71297,7 @@
           "sugars_100g": 30.7692307692308
         },
         "nutriscore_grade": "unknown",
-        "precomputed_score": 59
+        "precomputed_score": 77
       },
       {
         "additives_tags": [
@@ -71339,7 +71339,7 @@
           "sugars_100g": 16
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 62
+        "precomputed_score": 63
       },
       {
         "additives_tags": [],
@@ -71445,7 +71445,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 60
+        "precomputed_score": 62
       },
       {
         "additives_tags": [],
@@ -71483,7 +71483,7 @@
           "sugars_100g": 17
         },
         "nutriscore_grade": "unknown",
-        "precomputed_score": 59
+        "precomputed_score": 60
       },
       {
         "additives_tags": [],
@@ -71605,7 +71605,7 @@
           "fruits-vegetables-nuts-estimate-from-ingredients_100g": 29.1666666666667
         },
         "nutriscore_grade": "not-applicable",
-        "precomputed_score": 59
+        "precomputed_score": 60
       },
       {
         "additives_tags": [
@@ -71654,7 +71654,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 60
+        "precomputed_score": 59
       },
       {
         "additives_tags": [],
@@ -71702,7 +71702,7 @@
           "sugars_100g": 12.3076923076923
         },
         "nutriscore_grade": "not-applicable",
-        "precomputed_score": 58
+        "precomputed_score": 66
       },
       {
         "additives_tags": [
@@ -71748,7 +71748,7 @@
           "sugars_100g": 8
         },
         "nutriscore_grade": "not-applicable",
-        "precomputed_score": 58
+        "precomputed_score": 57
       },
       {
         "additives_tags": [
@@ -71796,7 +71796,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 58
+        "precomputed_score": 59
       },
       {
         "additives_tags": [],
@@ -71833,7 +71833,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "e",
-        "precomputed_score": 58
+        "precomputed_score": 74
       },
       {
         "additives_tags": [],
@@ -71880,7 +71880,7 @@
           "sugars_100g": 1.11111111111111
         },
         "nutriscore_grade": "not-applicable",
-        "precomputed_score": 58
+        "precomputed_score": 78
       },
       {
         "additives_tags": [],
@@ -71930,7 +71930,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "not-applicable",
-        "precomputed_score": 57
+        "precomputed_score": 67
       },
       {
         "additives_tags": [
@@ -72027,7 +72027,7 @@
           "sugars_100g": 22.5
         },
         "nutriscore_grade": "not-applicable",
-        "precomputed_score": 56
+        "precomputed_score": 66
       },
       {
         "additives_tags": [],
@@ -72118,7 +72118,7 @@
           "vitamin-c_100g": 0.06
         },
         "nutriscore_grade": "not-applicable",
-        "precomputed_score": 55
+        "precomputed_score": 66
       },
       {
         "additives_tags": [
@@ -72174,7 +72174,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 57
+        "precomputed_score": 59
       },
       {
         "additives_tags": [],
@@ -72224,7 +72224,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 56
+        "precomputed_score": 55
       },
       {
         "additives_tags": [
@@ -72264,7 +72264,7 @@
           "sugars_100g": 16
         },
         "nutriscore_grade": "not-applicable",
-        "precomputed_score": 55
+        "precomputed_score": 68
       },
       {
         "additives_tags": [
@@ -72354,7 +72354,7 @@
           "sugars_100g": 30.75
         },
         "nutriscore_grade": "not-applicable",
-        "precomputed_score": 56
+        "precomputed_score": 65
       },
       {
         "additives_tags": [],
@@ -72386,7 +72386,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "not-applicable",
-        "precomputed_score": 54
+        "precomputed_score": 71
       },
       {
         "additives_tags": [],
@@ -72425,7 +72425,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "not-applicable",
-        "precomputed_score": 54
+        "precomputed_score": 72
       },
       {
         "additives_tags": [],
@@ -72475,7 +72475,7 @@
           "sugars_100g": 17
         },
         "nutriscore_grade": "not-applicable",
-        "precomputed_score": 55
+        "precomputed_score": 62
       },
       {
         "additives_tags": [],
@@ -72511,7 +72511,7 @@
           "sugars_100g": 20
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 58
+        "precomputed_score": 59
       },
       {
         "additives_tags": [
@@ -72568,7 +72568,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "not-applicable",
-        "precomputed_score": 56
+        "precomputed_score": 68
       },
       {
         "additives_tags": [
@@ -72619,7 +72619,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 55
+        "precomputed_score": 56
       },
       {
         "additives_tags": [],
@@ -72667,7 +72667,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "not-applicable",
-        "precomputed_score": 55
+        "precomputed_score": 69
       },
       {
         "additives_tags": [
@@ -72716,7 +72716,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 54
+        "precomputed_score": 51
       },
       {
         "additives_tags": [
@@ -72761,7 +72761,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "not-applicable",
-        "precomputed_score": 54
+        "precomputed_score": 74
       },
       {
         "additives_tags": [
@@ -72850,7 +72850,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 54
+        "precomputed_score": 55
       },
       {
         "additives_tags": [
@@ -72893,7 +72893,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 55
+        "precomputed_score": 56
       },
       {
         "additives_tags": [
@@ -72930,7 +72930,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 53
+        "precomputed_score": 52
       },
       {
         "additives_tags": [
@@ -72984,7 +72984,7 @@
           "sugars_100g": 14
         },
         "nutriscore_grade": "not-applicable",
-        "precomputed_score": 54
+        "precomputed_score": 67
       },
       {
         "additives_tags": [
@@ -73034,7 +73034,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "not-applicable",
-        "precomputed_score": 53
+        "precomputed_score": 69
       },
       {
         "additives_tags": [
@@ -73117,7 +73117,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "not-applicable",
-        "precomputed_score": 54
+        "precomputed_score": 66
       }
     ],
     "soda": [
@@ -80059,7 +80059,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 87
+        "precomputed_score": 86
       },
       {
         "additives_tags": [],
@@ -80197,7 +80197,7 @@
           "sugars_100g": 7.32103399621968
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 87
+        "precomputed_score": 86
       },
       {
         "additives_tags": [],
@@ -80696,7 +80696,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 86
+        "precomputed_score": 85
       },
       {
         "additives_tags": [],
@@ -81067,7 +81067,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 85
+        "precomputed_score": 84
       },
       {
         "additives_tags": [],
@@ -81248,7 +81248,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 85
+        "precomputed_score": 84
       },
       {
         "additives_tags": [],
@@ -81443,7 +81443,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 83
+        "precomputed_score": 82
       },
       {
         "additives_tags": [
@@ -81489,7 +81489,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 83
+        "precomputed_score": 82
       },
       {
         "additives_tags": [],
@@ -81577,7 +81577,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 82
+        "precomputed_score": 81
       },
       {
         "additives_tags": [
@@ -81629,7 +81629,7 @@
           "vitamin-c_100g": 0
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 82
+        "precomputed_score": 81
       },
       {
         "additives_tags": [
@@ -81814,7 +81814,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 81
+        "precomputed_score": 80
       },
       {
         "additives_tags": [
@@ -81864,7 +81864,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "b",
-        "precomputed_score": 80
+        "precomputed_score": 79
       },
       {
         "additives_tags": [],
@@ -81957,7 +81957,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 79
+        "precomputed_score": 78
       },
       {
         "additives_tags": [

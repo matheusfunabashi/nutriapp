@@ -73,6 +73,9 @@ struct Nutrients: Hashable, Codable {
     var choline_mg: Double? = nil
     var selenium_ug: Double? = nil
     var omega3_g: Double? = nil
+    /// V5.5 — declared sugar alcohols per 100 g (EU "of which polyols").
+    /// Drives the protein-bar S6 polyol-load dock. Optional for back-compat.
+    var polyols_g: Double? = nil
 }
 
 /// One parsed ingredient with its declared or estimated recipe share.

@@ -204,6 +204,84 @@ struct RulesetV4: Codable {
     }
     var bread: BreadConfig? = nil
 
+    // V5.5 protein bars — optional so older rulesets (and frozen v5.0.9) keep
+    // their behavior when the config is absent. Shapes live in
+    // ProteinBarScoring.swift.
+    struct ProteinBarConfig: Codable {
+        struct Gate: Codable {
+            let barTags: [String]
+            let barWords: [String]
+            let proteinWords: [String]
+            let minKcal: Double
+            let maxKcal: Double
+            let maxProteinG: Double
+            let minProteinShareNamed: Double
+            let minProteinShareUnnamed: Double
+            let minProteinGUnnamed: Double
+            let fallbackProfiles: [String]
+        }
+        struct Serving: Codable { let defaultG: Double; let minG: Double; let maxG: Double }
+        struct Source: Codable {
+            let match: String
+            /// DIAAS-style quality credit (whey / milk / egg 1.0 … collagen 0.25).
+            let credit: Double
+            /// Typical protein fraction of the ingredient — the label-position
+            /// weight is scaled by it so a 25 %-protein peanut listed first
+            /// doesn't outweigh a 90 % isolate listed second.
+            let density: Double
+        }
+        struct S12: Codable {
+            let servingFullG: Double
+            let shareFull: Double
+            let per100FullG: Double
+            /// Share of the rule carried by protein (amount × quality); the
+            /// rest is fiber.
+            let proteinWeight: Double
+            /// Quality scales the amount credit between `qualityFloor` (credit 0
+            /// — e.g. pure collagen) and 1.0 (whey / milk / egg).
+            let qualityFloor: Double
+            let fiberWeight: Double
+            let fiberFullG: Double
+            let isolatedFiberDamp: Double
+            let unknownFiberCredit: Double
+            let rankDecay: Double
+            let unknownQuality: Double
+            let unknownCredit: Double
+            let sources: [Source]
+            let complementaryPairs: [[String]]
+            let complementaryCredit: Double
+        }
+        struct S3: Codable { let fvnDiscountCap: Double }
+        struct S2: Codable {
+            let clean: Double
+            /// Share of top-level tokens that must be recognizable (whole food,
+            /// protein source, marker, additive code, water/salt) before a
+            /// marker-free list earns the clean credit — OFF's OCR'd
+            /// `ingredients_text` is often a nutrition table or a foreign
+            /// language the marker lists don't cover, and "no markers found"
+            /// must not read as "clean".
+            let minRecognizedShare: Double
+            let markerCredits: [Double]
+            let novaFourNoList: Double
+            let novaThreeNoList: Double
+            let novaLowNoList: Double
+            let unknownCredit: Double
+            let upfMarkers: [BreadConfig.UPFMarker]
+        }
+        struct S6: Codable { let polyolLoadG: [Double]; let polyolLoadFactors: [Double] }
+        struct S14: Codable { let neutralTokenKw: [String]; let neutralIsolateMarkers: [String] }
+        let gate: Gate
+        let serving: Serving
+        let s12: S12
+        let s3: S3
+        let s2: S2
+        let s1ExemptSignals: [String]
+        let s6: S6
+        let sodiumMaxPlausibleMg: Double
+        let s14: S14
+    }
+    var proteinBars: ProteinBarConfig? = nil
+
     // S13 — beneficial micronutrient credit (positive-only). NRF-style: each
     // present nutrient contributes min(cap, %DV per 100g); the capped sum is
     // normalized by `target`. Optional so an older ruleset falls back to unknown.
@@ -1367,7 +1445,21 @@ enum ScoringEngineV4 {
             if entry.profile == "eggs", !passesEggGuard(p, rs: rs) {
                 continue
             }
+            // V5.5: OFF's `protein-bars` tag is inherited by protein powders
+            // and shakes — only bar-shaped compositions take the profile.
+            if entry.profile == "protein_bars", !ProteinBarScoring.passesGuard(p, rs: rs) {
+                continue
+            }
             var profile = entry.profile
+            // V5.5 evidence gate — a bar marketed on / built around protein
+            // scores as a protein bar even when OFF only tagged it `snacks` /
+            // `cereal-bars` (most US protein bars carry no `protein-bars` tag).
+            if ProteinBarScoring.fallbackProfiles(rs).contains(profile),
+               ProteinBarScoring.hasProteinBarEvidence(p, rs: rs) {
+                logEvidenceRerail(p, attempted: profile, used: "protein_bars",
+                                  gate: "proteinBarEvidence")
+                return "protein_bars"
+            }
             // Fix 5 — plain water tags with flavor evidence score as drinks.
             if profile == "unsupported",
                isWatersFamilyRouterMatch(entry.match, rs: rs),
@@ -1391,6 +1483,12 @@ enum ScoringEngineV4 {
         if hasEggEvidence(p, rs: rs) {
             logEvidenceRerail(p, attempted: "general", used: "eggs", gate: "eggEvidence")
             return "eggs"
+        }
+        // V5.5 — untagged protein bars (OFF US imports with no categories).
+        if ProteinBarScoring.fallbackProfiles(rs).contains("general"),
+           ProteinBarScoring.hasProteinBarEvidence(p, rs: rs) {
+            logEvidenceRerail(p, attempted: "general", used: "protein_bars", gate: "proteinBarEvidence")
+            return "protein_bars"
         }
         return applyRoutingPlausibility(p, attempted: "general", rs: rs)
     }
@@ -1417,6 +1515,9 @@ enum ScoringEngineV4 {
             // V5.3: the `eggs` tag is inherited by scotch eggs, egg pasta and
             // egg dishes — only egg-dominant products take the eggs profile.
             if entry.profile == "eggs", !passesEggGuard(p, rs: rs) {
+                continue
+            }
+            if entry.profile == "protein_bars", !ProteinBarScoring.passesGuard(p, rs: rs) {
                 continue
             }
             if entry.profile == "drinks", DrinksScoring.qualifiesAsJuice100(p) {
@@ -1563,7 +1664,9 @@ enum ScoringEngineV4 {
         let isolateProfiles: Set<String> = rs.isV510
             ? Set(rs.profiles.keys.filter(isFoodProfile))
             : ["ice_cream"]
-        if isolateProfiles.contains(profileId),
+        // V5.5: never on protein bars — isolated protein is the product's
+        // purpose and the S12 `proteinBar` variant scores its quality directly.
+        if isolateProfiles.contains(profileId), profileId != "protein_bars",
            IngredientIntegrity.hasIsolateProtein(ingredientsText: p.ingredientsText),
            let idx = results.firstIndex(where: { $0.rule == "S12" }) {
             let r = results[idx]
@@ -1639,12 +1742,21 @@ enum ScoringEngineV4 {
                                  profileId: String = "general") -> (Double, Bool, String?) {
         switch rule {
         case "S1":
-            let r = s1(p, rs: rs); return (r.0, r.1, nil)
+            // V5.5: on protein bars the isolate text signals are the protein
+            // source, not an additive — S12 `proteinBar` judges them instead.
+            let exempt: Set<String> = profileId == "protein_bars"
+                ? Set(rs.proteinBars?.s1ExemptSignals ?? []) : []
+            let r = s1(p, rs: rs, exemptSignals: exempt); return (r.0, r.1, nil)
         case "S2":
             // V5.4: bread processing is read off the ingredient list (marker
             // families), not OFF's NOVA tag — see BreadScoring.s2Credit.
             if variant == "bread", let cfg = rs.bread {
                 return BreadScoring.s2Credit(p, cfg: cfg)
+            }
+            // V5.5: protein bars are NOVA 4 by construction; marker families
+            // separate an egg-white-and-nut bar from a candy-bar build.
+            if variant == "proteinBar", let cfg = rs.proteinBars {
+                return ProteinBarScoring.s2Credit(p, cfg: cfg)
             }
             let r = s2(p); return (r.0, r.1, nil)
         case "S3":
@@ -1656,6 +1768,12 @@ enum ScoringEngineV4 {
             if variant == "bread", let cfg = rs.bread, BreadScoring.sodiumIsImplausible(p, cfg: cfg) {
                 return (0.30, false, "S4 bread: sodium implausible for a salted bread → unknown")
             }
+            // V5.5: a bar declaring more sodium than table-salt-level food is
+            // a unit error (field QA: 161 538 mg/100 g), not a salty bar.
+            if variant == "proteinBar", let cfg = rs.proteinBars,
+               let na = p.nutrients.sodium_mg, na > cfg.sodiumMaxPlausibleMg {
+                return (0.30, false, "S4 protein bar: sodium implausible → unknown")
+            }
             let r = stepped(p.nutrients.sodium_mg, thresholds: thresholds,
                             unknownCredit: 0.30)
             return (r.0, r.1, nil)
@@ -1666,6 +1784,11 @@ enum ScoringEngineV4 {
                             unknownCredit: 0.40)
             return (r.0, r.1, nil)
         case "S6":
+            // V5.5: protein bars take the drinks sweetener tiers plus a
+            // declared-polyol load dock.
+            if variant == "proteinBar", let cfg = rs.proteinBars {
+                return ProteinBarScoring.s6Credit(p, cfg: cfg)
+            }
             // Legacy path — drinks profile uses DrinksScoring.s6Credit instead.
             let r = DrinksScoring.s6Credit(p); return (r.0, r.1, nil)
         case "S7":
@@ -1706,11 +1829,22 @@ enum ScoringEngineV4 {
                 let r = BreadScoring.s12GrainCredit(p, cfg: cfg)
                 return (r.0, r.1, "grain: " + r.2)
             }
+            // V5.5: protein bars score protein delivery (amount per serving +
+            // share of energy, source quality) and fiber — no fruit/veg axis.
+            if variant == "proteinBar", let cfg = rs.proteinBars {
+                let r = ProteinBarScoring.s12Credit(p, cfg: cfg)
+                return (r.0, r.1, "proteinBar: " + r.2)
+            }
             let r = s12(p, variant: variant); return (r.0, r.1, nil)
         case "S13":
             if variant == "egg" { return s13Egg(p, rs: rs) }
             let r = s13(p, rs: rs); return (r.0, r.1, nil)
         case "S14":
+            // V5.5: protein sources are neutral in a protein bar's real-food
+            // ratio — neither whole food nor a dock.
+            if variant == "proteinBar", let cfg = rs.proteinBars {
+                return ProteinBarScoring.s14Credit(p, cfg: cfg)
+            }
             let r = s14(p); return (r.0, r.1, nil)
         case "S15":
             return s15(p)
@@ -1898,15 +2032,14 @@ enum ScoringEngineV4 {
 
     // MARK: S1 — ingredient & additive risk
 
-    private static func s1(_ p: Product, rs: RulesetV4) -> (Double, Bool) {
-        // Whole-food bypass: NOVA 1–2 + no additives + no textSignals → clean,
-        // even when ingredients_text is missing (single-ingredient produce).
+    private static func s1(_ p: Product, rs: RulesetV4,
+                           exemptSignals: Set<String> = []) -> (Double, Bool) {
         // Whole-food bypass: NOVA 1–2 + no additives + no textSignals → clean,
         // even when ingredients_text is missing (single-ingredient produce).
         let additivesEmpty = p.additives.isEmpty
         let textHit: Bool = {
             guard let text = p.ingredientsText?.lowercased() else { return false }
-            return rs.textSignals.keys.contains { text.contains($0) }
+            return rs.textSignals.keys.contains { !exemptSignals.contains($0) && text.contains($0) }
         }()
         if (1...2).contains(p.novaGroup), additivesEmpty, !textHit {
             return (1.0, true)
@@ -1931,7 +2064,7 @@ enum ScoringEngineV4 {
         // Text-detected signals (HFCS, artificial/natural flavors) — things
         // OFF's additive tagger doesn't cover. One hit per signal.
         if let text = p.ingredientsText?.lowercased() {
-            for (needle, tier) in rs.textSignals where text.contains(needle) {
+            for (needle, tier) in rs.textSignals where !exemptSignals.contains(needle) && text.contains(needle) {
                 if let fraction = rs.tierFractions[tier] { penalties.append(fraction) }
             }
         }
@@ -2086,6 +2219,11 @@ enum ScoringEngineV4 {
         let thresholds = rs.s3Thresholds[variant] ?? rs.s3Thresholds["foods"]!
         // plant_milk etc. still use per-100 ml `drinks` thresholds.
         let useDrinksFvnCap = isDrinksVariant
+        // V5.5 protein bars: date paste / dried fruit is free sugar in the UK
+        // (SACN / PHE) definition and at best borderline in WHO's — at least
+        // half of it counts, however high the fruit/nut share.
+        let isProteinBar = profileId == "protein_bars"
+        let fvnDiscountCap: Double = isProteinBar ? (rs.proteinBars?.s3.fvnDiscountCap ?? 0.5) : 1
 
         let result: (Double, Bool)
         if let added = p.nutrients.addedSugar_g, added > 0 {
@@ -2101,7 +2239,7 @@ enum ScoringEngineV4 {
             if useDrinksFvnCap {
                 discount = min(0.30, fvn / 100)
             } else {
-                discount = min(1, fvn / 100)
+                discount = min(fvnDiscountCap, fvn / 100)
             }
             let effective = total * (1 - discount)
             result = stepped(effective, thresholds: thresholds, unknownCredit: 0.25)
@@ -2118,8 +2256,9 @@ enum ScoringEngineV4 {
             return (min(f, 0.30), result.1, nil)
         }
 
-        // V5.1.0 — sweetener-substitution cap (foods only).
-        if rs.isV510, isFoodProfile(profileId), !isDrinksProfile {
+        // V5.1.0 — sweetener-substitution cap (foods only). V5.5: not on
+        // protein bars — their S6 rule grades the sweetener system itself.
+        if rs.isV510, isFoodProfile(profileId), !isDrinksProfile, !isProteinBar {
             let sweets = IngredientIntegrity.sweetenerSystemMatches(
                 ingredientsText: p.ingredientsText)
             if !sweets.isEmpty {

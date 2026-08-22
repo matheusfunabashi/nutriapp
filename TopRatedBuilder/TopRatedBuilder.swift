@@ -22,9 +22,12 @@ private struct CandidateEntry: Decodable {
     let dataProblems: [String]?
     /// Markets this row was pulled for (`us` / `br`).
     let countries: [String]?
+    /// V5.5 — OFF `serving_size`; protein-bar S12 scores protein per serving.
+    let servingSize: String?
 
     enum CodingKeys: String, CodingKey {
         case barcode, countries
+        case servingSize = "serving_size"
         case offName = "off_name"
         case offBrands = "off_brands"
         case ingredientsText = "ingredients_text"
@@ -45,7 +48,8 @@ private struct CandidateEntry: Decodable {
             nutriments: nutriments, nutriscoreGrade: nutriscoreGrade,
             novaGroup: novaGroup, imageURL: imageURL,
             categoriesTags: categoriesTags, labelsTags: labelsTags,
-            dataProblems: dataProblems, countries: countries)
+            dataProblems: dataProblems, countries: countries,
+            servingSize: servingSize)
     }
 }
 
@@ -110,9 +114,11 @@ private struct AltCandidate: Encodable {
     let labelsTags: [String]?
     let nutriments: OFFNutriments?
     let countries: [String]?
+    let servingSize: String?
 
     enum CodingKeys: String, CodingKey {
         case barcode, name, brand, nutriments, countries
+        case servingSize = "serving_size"
         case imageURL = "image_url"
         case precomputedScore = "precomputed_score"
         case categoriesTags = "categories_tags"
@@ -219,7 +225,8 @@ enum TopRatedBuilder {
                         novaGroup: entry.novaGroup,
                         imageURL: entry.imageURL,
                         categoriesTags: entry.categoriesTags,
-                        labelsTags: entry.labelsTags
+                        labelsTags: entry.labelsTags,
+                        servingSize: entry.servingSize
                     )
 
                     switch ScoringEngineV4.scoreProduct(raw, for: profile, ruleset: ruleset) {
@@ -407,7 +414,8 @@ enum TopRatedBuilder {
             nutriscoreGrade: item.entry.nutriscoreGrade,
             labelsTags: item.entry.labelsTags,
             nutriments: item.entry.nutriments,
-            countries: item.entry.countries)
+            countries: item.entry.countries,
+            servingSize: item.entry.servingSize)
     }
 
     private static func dedupe(_ items: [ScoredCandidate], stats: inout CategoryStats) -> [ScoredCandidate] {

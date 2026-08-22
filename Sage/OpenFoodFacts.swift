@@ -244,7 +244,8 @@ struct OpenFoodFactsService {
                              novaGroup: Int?,
                              imageURL: String?,
                              categoriesTags: [String]?,
-                             labelsTags: [String]?) -> Product {
+                             labelsTags: [String]?,
+                             servingSize: String? = nil) -> Product {
         let off = OFFProduct(
             productName: name,
             brands: brands,
@@ -257,7 +258,9 @@ struct OpenFoodFactsService {
             // Curated / candidate URLs are typically front-of-pack.
             imageFrontUrl: imageURL,
             imageUrl: imageURL,
-            labelsTags: labelsTags
+            labelsTags: labelsTags,
+            // V5.5: protein-bar S12 scores protein per serving.
+            servingSize: servingSize
         )
         return map(off, barcode: barcode)
     }
@@ -295,7 +298,9 @@ struct OpenFoodFactsService {
             vitaminB12_ug: plausible(n?.vitaminB12.map { $0 * 1_000_000 }, max: 50),
             choline_mg: plausible(n?.choline.map { $0 * 1000 }, max: 2000),
             selenium_ug: plausible(n?.selenium.map { $0 * 1_000_000 }, max: 500),
-            omega3_g: plausible(n?.omega3, max: 30)
+            omega3_g: plausible(n?.omega3, max: 30),
+            // V5.5 — polyols per 100 g (protein-bar S6 polyol-load dock).
+            polyols_g: plausible(n?.polyols, max: 100)
         )
 
         let additivesScan = scanAdditives(off)
@@ -808,6 +813,8 @@ struct OFFNutriments: Codable {
     let choline: Double?
     let selenium: Double?
     let omega3: Double?
+    /// V5.5 — declared sugar alcohols (EU "of which polyols"), g/100 g.
+    let polyols: Double?
 
     enum CodingKeys: String, CodingKey {
         case sugars = "sugars_100g"
@@ -834,6 +841,7 @@ struct OFFNutriments: Codable {
         case choline = "choline_100g"
         case selenium = "selenium_100g"
         case omega3 = "omega-3-fat_100g"
+        case polyols = "polyols_100g"
     }
 
     init(from decoder: Decoder) throws {
@@ -868,6 +876,7 @@ struct OFFNutriments: Codable {
         choline = value(.choline)
         selenium = value(.selenium)
         omega3 = value(.omega3)
+        polyols = value(.polyols)
     }
 
     func encode(to encoder: Encoder) throws {
@@ -895,5 +904,6 @@ struct OFFNutriments: Codable {
         try c.encodeIfPresent(choline, forKey: .choline)
         try c.encodeIfPresent(selenium, forKey: .selenium)
         try c.encodeIfPresent(omega3, forKey: .omega3)
+        try c.encodeIfPresent(polyols, forKey: .polyols)
     }
 }
