@@ -59,7 +59,7 @@ struct V510HotfixTests {
     }
 
     @Test func rulesetIsV510AndSums100() {
-        #expect(rs510.version == "2026.08-v5.3.0")
+        #expect(rs510.version == "2026.08-v5.4.0")
         #expect(rs510.isV510)
         #expect(rs509.version == "2026.07-v5.0.9")
         #expect(!rs509.isV510)

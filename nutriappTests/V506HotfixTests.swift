@@ -48,7 +48,7 @@ struct V506HotfixTests {
 
     @Test func rulesetIsV506() throws {
         // Structural weight asserts still hold under V5.0.7; version bumped.
-        #expect(rs.version == "2026.08-v5.3.0")
+        #expect(rs.version == "2026.08-v5.4.0")
         let wf = try #require(rs.profiles["whole_foods"])
         #expect(wf.contains { $0.rule == "S5" && $0.w == 10 })
         #expect(wf.first { $0.rule == "S2" }?.w == 24)

@@ -40,8 +40,46 @@ enum IngredientIntegrity {
 
     /// Split ingredient text into tokens (comma / bullet / semicolon).
     /// Parenthetical asides are stripped (not flattened into the token).
+    /// Trailing allergen / advisory statements are not ingredients
+    /// ("…, Malted Wheat Flour. ALLERGEN ADVICE: …", "Contains: Wheat, Sesame").
+    static func strippingTrailingStatements(_ text: String) -> String {
+        let lower = text.lowercased()
+        var cut = lower.endIndex
+        for marker in ["allergen advice", "allergy advice", "allergen information",
+                       "may contain", "contains:", "contém:", "contiene:", "contient:",
+                       "kann spuren", "pode conter", "può contenere", "peut contenir",
+                       // Back-of-pack boilerplate pasted after the list.
+                       "if you have any questions", "questions or comments", "please call",
+                       "write to us", "consumer relations", "distributed by", "manufactured by",
+                       "manufactured for", "produced for", "packed for", "best before",
+                       "store in a cool", "keep refrigerated", "ingrédients :", "ingrédients:",
+                       "ingredientes:", "ingredienti:", "zutaten:"] {
+            if let r = lower.range(of: marker), r.lowerBound < cut { cut = r.lowerBound }
+        }
+        return cut == lower.endIndex ? text : String(text[..<cut])
+    }
+
+    /// False when the field holds marketing prose rather than a list: long
+    /// sentences (≥ 9 words per token) *and* second-person / brand-voice words
+    /// ("your favorite sandwich", "we honor", "let's salute"). Punctuation-poor
+    /// OCR lists ("Cocoa mass Sugar Cocoa butter Soy lecithin") are long but
+    /// have no such words and must stay lists.
+    static func looksLikeIngredientList(_ text: String?) -> Bool {
+        guard let text = text?.trimmingCharacters(in: .whitespacesAndNewlines), !text.isEmpty else { return false }
+        let parts = tokens(from: text)
+        guard !parts.isEmpty else { return false }
+        let words = parts.reduce(0) { $0 + $1.split(separator: " ").count }
+        let avg = Double(words) / Double(parts.count)
+        guard parts.count <= 10, avg >= 9 else { return true }
+        let lower = text.lowercased()
+        let voice = ["you", "your", "we", "our", "us", "let's", "every", "enjoy", "perfect",
+                     "delicious", "proud", "tradition", "favorite", "favourite", "birthday"]
+        let hits = voice.filter { lower.range(of: #"\b\#($0)\b"#, options: .regularExpression) != nil }.count
+        return hits < 2
+    }
+
     static func tokens(from text: String) -> [String] {
-        var cleaned = text
+        var cleaned = strippingTrailingStatements(text)
         while let open = cleaned.range(of: "("),
               let close = cleaned.range(of: ")", range: open.upperBound..<cleaned.endIndex) {
             cleaned.removeSubrange(open.lowerBound..<close.upperBound)
@@ -80,7 +118,27 @@ enum IngredientIntegrity {
         "pasture-raised", "pastured", "barn", "hen", "liquid", "hard boiled",
         "hard-boiled", "boiled", "cooked", "large", "medium", "grade aa",
         "usda grade a", "usda grade aa",
+        // V5.4 bread qualifiers — milling / fortification words that leave the
+        // flour itself unchanged ("unbleached enriched wheat flour" is wheat
+        // flour; "stone ground whole wheat flour" is whole wheat flour).
+        // "bleached" is deliberately not strippable (a chemical treatment).
+        "unbleached", "enriched", "fortified", "stone ground", "stone-ground",
+        "stoneground", "sprouted", "toasted", "cracked", "rolled", "malted",
+        "kibbled", "sifted", "untreated", "filtered", "sea", "kosher",
     ]
+
+    /// Plain water is not an ingredient to judge (Oasis excludes it too); it
+    /// is dropped from the S14 whole-food ratio so "whole wheat flour, water,
+    /// salt" is not 1/3 real food. Other liquids (milk, oil) stay.
+    private static let waterTokens: Set<String> = [
+        "water", "filtered water", "purified water", "spring water", "artesian water",
+        "artesian spring water", "carbonated water", "sparkling water", "eau", "acqua",
+        "água", "agua", "wasser", "aqua",
+    ]
+
+    static func isWaterToken(_ token: String) -> Bool {
+        waterTokens.contains(token) || waterTokens.contains { token.hasPrefix($0 + " ") }
+    }
 
     /// Exact whitelist match, or ingredient that starts with a multi-word whitelist entry.
     /// Avoids loose substring hits (e.g. "powdered sugar" ≠ "sugar").
@@ -119,8 +177,11 @@ enum IngredientIntegrity {
                              sweetenerMatches: [], isolateMatches: [])
         }
 
-        let parts = tokens(from: raw)
-        let count = parts.count
+        // V5.4: water is excluded from the whole-food ratio (never from the
+        // ingredient count — a long list is still a long list).
+        let allParts = tokens(from: raw)
+        let parts = allParts.filter { !isWaterToken($0) }
+        let count = allParts.count
         guard count > 0 else {
             return Breakdown(fraction: 0, hadData: false, wholeFoodRatio: 0, countScore: 0,
                              sweetenerScore: 0, isolateScore: 0, ingredientCount: 0,
@@ -128,7 +189,7 @@ enum IngredientIntegrity {
         }
 
         let wholeHits = parts.filter(isWholeFood).count
-        let wholeFoodRatio = Double(wholeHits) / Double(count)
+        let wholeFoodRatio = parts.isEmpty ? 0 : Double(wholeHits) / Double(parts.count)
 
         let countScore: Double
         switch count {
@@ -174,8 +235,13 @@ enum IngredientIntegrity {
     static func hasIsolateProtein(ingredientsText: String?) -> Bool {
         let b = evaluate(ingredientsText: ingredientsText)
         guard b.hadData else { return false }
+        // V5.4: "concentrate" alone caught "raisin juice concentrate" / "apple
+        // juice concentrate" and halved S12 on breads and bars that contain no
+        // isolate protein at all — only *protein* concentrates qualify.
         let proteinish = ["isolate", "isolado", "isolato", "whey protein", "milk protein",
-                          "soy protein", "protein blend", "concentrado", "concentrate"]
+                          "soy protein", "protein blend", "protein concentrate",
+                          "proteína concentrada", "concentrado de proteína",
+                          "concentrato di proteine", "proteine concentrate"]
         let hay = (ingredientsText ?? "").lowercased()
         return proteinish.contains { hay.contains($0) }
     }

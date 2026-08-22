@@ -82,7 +82,7 @@ struct V502HotfixTests {
         let ch = try #require(ScoringEngineV4.score(cheerios))
         #expect(nv.base <= 50)
         #expect(ch.base == 58)
-        #expect(ch.profileId == "breads")
+        #expect(ch.profileId == "grains")   // V5.4: grain-staples profile renamed
     }
 
     @Test func fatsProfileRoutingAndCalibration() throws {
