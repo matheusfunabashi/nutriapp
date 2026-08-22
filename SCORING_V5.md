@@ -334,6 +334,146 @@ testing badges (not health pathways), and ignoring the panel — fiber per
   (invalidated by the migration flag). `RulesetV509.json` untouched (kill
   switch keeps bread on the frozen `breads` grains profile).
 
+## V5.4.0 Bread (dedicated profile)
+
+Bread used to ride the shared `breads` grains profile (cereals, pasta, rice,
+oats, flours — renamed **`grains`** in this release so it cannot be confused
+with `bread`) and the shipped shelf compressed into **50–75**: Mestemacher
+whole-kernel rye (rye, water, salt, yeast) scored 69, white sourdoughs made
+from fortified refined flour 65–71, Wonder white 50, and brioche (6 g sat fat,
+10 g sugar) outscored plain sourdough. Four structural causes, found with the
+CLI harness over the 96-product shelf, 27 archetype fixtures and ~400 real
+OFF records (US / UK / FR / DE / CA):
+
+1. **`wholeGrain` was a binary keyword hit** on name + ingredients + tags —
+   2 % rye flour in a white sourdough, "sprouted", "oat" (also matching
+   "goat"), or a `whole-wheat-breads` tag earned the full 12 points; 85 / 96
+   shelf breads scored 1.0 on it.
+2. **Generic S12** spends 40 % on protein per kcal against a 15 g/100 kcal
+   anchor (bread: ~3.5) and 25 % on fruit/veg share (bread: 0) — the
+   fiber axis that the whole-grain literature actually runs on carried 35 %
+   of 12 points.
+3. **S2 read OFF's NOVA tag**, which is noisy on bread (an M&S baguette
+   tagged NOVA 1; Ezekiel tagged 3 on one barcode and 4 on the next), and
+   NOVA 3 is the *best* class a traditional bread can be (flour + water +
+   salt + leaven is group 3 by definition), so every honest loaf lost 9.6
+   points with zero discrimination among them.
+4. **S14's whitelist accepted refined "wheat flour" but not "whole wheat
+   flour"** (the `whole` prefix is deliberately not strippable), counted
+   water as a non-real ingredient, and treated "raisin juice concentrate"
+   as an isolate protein (S12 ×0.5). US enriched flour's niacin and
+   riboflavin were also S1 penalties (E375 / E101 resolved to the knowledge
+   base's "low" risk → mild tier) — ~3 points on every US loaf for vitamins.
+
+Oasis' bread methodology (SCR_BREADS v4.7.0) is 85 % amount-weighted
+ingredient grades (A whole / B refined / C filler / D engineered, with caps
+for C/D ingredients and industrial oils), 15 % packaging, 15 % sourcing
+signals, lab testing as a badge — and **no nutrition panel at all** (no
+fiber, no salt, no sugar). What Sage borrows is the *amount-ordered* reading
+of the label (first ingredients weigh most; declared percentages override
+position; water excluded from the ratio; added vitamins/minerals neutral).
+What Sage deliberately does not: packaging, sourcing certifications and
+testing badges (not health pathways), and ignoring the panel — fiber per
+100 g, sodium and sat fat are exactly where bread health evidence lives
+(DGA whole-grain guidance, Nutri-Score 2023 bread fiber/salt points, UK
+2024 salt targets).
+
+- **`bread` profile** — S1 16, S2 14 (`bread`), wholeGrain 16 (`bread`),
+  S12 14 (`grain`), S3 10 (`bread` 2 / 6 / 12 g), S4 12 (`bread`), S5 6,
+  S14 8, S15 4. **No S13**: the micronutrients that whole grains actually
+  deliver (Mg, Zn, Se) are almost never declared, so the rule could only
+  ever reward fortified white flour (UK mandatory calcium/iron) — which
+  would rank white above whole. S5 added (brioche, naan, shortening
+  tortillas have real sat fat; plain bread trivially scores 1.0). Routing:
+  all bread tags (`breads` + white / whole-wheat / whole-grain / sliced /
+  special / flat / baguettes / sandwich / buns / bagels / toasts / rye /
+  sourdough / pita / tortillas / wraps / naans / crispbreads / english
+  muffins / rolls / ciabattas / focaccias / brioches / pumpernickel) →
+  `bread`; cereals, pasta, rice, oats and flours **stay on the grains
+  profile** (`breads` → `grains`, rules and weights untouched).
+- **wholeGrain `bread` (graded, `BreadScoring.wholeGrainShare`)** — grain
+  tokens are classified whole / partial (0.5: rye flour, spelt flour,
+  barley, cornmeal, bran, ancient-grain flours) / refined from a
+  multilingual vocabulary (EN / FR / DE / IT / ES / PT / NL / SE); non-grain
+  tokens (gluten, malt extract, seeds, nut flours, yeast…) are ignored.
+  Parenthetical sub-lists are read ("Grains (whole kernel rye, whole grain
+  rye flour)"; "rye (flour, bran)" → rye flour, rye bran), weights are
+  rank-halving × list position, and a **declared percentage overrides**
+  position ("Sprouted Whole Spelt (2.5 %)" is a 2.5 % weight; Hovis
+  Granary's 11 % malted wheat flakes on white flour → 0.07). A regulated /
+  explicit front-label claim ("100 % whole wheat", UK "wholemeal") lifts a
+  whole-first list to 0.9 — never a refined-first one. **Fiber
+  cross-check**: a whole-first list declaring < 3.5 g fiber is capped at
+  0.35 (brown-washing or label error), < 5 g at 0.7. No list → tag / name
+  prior 0.6 / 0.2, unknown-tier.
+- **S2 `bread` (evidence-based, `BreadScoring.s2Credit`)** — 16
+  ultra-processing **marker families** (HFCS / glucose syrups, modified
+  starch, mono-/diglycerides, DATEM, stearoyl lactylates, lecithin,
+  polysorbates, gums & thickeners, dough conditioners, flavors, colors,
+  sweeteners, protein isolates, hydrogenated / interesterified fat, flavor
+  enhancers, bulking fibers), matched by text phrase *or* additive code and
+  counted once per family. 0 families → **0.70** (traditional NOVA 3 — the
+  ceiling for bread, deliberately above the generic 0.40); 1 → 0.40; 2 →
+  0.25; 3 → 0.12; 4+ → 0. Preservatives (calcium propionate, sorbic acid,
+  vinegar, cultured wheat flour), ascorbic acid, enzymes, raising agents,
+  UK flour fortification and **vital wheat gluten** are not markers
+  (strict NOVA would count gluten; the UPF cohort evidence for bread is
+  weak — Cordova 2023 EPIC, Chen 2024 BMJ — and gluten is in nearly every
+  US whole-wheat loaf, so counting it would penalise the whole-grain
+  category wholesale without an outcome behind it). No list → OFF NOVA,
+  capped at 0.70 (a bread tagged NOVA 1 is a data error).
+- **S12 `grain`** — `0.7 · fiberCredit + 0.3 · proteinCredit`; fiber per
+  100 g linear 1.5 g → 0, 7 g → 1 (Nutri-Score 2023 tops out at 7.4 g;
+  white 2–2.7, whole wheat 6–7, whole rye 8+, crispbread 15+); protein
+  /12 g. Isolated fibers (oat fiber, cellulose, polydextrose, inulin,
+  resistant starch…) on a non-whole base earn half (FDA 2016: weaker
+  evidence than intrinsic cereal fiber) — a 45-calorie cellulose loaf does
+  not out-fiber whole wheat. Fiber undeclared → prior 0.55 / 0.20 from the
+  whole-grain evidence, unknown-tier. No kcal axis, so the kcal confidence
+  haircut does not apply. Overview topic **"fiber and protein"**.
+- **S4 `bread`** — anchors 200 / 450 / 700 mg (UK 2024 target 1.0 g salt =
+  400 mg; typical loaves 380–600): 300 mg → 0.84, 450 → 0.60, 600 → 0.42,
+  700 → 0.30. Bread is the top dietary sodium source, hence weight 12.
+  **Plausibility guard**: sodium < 40 mg on a loaf that lists salt (OFF
+  "salt 0.001 g") → unknown 0.30, never full credit; an unsalted corn
+  tortilla at 45 mg keeps 1.0.
+- **Generic fixes (all profiles)** — S14 whitelist gains whole-grain
+  flours / rye / spelt / oats / seeds / yeast / sourdough / vinegar / malt
+  / semolina in eight languages; strippable qualifiers gain unbleached /
+  enriched / fortified / stone ground / sprouted / toasted / rolled /
+  malted…; **water is excluded from the whole-food ratio** (not from the
+  count); `hasIsolateProtein` requires *protein* concentrate;
+  `tokens(from:)` cuts trailing allergen / back-of-pack boilerplate
+  ("Allergen advice", "Contains:", "If you have any questions…");
+  marketing prose in the ingredients field (≥ 9 words per token *and*
+  brand-voice words) is treated as missing; **nutrient fortificants**
+  (E101, E375, E300, E170, E306/307) are `exempt` in S1 regardless of the
+  knowledge-base display risk. Shelf drift outside bread: 511 / 1 776
+  products move, all +1…+7 (pasta mean +5: durum semolina is real food;
+  cereal +3.6: oats), one garbage-list bar −21 → unknown-tier; no routing
+  changes outside bread.
+- **Calibration (fixtures + real OFF):** Ezekiel sprouted 94, corn tortilla
+  92, seeded whole-grain loaf 90, Wasa rye crispbread 90, Mestemacher whole
+  rye 88, whole-wheat pita 88, pumpernickel 87, whole-wheat sourdough 87,
+  Dave's 21 Whole Grains 83 (11 g sugar), Silver Hills soft wheat 76,
+  Nature's Own 100 % whole wheat 64 (DATEM / monoglycerides / soybean
+  oil), white sourdough 63, baguette / white pita 61, plain bagel 59,
+  brioche 58, naan 56, gluten-free starch bread 45, Hawaiian rolls 39,
+  light cellulose bread 39, brown-washed "honey wheat" 36, keto isolate
+  bread 34, Wonder white 33, mass-market flour tortilla 33. Real shelf:
+  44–94 (was 50–75), mean 75; UK supermarket white sourdoughs 62–70,
+  Warburtons / Hovis sliced whites 37–44, Schär gluten-free 52–57, Mission
+  flour tortillas 23–35. Tests: `BreadScoringV54Tests`.
+- **Deliberately not scored:** sourdough fermentation (GI / phytate
+  evidence is modest and "sourdough" is an unregulated marketing word —
+  a clean levain list already earns the traditional S2 credit), organic,
+  packaging, sourcing, lab testing, glycemic index (not on labels),
+  "ancient grain" marketing (spelt / einkorn / kamut flours are partial
+  credit unless labelled whole).
+- `rulesetV540Rescored` one-shot migration; overview cache stays `exp-v9`
+  (invalidated by the migration flag). `RulesetV509.json` untouched (kill
+  switch keeps bread on the frozen `breads` grains profile).
+
 ## V5.3.0 Eggs (dedicated profile)
 
 Eggs used to route to `whole_foods` (fruit/veg blend). Its S12 is 80 %
