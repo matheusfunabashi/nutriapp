@@ -1,0 +1,3852 @@
+{
+  "countries": [
+    "us",
+    "uk",
+    "ca"
+  ],
+  "country": "multi",
+  "generated_at": "2026-08-21T22:14:38Z",
+  "ruleset_version": "2026.08-v5.3.0",
+  "shelves": {
+    "eggs": [
+      {
+        "additives_tags": [],
+        "barcode": "0715141514643",
+        "brand": "Egg-Land's Best",
+        "categories_tags": [
+          "en:eggs-and-their-products",
+          "en:farming-products",
+          "en:eggs"
+        ],
+        "countries": [
+          "us"
+        ],
+        "image_url": "https://images.openfoodfacts.org/images/products/071/514/151/4643/front_en.63.400.jpg",
+        "labels_tags": [
+          "en:kosher"
+        ],
+        "name": "Large Brown Eggs",
+        "nutriments": {
+          "added-sugars_100g": 0,
+          "caffeine_100g": 0,
+          "calcium_100g": 0.06,
+          "choline_100g": 0.3,
+          "energy-kcal_100g": 120,
+          "energy-kj_100g": 500,
+          "fiber_100g": 0,
+          "iron_100g": 0.0018,
+          "magnesium_100g": 0,
+          "potassium_100g": 0.06,
+          "proteins_100g": 12,
+          "salt_100g": 0.325,
+          "saturated-fat_100g": 2,
+          "selenium_100g": 8.8e-05,
+          "sodium_100g": 0.13,
+          "sugars_100g": 0,
+          "trans-fat_100g": 0,
+          "vitamin-c_100g": 0,
+          "vitamin-d_100g": 1.2e-05,
+          "zinc_100g": 0.0014
+        },
+        "nutriscore_grade": "a",
+        "precomputed_score": 99,
+        "image_quality": "good"
+      },
+      {
+        "additives_tags": [],
+        "barcode": "0715141116571",
+        "brand": "Egg-Land's Best",
+        "categories_tags": [
+          "en:eggs-and-their-products",
+          "en:farming-products",
+          "en:eggs",
+          "en:chicken-eggs",
+          "en:fresh-eggs",
+          "en:large-eggs"
+        ],
+        "countries": [
+          "us"
+        ],
+        "image_url": "https://images.openfoodfacts.org/images/products/071/514/111/6571/front_en.3.400.jpg",
+        "ingredients_text": "Egg",
+        "labels_tags": [
+          "en:kosher"
+        ],
+        "name": "Large Eggs",
+        "nova_group": 1,
+        "nutriments": {
+          "added-sugars_100g": 0,
+          "calcium_100g": 0.06,
+          "choline_100g": 0.23,
+          "energy-kcal_100g": 120,
+          "energy-kj_100g": 500,
+          "fiber_100g": 0,
+          "fruits-vegetables-nuts-estimate-from-ingredients_100g": 0,
+          "iron_100g": 0.002,
+          "potassium_100g": 0.14,
+          "proteins_100g": 12,
+          "salt_100g": 0.325,
+          "saturated-fat_100g": 2,
+          "selenium_100g": 4.4e-05,
+          "sodium_100g": 0.13,
+          "sugars_100g": 0,
+          "trans-fat_100g": 0,
+          "vitamin-d_100g": 1.6e-05,
+          "zinc_100g": 0.001
+        },
+        "nutriscore_grade": "a",
+        "precomputed_score": 99,
+        "image_quality": "good"
+      },
+      {
+        "additives_tags": [],
+        "barcode": "0862315000249",
+        "brand": "Vital Farms",
+        "categories_tags": [
+          "en:eggs-and-their-products",
+          "en:farming-products",
+          "en:eggs",
+          "en:chicken-eggs"
+        ],
+        "countries": [
+          "us"
+        ],
+        "image_url": "https://images.openfoodfacts.org/images/products/086/231/500/0249/front_en.83.400.jpg",
+        "ingredients_text": "Egg",
+        "labels_tags": [],
+        "name": "PASTURE RAISED 18 Large Eggs Grade A",
+        "nova_group": 1,
+        "nutriments": {
+          "added-sugars_100g": 0,
+          "calcium_100g": 0.06,
+          "choline_100g": 0.3,
+          "energy-kcal_100g": 140,
+          "energy-kj_100g": 574,
+          "fiber_100g": 0,
+          "fruits-vegetables-nuts-estimate-from-ingredients_100g": 0,
+          "iron_100g": 0.0018,
+          "potassium_100g": 0.14,
+          "proteins_100g": 12,
+          "salt_100g": 0.8,
+          "saturated-fat_100g": 3,
+          "sodium_100g": 0.14,
+          "sugars_100g": 0,
+          "trans-fat_100g": 0,
+          "vitamin-d_100g": 1.2e-05,
+          "zinc_100g": 0.0014
+        },
+        "nutriscore_grade": "b",
+        "precomputed_score": 99,
+        "image_quality": "good"
+      },
+      {
+        "additives_tags": [],
+        "barcode": "0064767343855",
+        "brand": "Conestoga farms",
+        "categories_tags": [
+          "en:eggs-and-their-products",
+          "en:farming-products",
+          "en:eggs",
+          "en:chicken-eggs",
+          "en:barn-chicken-eggs",
+          "en:fresh-eggs",
+          "en:large-eggs"
+        ],
+        "countries": [
+          "ca"
+        ],
+        "labels_tags": [],
+        "name": "Free run omega-3 large white eggs",
+        "nutriments": {
+          "calcium_100g": 0.0476190476190476,
+          "energy-kcal_100g": 152.380952380952,
+          "energy-kj_100g": 614.285714285714,
+          "iron_100g": 0.00166666666666667,
+          "omega-3-fat_100g": 0.761904761904762,
+          "potassium_100g": 0.119047619047619,
+          "proteins_100g": 12.3809523809524,
+          "salt_100g": 0.30952380952381,
+          "saturated-fat_100g": 3.33333333333333,
+          "sodium_100g": 0.123809523809524,
+          "vitamin-b12_100g": 2.28571428571429e-06,
+          "vitamin-d_100g": 1.42857142857143e-06
+        },
+        "nutriscore_grade": "unknown",
+        "precomputed_score": 99,
+        "image_quality": "good"
+      },
+      {
+        "additives_tags": [],
+        "barcode": "0715141716825",
+        "brand": "Egg-Land's Best Organic",
+        "categories_tags": [
+          "en:eggs-and-their-products",
+          "en:farming-products",
+          "en:eggs"
+        ],
+        "countries": [
+          "us"
+        ],
+        "image_url": "https://images.openfoodfacts.org/images/products/071/514/171/6825/front_en.66.400.jpg",
+        "labels_tags": [
+          "en:organic",
+          "en:kosher",
+          "en:usda-organic"
+        ],
+        "name": "Grade A Large Brown Eggs",
+        "nutriments": {
+          "added-sugars_100g": 0,
+          "choline_100g": 0.3,
+          "energy-kcal_100g": 120,
+          "energy-kj_100g": 500,
+          "fiber_100g": 0,
+          "iron_100g": 0.002,
+          "magnesium_100g": 0.012,
+          "potassium_100g": 0.14,
+          "proteins_100g": 12,
+          "salt_100g": 0.1625,
+          "saturated-fat_100g": 2,
+          "selenium_100g": 4.4e-05,
+          "sodium_100g": 0.13,
+          "sugars_100g": 0,
+          "trans-fat_100g": 0,
+          "vitamin-b12_100g": 2e-06,
+          "vitamin-d_100g": 1.2e-05,
+          "zinc_100g": 0.0014
+        },
+        "nutriscore_grade": "a",
+        "precomputed_score": 99,
+        "image_quality": "good"
+      },
+      {
+        "additives_tags": [],
+        "barcode": "0028621123717",
+        "brand": "Sunshine State",
+        "categories_tags": [
+          "en:eggs-and-their-products",
+          "en:farming-products",
+          "en:eggs",
+          "en:chicken-eggs",
+          "en:fresh-eggs",
+          "en:large-eggs"
+        ],
+        "countries": [
+          "us"
+        ],
+        "image_url": "https://images.openfoodfacts.org/images/products/002/862/112/3717/front_en.13.400.jpg",
+        "ingredients_text": "Eggs",
+        "labels_tags": [],
+        "name": "Cage Free Eggs",
+        "nova_group": 1,
+        "nutriments": {
+          "added-sugars_100g": 0,
+          "caffeine_100g": 0,
+          "calcium_100g": 0.056,
+          "choline_100g": 0,
+          "energy-kcal_100g": 140,
+          "energy-kj_100g": 574,
+          "fiber_100g": 0,
+          "fruits-vegetables-nuts-estimate-from-ingredients_100g": 0,
+          "iron_100g": 0.004,
+          "magnesium_100g": 0.03,
+          "potassium_100g": 0.19,
+          "proteins_100g": 12,
+          "salt_100g": 0.35,
+          "saturated-fat_100g": 3,
+          "selenium_100g": 0,
+          "sodium_100g": 0.14,
+          "sugars_100g": 0,
+          "trans-fat_100g": 0,
+          "vitamin-c_100g": 0,
+          "vitamin-d_100g": 5e-06,
+          "zinc_100g": 0.0014
+        },
+        "nutriscore_grade": "a",
+        "precomputed_score": 99,
+        "image_quality": "good"
+      },
+      {
+        "additives_tags": [],
+        "barcode": "00722704",
+        "brand": "Trader Joe's",
+        "categories_tags": [
+          "en:eggs-and-their-products",
+          "en:farming-products",
+          "en:eggs",
+          "en:chicken-eggs",
+          "en:free-range-chicken-eggs"
+        ],
+        "countries": [
+          "uk",
+          "us"
+        ],
+        "image_url": "https://images.openfoodfacts.org/images/products/000/000/072/2704/front_en.72.400.jpg",
+        "ingredients_text": "FRESH EGGS",
+        "labels_tags": [
+          "en:no-gluten",
+          "en:organic",
+          "en:usda-organic"
+        ],
+        "name": "Organic Pasture Raised Large Brown Eggs",
+        "nova_group": 1,
+        "nutriments": {
+          "added-sugars_100g": 0,
+          "choline_100g": 0,
+          "energy-kcal_100g": 140,
+          "energy-kj_100g": 574,
+          "fiber_100g": 0,
+          "fruits-vegetables-nuts-estimate-from-ingredients_100g": 0,
+          "proteins_100g": 12,
+          "salt_100g": 0.35,
+          "saturated-fat_100g": 3,
+          "sodium_100g": 0.14,
+          "sugars_100g": 0,
+          "trans-fat_100g": 0
+        },
+        "nutriscore_grade": "a",
+        "precomputed_score": 98,
+        "image_quality": "low"
+      },
+      {
+        "additives_tags": [],
+        "barcode": "0681131122771",
+        "brand": "MARKETSIDE",
+        "categories_tags": [
+          "en:eggs-and-their-products",
+          "en:farming-products",
+          "en:eggs"
+        ],
+        "countries": [
+          "us"
+        ],
+        "image_url": "https://images.openfoodfacts.org/images/products/068/113/112/2771/front_en.34.400.jpg",
+        "ingredients_text": "eggs",
+        "labels_tags": [
+          "en:no-gluten",
+          "en:organic",
+          "en:certified-by-ecocert",
+          "en:usda-organic"
+        ],
+        "name": "CAGE FREE 12 LARGE BROWN EGGS",
+        "nova_group": 1,
+        "nutriments": {
+          "added-sugars_100g": 0,
+          "calcium_100g": 0.06,
+          "choline_100g": 0,
+          "energy-kcal_100g": 140,
+          "energy-kj_100g": 574,
+          "fruits-vegetables-nuts-estimate-from-ingredients_100g": 0,
+          "iron_100g": 0.0018,
+          "potassium_100g": 0.002,
+          "proteins_100g": 12,
+          "salt_100g": 0.35,
+          "saturated-fat_100g": 3,
+          "sodium_100g": 0.14,
+          "vitamin-d_100g": 0.06
+        },
+        "nutriscore_grade": "unknown",
+        "precomputed_score": 98,
+        "image_quality": "good"
+      },
+      {
+        "additives_tags": [],
+        "barcode": "5060002470169",
+        "brand": "Ellis Eggs",
+        "categories_tags": [
+          "en:eggs-and-their-products",
+          "en:farming-products",
+          "en:eggs",
+          "en:chicken-eggs",
+          "en:free-range-chicken-eggs"
+        ],
+        "countries": [
+          "uk"
+        ],
+        "image_url": "https://images.openfoodfacts.org/images/products/506/000/247/0169/front_en.3.400.jpg",
+        "ingredients_text": "Free range eggs.",
+        "labels_tags": [
+          "en:british-lion-quality"
+        ],
+        "name": "Class A Extra Large Free Range Eggs",
+        "nova_group": 1,
+        "nutriments": {
+          "added-sugars_100g": 0,
+          "energy-kcal_100g": 147,
+          "energy-kj_100g": 612,
+          "fiber_100g": 0,
+          "fruits-vegetables-nuts-estimate-from-ingredients_100g": 0,
+          "proteins_100g": 12.5,
+          "salt_100g": 0.4,
+          "saturated-fat_100g": 3.1,
+          "sodium_100g": 0.16,
+          "sugars_100g": 0
+        },
+        "nutriscore_grade": "a",
+        "precomputed_score": 98,
+        "image_quality": "low"
+      },
+      {
+        "additives_tags": [],
+        "barcode": "0055742367294",
+        "brand": "Compliments biologique",
+        "categories_tags": [
+          "en:eggs-and-their-products",
+          "en:farming-products",
+          "en:eggs",
+          "en:chicken-eggs",
+          "en:Organic-free-range-chicken-eggs"
+        ],
+        "countries": [
+          "ca"
+        ],
+        "image_url": "https://images.openfoodfacts.org/images/products/005/574/236/7294/front_en.40.400.jpg",
+        "ingredients_text": "Large Organic Chicken Eggs.",
+        "labels_tags": [
+          "en:organic",
+          "en:free-range",
+          "en:canada-organic",
+          "en:free-range-eggs",
+          "en:Canada-grade-a",
+          "en:Egg-quality-assurance"
+        ],
+        "name": "Large eggs",
+        "nutriments": {
+          "added-sugars_100g": 0,
+          "calcium_100g": 0.0172413793103448,
+          "choline_100g": 0.39047619047619,
+          "energy-kcal_100g": 152.380952380952,
+          "energy-kj_100g": 602.586206874569,
+          "fruits-vegetables-nuts-estimate-from-ingredients_100g": 0,
+          "iron_100g": 0.00166666666666667,
+          "magnesium_100g": 0.00689655172413793,
+          "proteins_100g": 12.0689655172414,
+          "salt_100g": 0.140086206896552,
+          "saturated-fat_100g": 1.29310344827586,
+          "selenium_100g": 2.11206896551724e-05,
+          "sodium_100g": 0.0560344827586207,
+          "vitamin-d_100g": 1.29310344827586e-06,
+          "zinc_100g": 0.00103448275862069
+        },
+        "nutriscore_grade": "unknown",
+        "precomputed_score": 98,
+        "image_quality": "good"
+      },
+      {
+        "additives_tags": [],
+        "barcode": "01217155",
+        "brand": "Sainsbury's",
+        "categories_tags": [
+          "en:eggs-and-their-products",
+          "en:farming-products",
+          "en:eggs",
+          "en:chicken-eggs",
+          "en:free-range-chicken-eggs"
+        ],
+        "countries": [
+          "uk"
+        ],
+        "image_url": "https://images.openfoodfacts.org/images/products/000/000/121/7155/front_en.49.400.jpg",
+        "ingredients_text": "Free range eggs.",
+        "labels_tags": [
+          "en:free-range",
+          "en:source-of-proteins",
+          "en:british-lion-quality",
+          "en:free-range-eggs",
+          "en:high-proteins",
+          "en:rspca-assured"
+        ],
+        "name": "British Free Range Eggs",
+        "nova_group": 1,
+        "nutriments": {
+          "added-sugars_100g": 0,
+          "energy-kcal_100g": 143,
+          "energy-kj_100g": 595,
+          "fiber_100g": 0,
+          "fruits-vegetables-nuts-estimate-from-ingredients_100g": 0,
+          "proteins_100g": 14.1,
+          "salt_100g": 0.38,
+          "saturated-fat_100g": 2.7,
+          "sodium_100g": 0.152,
+          "sugars_100g": 0,
+          "vitamin-b12_100g": 2e-06,
+          "vitamin-d_100g": 3.2e-06
+        },
+        "nutriscore_grade": "a",
+        "precomputed_score": 98,
+        "image_quality": "low"
+      },
+      {
+        "additives_tags": [],
+        "barcode": "0715141503494",
+        "brand": "EGG•LAND'S BEST",
+        "categories_tags": [
+          "en:eggs-and-their-products",
+          "en:farming-products",
+          "en:eggs",
+          "en:chicken-eggs"
+        ],
+        "countries": [
+          "us"
+        ],
+        "image_url": "https://images.openfoodfacts.org/images/products/071/514/150/3494/front_en.30.400.jpg",
+        "ingredients_text": "eggs",
+        "labels_tags": [
+          "en:kosher"
+        ],
+        "name": "EGGS",
+        "nova_group": 1,
+        "nutriments": {
+          "added-sugars_100g": 0,
+          "calcium_100g": 0.06,
+          "choline_100g": 0.3,
+          "energy-kcal_100g": 120,
+          "energy-kj_100g": 500,
+          "fruits-vegetables-nuts-estimate-from-ingredients_100g": 0,
+          "iron_100g": 0.002,
+          "magnesium_100g": 0.01,
+          "potassium_100g": 0.14,
+          "proteins_100g": 12,
+          "salt_100g": 0.325,
+          "saturated-fat_100g": 2,
+          "selenium_100g": 4.4e-05,
+          "sodium_100g": 0.13,
+          "vitamin-d_100g": 1.2e-05,
+          "zinc_100g": 0.0014
+        },
+        "nutriscore_grade": "unknown",
+        "precomputed_score": 98,
+        "image_quality": "good"
+      },
+      {
+        "additives_tags": [],
+        "barcode": "0815652002148",
+        "brand": "PETE & GERRY'S",
+        "categories_tags": [
+          "en:eggs-and-their-products",
+          "en:farming-products",
+          "en:eggs",
+          "en:chicken-eggs",
+          "en:fresh-eggs"
+        ],
+        "countries": [
+          "us"
+        ],
+        "image_url": "https://images.openfoodfacts.org/images/products/081/565/200/2148/front_en.44.400.jpg",
+        "ingredients_text": "eggs",
+        "labels_tags": [
+          "en:organic",
+          "en:free-range",
+          "en:usda-organic",
+          "en:certified-b-corporation"
+        ],
+        "name": "ORGANIC LARGE EGGS",
+        "nova_group": 1,
+        "nutriments": {
+          "added-sugars_100g": 0,
+          "calcium_100g": 0.06,
+          "choline_100g": 0,
+          "energy-kcal_100g": 140,
+          "energy-kj_100g": 574,
+          "fiber_100g": 0,
+          "fruits-vegetables-nuts-estimate-from-ingredients_100g": 0,
+          "iron_100g": 0.0018,
+          "potassium_100g": 0.14,
+          "proteins_100g": 12,
+          "salt_100g": 0.35,
+          "saturated-fat_100g": 3,
+          "sodium_100g": 0.14,
+          "sugars_100g": 0,
+          "trans-fat_100g": 0,
+          "vitamin-d_100g": 2e-06
+        },
+        "nutriscore_grade": "a",
+        "precomputed_score": 98,
+        "image_quality": "good"
+      },
+      {
+        "additives_tags": [],
+        "barcode": "20003562",
+        "brand": "Dunnes Stores",
+        "categories_tags": [
+          "en:eggs-and-their-products",
+          "en:farming-products",
+          "en:eggs"
+        ],
+        "countries": [
+          "uk"
+        ],
+        "image_url": "https://images.openfoodfacts.org/images/products/000/002/000/3562/front_en.11.400.jpg",
+        "ingredients_text": "Egg",
+        "labels_tags": [],
+        "name": "Large Free Range Eggs",
+        "nova_group": 1,
+        "nutriments": {
+          "added-sugars_100g": 0,
+          "energy-kcal_100g": 151,
+          "energy-kj_100g": 626.9,
+          "fiber_100g": 0,
+          "fruits-vegetables-nuts-estimate-from-ingredients_100g": 0,
+          "proteins_100g": 12.5,
+          "salt_100g": 0.4,
+          "saturated-fat_100g": 3.2,
+          "sodium_100g": 0.16,
+          "sugars_100g": 0
+        },
+        "nutriscore_grade": "a",
+        "precomputed_score": 98,
+        "image_quality": "good"
+      },
+      {
+        "additives_tags": [],
+        "barcode": "5051399881256",
+        "brand": "Tesco",
+        "categories_tags": [
+          "en:eggs-and-their-products",
+          "en:farming-products",
+          "en:eggs",
+          "en:chicken-eggs",
+          "en:free-range-chicken-eggs"
+        ],
+        "countries": [
+          "uk"
+        ],
+        "image_url": "https://images.openfoodfacts.org/images/products/505/139/988/1256/front_en.8.400.jpg",
+        "ingredients_text": "Eggs",
+        "labels_tags": [
+          "en:british-lion-quality",
+          "en:rspca-assured"
+        ],
+        "name": "6 Free Range Eggs Medium",
+        "nova_group": 1,
+        "nutriments": {
+          "added-sugars_100g": 0,
+          "energy-kcal_100g": 131,
+          "energy-kj_100g": 547,
+          "fiber_100g": 0,
+          "fruits-vegetables-nuts-estimate-from-ingredients_100g": 0,
+          "proteins_100g": 12.6,
+          "salt_100g": 0.4,
+          "saturated-fat_100g": 2.5,
+          "sodium_100g": 0.16,
+          "sugars_100g": 0.1
+        },
+        "nutriscore_grade": "a",
+        "precomputed_score": 98,
+        "image_quality": "good"
+      },
+      {
+        "additives_tags": [],
+        "barcode": "4099100295818",
+        "brand": "Goldhen",
+        "categories_tags": [
+          "en:eggs-and-their-products",
+          "en:farming-products",
+          "en:eggs"
+        ],
+        "countries": [
+          "us"
+        ],
+        "image_url": "https://images.openfoodfacts.org/images/products/409/910/029/5818/front_en.16.400.jpg",
+        "ingredients_text": "eggs.",
+        "labels_tags": [],
+        "name": "Free Range Large Grade A Brown Eggs",
+        "nova_group": 1,
+        "nutriments": {
+          "added-sugars_100g": 0,
+          "calcium_100g": 0.06,
+          "energy-kcal_100g": 140,
+          "energy-kj_100g": 574,
+          "fiber_100g": 0,
+          "fruits-vegetables-nuts-estimate-from-ingredients_100g": 0,
+          "iron_100g": 0.002,
+          "potassium_100g": 0.14,
+          "proteins_100g": 12,
+          "salt_100g": 0.35,
+          "saturated-fat_100g": 3,
+          "sodium_100g": 0.14,
+          "sugars_100g": 0,
+          "trans-fat_100g": 0,
+          "vitamin-d_100g": 2e-06
+        },
+        "nutriscore_grade": "a",
+        "precomputed_score": 98,
+        "image_quality": "good"
+      },
+      {
+        "additives_tags": [],
+        "barcode": "0060383213206",
+        "brand": "PC Organic",
+        "categories_tags": [
+          "en:eggs-and-their-products",
+          "en:farming-products",
+          "en:eggs",
+          "en:chicken-eggs"
+        ],
+        "countries": [
+          "ca"
+        ],
+        "image_url": "https://images.openfoodfacts.org/images/products/006/038/321/3206/front_en.16.400.jpg",
+        "ingredients_text": "Free Range Brown Eggs.",
+        "labels_tags": [
+          "en:organic",
+          "en:canada-organic"
+        ],
+        "name": "Free range Brown eggs",
+        "nutriments": {
+          "added-sugars_100g": 0,
+          "calcium_100g": 0.0476,
+          "energy-kcal_100g": 152.380952380952,
+          "energy-kj_100g": 614.279238095238,
+          "fruits-vegetables-nuts-estimate-from-ingredients_100g": 0,
+          "iron_100g": 0.00167047619047619,
+          "potassium_100g": 0.119,
+          "proteins_100g": 12.3809523809524,
+          "salt_100g": 0.31,
+          "saturated-fat_100g": 3.33333333333333,
+          "sodium_100g": 0.124
+        },
+        "nutriscore_grade": "unknown",
+        "precomputed_score": 98,
+        "image_quality": "good"
+      },
+      {
+        "additives_tags": [],
+        "barcode": "00055277",
+        "brand": "Trader Joe's",
+        "categories_tags": [
+          "en:eggs-and-their-products",
+          "en:farming-products",
+          "en:eggs"
+        ],
+        "countries": [
+          "us"
+        ],
+        "image_url": "https://images.openfoodfacts.org/images/products/000/000/005/5277/front_en.19.400.jpg",
+        "ingredients_text": "eggs",
+        "labels_tags": [],
+        "name": "Eggs",
+        "nova_group": 1,
+        "nutriments": {
+          "added-sugars_100g": 0,
+          "caffeine_100g": 0,
+          "choline_100g": 0,
+          "energy-kcal_100g": 140,
+          "energy-kj_100g": 574,
+          "fruits-vegetables-nuts-estimate-from-ingredients_100g": 0,
+          "iron_100g": 0.0018,
+          "magnesium_100g": 0,
+          "proteins_100g": 12,
+          "salt_100g": 0.35,
+          "saturated-fat_100g": 3,
+          "selenium_100g": 0,
+          "sodium_100g": 0.14,
+          "vitamin-c_100g": 0,
+          "zinc_100g": 0
+        },
+        "nutriscore_grade": "unknown",
+        "precomputed_score": 98,
+        "image_quality": "low"
+      },
+      {
+        "additives_tags": [],
+        "barcode": "0706429100269",
+        "brand": "Oakdell",
+        "categories_tags": [
+          "en:eggs-and-their-products",
+          "en:farming-products",
+          "en:eggs",
+          "en:chicken-eggs",
+          "en:fresh-eggs",
+          "en:large-eggs"
+        ],
+        "countries": [
+          "us"
+        ],
+        "image_url": "https://images.openfoodfacts.org/images/products/070/642/910/0269/front_en.7.400.jpg",
+        "labels_tags": [],
+        "name": "Large Eggs Grade AA",
+        "nutriments": {
+          "calcium_100g": 0.02,
+          "energy-kcal_100g": 140,
+          "fiber_100g": 0,
+          "iron_100g": 0.00108,
+          "potassium_100g": 2,
+          "proteins_100g": 12,
+          "salt_100g": 0.35,
+          "saturated-fat_100g": 3,
+          "sodium_100g": 0.14,
+          "sugars_100g": 0,
+          "trans-fat_100g": 0
+        },
+        "nutriscore_grade": "a",
+        "precomputed_score": 98,
+        "image_quality": "good"
+      },
+      {
+        "additives_tags": [],
+        "barcode": "0681131122801",
+        "brand": "Marketside Organic",
+        "categories_tags": [
+          "en:eggs-and-their-products",
+          "en:farming-products",
+          "en:eggs"
+        ],
+        "countries": [
+          "us"
+        ],
+        "image_url": "https://images.openfoodfacts.org/images/products/068/113/112/2801/front_en.67.400.jpg",
+        "ingredients_text": "eggs",
+        "labels_tags": [
+          "en:no-gluten",
+          "en:organic",
+          "en:usda-organic"
+        ],
+        "name": "Cage Free 18 Large Brown Eggs",
+        "nova_group": 1,
+        "nutriments": {
+          "added-sugars_100g": 0,
+          "calcium_100g": 0.06,
+          "choline_100g": 0,
+          "energy-kcal_100g": 140,
+          "energy-kj_100g": 574,
+          "fiber_100g": 0,
+          "fruits-vegetables-nuts-estimate-from-ingredients_100g": 0,
+          "iron_100g": 0.0018,
+          "magnesium_100g": 0.012,
+          "potassium_100g": 0.14,
+          "proteins_100g": 12,
+          "salt_100g": 0.35,
+          "saturated-fat_100g": 3,
+          "selenium_100g": 2e-06,
+          "sodium_100g": 0.14,
+          "sugars_100g": 0,
+          "trans-fat_100g": 0,
+          "vitamin-b12_100g": 1.44e-06,
+          "vitamin-d_100g": 2e-06,
+          "zinc_100g": 0.001
+        },
+        "nutriscore_grade": "a",
+        "precomputed_score": 98,
+        "image_quality": "good"
+      },
+      {
+        "additives_tags": [],
+        "barcode": "4056489808091",
+        "brand": "Lidl",
+        "categories_tags": [
+          "en:eggs-and-their-products",
+          "en:farming-products",
+          "en:eggs"
+        ],
+        "countries": [
+          "us"
+        ],
+        "image_url": "https://images.openfoodfacts.org/images/products/405/648/980/8091/front_en.9.400.jpg",
+        "ingredients_text": "ORGANIC EGGS, EGGS",
+        "labels_tags": [
+          "en:organic",
+          "en:usda-organic"
+        ],
+        "name": "Organic Cage Free Large Brown",
+        "nova_group": 1,
+        "nutriments": {
+          "added-sugars_100g": 0,
+          "calcium_100g": 0.052,
+          "energy-kcal_100g": 140,
+          "fiber_100g": 0,
+          "iron_100g": 0.00144,
+          "potassium_100g": 0,
+          "proteins_100g": 12,
+          "salt_100g": 0.35,
+          "saturated-fat_100g": 3,
+          "sodium_100g": 0.14,
+          "sugars_100g": 0,
+          "trans-fat_100g": 0,
+          "vitamin-d_100g": 2.4e-06
+        },
+        "nutriscore_grade": "a",
+        "precomputed_score": 98,
+        "image_quality": "low"
+      },
+      {
+        "additives_tags": [],
+        "barcode": "0635475182342",
+        "brand": "Farmer's Hen House",
+        "categories_tags": [
+          "en:eggs-and-their-products",
+          "en:farming-products",
+          "en:eggs",
+          "en:chicken-eggs",
+          "en:barn-chicken-eggs"
+        ],
+        "countries": [
+          "us"
+        ],
+        "image_url": "https://images.openfoodfacts.org/images/products/063/547/518/2342/front_en.13.400.jpg",
+        "ingredients_text": "eggs",
+        "labels_tags": [],
+        "name": "Large Brown Grade A Eggs",
+        "nova_group": 1,
+        "nutriments": {
+          "energy-kcal_100g": 140,
+          "proteins_100g": 12,
+          "salt_100g": 0.35,
+          "saturated-fat_100g": 3,
+          "sodium_100g": 0.14
+        },
+        "nutriscore_grade": "a",
+        "precomputed_score": 98,
+        "image_quality": "good"
+      },
+      {
+        "additives_tags": [],
+        "barcode": "00420044",
+        "brand": "Sainsbury's",
+        "categories_tags": [
+          "en:eggs-and-their-products",
+          "en:farming-products",
+          "en:eggs",
+          "en:boiled-eggs"
+        ],
+        "countries": [
+          "uk",
+          "us"
+        ],
+        "image_url": "https://images.openfoodfacts.org/images/products/000/000/042/0044/front_en.4.400.jpg",
+        "ingredients_text": "Free Range Hard Boiled Egg",
+        "labels_tags": [],
+        "name": "FREE RANGE EGG POT",
+        "nutriments": {
+          "added-sugars_100g": 0,
+          "energy-kcal_100g": 140.747822392182,
+          "energy-kj_100g": 590.888888888889,
+          "fiber_100g": 0.555555555555556,
+          "fruits-vegetables-nuts-estimate-from-ingredients_100g": 0,
+          "proteins_100g": 13.3333333333333,
+          "salt_100g": 0.197222222222222,
+          "saturated-fat_100g": 2.88888888888889,
+          "sodium_100g": 0.0788888888888889,
+          "sugars_100g": 0.555555555555556
+        },
+        "nutriscore_grade": "a",
+        "precomputed_score": 98,
+        "image_quality": "low"
+      },
+      {
+        "additives_tags": [],
+        "barcode": "0078742148281",
+        "brand": "Great Value",
+        "categories_tags": [
+          "en:eggs-and-their-products",
+          "en:farming-products",
+          "en:eggs",
+          "en:chicken-eggs",
+          "en:barn-chicken-eggs",
+          "en:fresh-eggs",
+          "en:large-eggs"
+        ],
+        "countries": [
+          "us"
+        ],
+        "image_url": "https://images.openfoodfacts.org/images/products/007/874/214/8281/front_en.17.400.jpg",
+        "labels_tags": [],
+        "name": "Large cage free white eggs",
+        "nutriments": {
+          "energy-kcal_100g": 140,
+          "fiber_100g": 0,
+          "proteins_100g": 12,
+          "salt_100g": 0.35,
+          "saturated-fat_100g": 3,
+          "sodium_100g": 0.14,
+          "sugars_100g": 0
+        },
+        "nutriscore_grade": "a",
+        "precomputed_score": 98,
+        "image_quality": "good"
+      },
+      {
+        "additives_tags": [],
+        "barcode": "0085239311585",
+        "brand": "Good & Gather",
+        "categories_tags": [
+          "en:eggs-and-their-products",
+          "en:farming-products",
+          "en:eggs",
+          "en:chicken-eggs"
+        ],
+        "countries": [
+          "us"
+        ],
+        "image_url": "https://images.openfoodfacts.org/images/products/008/523/931/1585/front_en.28.400.jpg",
+        "ingredients_text": "eggs",
+        "labels_tags": [],
+        "name": "Large Fresh Eggs",
+        "nova_group": 1,
+        "nutriments": {
+          "added-sugars_100g": 0,
+          "caffeine_100g": 0,
+          "choline_100g": 0,
+          "energy-kcal_100g": 140,
+          "energy-kj_100g": 574,
+          "fiber_100g": 0,
+          "fruits-vegetables-nuts-estimate-from-ingredients_100g": 0,
+          "iron_100g": 0.0018,
+          "magnesium_100g": 0,
+          "proteins_100g": 12,
+          "salt_100g": 0.35,
+          "saturated-fat_100g": 3,
+          "selenium_100g": 0,
+          "sodium_100g": 0.14,
+          "sugars_100g": 0,
+          "trans-fat_100g": 0,
+          "vitamin-c_100g": 0,
+          "zinc_100g": 0
+        },
+        "nutriscore_grade": "a",
+        "precomputed_score": 98,
+        "image_quality": "good"
+      },
+      {
+        "additives_tags": [],
+        "barcode": "0815652004265",
+        "brand": "Nellie's Free Range Eggs (Wellsley Farms)",
+        "categories_tags": [
+          "en:eggs-and-their-products",
+          "en:farming-products",
+          "en:eggs",
+          "en:chicken-eggs",
+          "en:free-range-chicken-eggs"
+        ],
+        "countries": [
+          "us"
+        ],
+        "image_url": "https://images.openfoodfacts.org/images/products/081/565/200/4265/front_en.13.400.jpg",
+        "ingredients_text": "eggs",
+        "labels_tags": [],
+        "name": "Nellie’s Large Free Range Eggs",
+        "nova_group": 1,
+        "nutriments": {
+          "added-sugars_100g": 0,
+          "calcium_100g": 0.06,
+          "energy-kcal_100g": 140,
+          "fiber_100g": 0,
+          "iron_100g": 0.0018,
+          "potassium_100g": 0.14,
+          "proteins_100g": 12,
+          "salt_100g": 0.35,
+          "saturated-fat_100g": 3,
+          "sodium_100g": 0.14,
+          "sugars_100g": 0,
+          "trans-fat_100g": 0,
+          "vitamin-d_100g": 2e-06
+        },
+        "nutriscore_grade": "a",
+        "precomputed_score": 98,
+        "image_quality": "good"
+      },
+      {
+        "additives_tags": [],
+        "barcode": "0059749976817",
+        "brand": "Life Smart",
+        "categories_tags": [
+          "en:eggs-and-their-products",
+          "en:farming-products",
+          "en:eggs",
+          "en:chicken-eggs",
+          "en:free-range-chicken-eggs",
+          "en:Organic-free-range-chicken-eggs"
+        ],
+        "countries": [
+          "ca"
+        ],
+        "image_url": "https://images.openfoodfacts.org/images/products/005/974/997/6817/front_en.13.400.jpg",
+        "ingredients_text": "Large Organic Free-Range Chicken Eggs.",
+        "labels_tags": [
+          "en:organic",
+          "en:canada-organic"
+        ],
+        "name": "12 Large Organic Free-Range Eggs, brown.",
+        "nutriments": {
+          "added-sugars_100g": 0,
+          "energy-kcal_100g": 152.38,
+          "energy-kj_100g": 614.37,
+          "fruits-vegetables-nuts-estimate-from-ingredients_100g": 0,
+          "proteins_100g": 12.38,
+          "salt_100g": 0.3,
+          "saturated-fat_100g": 3.33,
+          "sodium_100g": 0.12,
+          "sugars_100g": 0
+        },
+        "nutriscore_grade": "a",
+        "precomputed_score": 98,
+        "image_quality": "good"
+      },
+      {
+        "additives_tags": [],
+        "barcode": "0770004144153",
+        "brand": "Maritime Pride",
+        "categories_tags": [
+          "en:eggs-and-their-products",
+          "en:farming-products",
+          "en:eggs",
+          "en:chicken-eggs",
+          "en:fresh-eggs",
+          "en:large-eggs"
+        ],
+        "countries": [
+          "ca"
+        ],
+        "image_url": "https://images.openfoodfacts.org/images/products/077/000/414/4153/front_en.3.400.jpg",
+        "labels_tags": [],
+        "name": "LARGE WHITE EGGS",
+        "nutriments": {
+          "added-sugars_100g": 0,
+          "caffeine_100g": 0,
+          "calcium_100g": 0.0476190476190476,
+          "choline_100g": 0,
+          "energy-kcal_100g": 152.380952380952,
+          "energy-kj_100g": 614.285714285714,
+          "fiber_100g": 0,
+          "iron_100g": 0.00166666666666667,
+          "magnesium_100g": 0,
+          "potassium_100g": 0.119047619047619,
+          "proteins_100g": 12.3809523809524,
+          "salt_100g": 0.30952380952381,
+          "saturated-fat_100g": 3.33333333333333,
+          "selenium_100g": 0,
+          "sodium_100g": 0.123809523809524,
+          "sugars_100g": 0,
+          "trans-fat_100g": 0,
+          "vitamin-c_100g": 0,
+          "zinc_100g": 0
+        },
+        "nutriscore_grade": "a",
+        "precomputed_score": 98,
+        "image_quality": "good"
+      },
+      {
+        "additives_tags": [],
+        "barcode": "0887422000081",
+        "brand": "HAPPY egg co.",
+        "categories_tags": [
+          "en:eggs-and-their-products",
+          "en:farming-products",
+          "en:eggs",
+          "en:chicken-eggs",
+          "en:free-range-chicken-eggs",
+          "en:Free range large eggs",
+          "en:Large eggs"
+        ],
+        "countries": [
+          "us"
+        ],
+        "image_url": "https://images.openfoodfacts.org/images/products/088/742/200/0081/front_en.70.400.jpg",
+        "ingredients_text": "Eggs",
+        "labels_tags": [
+          "en:organic",
+          "en:usda-organic"
+        ],
+        "name": "organic free range eggs",
+        "nova_group": 1,
+        "nutriments": {
+          "added-sugars_100g": 0,
+          "caffeine_100g": 0,
+          "calcium_100g": 0.056,
+          "choline_100g": 0.3,
+          "energy-kcal_100g": 140,
+          "energy-kj_100g": 574,
+          "fiber_100g": 0,
+          "fruits-vegetables-nuts-estimate-from-ingredients_100g": 0,
+          "iron_100g": 0.0018,
+          "magnesium_100g": 0,
+          "potassium_100g": 0.138,
+          "proteins_100g": 12,
+          "salt_100g": 0.35,
+          "saturated-fat_100g": 3,
+          "selenium_100g": 0,
+          "sodium_100g": 0.14,
+          "sugars_100g": 0,
+          "trans-fat_100g": 0,
+          "vitamin-c_100g": 0,
+          "vitamin-d_100g": 2e-06,
+          "zinc_100g": 0
+        },
+        "nutriscore_grade": "a",
+        "precomputed_score": 98,
+        "image_quality": "good"
+      },
+      {
+        "additives_tags": [],
+        "barcode": "0851387007416",
+        "brand": "Vital Farms",
+        "categories_tags": [
+          "en:eggs-and-their-products",
+          "en:farming-products",
+          "en:eggs",
+          "en:chicken-eggs"
+        ],
+        "countries": [
+          "us"
+        ],
+        "image_url": "https://images.openfoodfacts.org/images/products/085/138/700/7416/front_en.32.400.jpg",
+        "ingredients_text": "Large Organic Eggs",
+        "labels_tags": [
+          "en:organic",
+          "en:usda-organic"
+        ],
+        "name": "Vital Farms organic 18pk",
+        "nova_group": 1,
+        "nutriments": {
+          "added-sugars_100g": 0,
+          "caffeine_100g": 0,
+          "calcium_100g": 0.06,
+          "choline_100g": 0.3,
+          "energy-kcal_100g": 140,
+          "energy-kj_100g": 574,
+          "fiber_100g": 0,
+          "fruits-vegetables-nuts-estimate-from-ingredients_100g": 0,
+          "iron_100g": 0.002,
+          "magnesium_100g": 0,
+          "potassium_100g": 0.14,
+          "proteins_100g": 12,
+          "salt_100g": 0.35,
+          "saturated-fat_100g": 3,
+          "selenium_100g": 3e-05,
+          "sodium_100g": 0.14,
+          "sugars_100g": 0,
+          "trans-fat_100g": 0,
+          "vitamin-c_100g": 0,
+          "vitamin-d_100g": 2e-06,
+          "zinc_100g": 0.0014
+        },
+        "nutriscore_grade": "a",
+        "precomputed_score": 98,
+        "image_quality": "good"
+      },
+      {
+        "additives_tags": [],
+        "barcode": "0620580000476",
+        "brand": "Rabbit River Farms",
+        "categories_tags": [
+          "en:eggs-and-their-products",
+          "en:farming-products",
+          "en:eggs",
+          "en:chicken-eggs",
+          "en:Free-Run. cage-Free Chickens",
+          "en:Large-chicken-eggs"
+        ],
+        "countries": [
+          "ca"
+        ],
+        "image_url": "https://images.openfoodfacts.org/images/products/062/058/000/0476/front_en.4.400.jpg",
+        "labels_tags": [
+          "en:Buy BC",
+          "en:Cage-Free",
+          "en:Canada Grade-A",
+          "en:EQA",
+          "en:Vegetarian Feed"
+        ],
+        "name": "18 Large Free Run Eggs, brown",
+        "nutriments": {
+          "energy-kcal_100g": 152.380952380952,
+          "fiber_100g": 0,
+          "iron_100g": 0.00166666666666667,
+          "potassium_100g": 0.119047619047619,
+          "proteins_100g": 12.3809523809524,
+          "salt_100g": 0.30952380952381,
+          "saturated-fat_100g": 3.33333333333333,
+          "sodium_100g": 0.123809523809524,
+          "sugars_100g": 0,
+          "trans-fat_100g": 0,
+          "vitamin-d_100g": 1.42857142857143e-06
+        },
+        "nutriscore_grade": "a",
+        "precomputed_score": 98,
+        "image_quality": "good"
+      },
+      {
+        "additives_tags": [],
+        "barcode": "4061462171123",
+        "brand": "Goldhen",
+        "categories_tags": [
+          "en:eggs-and-their-products",
+          "en:farming-products",
+          "en:eggs",
+          "en:chicken-eggs",
+          "en:fresh-eggs",
+          "en:large-eggs"
+        ],
+        "countries": [
+          "us"
+        ],
+        "labels_tags": [],
+        "name": "Large Brown Eggs",
+        "nutriments": {
+          "energy-kcal_100g": 140,
+          "fiber_100g": 0,
+          "proteins_100g": 12,
+          "salt_100g": 0.35,
+          "saturated-fat_100g": 3,
+          "sodium_100g": 0.14,
+          "sugars_100g": 0,
+          "trans-fat_100g": 0
+        },
+        "nutriscore_grade": "a",
+        "precomputed_score": 98,
+        "image_quality": "missing"
+      },
+      {
+        "additives_tags": [],
+        "barcode": "0746025602422",
+        "brand": "Easy Eggs",
+        "categories_tags": [
+          "en:eggs-and-their-products",
+          "en:farming-products",
+          "en:eggs"
+        ],
+        "countries": [
+          "us"
+        ],
+        "image_url": "https://images.openfoodfacts.org/images/products/074/602/560/2422/front_en.58.400.jpg",
+        "ingredients_text": "Eggs",
+        "labels_tags": [
+          "en:kosher",
+          "en:orthodox-union-kosher"
+        ],
+        "name": "2 Peeled Hard Cooked Eggs",
+        "nova_group": 1,
+        "nutriments": {
+          "added-sugars_100g": 0,
+          "choline_100g": 0,
+          "energy-kcal_100g": 136.363636363636,
+          "energy-kj_100g": 568.181818181818,
+          "fiber_100g": 0,
+          "fruits-vegetables-nuts-estimate-from-ingredients_100g": 0,
+          "proteins_100g": 12.5,
+          "salt_100g": 0.355113636363636,
+          "saturated-fat_100g": 2.84090909090909,
+          "sodium_100g": 0.142045454545455,
+          "sugars_100g": 0,
+          "trans-fat_100g": 0
+        },
+        "nutriscore_grade": "a",
+        "precomputed_score": 98,
+        "image_quality": "good"
+      },
+      {
+        "additives_tags": [],
+        "barcode": "0041415011663",
+        "brand": "Publix",
+        "categories_tags": [
+          "en:eggs-and-their-products",
+          "en:farming-products",
+          "en:eggs",
+          "en:chicken-eggs",
+          "en:fresh-eggs",
+          "en:large-eggs"
+        ],
+        "countries": [
+          "us"
+        ],
+        "image_url": "https://images.openfoodfacts.org/images/products/004/141/501/1663/front_en.3.400.jpg",
+        "labels_tags": [],
+        "name": "Large EGGS",
+        "nutriments": {
+          "energy-kcal_100g": 140,
+          "energy-kj_100g": 574,
+          "fiber_100g": 0,
+          "iron_100g": 0.0018,
+          "proteins_100g": 12,
+          "salt_100g": 0.35,
+          "saturated-fat_100g": 3,
+          "sodium_100g": 0.14,
+          "sugars_100g": 0
+        },
+        "nutriscore_grade": "a",
+        "precomputed_score": 98,
+        "image_quality": "good"
+      },
+      {
+        "additives_tags": [],
+        "barcode": "0193968382537",
+        "brand": "Members Mark",
+        "categories_tags": [
+          "en:eggs-and-their-products",
+          "en:farming-products",
+          "en:eggs"
+        ],
+        "countries": [
+          "us"
+        ],
+        "image_url": "https://images.openfoodfacts.org/images/products/019/396/838/2537/front_en.51.400.jpg",
+        "ingredients_text": "Pasture raised organic large brown eggs.",
+        "labels_tags": [
+          "en:organic",
+          "en:usda-organic"
+        ],
+        "name": "Eggs",
+        "nutriments": {
+          "added-sugars_100g": 0,
+          "caffeine_100g": 0,
+          "calcium_100g": 0.06,
+          "choline_100g": 0,
+          "energy-kcal_100g": 140,
+          "energy-kj_100g": 574,
+          "fiber_100g": 0,
+          "fruits-vegetables-nuts-estimate-from-ingredients_100g": 0,
+          "iron_100g": 0.0018,
+          "magnesium_100g": 0,
+          "potassium_100g": 0.14,
+          "proteins_100g": 12,
+          "salt_100g": 0.35,
+          "saturated-fat_100g": 3,
+          "selenium_100g": 0,
+          "sodium_100g": 0.14,
+          "sugars_100g": 0,
+          "trans-fat_100g": 0,
+          "vitamin-c_100g": 0,
+          "zinc_100g": 0
+        },
+        "nutriscore_grade": "a",
+        "precomputed_score": 98,
+        "image_quality": "low"
+      },
+      {
+        "additives_tags": [],
+        "barcode": "0021130035236",
+        "brand": "Lucerne",
+        "categories_tags": [
+          "en:eggs-and-their-products",
+          "en:farming-products",
+          "en:eggs"
+        ],
+        "countries": [
+          "us"
+        ],
+        "image_url": "https://images.openfoodfacts.org/images/products/002/113/003/5236/front_en.8.400.jpg",
+        "labels_tags": [],
+        "name": "Grade AA Eggs",
+        "nutriments": {
+          "added-sugars_100g": 0,
+          "caffeine_100g": 0,
+          "calcium_100g": 0.04,
+          "choline_100g": 0,
+          "energy-kcal_100g": 140,
+          "iron_100g": 0.002,
+          "magnesium_100g": 0,
+          "potassium_100g": 0.14,
+          "proteins_100g": 12,
+          "salt_100g": 0.35,
+          "saturated-fat_100g": 3,
+          "selenium_100g": 0,
+          "sodium_100g": 0.14,
+          "sugars_100g": 0,
+          "trans-fat_100g": 0,
+          "vitamin-c_100g": 0,
+          "zinc_100g": 0
+        },
+        "nutriscore_grade": "a",
+        "precomputed_score": 98,
+        "image_quality": "good"
+      },
+      {
+        "additives_tags": [],
+        "barcode": "03340936",
+        "brand": "TESCO",
+        "categories_tags": [
+          "en:eggs-and-their-products",
+          "en:farming-products",
+          "en:eggs",
+          "en:boiled-eggs"
+        ],
+        "countries": [
+          "uk"
+        ],
+        "image_url": "https://images.openfoodfacts.org/images/products/000/000/334/0936/front_en.15.400.jpg",
+        "ingredients_text": "hard boiled egg",
+        "labels_tags": [],
+        "name": "EGG PROTEIN POT",
+        "nova_group": 1,
+        "nutriments": {
+          "added-sugars_100g": 0,
+          "choline_100g": 0,
+          "energy-kcal_100g": 134,
+          "energy-kj_100g": 560.7,
+          "fiber_100g": 0.6,
+          "fruits-vegetables-nuts-estimate-from-ingredients_100g": 0,
+          "proteins_100g": 12.6,
+          "salt_100g": 0.285,
+          "saturated-fat_100g": 2.7,
+          "sodium_100g": 0.114,
+          "sugars_100g": 0.3
+        },
+        "nutriscore_grade": "a",
+        "precomputed_score": 98,
+        "image_quality": "low"
+      },
+      {
+        "additives_tags": [],
+        "barcode": "0096619102556",
+        "brand": "Costco",
+        "categories_tags": [
+          "en:eggs-and-their-products",
+          "en:farming-products",
+          "en:eggs"
+        ],
+        "countries": [
+          "us"
+        ],
+        "image_url": "https://images.openfoodfacts.org/images/products/009/661/910/2556/front_en.49.400.jpg",
+        "ingredients_text": "Eggs.",
+        "labels_tags": [
+          "en:kosher",
+          "en:no-artificial-flavors",
+          "en:orthodox-union-kosher"
+        ],
+        "name": "Egg",
+        "nova_group": 1,
+        "nutriments": {
+          "added-sugars_100g": 0,
+          "calcium_100g": 0.06,
+          "choline_100g": 0,
+          "energy-kcal_100g": 140,
+          "energy-kj_100g": 574,
+          "fiber_100g": 0,
+          "fruits-vegetables-nuts-estimate-from-ingredients_100g": 0,
+          "iron_100g": 0.0018,
+          "potassium_100g": 0.14,
+          "proteins_100g": 12,
+          "salt_100g": 0.35,
+          "saturated-fat_100g": 3,
+          "selenium_100g": 3e-05,
+          "sodium_100g": 0.14,
+          "sugars_100g": 0,
+          "trans-fat_100g": 0,
+          "vitamin-d_100g": 2e-06,
+          "zinc_100g": 0.0014
+        },
+        "nutriscore_grade": "a",
+        "precomputed_score": 98,
+        "image_quality": "good"
+      },
+      {
+        "additives_tags": [],
+        "barcode": "4056489894957",
+        "brand": "lidl",
+        "categories_tags": [
+          "en:eggs-and-their-products",
+          "en:farming-products",
+          "en:eggs"
+        ],
+        "countries": [
+          "uk"
+        ],
+        "image_url": "https://images.openfoodfacts.org/images/products/405/648/989/4957/front_en.3.400.jpg",
+        "ingredients_text": "Eggs",
+        "labels_tags": [
+          "en:british-lion-quality"
+        ],
+        "name": "10 Mixed Sized Eggs",
+        "nova_group": 1,
+        "nutriments": {
+          "added-sugars_100g": 0,
+          "energy-kcal_100g": 131,
+          "energy-kj_100g": 547,
+          "fiber_100g": 0,
+          "fruits-vegetables-nuts-estimate-from-ingredients_100g": 0,
+          "proteins_100g": 12.6,
+          "salt_100g": 0.39,
+          "saturated-fat_100g": 2.5,
+          "sodium_100g": 0.156,
+          "sugars_100g": 0
+        },
+        "nutriscore_grade": "a",
+        "precomputed_score": 98,
+        "image_quality": "good"
+      },
+      {
+        "additives_tags": [],
+        "barcode": "0011110609038",
+        "brand": "Kroger",
+        "categories_tags": [
+          "en:eggs-and-their-products",
+          "en:farming-products",
+          "en:eggs",
+          "en:chicken-eggs"
+        ],
+        "countries": [
+          "us"
+        ],
+        "image_url": "https://images.openfoodfacts.org/images/products/001/111/060/9038/front_en.19.400.jpg",
+        "ingredients_text": "Eggs",
+        "labels_tags": [],
+        "name": "Large Eggs",
+        "nova_group": 1,
+        "nutriments": {
+          "added-sugars_100g": 0,
+          "caffeine_100g": 0,
+          "calcium_100g": 0.06,
+          "choline_100g": 0,
+          "energy-kcal_100g": 140,
+          "energy-kj_100g": 574,
+          "fiber_100g": 0,
+          "fruits-vegetables-nuts-estimate-from-ingredients_100g": 0,
+          "iron_100g": 0.0018,
+          "magnesium_100g": 0,
+          "potassium_100g": 0.14,
+          "proteins_100g": 12,
+          "salt_100g": 0.3556,
+          "saturated-fat_100g": 3,
+          "selenium_100g": 0,
+          "sodium_100g": 0.14224,
+          "sugars_100g": 0,
+          "trans-fat_100g": 0,
+          "vitamin-c_100g": 0,
+          "vitamin-d_100g": 2e-06,
+          "zinc_100g": 0
+        },
+        "nutriscore_grade": "a",
+        "precomputed_score": 98,
+        "image_quality": "good"
+      },
+      {
+        "additives_tags": [],
+        "barcode": "0815652004210",
+        "brand": "NELLIE'S",
+        "categories_tags": [
+          "en:eggs-and-their-products",
+          "en:farming-products",
+          "en:eggs",
+          "en:chicken-eggs",
+          "en:free-range-chicken-eggs"
+        ],
+        "countries": [
+          "us"
+        ],
+        "image_url": "https://images.openfoodfacts.org/images/products/081/565/200/4210/front_en.24.400.jpg",
+        "ingredients_text": "Eggs",
+        "labels_tags": [],
+        "name": "FREE RANGE EGGS",
+        "nova_group": 1,
+        "nutriments": {
+          "added-sugars_100g": 0,
+          "calcium_100g": 0.06,
+          "energy-kcal_100g": 140,
+          "fiber_100g": 0,
+          "fruits-vegetables-nuts-estimate-from-ingredients_100g": 0,
+          "iron_100g": 0.002,
+          "potassium_100g": 0.14,
+          "proteins_100g": 12,
+          "salt_100g": 0.35,
+          "saturated-fat_100g": 3,
+          "sodium_100g": 0.14,
+          "sugars_100g": 0,
+          "trans-fat_100g": 0,
+          "vitamin-d_100g": 2e-06
+        },
+        "nutriscore_grade": "unknown",
+        "precomputed_score": 98,
+        "image_quality": "good"
+      },
+      {
+        "additives_tags": [],
+        "barcode": "0074483992442",
+        "brand": "Wilcox Family Farms",
+        "categories_tags": [
+          "en:eggs-and-their-products",
+          "en:farming-products",
+          "en:eggs",
+          "en:chicken-eggs",
+          "en:free-range-chicken-eggs"
+        ],
+        "countries": [
+          "us"
+        ],
+        "image_url": "https://images.openfoodfacts.org/images/products/007/448/399/2442/front_en.30.400.jpg",
+        "ingredients_text": "cage free eggs",
+        "labels_tags": [
+          "en:no-gluten"
+        ],
+        "name": "Cage Free Hard-Boiled Eggs",
+        "nutriments": {
+          "added-sugars_100g": 0,
+          "caffeine_100g": 0,
+          "choline_100g": 0,
+          "energy-kcal_100g": 136.363636363636,
+          "energy-kj_100g": 568.181818181818,
+          "fiber_100g": 0,
+          "fruits-vegetables-nuts-estimate-from-ingredients_100g": 0,
+          "iron_100g": 0.00227272727272727,
+          "magnesium_100g": 0,
+          "proteins_100g": 13.6363636363636,
+          "salt_100g": 0.340909090909091,
+          "saturated-fat_100g": 3.40909090909091,
+          "selenium_100g": 0,
+          "sodium_100g": 0.136363636363636,
+          "sugars_100g": 0,
+          "trans-fat_100g": 0,
+          "vitamin-c_100g": 0,
+          "zinc_100g": 0
+        },
+        "nutriscore_grade": "a",
+        "precomputed_score": 98,
+        "image_quality": "good"
+      },
+      {
+        "additives_tags": [],
+        "barcode": "0096619106806",
+        "brand": "Kirkland Signature",
+        "categories_tags": [
+          "en:eggs-and-their-products",
+          "en:farming-products",
+          "en:eggs"
+        ],
+        "countries": [
+          "us"
+        ],
+        "image_url": "https://images.openfoodfacts.org/images/products/009/661/910/6806/front_en.29.400.jpg",
+        "ingredients_text": "eggs",
+        "labels_tags": [
+          "en:organic",
+          "en:usda-organic"
+        ],
+        "name": "Organic Eggs",
+        "nova_group": 1,
+        "nutriments": {
+          "added-sugars_100g": 0,
+          "calcium_100g": 0.06,
+          "choline_100g": 0,
+          "energy-kcal_100g": 140,
+          "energy-kj_100g": 574,
+          "fiber_100g": 0,
+          "fruits-vegetables-nuts-estimate-from-ingredients_100g": 0,
+          "iron_100g": 0.0018,
+          "potassium_100g": 0.14,
+          "proteins_100g": 12,
+          "salt_100g": 0.35,
+          "saturated-fat_100g": 3,
+          "sodium_100g": 0.14,
+          "sugars_100g": 0,
+          "trans-fat_100g": 0,
+          "vitamin-d_100g": 2e-06
+        },
+        "nutriscore_grade": "a",
+        "precomputed_score": 98,
+        "image_quality": "good"
+      },
+      {
+        "additives_tags": [],
+        "barcode": "5063334005566",
+        "brand": "Sainsbury's",
+        "categories_tags": [
+          "en:eggs-and-their-products",
+          "en:farming-products",
+          "en:eggs",
+          "en:chicken-eggs",
+          "en:free-range-chicken-eggs"
+        ],
+        "countries": [
+          "uk"
+        ],
+        "image_url": "https://images.openfoodfacts.org/images/products/506/333/400/5566/front_en.3.400.jpg",
+        "ingredients_text": "Free Range Eggs.",
+        "labels_tags": [
+          "en:british-lion-quality",
+          "en:rspca-assured"
+        ],
+        "name": "Golden Yoke Free Range Eggs",
+        "nova_group": 1,
+        "nutriments": {
+          "added-sugars_100g": 0,
+          "energy-kcal_100g": 134.545454545455,
+          "energy-kj_100g": 563.636363636364,
+          "fruits-vegetables-nuts-estimate-from-ingredients_100g": 0,
+          "proteins_100g": 13.2727272727273,
+          "salt_100g": 0.340909090909091,
+          "saturated-fat_100g": 2.54545454545455,
+          "sodium_100g": 0.136363636363636
+        },
+        "nutriscore_grade": "unknown",
+        "precomputed_score": 98,
+        "image_quality": "low"
+      },
+      {
+        "additives_tags": [],
+        "barcode": "5000326011273",
+        "brand": "BIG & FRESH",
+        "categories_tags": [
+          "en:eggs-and-their-products",
+          "en:farming-products",
+          "en:eggs",
+          "en:chicken-eggs"
+        ],
+        "countries": [
+          "uk"
+        ],
+        "image_url": "https://images.openfoodfacts.org/images/products/500/032/601/1273/front_en.3.400.jpg",
+        "labels_tags": [],
+        "name": "LARGE EGGS BARN EGGS",
+        "nutriments": {
+          "added-sugars_100g": 0,
+          "caffeine_100g": 0,
+          "choline_100g": 0,
+          "energy-kcal_100g": 131,
+          "energy-kj_100g": 555.7,
+          "iron_100g": 0,
+          "magnesium_100g": 0,
+          "proteins_100g": 12.6,
+          "salt_100g": 0.36,
+          "saturated-fat_100g": 2.5,
+          "selenium_100g": 0,
+          "sodium_100g": 0.144,
+          "sugars_100g": 0.5,
+          "vitamin-c_100g": 0,
+          "zinc_100g": 0
+        },
+        "nutriscore_grade": "a",
+        "precomputed_score": 98,
+        "image_quality": "good"
+      },
+      {
+        "additives_tags": [],
+        "barcode": "0064767343947",
+        "brand": "Conestoga Farms",
+        "categories_tags": [
+          "en:eggs-and-their-products",
+          "en:farming-products",
+          "en:eggs",
+          "en:chicken-eggs",
+          "en:fresh-eggs"
+        ],
+        "countries": [
+          "ca"
+        ],
+        "image_url": "https://images.openfoodfacts.org/images/products/006/476/734/3947/front_en.3.400.jpg",
+        "labels_tags": [],
+        "name": "Eggs",
+        "nutriments": {
+          "calcium_100g": 0.0476190476190476,
+          "energy-kcal_100g": 152.380952380952,
+          "energy-kj_100g": 614.285714285714,
+          "fiber_100g": 0,
+          "iron_100g": 0.00166666666666667,
+          "potassium_100g": 0.119047619047619,
+          "proteins_100g": 12.3809523809524,
+          "salt_100g": 0.30952380952381,
+          "saturated-fat_100g": 3.33333333333333,
+          "sodium_100g": 0.123809523809524,
+          "sugars_100g": 0,
+          "trans-fat_100g": 0,
+          "vitamin-d_100g": 1.42857142857143e-06
+        },
+        "nutriscore_grade": "a",
+        "precomputed_score": 98,
+        "image_quality": "good"
+      },
+      {
+        "additives_tags": [],
+        "barcode": "0055799101049",
+        "brand": "Golden Valley",
+        "categories_tags": [
+          "en:eggs-and-their-products",
+          "en:farming-products",
+          "en:eggs",
+          "en:chicken-eggs",
+          "en:barn-chicken-eggs"
+        ],
+        "countries": [
+          "ca"
+        ],
+        "image_url": "https://images.openfoodfacts.org/images/products/005/579/910/1049/front_en.7.400.jpg",
+        "ingredients_text": "Large Chicken Eggs.",
+        "labels_tags": [
+          "en:Canada-A"
+        ],
+        "name": "12 Large Eggs, brown.",
+        "nutriments": {
+          "added-sugars_100g": 0,
+          "calcium_100g": 0.02,
+          "energy-kcal_100g": 152.38095238095,
+          "energy-kj_100g": 614.28571428569,
+          "fiber_100g": 0,
+          "fruits-vegetables-nuts-estimate-from-ingredients_100g": 0,
+          "iron_100g": 0.00108,
+          "proteins_100g": 12.380952380952,
+          "salt_100g": 0.3095238095238,
+          "saturated-fat_100g": 3.3333333333333,
+          "sodium_100g": 0.12380952380952,
+          "sugars_100g": 0,
+          "trans-fat_100g": 0,
+          "vitamin-c_100g": 0.006
+        },
+        "nutriscore_grade": "a",
+        "precomputed_score": 98,
+        "image_quality": "good"
+      },
+      {
+        "additives_tags": [],
+        "barcode": "0028621183988",
+        "brand": "Sunups",
+        "categories_tags": [
+          "en:eggs-and-their-products",
+          "en:farming-products",
+          "en:eggs",
+          "en:chicken-eggs"
+        ],
+        "countries": [
+          "us"
+        ],
+        "image_url": "https://images.openfoodfacts.org/images/products/002/862/118/3988/front_en.16.400.jpg",
+        "ingredients_text": "eggs",
+        "labels_tags": [],
+        "name": "Large Eggs",
+        "nova_group": 1,
+        "nutriments": {
+          "added-sugars_100g": 0,
+          "caffeine_100g": 0,
+          "calcium_100g": 0.06,
+          "choline_100g": 0,
+          "energy-kcal_100g": 140,
+          "iron_100g": 0.0036,
+          "magnesium_100g": 0,
+          "potassium_100g": 0.14,
+          "proteins_100g": 12,
+          "salt_100g": 0.35,
+          "saturated-fat_100g": 3,
+          "selenium_100g": 0,
+          "sodium_100g": 0.14,
+          "vitamin-c_100g": 0,
+          "vitamin-d_100g": 2e-06,
+          "zinc_100g": 0
+        },
+        "nutriscore_grade": "a",
+        "precomputed_score": 98,
+        "image_quality": "good"
+      },
+      {
+        "additives_tags": [],
+        "barcode": "50378265",
+        "brand": "The Happy Egg Co",
+        "categories_tags": [
+          "en:eggs-and-their-products",
+          "en:farming-products",
+          "en:eggs",
+          "en:chicken-eggs",
+          "en:free-range-chicken-eggs"
+        ],
+        "countries": [
+          "uk"
+        ],
+        "image_url": "https://images.openfoodfacts.org/images/products/000/005/037/8265/front_en.18.400.jpg",
+        "ingredients_text": "Free range eggs.",
+        "labels_tags": [
+          "en:free-range",
+          "en:source-of-proteins",
+          "en:british-lion-quality",
+          "en:class-i",
+          "en:free-range-poultry",
+          "en:high-proteins",
+          "en:rspca-assured",
+          "en:vitamin-d-source"
+        ],
+        "name": "Medium Eggs",
+        "nova_group": 1,
+        "nutriments": {
+          "added-sugars_100g": 0,
+          "energy-kcal_100g": 131,
+          "energy-kj_100g": 547,
+          "fruits-vegetables-nuts-estimate-from-ingredients_100g": 0,
+          "proteins_100g": 12.6,
+          "salt_100g": 0.385,
+          "saturated-fat_100g": 2.5,
+          "sodium_100g": 0.154,
+          "sugars_100g": 0.5,
+          "vitamin-d_100g": 4e-06
+        },
+        "nutriscore_grade": "a",
+        "precomputed_score": 98,
+        "image_quality": "low"
+      },
+      {
+        "additives_tags": [],
+        "barcode": "0627735279725",
+        "brand": "Great Value",
+        "categories_tags": [
+          "en:eggs-and-their-products",
+          "en:farming-products",
+          "en:eggs",
+          "en:chicken-eggs",
+          "en:fresh-eggs"
+        ],
+        "countries": [
+          "ca"
+        ],
+        "image_url": "https://images.openfoodfacts.org/images/products/062/773/527/9725/front_en.6.400.jpg",
+        "labels_tags": [],
+        "name": "WHITE EGGS",
+        "nutriments": {
+          "added-sugars_100g": 0,
+          "caffeine_100g": 0,
+          "calcium_100g": 0.043956043956044,
+          "choline_100g": 0,
+          "energy-kcal_100g": 142.857142857143,
+          "energy-kj_100g": 590.10989010989,
+          "fiber_100g": 0,
+          "iron_100g": 0.00164835164835165,
+          "magnesium_100g": 0,
+          "potassium_100g": 0.137362637362637,
+          "proteins_100g": 12.0879120879121,
+          "salt_100g": 0.315934065934066,
+          "saturated-fat_100g": 3.2967032967033,
+          "selenium_100g": 0,
+          "sodium_100g": 0.126373626373626,
+          "sugars_100g": 0,
+          "trans-fat_100g": 0,
+          "vitamin-c_100g": 0,
+          "zinc_100g": 0
+        },
+        "nutriscore_grade": "a",
+        "precomputed_score": 98,
+        "image_quality": "good"
+      },
+      {
+        "additives_tags": [],
+        "barcode": "01643046",
+        "brand": "SO Organic",
+        "categories_tags": [
+          "en:eggs-and-their-products",
+          "en:farming-products",
+          "en:eggs",
+          "en:chicken-eggs",
+          "en:free-range-chicken-eggs"
+        ],
+        "countries": [
+          "uk"
+        ],
+        "image_url": "https://images.openfoodfacts.org/images/products/000/000/164/3046/front_en.16.400.jpg",
+        "ingredients_text": "Free range eggs.",
+        "labels_tags": [
+          "en:rspca-assured"
+        ],
+        "name": "So Organic Free Range British Eggs",
+        "nova_group": 1,
+        "nutriments": {
+          "added-sugars_100g": 0,
+          "energy-kcal_100g": 142,
+          "energy-kj_100g": 603.4,
+          "fruits-vegetables-nuts-estimate-from-ingredients_100g": 0,
+          "proteins_100g": 14.1,
+          "salt_100g": 0.22,
+          "saturated-fat_100g": 2.7,
+          "sodium_100g": 0.088
+        },
+        "nutriscore_grade": "unknown",
+        "precomputed_score": 98,
+        "image_quality": "low"
+      },
+      {
+        "additives_tags": [],
+        "barcode": "0063902007782",
+        "brand": "Harman Eggs",
+        "categories_tags": [
+          "en:eggs-and-their-products",
+          "en:farming-products",
+          "en:eggs",
+          "en:chicken-eggs"
+        ],
+        "countries": [
+          "ca"
+        ],
+        "image_url": "https://images.openfoodfacts.org/images/products/006/390/200/7782/front_en.18.400.jpg",
+        "labels_tags": [],
+        "name": "Free Run Brown Eggs",
+        "nutriments": {
+          "added-sugars_100g": 0,
+          "caffeine_100g": 0,
+          "calcium_100g": 0.0476190476190476,
+          "choline_100g": 0,
+          "energy-kcal_100g": 152.380952380952,
+          "energy-kj_100g": 614.285714285715,
+          "fiber_100g": 0,
+          "iron_100g": 0.00166666666666667,
+          "magnesium_100g": 0,
+          "potassium_100g": 0.119047619047619,
+          "proteins_100g": 12.3809523809524,
+          "salt_100g": 0.30952380952381,
+          "saturated-fat_100g": 3.33333333333333,
+          "selenium_100g": 0,
+          "sodium_100g": 0.123809523809524,
+          "sugars_100g": 0,
+          "trans-fat_100g": 0,
+          "vitamin-c_100g": 0,
+          "vitamin-d_100g": 0,
+          "zinc_100g": 0
+        },
+        "nutriscore_grade": "a",
+        "precomputed_score": 98,
+        "image_quality": "good"
+      },
+      {
+        "additives_tags": [],
+        "barcode": "5051399881294",
+        "brand": "Tesco",
+        "categories_tags": [
+          "en:eggs-and-their-products",
+          "en:farming-products",
+          "en:eggs",
+          "en:chicken-eggs",
+          "en:free-range-chicken-eggs"
+        ],
+        "countries": [
+          "uk"
+        ],
+        "image_url": "https://images.openfoodfacts.org/images/products/505/139/988/1294/front_en.11.400.jpg",
+        "ingredients_text": "Free range eggs",
+        "labels_tags": [
+          "en:british-lion-quality",
+          "en:rspca-assured"
+        ],
+        "name": "Free Range Eggs Large",
+        "nova_group": 1,
+        "nutriments": {
+          "added-sugars_100g": 0,
+          "energy-kcal_100g": 131,
+          "energy-kj_100g": 547,
+          "fiber_100g": 0,
+          "fruits-vegetables-nuts-estimate-from-ingredients_100g": 0,
+          "proteins_100g": 12.6,
+          "salt_100g": 0.4,
+          "saturated-fat_100g": 2.5,
+          "sodium_100g": 0.16,
+          "sugars_100g": 0.1
+        },
+        "nutriscore_grade": "a",
+        "precomputed_score": 98,
+        "image_quality": "good"
+      },
+      {
+        "additives_tags": [],
+        "barcode": "0084909210548",
+        "brand": "Cock Brand (Made In Thailand)",
+        "categories_tags": [
+          "en:eggs-and-their-products",
+          "en:farming-products",
+          "en:eggs",
+          "en:quail-eggs"
+        ],
+        "countries": [
+          "ca"
+        ],
+        "image_url": "https://images.openfoodfacts.org/images/products/008/490/921/0548/front_en.3.400.jpg",
+        "ingredients_text": "Quail Eggs.",
+        "labels_tags": [],
+        "name": "Quail eggs in water",
+        "nova_group": 1,
+        "nutriments": {
+          "added-sugars_100g": 0,
+          "energy-kcal_100g": 142,
+          "energy-kj_100g": 592.7,
+          "fruits-vegetables-nuts-estimate-from-ingredients_100g": 0,
+          "proteins_100g": 12,
+          "salt_100g": 0.1075,
+          "saturated-fat_100g": 3.3,
+          "sodium_100g": 0.043,
+          "sugars_100g": 0
+        },
+        "nutriscore_grade": "a",
+        "precomputed_score": 98,
+        "image_quality": "good"
+      },
+      {
+        "additives_tags": [],
+        "barcode": "0065651013106",
+        "brand": "BURNBRAE FARMS",
+        "categories_tags": [
+          "en:eggs-and-their-products",
+          "en:farming-products",
+          "en:eggs",
+          "en:chicken-eggs",
+          "en:fresh-eggs"
+        ],
+        "countries": [
+          "ca"
+        ],
+        "image_url": "https://images.openfoodfacts.org/images/products/006/565/101/3106/front_en.8.400.jpg",
+        "labels_tags": [],
+        "name": "WHITE BLANCS",
+        "nutriments": {
+          "added-sugars_100g": 0,
+          "caffeine_100g": 0,
+          "calcium_100g": 0.03,
+          "choline_100g": 0,
+          "energy-kcal_100g": 142.85714285714,
+          "energy-kj_100g": 590.109890109889,
+          "fiber_100g": 0,
+          "iron_100g": 0.00164835164835165,
+          "magnesium_100g": 0,
+          "potassium_100g": 0.125,
+          "proteins_100g": 12.087912087912,
+          "salt_100g": 0.31593406593408,
+          "saturated-fat_100g": 3.2967032967033,
+          "selenium_100g": 2.74725274725275e-05,
+          "sodium_100g": 0.126373626373632,
+          "sugars_100g": 0,
+          "trans-fat_100g": 0,
+          "vitamin-c_100g": 0,
+          "zinc_100g": 0.0010989010989011
+        },
+        "nutriscore_grade": "a",
+        "precomputed_score": 98,
+        "image_quality": "good"
+      },
+      {
+        "additives_tags": [],
+        "barcode": "0065651002223",
+        "brand": "Burnbrae Farms",
+        "categories_tags": [
+          "en:eggs-and-their-products",
+          "en:farming-products",
+          "en:eggs",
+          "en:chicken-eggs"
+        ],
+        "countries": [
+          "ca"
+        ],
+        "image_url": "https://images.openfoodfacts.org/images/products/006/565/100/2223/front_en.46.400.jpg",
+        "ingredients_text": "eggs",
+        "labels_tags": [],
+        "name": "White Eggs",
+        "nova_group": 1,
+        "nutriments": {
+          "added-sugars_100g": 0,
+          "calcium_100g": 0.0476190476190476,
+          "choline_100g": 0,
+          "energy-kcal_100g": 152.380952380952,
+          "energy-kj_100g": 614.285714285714,
+          "fiber_100g": 0,
+          "fruits-vegetables-nuts-estimate-from-ingredients_100g": 0,
+          "iron_100g": 0.00166666666666667,
+          "potassium_100g": 0.119047619047619,
+          "proteins_100g": 12.3809523809524,
+          "salt_100g": 0.309285714285714,
+          "saturated-fat_100g": 3.33333333333333,
+          "sodium_100g": 0.123809523809524,
+          "sugars_100g": 0,
+          "trans-fat_100g": 0,
+          "vitamin-d_100g": 1.42857142857143e-06,
+          "zinc_100g": 0.00119047619047619
+        },
+        "nutriscore_grade": "a",
+        "precomputed_score": 98,
+        "image_quality": "good"
+      },
+      {
+        "additives_tags": [],
+        "barcode": "0628915235456",
+        "brand": "Great Value • Walmart",
+        "categories_tags": [
+          "en:eggs-and-their-products",
+          "en:farming-products",
+          "en:eggs",
+          "en:chicken-eggs",
+          "en:Fresh Chicken Eggs",
+          "en:Fresh-organic-free-range-chicken-eggs-brown"
+        ],
+        "countries": [
+          "ca"
+        ],
+        "image_url": "https://images.openfoodfacts.org/images/products/062/891/523/5456/front_en.10.400.jpg",
+        "ingredients_text": "( Free-Range Brown) Organic Large  Eggs.",
+        "labels_tags": [
+          "en:organic",
+          "en:canada-organic",
+          "en:product-of-canada",
+          "en:Canada grade A"
+        ],
+        "name": "12 Large Organic Free-Range Eggs, brown.",
+        "nova_group": 1,
+        "nutriments": {
+          "added-sugars_100g": 0,
+          "energy-kcal_100g": 152.380952380952,
+          "energy-kj_100g": 614.285714285714,
+          "fruits-vegetables-nuts-estimate-from-ingredients_100g": 0,
+          "iron_100g": 0.00166666666666667,
+          "potassium_100g": 0.119047619047619,
+          "proteins_100g": 12.3809523809524,
+          "salt_100g": 0.314285714285714,
+          "saturated-fat_100g": 3.33333333333333,
+          "sodium_100g": 0.125714285714286,
+          "sugars_100g": 0,
+          "trans-fat_100g": 0
+        },
+        "nutriscore_grade": "a",
+        "precomputed_score": 98,
+        "image_quality": "good"
+      },
+      {
+        "additives_tags": [],
+        "barcode": "0065651000120",
+        "brand": "Burnbrae Farms",
+        "categories_tags": [
+          "en:eggs-and-their-products",
+          "en:farming-products",
+          "en:eggs",
+          "en:chicken-eggs",
+          "en:fresh-eggs",
+          "en:large-eggs"
+        ],
+        "countries": [
+          "ca"
+        ],
+        "image_url": "https://images.openfoodfacts.org/images/products/006/565/100/0120/front_en.4.400.jpg",
+        "labels_tags": [],
+        "name": "Brown Eggs",
+        "nutriments": {
+          "energy-kcal_100g": 152.380952380952,
+          "energy-kj_100g": 614.285714285714,
+          "fiber_100g": 0,
+          "iron_100g": 0.00166666666666667,
+          "potassium_100g": 0.119047619047619,
+          "proteins_100g": 12.3809523809524,
+          "salt_100g": 0.30952380952381,
+          "saturated-fat_100g": 3.33333333333333,
+          "sodium_100g": 0.123809523809524,
+          "sugars_100g": 0,
+          "trans-fat_100g": 0,
+          "vitamin-d_100g": 1.42857142857143e-06,
+          "zinc_100g": 0.00119047619047619
+        },
+        "nutriscore_grade": "a",
+        "precomputed_score": 98,
+        "image_quality": "good"
+      },
+      {
+        "additives_tags": [],
+        "barcode": "0060383690687",
+        "brand": "PC Organics • Loblaws",
+        "categories_tags": [
+          "en:eggs-and-their-products",
+          "en:farming-products",
+          "en:eggs",
+          "en:chicken-eggs",
+          "en:Large Organic Free-Range Chicken Eggs"
+        ],
+        "countries": [
+          "ca"
+        ],
+        "image_url": "https://images.openfoodfacts.org/images/products/006/038/369/0687/front_en.37.400.jpg",
+        "ingredients_text": "Large Organic Free-Range Chicken Eggs.",
+        "labels_tags": [
+          "en:organic",
+          "en:canada-organic",
+          "en:Canada-grade-a",
+          "en:Certified Organic is Free-Range.",
+          "en:Free-range-open-concept-barn",
+          "en:Organic-free-range",
+          "en:Organic-grain-fed",
+          "en:Qai-organic"
+        ],
+        "name": "12 Large Organic Free-Range Eggs, brown.",
+        "nutriments": {
+          "added-sugars_100g": 0,
+          "calcium_100g": 0.0476190476190476,
+          "energy-kcal_100g": 152.380952380952,
+          "energy-kj_100g": 614.285714285714,
+          "fiber_100g": 0,
+          "fruits-vegetables-nuts-estimate-from-ingredients_100g": 0,
+          "iron_100g": 0.00166666666666667,
+          "potassium_100g": 0.119047619047619,
+          "proteins_100g": 12.3809523809524,
+          "salt_100g": 0.30952380952381,
+          "saturated-fat_100g": 3.33333333333333,
+          "sodium_100g": 0.123809523809524,
+          "sugars_100g": 0,
+          "trans-fat_100g": 0
+        },
+        "nutriscore_grade": "a",
+        "precomputed_score": 98,
+        "image_quality": "good"
+      },
+      {
+        "additives_tags": [],
+        "barcode": "0887422000005",
+        "brand": "HAPPY egg co",
+        "categories_tags": [
+          "en:eggs-and-their-products",
+          "en:farming-products",
+          "en:eggs",
+          "en:chicken-eggs"
+        ],
+        "countries": [
+          "us"
+        ],
+        "image_url": "https://images.openfoodfacts.org/images/products/088/742/200/0005/front_en.54.400.jpg",
+        "ingredients_text": "Eggs",
+        "labels_tags": [
+          "en:kosher"
+        ],
+        "name": "free range",
+        "nova_group": 1,
+        "nutriments": {
+          "added-sugars_100g": 0,
+          "caffeine_100g": 0,
+          "calcium_100g": 0.06,
+          "choline_100g": 0,
+          "energy-kcal_100g": 140,
+          "energy-kj_100g": 574,
+          "fiber_100g": 0,
+          "fruits-vegetables-nuts-estimate-from-ingredients_100g": 0,
+          "iron_100g": 0.0018,
+          "magnesium_100g": 0,
+          "potassium_100g": 0.14,
+          "proteins_100g": 12,
+          "salt_100g": 0.35,
+          "saturated-fat_100g": 3,
+          "selenium_100g": 0,
+          "sodium_100g": 0.14,
+          "sugars_100g": 0,
+          "trans-fat_100g": 0,
+          "vitamin-c_100g": 0,
+          "vitamin-d_100g": 2e-06,
+          "zinc_100g": 0
+        },
+        "nutriscore_grade": "a",
+        "precomputed_score": 98,
+        "image_quality": "good"
+      },
+      {
+        "additives_tags": [],
+        "barcode": "5000306004240",
+        "brand": "Clarence Court",
+        "categories_tags": [
+          "en:eggs-and-their-products",
+          "en:farming-products",
+          "en:eggs",
+          "en:chicken-eggs",
+          "en:free-range-chicken-eggs"
+        ],
+        "countries": [
+          "uk"
+        ],
+        "image_url": "https://images.openfoodfacts.org/images/products/500/030/600/4240/front_en.29.400.jpg",
+        "ingredients_text": "Free range eggs.",
+        "labels_tags": [],
+        "name": "Burford Browns 6 Large Eggs",
+        "nova_group": 1,
+        "nutriments": {
+          "added-sugars_100g": 0,
+          "caffeine_100g": 0,
+          "calcium_100g": 0.056,
+          "energy-kcal_100g": 131,
+          "energy-kj_100g": 547.2,
+          "fiber_100g": 0,
+          "fruits-vegetables-nuts-estimate-from-ingredients_100g": 0,
+          "iron_100g": 0.00176,
+          "magnesium_100g": 0.012,
+          "omega-3-fat_100g": 0.05,
+          "potassium_100g": 0.138,
+          "proteins_100g": 12.6,
+          "salt_100g": 0.3825,
+          "saturated-fat_100g": 2.5,
+          "selenium_100g": 3.08e-05,
+          "sodium_100g": 0.156,
+          "sugars_100g": 0,
+          "trans-fat_100g": 0,
+          "vitamin-b12_100g": 9e-07,
+          "vitamin-c_100g": 0,
+          "vitamin-d_100g": 2e-06,
+          "zinc_100g": 0.0013
+        },
+        "nutriscore_grade": "a",
+        "precomputed_score": 98,
+        "image_quality": "good"
+      },
+      {
+        "additives_tags": [],
+        "barcode": "0090208301108",
+        "brand": "",
+        "categories_tags": [
+          "en:eggs-and-their-products",
+          "en:farming-products",
+          "en:eggs",
+          "en:chicken-eggs",
+          "en:barn-chicken-eggs",
+          "en:fresh-eggs"
+        ],
+        "countries": [
+          "us"
+        ],
+        "image_url": "https://images.openfoodfacts.org/images/products/009/020/830/1108/front_en.3.400.jpg",
+        "labels_tags": [],
+        "name": "Farm Fresh Brown Eggs",
+        "nutriments": {
+          "energy-kcal_100g": 140,
+          "proteins_100g": 12,
+          "salt_100g": 0.35,
+          "saturated-fat_100g": 3,
+          "sodium_100g": 0.14,
+          "sugars_100g": 0
+        },
+        "nutriscore_grade": "a",
+        "precomputed_score": 98,
+        "image_quality": "good"
+      },
+      {
+        "additives_tags": [],
+        "barcode": "5024393000114",
+        "brand": "Clarence Court",
+        "categories_tags": [
+          "en:eggs-and-their-products",
+          "en:farming-products",
+          "en:eggs"
+        ],
+        "countries": [
+          "uk"
+        ],
+        "image_url": "https://images.openfoodfacts.org/images/products/502/439/300/0114/front_en.22.400.jpg",
+        "ingredients_text": "free range eggs",
+        "labels_tags": [
+          "en:free-range"
+        ],
+        "name": "Burford Browns 6 Eggs Assorted Sizes",
+        "nova_group": 1,
+        "nutriments": {
+          "added-sugars_100g": 0,
+          "energy-kcal_100g": 130.019,
+          "energy-kj_100g": 547.2,
+          "fruits-vegetables-nuts-estimate-from-ingredients_100g": 0,
+          "proteins_100g": 12.6,
+          "salt_100g": 0.3825,
+          "saturated-fat_100g": 2.5,
+          "sodium_100g": 0.153
+        },
+        "nutriscore_grade": "unknown",
+        "precomputed_score": 98,
+        "image_quality": "good"
+      },
+      {
+        "additives_tags": [],
+        "barcode": "0011110873743",
+        "brand": "simple truth",
+        "categories_tags": [
+          "en:eggs-and-their-products",
+          "en:farming-products",
+          "en:eggs",
+          "en:chicken-eggs"
+        ],
+        "countries": [
+          "us"
+        ],
+        "image_url": "https://images.openfoodfacts.org/images/products/001/111/087/3743/front_en.23.400.jpg",
+        "labels_tags": [],
+        "name": "Natural Large Brown Eggs Grade AA",
+        "nutriments": {
+          "added-sugars_100g": 0,
+          "calcium_100g": 0.06,
+          "choline_100g": 0,
+          "energy-kcal_100g": 140,
+          "fiber_100g": 0,
+          "iron_100g": 0.0018,
+          "potassium_100g": 0.14,
+          "proteins_100g": 12,
+          "salt_100g": 0.35,
+          "saturated-fat_100g": 3,
+          "sodium_100g": 0.14,
+          "sugars_100g": 0,
+          "trans-fat_100g": 0,
+          "vitamin-d_100g": 2e-06
+        },
+        "nutriscore_grade": "a",
+        "precomputed_score": 98,
+        "image_quality": "good"
+      },
+      {
+        "additives_tags": [],
+        "barcode": "0674959000079",
+        "brand": "GoldEgg",
+        "categories_tags": [
+          "en:eggs-and-their-products",
+          "en:farming-products",
+          "en:eggs",
+          "en:chicken-eggs",
+          "en:free-range-chicken-eggs",
+          "en:Organic Chicken Eggs",
+          "en:Organic-chicken-eggs",
+          "en:Organic-large-brown-chicken-eggs"
+        ],
+        "countries": [
+          "ca"
+        ],
+        "image_url": "https://images.openfoodfacts.org/images/products/067/495/900/0079/front_en.21.400.jpg",
+        "ingredients_text": "Large Organic Free-Range Chicken Eggs.",
+        "labels_tags": [
+          "en:organic",
+          "en:no-preservatives",
+          "en:canada-organic",
+          "en:Canada-grade-a",
+          "en:Eqa-aqo"
+        ],
+        "name": "12 Large Organic Free-Range Eggs, brown.",
+        "nutriments": {
+          "added-sugars_100g": 0,
+          "calcium_100g": 0.04761905,
+          "energy-kcal_100g": 152.38095,
+          "energy-kj_100g": 614.28564,
+          "fruits-vegetables-nuts-estimate-from-ingredients_100g": 0,
+          "iron_100g": 0.00171429,
+          "potassium_100g": 0.11904762,
+          "proteins_100g": 12.38095,
+          "salt_100g": 0.30952,
+          "saturated-fat_100g": 3.33333,
+          "sodium_100g": 0.12381,
+          "trans-fat_100g": 0,
+          "vitamin-d_100g": 1.42857e-06
+        },
+        "nutriscore_grade": "unknown",
+        "precomputed_score": 98,
+        "image_quality": "good"
+      },
+      {
+        "additives_tags": [],
+        "barcode": "4094104443609",
+        "brand": "Gray Ridge Egg Farms",
+        "categories_tags": [
+          "en:eggs-and-their-products",
+          "en:farming-products",
+          "en:eggs",
+          "en:chicken-eggs",
+          "en:fresh-eggs",
+          "en:large-eggs"
+        ],
+        "countries": [
+          "ca"
+        ],
+        "ingredients_text": "Large Chicken Eggs.",
+        "labels_tags": [],
+        "name": "30 Large Chicken Eggs",
+        "nutriments": {
+          "added-sugars_100g": 0,
+          "calcium_100g": 0.0377358490566038,
+          "energy-kcal_100g": 132.075471698113,
+          "energy-kj_100g": 573.584905660377,
+          "fiber_100g": 0,
+          "fruits-vegetables-nuts-estimate-from-ingredients_100g": 0,
+          "iron_100g": 0.0020377358490566,
+          "proteins_100g": 11.3207547169811,
+          "salt_100g": 0.306603773584906,
+          "saturated-fat_100g": 2.83018867924528,
+          "sodium_100g": 0.122641509433962,
+          "sugars_100g": 0,
+          "trans-fat_100g": 0,
+          "vitamin-c_100g": 0,
+          "vitamin-d_100g": 1.13207547169811e-05
+        },
+        "nutriscore_grade": "a",
+        "precomputed_score": 98,
+        "image_quality": "missing"
+      },
+      {
+        "additives_tags": [],
+        "barcode": "0079893108346",
+        "brand": "Open Nature",
+        "categories_tags": [
+          "en:eggs-and-their-products",
+          "en:farming-products",
+          "en:eggs",
+          "en:chicken-eggs",
+          "en:free-range-chicken-eggs"
+        ],
+        "countries": [
+          "us"
+        ],
+        "image_url": "https://images.openfoodfacts.org/images/products/007/989/310/8346/front_en.3.400.jpg",
+        "labels_tags": [],
+        "name": "Grade aa free range fresh large brown eggs",
+        "nutriments": {
+          "energy-kcal_100g": 140,
+          "fiber_100g": 0,
+          "proteins_100g": 12,
+          "salt_100g": 0.35,
+          "saturated-fat_100g": 3,
+          "sodium_100g": 0.14,
+          "sugars_100g": 0
+        },
+        "nutriscore_grade": "a",
+        "precomputed_score": 98,
+        "image_quality": "good"
+      },
+      {
+        "additives_tags": [],
+        "barcode": "0021130031542",
+        "brand": "Lucerne",
+        "categories_tags": [
+          "en:eggs-and-their-products",
+          "en:farming-products",
+          "en:eggs",
+          "en:chicken-eggs"
+        ],
+        "countries": [
+          "us"
+        ],
+        "image_url": "https://images.openfoodfacts.org/images/products/002/113/003/1542/front_en.13.400.jpg",
+        "labels_tags": [],
+        "name": "egg",
+        "nutriments": {
+          "added-sugars_100g": 0,
+          "calcium_100g": 0.052,
+          "energy-kcal_100g": 140,
+          "energy-kj_100g": 574,
+          "fiber_100g": 0,
+          "iron_100g": 0.002,
+          "potassium_100g": 0,
+          "proteins_100g": 12,
+          "salt_100g": 0.35,
+          "saturated-fat_100g": 3,
+          "sodium_100g": 0.14,
+          "sugars_100g": 0,
+          "trans-fat_100g": 0,
+          "vitamin-d_100g": 2.4e-06
+        },
+        "nutriscore_grade": "a",
+        "precomputed_score": 98,
+        "image_quality": "good"
+      },
+      {
+        "additives_tags": [],
+        "barcode": "0688267033582",
+        "brand": "bread",
+        "categories_tags": [
+          "en:eggs-and-their-products",
+          "en:farming-products",
+          "en:eggs"
+        ],
+        "countries": [
+          "us"
+        ],
+        "image_url": "https://images.openfoodfacts.org/images/products/068/826/703/3582/front_en.5.400.jpg",
+        "ingredients_text": "Fresh white eggs",
+        "labels_tags": [],
+        "name": "White Eggs Large",
+        "nutriments": {
+          "added-sugars_100g": 0,
+          "calcium_100g": 0.04,
+          "energy-kcal_100g": 140,
+          "energy-kj_100g": 574,
+          "fiber_100g": 0,
+          "fruits-vegetables-nuts-estimate-from-ingredients_100g": 0,
+          "iron_100g": 0.002,
+          "potassium_100g": 0.14,
+          "proteins_100g": 12,
+          "salt_100g": 0.35,
+          "saturated-fat_100g": 3,
+          "sodium_100g": 0.14,
+          "sugars_100g": 0,
+          "trans-fat_100g": 0,
+          "vitamin-c_100g": 0
+        },
+        "nutriscore_grade": "a",
+        "precomputed_score": 98,
+        "image_quality": "good"
+      },
+      {
+        "additives_tags": [],
+        "barcode": "5000326010832",
+        "brand": "The Happy Egg Co",
+        "categories_tags": [
+          "en:eggs-and-their-products",
+          "en:farming-products",
+          "en:eggs",
+          "en:chicken-eggs",
+          "en:free-range-chicken-eggs"
+        ],
+        "countries": [
+          "uk"
+        ],
+        "image_url": "https://images.openfoodfacts.org/images/products/500/032/601/0832/front_en.19.400.jpg",
+        "ingredients_text": "Free range eggs.",
+        "labels_tags": [
+          "en:rspca-assured"
+        ],
+        "name": "happy egg",
+        "nova_group": 1,
+        "nutriments": {
+          "added-sugars_100g": 0,
+          "energy-kcal_100g": 131,
+          "energy-kj_100g": 555.7,
+          "fruits-vegetables-nuts-estimate-from-ingredients_100g": 0,
+          "proteins_100g": 12.6,
+          "salt_100g": 0.385,
+          "saturated-fat_100g": 2.5,
+          "sodium_100g": 0.154,
+          "sugars_100g": 0.5
+        },
+        "nutriscore_grade": "a",
+        "precomputed_score": 98,
+        "image_quality": "good"
+      },
+      {
+        "additives_tags": [],
+        "barcode": "01298550",
+        "brand": "Sainsbury's",
+        "categories_tags": [
+          "en:eggs-and-their-products",
+          "en:farming-products",
+          "en:eggs",
+          "en:chicken-eggs",
+          "en:free-range-chicken-eggs"
+        ],
+        "countries": [
+          "uk"
+        ],
+        "image_url": "https://images.openfoodfacts.org/images/products/000/000/129/8550/front_en.40.400.jpg",
+        "ingredients_text": "Eggs.",
+        "labels_tags": [
+          "en:organic",
+          "en:eu-organic",
+          "en:british-lion-quality",
+          "en:farm-verified-organic",
+          "en:gb-org-02",
+          "en:rspca-assured",
+          "en:UK Agriculture"
+        ],
+        "name": "Free range British eggs Large",
+        "nova_group": 1,
+        "nutriments": {
+          "added-sugars_100g": 0,
+          "energy-kcal_100g": 143,
+          "energy-kj_100g": 595,
+          "fiber_100g": 0.5,
+          "fruits-vegetables-nuts-estimate-from-ingredients_100g": 0,
+          "proteins_100g": 14.1,
+          "salt_100g": 0.38,
+          "saturated-fat_100g": 2.7,
+          "sodium_100g": 0.152,
+          "sugars_100g": 0.5,
+          "vitamin-d_100g": 3.2e-06
+        },
+        "nutriscore_grade": "a",
+        "precomputed_score": 98,
+        "image_quality": "good"
+      },
+      {
+        "additives_tags": [],
+        "barcode": "0193968152956",
+        "brand": "Member's Mark",
+        "categories_tags": [
+          "en:eggs-and-their-products",
+          "en:farming-products",
+          "en:eggs"
+        ],
+        "countries": [
+          "us"
+        ],
+        "image_url": "https://images.openfoodfacts.org/images/products/019/396/815/2956/front_en.38.400.jpg",
+        "ingredients_text": "eggs",
+        "labels_tags": [
+          "en:organic",
+          "en:usda-organic"
+        ],
+        "name": "Organic Cage Free Eggs",
+        "nova_group": 1,
+        "nutriments": {
+          "added-sugars_100g": 0,
+          "calcium_100g": 0.06,
+          "choline_100g": 0,
+          "energy-kcal_100g": 140,
+          "energy-kj_100g": 574,
+          "fruits-vegetables-nuts-estimate-from-ingredients_100g": 0,
+          "iron_100g": 0.0018,
+          "potassium_100g": 0.14,
+          "proteins_100g": 12,
+          "salt_100g": 0.35,
+          "saturated-fat_100g": 3,
+          "sodium_100g": 0.14,
+          "vitamin-d_100g": 2e-06
+        },
+        "nutriscore_grade": "unknown",
+        "precomputed_score": 98,
+        "image_quality": "good"
+      },
+      {
+        "additives_tags": [],
+        "barcode": "0196633968807",
+        "brand": "Kirkland Signature",
+        "categories_tags": [
+          "en:eggs-and-their-products",
+          "en:farming-products",
+          "en:eggs",
+          "en:chicken-eggs",
+          "en:barn-chicken-eggs",
+          "en:fresh-eggs",
+          "en:free-run-chicken-eggs",
+          "en:large-eggs"
+        ],
+        "countries": [
+          "ca"
+        ],
+        "image_url": "https://images.openfoodfacts.org/images/products/019/663/396/8807/front_en.6.400.jpg",
+        "ingredients_text": "Large Chicken Eggs (Free Run).",
+        "labels_tags": [
+          "en:Canada-grade-a",
+          "en:Carton-rpet-recycled-pet-bottles",
+          "en:Chicken-eggs",
+          "en:Free-Run Eggs",
+          "en:Free-run-chicken-eggs"
+        ],
+        "name": "Free Run",
+        "nutriments": {
+          "added-sugars_100g": 0,
+          "calcium_100g": 0.0476190476190476,
+          "energy-kcal_100g": 152.380952380952,
+          "energy-kj_100g": 614.285714285714,
+          "fiber_100g": 0,
+          "fruits-vegetables-nuts-estimate-from-ingredients_100g": 0,
+          "iron_100g": 0.00166666666666667,
+          "potassium_100g": 0.119047619047619,
+          "proteins_100g": 12.3809523809524,
+          "salt_100g": 0.30952380952381,
+          "saturated-fat_100g": 3.33333333333333,
+          "sodium_100g": 0.123809523809524,
+          "sugars_100g": 0,
+          "trans-fat_100g": 0
+        },
+        "nutriscore_grade": "a",
+        "precomputed_score": 98,
+        "image_quality": "low"
+      },
+      {
+        "additives_tags": [],
+        "barcode": "0041303026571",
+        "brand": "Essential everyday",
+        "categories_tags": [
+          "en:eggs-and-their-products",
+          "en:farming-products",
+          "en:eggs",
+          "en:chicken-eggs",
+          "en:fresh-eggs",
+          "en:jumbo-eggs"
+        ],
+        "countries": [
+          "us"
+        ],
+        "image_url": "https://images.openfoodfacts.org/images/products/004/130/302/6571/front_en.15.400.jpg",
+        "ingredients_text": "EGGS",
+        "labels_tags": [],
+        "name": "Jumbo Fresh Eggs",
+        "nova_group": 1,
+        "nutriments": {
+          "added-sugars_100g": 0,
+          "caffeine_100g": 0,
+          "calcium_100g": 0,
+          "choline_100g": 0,
+          "energy-kcal_100g": 142.857142857143,
+          "fiber_100g": 0,
+          "iron_100g": 0.00226757369614513,
+          "magnesium_100g": 0,
+          "potassium_100g": 0,
+          "proteins_100g": 12.6984126984127,
+          "salt_100g": 0.357142857142857,
+          "saturated-fat_100g": 3.17460317460317,
+          "selenium_100g": 0,
+          "sodium_100g": 0.142857142857143,
+          "sugars_100g": 0,
+          "trans-fat_100g": 0,
+          "vitamin-c_100g": 0,
+          "zinc_100g": 0
+        },
+        "nutriscore_grade": "a",
+        "precomputed_score": 98,
+        "image_quality": "good"
+      },
+      {
+        "additives_tags": [],
+        "barcode": "0064767343053",
+        "brand": "Gray Ridge",
+        "categories_tags": [
+          "en:eggs-and-their-products",
+          "en:farming-products",
+          "en:eggs",
+          "en:chicken-eggs",
+          "en:cage-chicken-eggs"
+        ],
+        "countries": [
+          "ca",
+          "us"
+        ],
+        "image_url": "https://images.openfoodfacts.org/images/products/006/476/734/3053/front_en.15.400.jpg",
+        "ingredients_text": "Large chicken eggs.",
+        "labels_tags": [
+          "en:USDA Grade-A"
+        ],
+        "name": "Premium Brand",
+        "nutriments": {
+          "added-sugars_100g": 0,
+          "calcium_100g": 0.0454545454545455,
+          "energy-kcal_100g": 152.380952380952,
+          "energy-kj_100g": 586.363636363636,
+          "fiber_100g": 0,
+          "fruits-vegetables-nuts-estimate-from-ingredients_100g": 0,
+          "iron_100g": 0.00161904761904762,
+          "potassium_100g": 0.113636363636364,
+          "proteins_100g": 11.8181818181818,
+          "salt_100g": 0.590909090909091,
+          "saturated-fat_100g": 3.18181818181818,
+          "sodium_100g": 0.118181818181818,
+          "sugars_100g": 0
+        },
+        "nutriscore_grade": "b",
+        "precomputed_score": 98,
+        "image_quality": "good"
+      },
+      {
+        "additives_tags": [],
+        "barcode": "0055742357561",
+        "brand": "Compliments",
+        "categories_tags": [
+          "en:eggs-and-their-products",
+          "en:farming-products",
+          "en:eggs",
+          "en:chicken-eggs",
+          "en:cage-chicken-eggs"
+        ],
+        "countries": [
+          "ca"
+        ],
+        "image_url": "https://images.openfoodfacts.org/images/products/005/574/235/7561/front_en.10.400.jpg",
+        "ingredients_text": "Large Chicken Eggs.",
+        "labels_tags": [],
+        "name": "Large eggs",
+        "nutriments": {
+          "added-sugars_100g": 0,
+          "calcium_100g": 0.0571428571428571,
+          "energy-kcal_100g": 152.380952380952,
+          "energy-kj_100g": 614.285714285714,
+          "fiber_100g": 0,
+          "fruits-vegetables-nuts-estimate-from-ingredients_100g": 0,
+          "iron_100g": 0.00166666666666667,
+          "potassium_100g": 0.119047619047619,
+          "proteins_100g": 12.3809523809524,
+          "salt_100g": 0.30952380952381,
+          "saturated-fat_100g": 3.33333333333333,
+          "sodium_100g": 0.123809523809524,
+          "sugars_100g": 0,
+          "trans-fat_100g": 0
+        },
+        "nutriscore_grade": "a",
+        "precomputed_score": 98,
+        "image_quality": "good"
+      },
+      {
+        "additives_tags": [],
+        "barcode": "0085239311578",
+        "brand": "Good & Gather",
+        "categories_tags": [
+          "en:eggs-and-their-products",
+          "en:farming-products",
+          "en:eggs",
+          "en:chicken-eggs",
+          "en:fresh-eggs",
+          "en:large-eggs"
+        ],
+        "countries": [
+          "us"
+        ],
+        "image_url": "https://images.openfoodfacts.org/images/products/008/523/931/1578/front_en.13.400.jpg",
+        "ingredients_text": "Large fresh eggs",
+        "labels_tags": [],
+        "name": "12 Large Fresh Eggs",
+        "nova_group": 1,
+        "nutriments": {
+          "added-sugars_100g": 0,
+          "caffeine_100g": 0,
+          "calcium_100g": 0.04,
+          "choline_100g": 0,
+          "energy-kcal_100g": 140,
+          "fiber_100g": 0,
+          "iron_100g": 0,
+          "magnesium_100g": 0,
+          "proteins_100g": 12,
+          "salt_100g": 0.35,
+          "saturated-fat_100g": 3,
+          "selenium_100g": 0,
+          "sodium_100g": 0.14,
+          "sugars_100g": 0,
+          "trans-fat_100g": 0,
+          "vitamin-c_100g": 0,
+          "zinc_100g": 0
+        },
+        "nutriscore_grade": "a",
+        "precomputed_score": 98,
+        "image_quality": "good"
+      },
+      {
+        "additives_tags": [],
+        "barcode": "0830312000333",
+        "brand": "Coligny Creek Egg Co",
+        "categories_tags": [
+          "en:eggs-and-their-products",
+          "en:farming-products",
+          "en:eggs",
+          "en:chicken-eggs",
+          "en:Certified-organic-eggs-are-also-free-range",
+          "en:Large-organic-chicken-eggs"
+        ],
+        "countries": [
+          "ca"
+        ],
+        "image_url": "https://images.openfoodfacts.org/images/products/083/031/200/0333/front_en.38.400.jpg",
+        "ingredients_text": "(18) Large Organic Chicken Eggs.",
+        "labels_tags": [
+          "en:organic",
+          "en:free-range",
+          "en:canada-organic",
+          "en:Canada-grade-a",
+          "en:Pro-cert-organic"
+        ],
+        "name": "18 Large Organic Free-Range Eggs, brown.",
+        "nutriments": {
+          "added-sugars_100g": 0,
+          "calcium_100g": 0.0476190476190476,
+          "energy-kcal_100g": 152.380952380952,
+          "energy-kj_100g": 614.285714285714,
+          "fiber_100g": 0,
+          "fruits-vegetables-nuts-estimate-from-ingredients_100g": 0,
+          "iron_100g": 0.00166666666666667,
+          "potassium_100g": 0.119047619047619,
+          "proteins_100g": 12.3809523809524,
+          "salt_100g": 0.285714285714286,
+          "saturated-fat_100g": 3.33333333333333,
+          "sodium_100g": 0.114285714285714,
+          "sugars_100g": 0,
+          "trans-fat_100g": 0
+        },
+        "nutriscore_grade": "a",
+        "precomputed_score": 98,
+        "image_quality": "low"
+      },
+      {
+        "additives_tags": [],
+        "barcode": "0096619635917",
+        "brand": "KIRKLAND Signature",
+        "categories_tags": [
+          "en:eggs-and-their-products",
+          "en:farming-products",
+          "en:eggs"
+        ],
+        "countries": [
+          "us"
+        ],
+        "image_url": "https://images.openfoodfacts.org/images/products/009/661/963/5917/front_en.50.400.jpg",
+        "ingredients_text": "EGGS",
+        "labels_tags": [],
+        "name": "CAGE-FREE EGGS GRADE AA LARGE",
+        "nova_group": 1,
+        "nutriments": {
+          "added-sugars_100g": 0,
+          "calcium_100g": 0.06,
+          "choline_100g": 0,
+          "energy-kcal_100g": 140,
+          "energy-kj_100g": 574,
+          "fruits-vegetables-nuts-estimate-from-ingredients_100g": 0,
+          "iron_100g": 0.0018,
+          "potassium_100g": 0.14,
+          "proteins_100g": 12,
+          "salt_100g": 0.35,
+          "saturated-fat_100g": 3,
+          "sodium_100g": 0.14,
+          "trans-fat_100g": 0,
+          "vitamin-d_100g": 2e-06
+        },
+        "nutriscore_grade": "unknown",
+        "precomputed_score": 98,
+        "image_quality": "good"
+      },
+      {
+        "additives_tags": [],
+        "barcode": "0067799017916",
+        "brand": "Nova",
+        "categories_tags": [
+          "en:eggs-and-their-products",
+          "en:farming-products",
+          "en:eggs",
+          "en:chicken-eggs"
+        ],
+        "countries": [
+          "ca"
+        ],
+        "image_url": "https://images.openfoodfacts.org/images/products/006/779/901/7916/front_en.4.400.jpg",
+        "labels_tags": [],
+        "name": "Eggs",
+        "nutriments": {
+          "added-sugars_100g": 0,
+          "energy-kcal_100g": 152.380952380952,
+          "energy-kj_100g": 614.285714285714,
+          "fiber_100g": 0,
+          "proteins_100g": 12.3809523809524,
+          "salt_100g": 0.30952380952381,
+          "saturated-fat_100g": 3.33333333333333,
+          "sodium_100g": 0.123809523809524,
+          "sugars_100g": 0,
+          "trans-fat_100g": 0
+        },
+        "nutriscore_grade": "a",
+        "precomputed_score": 98,
+        "image_quality": "good"
+      },
+      {
+        "additives_tags": [],
+        "barcode": "0033604535555",
+        "brand": "Sauder's Eggs",
+        "categories_tags": [
+          "en:eggs-and-their-products",
+          "en:farming-products",
+          "en:eggs",
+          "en:chicken-eggs",
+          "en:fresh-eggs",
+          "en:medium-eggs"
+        ],
+        "countries": [
+          "us"
+        ],
+        "image_url": "https://images.openfoodfacts.org/images/products/003/360/453/5555/front_en.4.400.jpg",
+        "ingredients_text": "EGGS",
+        "labels_tags": [],
+        "name": "12 Grade A Medium Eggs",
+        "nova_group": 1,
+        "nutriments": {
+          "calcium_100g": 5e-05,
+          "energy-kcal_100g": 136.363636363636,
+          "iron_100g": 2.27272727272727e-06,
+          "potassium_100g": 0.000154545454545455,
+          "proteins_100g": 13.6363636363636,
+          "salt_100g": 0.340909090909091,
+          "saturated-fat_100g": 3.40909090909091,
+          "sodium_100g": 0.136363636363636,
+          "trans-fat_100g": 0,
+          "vitamin-d_100g": 0,
+          "zinc_100g": 2.27272727272727e-06
+        },
+        "nutriscore_grade": "a",
+        "precomputed_score": 98,
+        "image_quality": "good"
+      },
+      {
+        "additives_tags": [],
+        "barcode": "5052910182852",
+        "brand": "Tesco Finest",
+        "categories_tags": [
+          "en:eggs-and-their-products",
+          "en:farming-products",
+          "en:eggs",
+          "en:chicken-eggs",
+          "en:free-range-chicken-eggs"
+        ],
+        "countries": [
+          "uk"
+        ],
+        "image_url": "https://images.openfoodfacts.org/images/products/505/291/018/2852/front_en.20.400.jpg",
+        "ingredients_text": "Free range eggs.",
+        "labels_tags": [
+          "en:british-lion-quality",
+          "en:rspca-assured",
+          "en:Free to roam"
+        ],
+        "name": "Chestnut Maran Eggs",
+        "nova_group": 1,
+        "nutriments": {
+          "added-sugars_100g": 0,
+          "energy-kcal_100g": 131,
+          "energy-kj_100g": 548,
+          "fiber_100g": 0,
+          "fruits-vegetables-nuts-estimate-from-ingredients_100g": 0,
+          "proteins_100g": 12.6,
+          "salt_100g": 0.3925,
+          "saturated-fat_100g": 2.5,
+          "sodium_100g": 0.157,
+          "sugars_100g": 0
+        },
+        "nutriscore_grade": "a",
+        "precomputed_score": 98,
+        "image_quality": "good"
+      },
+      {
+        "additives_tags": [],
+        "barcode": "0035826089588",
+        "brand": "FOOD LION",
+        "categories_tags": [
+          "en:eggs-and-their-products",
+          "en:farming-products",
+          "en:eggs"
+        ],
+        "countries": [
+          "us"
+        ],
+        "image_url": "https://images.openfoodfacts.org/images/products/003/582/608/9588/front_en.7.400.jpg",
+        "ingredients_text": "Egg",
+        "labels_tags": [],
+        "name": "EGGS",
+        "nova_group": 1,
+        "nutriments": {
+          "added-sugars_100g": 0,
+          "caffeine_100g": 0,
+          "calcium_100g": 0.04,
+          "choline_100g": 0,
+          "energy-kcal_100g": 140,
+          "fiber_100g": 0,
+          "iron_100g": 0,
+          "magnesium_100g": 0,
+          "potassium_100g": 0.14,
+          "proteins_100g": 12,
+          "salt_100g": 0.35,
+          "saturated-fat_100g": 3,
+          "selenium_100g": 0,
+          "sodium_100g": 0.14,
+          "sugars_100g": 0,
+          "trans-fat_100g": 0,
+          "vitamin-c_100g": 0,
+          "zinc_100g": 0
+        },
+        "nutriscore_grade": "a",
+        "precomputed_score": 98,
+        "image_quality": "good"
+      },
+      {
+        "additives_tags": [],
+        "barcode": "0055742506327",
+        "brand": "Compliments • Sobeys",
+        "categories_tags": [
+          "en:eggs-and-their-products",
+          "en:farming-products",
+          "en:eggs",
+          "en:Organic Chicken Eggs"
+        ],
+        "countries": [
+          "ca"
+        ],
+        "image_url": "https://images.openfoodfacts.org/images/products/005/574/250/6327/front_en.54.400.jpg",
+        "ingredients_text": "Medium Organic Free-Range Chicken Eggs.",
+        "labels_tags": [
+          "en:organic",
+          "en:canada-organic",
+          "en:100-recycled-fibre-carton",
+          "en:Canada-grade-a",
+          "en:Certified-organic-by-qai",
+          "en:Egg-quality-assurance",
+          "en:Organic  Free-Range"
+        ],
+        "name": "12 Medium Organic Free-Range Eggs, Brown",
+        "nutriments": {
+          "added-sugars_100g": 0,
+          "calcium_100g": 0.043956043956044,
+          "energy-kcal_100g": 142.857142857143,
+          "energy-kj_100g": 590.10989010989,
+          "fiber_100g": 0,
+          "fruits-vegetables-nuts-estimate-from-ingredients_100g": 0,
+          "iron_100g": 0.00164835164835165,
+          "potassium_100g": 0.137362637362637,
+          "proteins_100g": 12.0879120879121,
+          "salt_100g": 0.315934065934066,
+          "saturated-fat_100g": 3.2967032967033,
+          "sodium_100g": 0.126373626373626,
+          "sugars_100g": 0,
+          "trans-fat_100g": 0,
+          "vitamin-d_100g": 1.0989010989011e-06
+        },
+        "nutriscore_grade": "a",
+        "precomputed_score": 98,
+        "image_quality": "good"
+      },
+      {
+        "additives_tags": [],
+        "barcode": "5060156990902",
+        "brand": "St Ewe",
+        "categories_tags": [
+          "en:eggs-and-their-products",
+          "en:farming-products",
+          "en:eggs",
+          "en:chicken-eggs",
+          "en:free-range-chicken-eggs",
+          "en:fresh-eggs"
+        ],
+        "countries": [
+          "uk"
+        ],
+        "image_url": "https://images.openfoodfacts.org/images/products/506/015/699/0902/front_en.8.400.jpg",
+        "labels_tags": [
+          "en:fsc"
+        ],
+        "name": "St Ewe Free Range Eggs",
+        "nutriments": {
+          "energy-kcal_100g": 131,
+          "energy-kj_100g": 547.2,
+          "proteins_100g": 12.6,
+          "salt_100g": 0.001,
+          "saturated-fat_100g": 2.5,
+          "sodium_100g": 0.0004
+        },
+        "nutriscore_grade": "a",
+        "precomputed_score": 98,
+        "image_quality": "low"
+      },
+      {
+        "additives_tags": [],
+        "barcode": "5201458094565",
+        "brand": "Βλαχάκη",
+        "categories_tags": [
+          "en:eggs-and-their-products",
+          "en:farming-products",
+          "en:eggs",
+          "en:chicken-eggs",
+          "en:fresh-eggs",
+          "en:organic-eggs"
+        ],
+        "countries": [
+          "us"
+        ],
+        "image_url": "https://images.openfoodfacts.org/images/products/520/145/809/4565/front_en.4.400.jpg",
+        "labels_tags": [],
+        "name": "eggs bio",
+        "nutriments": {
+          "energy-kcal_100g": 150,
+          "energy-kj_100g": 625.44,
+          "proteins_100g": 12.6,
+          "salt_100g": 0.285,
+          "saturated-fat_100g": 3.2,
+          "sodium_100g": 0.114
+        },
+        "nutriscore_grade": "unknown",
+        "precomputed_score": 98,
+        "image_quality": "good"
+      },
+      {
+        "additives_tags": [],
+        "barcode": "5000169061787",
+        "brand": "Waitrose",
+        "categories_tags": [
+          "en:eggs-and-their-products",
+          "en:farming-products",
+          "en:eggs",
+          "en:chicken-eggs",
+          "en:fresh-eggs"
+        ],
+        "countries": [
+          "uk"
+        ],
+        "image_url": "https://images.openfoodfacts.org/images/products/500/016/906/1787/front_en.21.400.jpg",
+        "labels_tags": [
+          "en:vitamin-d-source"
+        ],
+        "name": "Waitrose Free range eggs",
+        "nutriments": {
+          "energy-kcal_100g": 123.076923076923,
+          "energy-kj_100g": 514,
+          "proteins_100g": 12.1538461538462,
+          "salt_100g": 0.319230769230769,
+          "saturated-fat_100g": 2.30769230769231,
+          "sodium_100g": 0.127692307692308
+        },
+        "nutriscore_grade": "a",
+        "precomputed_score": 98,
+        "image_quality": "good"
+      },
+      {
+        "additives_tags": [],
+        "barcode": "5010251614555",
+        "brand": "Morrisons",
+        "categories_tags": [
+          "en:eggs-and-their-products",
+          "en:farming-products",
+          "en:eggs",
+          "en:chicken-eggs",
+          "en:free-range-chicken-eggs",
+          "es:ecologico",
+          "es:organico"
+        ],
+        "countries": [
+          "uk"
+        ],
+        "image_url": "https://images.openfoodfacts.org/images/products/501/025/161/4555/front_es.12.400.jpg",
+        "ingredients_text": "Egg",
+        "labels_tags": [
+          "en:organic",
+          "en:eu-organic",
+          "en:british-lion-quality",
+          "en:gb-org-02"
+        ],
+        "name": "egg",
+        "nova_group": 1,
+        "nutriments": {
+          "added-sugars_100g": 0,
+          "energy-kcal_100g": 0,
+          "energy-kj_100g": 547.2,
+          "fruits-vegetables-nuts-estimate-from-ingredients_100g": 0,
+          "proteins_100g": 12.6,
+          "salt_100g": 0,
+          "saturated-fat_100g": 2.5,
+          "sodium_100g": 0,
+          "sugars_100g": 0
+        },
+        "nutriscore_grade": "a",
+        "precomputed_score": 98,
+        "image_quality": "good"
+      },
+      {
+        "additives_tags": [],
+        "barcode": "0011110797698",
+        "brand": "simple truth",
+        "categories_tags": [
+          "en:eggs-and-their-products",
+          "en:farming-products",
+          "en:eggs",
+          "en:chicken-eggs",
+          "en:barn-chicken-eggs",
+          "en:fresh-eggs",
+          "en:large-eggs"
+        ],
+        "countries": [
+          "us"
+        ],
+        "image_url": "https://images.openfoodfacts.org/images/products/001/111/079/7698/front_en.22.400.jpg",
+        "ingredients_text": "LARGE BROWN EGGS.",
+        "labels_tags": [],
+        "name": "Natural Large Brown Eggs",
+        "nutriments": {
+          "calcium_100g": 0.06,
+          "energy-kcal_100g": 140,
+          "iron_100g": 0.0018,
+          "potassium_100g": 0.14,
+          "proteins_100g": 12,
+          "salt_100g": 0.38,
+          "saturated-fat_100g": 3,
+          "sodium_100g": 0.152,
+          "vitamin-d_100g": 2e-06
+        },
+        "nutriscore_grade": "a",
+        "precomputed_score": 98,
+        "image_quality": "good"
+      },
+      {
+        "additives_tags": [],
+        "barcode": "0861745000010",
+        "brand": "Vital Farms",
+        "categories_tags": [
+          "en:eggs-and-their-products",
+          "en:farming-products",
+          "en:eggs",
+          "en:chicken-eggs",
+          "en:large-eggs"
+        ],
+        "countries": [
+          "us"
+        ],
+        "image_url": "https://images.openfoodfacts.org/images/products/086/174/500/0010/front_en.95.400.jpg",
+        "ingredients_text": "EGGS",
+        "labels_tags": [
+          "en:kosher",
+          "en:not-advised-for-specific-people",
+          "en:certified-b-corporation",
+          "en:not-advised-for-pregnant-women",
+          "en:Certified Humane"
+        ],
+        "name": "PASTURE RAISED EGGS",
+        "nova_group": 1,
+        "nutriments": {
+          "added-sugars_100g": 0,
+          "calcium_100g": 0.06,
+          "choline_100g": 0.3,
+          "energy-kcal_100g": 140,
+          "energy-kj_100g": 574,
+          "fiber_100g": 0,
+          "fruits-vegetables-nuts-estimate-from-ingredients_100g": 0,
+          "iron_100g": 0.0018,
+          "proteins_100g": 12,
+          "salt_100g": 0.35,
+          "saturated-fat_100g": 3,
+          "selenium_100g": 5.6e-05,
+          "sodium_100g": 0.14,
+          "sugars_100g": 0,
+          "trans-fat_100g": 0,
+          "vitamin-d_100g": 2e-06,
+          "zinc_100g": 0.0014
+        },
+        "nutriscore_grade": "a",
+        "precomputed_score": 98,
+        "image_quality": "good"
+      },
+      {
+        "additives_tags": [],
+        "barcode": "5000306004424",
+        "brand": "Big ‘N’ Free",
+        "categories_tags": [
+          "en:eggs-and-their-products",
+          "en:farming-products",
+          "en:eggs",
+          "en:chicken-eggs",
+          "en:free-range-chicken-eggs"
+        ],
+        "countries": [
+          "uk"
+        ],
+        "image_url": "https://images.openfoodfacts.org/images/products/500/030/600/4424/front_en.3.400.jpg",
+        "ingredients_text": "eggs",
+        "labels_tags": [
+          "en:british-lion-quality"
+        ],
+        "name": "Eggs Large",
+        "nova_group": 1,
+        "nutriments": {
+          "added-sugars_100g": 0,
+          "energy-kcal_100g": 131,
+          "energy-kj_100g": 547,
+          "fiber_100g": 0,
+          "fruits-vegetables-nuts-estimate-from-ingredients_100g": 0,
+          "proteins_100g": 12.6,
+          "salt_100g": 0.4,
+          "saturated-fat_100g": 2.5,
+          "sodium_100g": 0.16,
+          "sugars_100g": 0
+        },
+        "nutriscore_grade": "a",
+        "precomputed_score": 98,
+        "image_quality": "good"
+      },
+      {
+        "additives_tags": [],
+        "barcode": "0620580000032",
+        "brand": "Rabbit River Farms",
+        "categories_tags": [
+          "en:eggs-and-their-products",
+          "en:farming-products",
+          "en:eggs",
+          "en:chicken-eggs",
+          "en:Medium Organic Free-Range Chicken Eggs"
+        ],
+        "countries": [
+          "ca"
+        ],
+        "image_url": "https://images.openfoodfacts.org/images/products/062/058/000/0032/front_en.22.400.jpg",
+        "ingredients_text": "Eggs",
+        "labels_tags": [
+          "en:organic",
+          "en:free-range",
+          "en:canada-organic",
+          "en:Organic Eggs"
+        ],
+        "name": "12 Medium Organic Free-Range Eggs, brown.",
+        "nova_group": 1,
+        "nutriments": {
+          "added-sugars_100g": 0,
+          "energy-kcal_100g": 142.857142857143,
+          "energy-kj_100g": 590.10989010989,
+          "fiber_100g": 0,
+          "fruits-vegetables-nuts-estimate-from-ingredients_100g": 0,
+          "proteins_100g": 12.0879120879121,
+          "salt_100g": 0.315934065934066,
+          "saturated-fat_100g": 3.2967032967033,
+          "sodium_100g": 0.126373626373626,
+          "sugars_100g": 0
+        },
+        "nutriscore_grade": "a",
+        "precomputed_score": 98,
+        "image_quality": "good"
+      },
+      {
+        "additives_tags": [],
+        "barcode": "00621243",
+        "brand": "Trader Joe's",
+        "categories_tags": [
+          "en:eggs-and-their-products",
+          "en:farming-products",
+          "en:eggs",
+          "en:chicken-eggs",
+          "en:fresh-eggs"
+        ],
+        "countries": [
+          "us"
+        ],
+        "image_url": "https://images.openfoodfacts.org/images/products/000/000/062/1243/front_en.36.400.jpg",
+        "ingredients_text": "EGGS",
+        "labels_tags": [],
+        "name": "Pasture Raised Large Brown Eggs",
+        "nova_group": 1,
+        "nutriments": {
+          "added-sugars_100g": 0,
+          "caffeine_100g": 0,
+          "calcium_100g": 0,
+          "choline_100g": 0,
+          "energy-kcal_100g": 140,
+          "energy-kj_100g": 574,
+          "fiber_100g": 0,
+          "fruits-vegetables-nuts-estimate-from-ingredients_100g": 0,
+          "iron_100g": 0,
+          "magnesium_100g": 0,
+          "potassium_100g": 0,
+          "proteins_100g": 12,
+          "salt_100g": 0.35,
+          "saturated-fat_100g": 3,
+          "selenium_100g": 0,
+          "sodium_100g": 0.14,
+          "sugars_100g": 0,
+          "trans-fat_100g": 0,
+          "vitamin-c_100g": 0,
+          "vitamin-d_100g": 0,
+          "zinc_100g": 0
+        },
+        "nutriscore_grade": "a",
+        "precomputed_score": 98,
+        "image_quality": "low"
+      },
+      {
+        "additives_tags": [],
+        "barcode": "5060034483083",
+        "brand": "Ocado",
+        "categories_tags": [
+          "en:eggs-and-their-products",
+          "en:farming-products",
+          "en:eggs",
+          "en:chicken-eggs",
+          "en:free-range-chicken-eggs",
+          "en:large-eggs"
+        ],
+        "countries": [
+          "uk"
+        ],
+        "image_url": "https://images.openfoodfacts.org/images/products/506/003/448/3083/front_en.17.400.jpg",
+        "ingredients_text": "Eggs.",
+        "labels_tags": [
+          "en:vegetarian",
+          "en:free-range",
+          "en:british-lion-quality",
+          "en:free-range-eggs",
+          "en:rspca-assured",
+          "en:Class A"
+        ],
+        "name": "Large free range eggs",
+        "nova_group": 1,
+        "nutriments": {
+          "added-sugars_100g": 0,
+          "energy-kcal_100g": 131,
+          "energy-kj_100g": 547,
+          "fruits-vegetables-nuts-estimate-from-ingredients_100g": 0,
+          "proteins_100g": 12.6,
+          "salt_100g": 0.4,
+          "saturated-fat_100g": 2.5,
+          "sodium_100g": 0.16,
+          "sugars_100g": 0
+        },
+        "nutriscore_grade": "a",
+        "precomputed_score": 98,
+        "image_quality": "good"
+      },
+      {
+        "additives_tags": [],
+        "barcode": "4099100296136",
+        "brand": "Simply Nature",
+        "categories_tags": [
+          "en:eggs-and-their-products",
+          "en:farming-products",
+          "en:eggs"
+        ],
+        "countries": [
+          "us"
+        ],
+        "image_url": "https://images.openfoodfacts.org/images/products/409/910/029/6136/front_en.3.400.jpg",
+        "ingredients_text": "ORGANIC EGGS",
+        "labels_tags": [],
+        "name": "Organic Cage Free Eggs",
+        "nova_group": 1,
+        "nutriments": {
+          "energy-kcal_100g": 140,
+          "proteins_100g": 12,
+          "salt_100g": 0.35,
+          "saturated-fat_100g": 3,
+          "sodium_100g": 0.14
+        },
+        "nutriscore_grade": "a",
+        "precomputed_score": 98,
+        "image_quality": "good"
+      },
+      {
+        "additives_tags": [],
+        "barcode": "5018374888303",
+        "brand": "TESCO",
+        "categories_tags": [
+          "en:eggs-and-their-products",
+          "en:farming-products",
+          "en:eggs",
+          "en:chicken-eggs",
+          "en:free-range-chicken-eggs"
+        ],
+        "countries": [
+          "uk"
+        ],
+        "image_url": "https://images.openfoodfacts.org/images/products/501/837/488/8303/front_en.22.400.jpg",
+        "ingredients_text": "Eggs.",
+        "labels_tags": [
+          "en:free-range",
+          "en:british-lion-quality",
+          "en:free-range-eggs",
+          "en:rspca-assured"
+        ],
+        "name": "6 Free Range Eggs",
+        "nova_group": 1,
+        "nutriments": {
+          "added-sugars_100g": 0,
+          "energy-kcal_100g": 131,
+          "energy-kj_100g": 548.9,
+          "fiber_100g": 0,
+          "fruits-vegetables-nuts-estimate-from-ingredients_100g": 0,
+          "proteins_100g": 12.6,
+          "salt_100g": 0.3825,
+          "saturated-fat_100g": 2.5,
+          "sodium_100g": 0.153,
+          "sugars_100g": 0.1
+        },
+        "nutriscore_grade": "a",
+        "precomputed_score": 98,
+        "image_quality": "good"
+      },
+      {
+        "additives_tags": [],
+        "barcode": "5052320423460",
+        "brand": "Tesco",
+        "categories_tags": [
+          "en:eggs-and-their-products",
+          "en:farming-products",
+          "en:eggs",
+          "en:chicken-eggs",
+          "en:free-range-chicken-eggs"
+        ],
+        "countries": [
+          "uk"
+        ],
+        "image_url": "https://images.openfoodfacts.org/images/products/505/232/042/3460/front_en.8.400.jpg",
+        "ingredients_text": "Organic eggs.",
+        "labels_tags": [
+          "en:organic",
+          "en:eu-organic",
+          "en:british-lion-quality",
+          "en:gb-org-02"
+        ],
+        "name": "Organic 6 Mixed Sizes Free Range Eggs",
+        "nova_group": 1,
+        "nutriments": {
+          "added-sugars_100g": 0,
+          "energy-kcal_100g": 131,
+          "energy-kj_100g": 548,
+          "fiber_100g": 0,
+          "fruits-vegetables-nuts-estimate-from-ingredients_100g": 0,
+          "proteins_100g": 12.6,
+          "salt_100g": 0.39,
+          "saturated-fat_100g": 2.5,
+          "sodium_100g": 0.156,
+          "sugars_100g": 0.1
+        },
+        "nutriscore_grade": "a",
+        "precomputed_score": 98,
+        "image_quality": "good"
+      }
+    ]
+  },
+  "version": 1
+}
