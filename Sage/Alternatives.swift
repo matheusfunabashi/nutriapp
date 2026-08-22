@@ -36,6 +36,9 @@ struct AlternativeCandidate: Decodable {
     /// Offline verdict on the photo the app will display (`good` / `low` /
     /// `missing`, annotate_image_quality.py). Nil on pre-annotation datasets.
     let imageQuality: String?
+    /// V5.5 — OFF `serving_size` ("1 bar (60 g)"); protein-bar S12 scores
+    /// protein per serving. Nil on pre-v5.5 datasets (engine assumes 50 g).
+    let servingSize: String?
 
     enum CodingKeys: String, CodingKey {
         case barcode, name, brand, nutriments, countries
@@ -48,6 +51,7 @@ struct AlternativeCandidate: Decodable {
         case nutriscoreGrade = "nutriscore_grade"
         case labelsTags = "labels_tags"
         case imageQuality = "image_quality"
+        case servingSize = "serving_size"
     }
 }
 
@@ -293,7 +297,8 @@ enum Alternatives {
             ingredientsText: c.ingredientsText, additivesTags: c.additivesTags,
             nutriments: c.nutriments, nutriscoreGrade: c.nutriscoreGrade,
             novaGroup: c.novaGroup, imageURL: primaryImageURL,
-            categoriesTags: c.categoriesTags, labelsTags: c.labelsTags)
+            categoriesTags: c.categoriesTags, labelsTags: c.labelsTags,
+            servingSize: c.servingSize)
         guard case .scored(var p) = ScoringEngineV4.scoreProduct(raw, for: profile, ruleset: ruleset),
               let score = p.overallScore else { return nil }
         // The backend slot can 404 (never-resolved barcode); keep the dataset's

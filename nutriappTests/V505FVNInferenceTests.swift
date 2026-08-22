@@ -98,7 +98,7 @@ struct V505FVNInferenceTests {
         )
         #expect(ScoringEngineV4.resolvedFVN(fruit).value == 100)
         // Router remains first-match; inference is independent of profile.
-        #expect(ScoringEngineV4.route(fruit, ruleset: rs) == "breads")
+        #expect(ScoringEngineV4.route(fruit, ruleset: rs) == "grains")
         let result = try #require(ScoringEngineV4.score(fruit, ruleset: rs))
         #expect(result.rules.first { $0.rule == "S12" }?.hadData == true)
     }
@@ -112,6 +112,6 @@ struct V505FVNInferenceTests {
     }
 
     @Test func rulesetVersionIsV505() {
-        #expect(rs.version == "2026.08-v5.3.0")
+        #expect(rs.version == "2026.08-v5.5.0")
     }
 }

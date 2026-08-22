@@ -1,5 +1,95 @@
 **Follow [design.md](design.md) for all UI work** — typography scale, color tokens, radii, spacing grid, and interaction rules. No raw hex values, off-scale font sizes, or ad-hoc radii in views.
 
+# Session Changelog — 2026-08-21 — Protein bar scoring (v5.5.0)
+
+Audit of protein-bar scoring against the live engine (CLI harness over 390
+real OFF protein-bar records US/UK/world + 18 label fixtures) and Oasis'
+SCR_PROTEIN_BARS v4.7.0. There was no profile: bars rode `snacks` (283) or
+`general` (102) on tag luck — OFF files `protein-bars` under
+*bodybuilding-supplements*, not *snacks* — so RXBAR scored 54–68 across
+barcodes, protein carried 4 % of the score, the isolates that define the
+category were docked four separate times, and a 4 g-protein date bar topped
+the shelf at 94 (FVN ≈ 100 laundered its sugar). Ruleset `2026.08-v5.5.0`;
+full rationale in SCORING_V5.md §"V5.5.0 Protein bars"; tests
+`ProteinBarScoringV55Tests`; shapes in `ProteinBarScoring.swift`.
+
+- **`protein_bars` profile** — S12 26 (`proteinBar`: protein delivery =
+  grams per serving + share of energy, × DIAAS-style source quality with
+  collagen 0.25, + fiber with isolated fibers halved), S3 16 (fruit-sugar
+  discount capped at 50 %, no sweetener cap), S6 10 (drinks sweetener tiers
+  + declared-polyol load), S2 10 (ultra-processing marker *families*, never
+  protein isolates; unrecognized OCR/foreign lists are unknown, not clean),
+  S1 8 (isolate text signals exempt), S14 10 (protein sources neutral),
+  S15 8, S5 8, S4 2 (> 3 000 mg = unit error), S13 2.
+- **Routing** — `protein-bars` / `protein-energy-bars` router entries behind
+  a composition guard (200–650 kcal, ≤ 55 g protein — powders / shakes stay
+  out) plus a tag-independent evidence gate (bar tag or bar word + protein
+  word & ≥ 12 % energy from protein, or ≥ 20 % & ≥ 10 g/100 g) that only
+  rerails from `snacks` / `general` / `grains` / `whole_foods`.
+- **Generic fixes** — `sugar` / `cane sugar` no longer count as whole food in
+  S14; plural nuts / seeds / nut butters / dried fruit / milk & egg powders /
+  cocoa mass whitelisted; `palm kernel oil` & palm fat family → S15 low tier,
+  `mixed nuts` → high tier; `Nutrients.polyols_g` (OFF `polyols_100g`) and
+  `serving_size` plumbed through OFF decode, `AlternativeCandidate`,
+  `TopRatedBuilder` and `generate_candidates.py` (`mapCandidate` gained an
+  optional `servingSize:`). Shelf drift outside bars ≤ ±0.6 mean (nut
+  butters +4 — plural "peanuts" is real food); 51 snack-bar rows move to
+  `protein_bars`.
+- **Calibration** — clean egg-white + nut bar 92 · RXBAR 73–79 · Perfect
+  Bar 70 · Quest 67 · Barebells 59 · think! 56; same bar = same score
+  whatever the tags / NOVA. `rulesetV550Rescored` migration.
+- Not done (follow-ups): re-pull the `snackBars` shelf so rows carry
+  `serving_size` (pre-v5.5 rows fall back to pack size / 50 g); the generic
+  `snacks` S3 still lets FVN ≈ 100 date bars launder 40 g sugar (Larabar 94
+  as a *snack*); plain `palm oil` is still invisible to S15 (only the kernel
+  / fractionated family was added); OCR junk `ingredients_text` reaches every
+  profile — only `protein_bars` guards against it.
+
+---
+
+# Session Changelog — 2026-08-21 — Bread scoring (v5.4.0)
+
+Audit of bread scoring against the live engine (CLI harness over the
+96-product shelf, 27 archetype fixtures, ~400 real OFF records US/UK/FR/DE/CA)
+and Oasis' SCR_BREADS v4.7.0. The shipped shelf compressed into 50–75:
+whole-kernel rye tied with white sourdough, brioche beat plain sourdough,
+and 85/96 breads got the full binary whole-grain credit (2 % rye flour,
+"sprouted", "oat" matching "goat"). Ruleset `2026.08-v5.4.0`; full
+rationale in SCORING_V5.md §"V5.4.0 Bread"; tests `BreadScoringV54Tests`.
+
+- **`bread` profile** (S1 16, S2 14 `bread`, wholeGrain 16 `bread`, S12 14
+  `grain`, S3 10, S4 12 `bread`, S5 6, S14 8, S15 4; no S13) routed from all
+  bread tags; cereals / pasta / rice / oats / flours stay on the legacy grains
+  profile, **renamed `breads` → `grains`** (rules untouched). New `Sage/BreadScoring.swift`.
+- **Graded whole-grain share**: position-weighted, declared-% override,
+  parenthetical sub-lists, multilingual whole / partial / refined vocab,
+  name-claim lift only for whole-first lists, fiber cross-check caps.
+- **Evidence-based S2**: 16 UPF marker families from text or E-codes; 0
+  families → 0.70 (traditional NOVA 3 is bread's ceiling); preservatives,
+  ascorbic acid, fortification and vital wheat gluten are not markers.
+- **S12 `grain`** fiber/100 g + protein (isolated fiber on refined base ×0.5);
+  **S4 `bread`** 200/450/700 mg + sodium plausibility guard; **S5** added;
+  S13 dropped (only ever rewarded fortified white flour).
+- **Generic fixes**: S14 whitelist (whole-grain flours, oats, seeds, yeast,
+  sourdough, semolina…), water excluded from the real-food ratio,
+  `hasIsolateProtein` needs *protein* concentrate, allergen / boilerplate
+  tails cut from tokens, marketing prose in the ingredients field → missing,
+  enrichment vitamins (E101/E375/E300/E170/E306) exempt from S1. Drift outside
+  bread: 511/1 776 move, all +1…+7 (pasta +5, cereal +3.6), one garbage list
+  −21; no routing changes.
+- Calibration: Ezekiel 94, whole rye 88, whole-wheat sourdough 87, Dave's 83,
+  Nature's Own 100 % WW 64, white sourdough 63, baguette 61, brioche 58,
+  gluten-free 45, Hawaiian rolls 39, Wonder 33, mass tortilla 33. Real shelf
+  44–94 (mean 75). Deliberately unscored: sourdough fermentation, organic,
+  packaging, sourcing, GI.
+- Not done (follow-ups): the legacy binary `wholeGrain` still serves cereals
+  / pasta / rice (same "oat"→"goat" substring issue); crispbreads are judged
+  per 100 g dry (fiber and sodium both inflated vs fresh bread); Top Rated
+  bread shelf ordering changed (re-check the `bread-tr` hero pick);
+  Alternatives.json `precomputed_score` for bread is stale until regenerated.
+
+---
+
 # Session Changelog — 2026-08-21 — Egg scoring (v5.3.0)
 
 Audit of egg scoring against the live engine (CLI harness over 29 real OFF

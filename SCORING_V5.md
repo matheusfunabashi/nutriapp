@@ -1,6 +1,6 @@
 # SCORING V5 — health-only score
 
-**Ruleset version:** `2026.08-v5.3.0`  
+**Ruleset version:** `2026.08-v5.5.0`  
 **Engine:** `ScoringEngineV4.engineVersion = "v5"` (Swift type name retained; behavior is V5)  
 **Config:** `Sage/RulesetV5.json` ↔ `backend/src/ruleset.json` (must stay byte-identical)  
 **Frozen fallback:** `Sage/RulesetV509.json` (`2026.07-v5.0.9`) when `flags.rulesetV510Enabled` is false  
@@ -63,7 +63,8 @@ of \(\sum w\). Confidence haircuts apply for missing nutrition inputs (floor 60%
 | `whole_foods` | S2 20, S12 22, S3 14, S1 8, S4 6, S5 8, S13 6, S14 16 |
 | `eggs` | S2 18, S1 12, S3 4, S4 10, S5 8, S12 18 (`egg`), S13 12 (`egg`), S14 12, S15 6 |
 | `general` | S1 20, S2 22, S3 8, S4 8, S5 4, S12 11, S13 5, S14 14, S15 8 |
-| `breads` | S1 18, wholeGrain 12, S3 8, S4 8, S2 16, S12 12, S13 4, S14 14, S15 8 |
+| `bread` | S1 16, S2 14 (`bread`), wholeGrain 16 (`bread`), S12 14 (`grain`), S3 10 (`bread`), S4 12 (`bread`), S5 6, S14 8, S15 4 — **no S13** |
+| `grains` (formerly `breads`: cereals, pasta, rice, oats, flours) | S1 18, wholeGrain 12, S3 8, S4 8, S2 16, S12 12, S13 4, S14 14, S15 8 |
 | `meat` | S1 30, S2 14, S4 10, S5 6, S12 14, S13 4, S14 14, S15 8 |
 | `dairy_milk` | S1 24, dairyProcessing 10, S3 6, S5 6, S2 6, S12 20 (`dairy`), S13 8, S14 14, S15 6 |
 | `yogurt_cheese` | S1 24, dairyProcessing 8, S3 10, S4 10, S5 12, S12 8 (`dairyDense`), S13 8, S14 14, S15 6 |
@@ -71,6 +72,267 @@ of \(\sum w\). Confidence haircuts apply for missing nutrition inputs (floor 60%
 | `tea_coffee` | S1 28, S2 24, brewMaterial 12, S3 8 (`foods`), S12 14 (`dryBrew` — redistributes: beans/leaves never carry a micronutrient panel), S14 14 |
 | `drinks` | S1 23, S3 43 (`drinksServing`), S8 15 (caffeine), S6 13 (tiered sweeteners), S4 6 — **no S2, no S7** |
 | `juice_100` | same weights as `drinks`; dose-aware S3 + juice sugar cap + flat +3 micronutrient boost |
+| `protein_bars` | S12 26 (`proteinBar`), S3 16 (`proteinBar`), S6 10 (`proteinBar`), S2 10 (`proteinBar`), S1 8, S14 10 (`proteinBar`), S15 8, S5 8, S4 2 (`proteinBar`), S13 2 |
+
+## V5.5.0 Protein bars (dedicated profile)
+
+Protein bars rode `snacks` or `general` depending on whether OFF happened to
+tag `snacks` — OFF files `protein-bars` under *bodybuilding-supplements*, not
+*snacks* — so a harness pass over 390 real OFF protein bars found the same
+RXBAR scoring **54–68 across barcodes**, Fulfil 36 (NOVA 4) vs 73 (no NOVA),
+and every real protein bar clustered 35–50 while a 4 g-protein date bar sat
+at 94 (FVN ≈ 100 laundered 40 g/100 g of date sugar to S3 = 1.0). Protein —
+the product's purpose — carried 4 % of the snacks profile, and the isolates
+that make a protein bar were docked **four times** (S1 `whey protein isolate`
+text signal, S2 NOVA-4 = 0, S12 isolate ×0.5, S14 isolate score). Oasis
+scores bars 60 % ingredient grading / 25 % protein-source quality / 30 %
+packaging + sourcing and reads nothing off the nutrition panel; what Sage
+takes from it is the idea of **source quality** (DIAAS-style, collagen is not
+full protein) and **amount-ordered ingredient weighting** — and keeps its own
+identity: health only, panel-aware, no packaging / sourcing.
+
+Stance (as a nutritionist would rank protein bars): protein *delivery* is the
+single largest factor but not a majority; the sugar / sweetener system wrapped
+around the protein is the usual failure mode; processing and additives matter
+but isolated protein is never itself the processing sin; fat quality and
+saturated fat separate nut-based bars from palm-kernel-coated ones.
+
+- **Routing** — router `protein-bars` / `protein-energy-bars` → `protein_bars`
+  (ahead of the cereal / snack entries), behind a **composition guard**
+  (`proteinBars.gate`: 200–650 kcal, ≤ 55 g protein/100 g — OFF's tag is
+  inherited by powders and shakes). A tag-independent **evidence gate** rerails
+  a product tag-routed to `snacks` / `general` / `breads` / `whole_foods` (or
+  untagged) when it is a bar (bar-family tag or bar word in the name) inside
+  the envelope and either marketed on protein (protein word in the name and
+  ≥ 12 % of energy from protein — the EU "source of protein" claim floor) or
+  genuinely high-protein (≥ 20 % of energy, the EU "high protein" claim, and
+  ≥ 10 g/100 g). Name or tag alone never qualifies; dairy / meat / drinks
+  never rerail. KIND Nuts & Sea Salt (12 %, not marketed on protein), Clif
+  Bar (17 %), Larabar (8 %) stay on `snacks`; KIND Protein, RXBAR, Perfect
+  Bar, Nature Valley Protein, Nakd Protein come across.
+- **S12 `proteinBar`** (26) = 0.8 × protein + 0.2 × fiber.
+  *Protein* = amount × (0.6 + 0.4 × quality). **Amount** is the mean of
+  grams-per-serving credit (full at 20 g — the dose that maximally stimulates
+  muscle protein synthesis in most adults; 10 g = the US "high in protein"
+  RACC threshold = half credit) and protein share of energy (full at 35 %),
+  so a calorie-padded 100 g bar cannot buy credit with size. Serving grams
+  come from OFF `serving_size` ("1 bar (60 g)", oz accepted, `fl oz`
+  rejected), else a single-bar pack size (20–120 g), else 50 g flagged
+  estimated. **Quality** is a DIAAS-style source table (`s12.sources`: whey /
+  milk protein / casein / egg 1.0 · soy 0.9 · potato 0.9 · pea 0.82 · pea +
+  rice blend 0.9 (`complementaryPairs`) · pumpkin / hemp 0.6–0.65 · rice
+  0.55 · whole nuts / seeds 0.4–0.6 · **collagen / gelatin 0.25** — FDA
+  PDCAAS 0, not a complete protein), weighted by label position × typical
+  protein density so a 25 %-protein peanut listed first does not outweigh a
+  90 % isolate behind it; parenthetical blends contribute their specific
+  sources. Quality scales the amount credit (floor 0.6) rather than being
+  averaged in, so a 4 g date-and-nut bar banks no quality prior and a
+  collagen pad scales a real 20 g down. **Fiber** full at 8 g/100 g; an
+  isolated fiber (soluble corn / tapioca fiber, IMO, polydextrose, inulin,
+  chicory root…) in the first three ingredients halves it (`isolatedFiberDamp`)
+  — FDA accepts these as fiber but the evidence is weaker than for intrinsic
+  fiber. The generic S12 isolate discount is **off** on this profile.
+- **S2 `proteinBar`** (10) — evidence-based processing: every protein bar is
+  NOVA 4 by construction, so OFF's tag separated nothing but tag luck. Distinct
+  ultra-processing **marker families** in the list (flavorings, non-nutritive
+  sweeteners, sugar alcohols, humectants, refined syrups, isolated fibers,
+  emulsifiers, thickeners & gums, refined hard fats, compound coatings,
+  colors, preservatives, modified starch — text in EN/FR/ES/IT/PT/DE/NL/SV/DA/
+  NO/FI/PL/CS plus E-codes) step the credit 1.0 → 0.8 / 0.62 / 0.46 / 0.32 /
+  0.2 / 0.1. **Protein isolates are never a marker.** A list with < 30 %
+  recognizable tokens (`minRecognizedShare`: OCR'd nutrition tables,
+  best-before lines, uncovered languages — field QA: "Spear & P2:01 81 Energi
+  Fedt…" scored 87) is unknown, not clean; S6 follows the same guard. No list
+  → NOVA fallback (4 → 0.2, 3 → 0.5, 1–2 → 0.8, none → 0.3 unknown).
+- **S3 `proteinBar`** (16) — foods thresholds, but the fruit/veg/nut sugar
+  discount is capped at 50 % (`s3.fvnDiscountCap`): date paste is free sugar
+  under the UK SACN/PHE definition and at best borderline under WHO's; at
+  least half counts. Declared added sugars are used as-is. The
+  sweetener-substitution cap does **not** apply here (S6 grades the sweetener
+  system; no stacking, as on drinks).
+- **S6 `proteinBar`** (10) — the drinks sweetener tiers (Tier-1 sucralose /
+  ace-K / aspartame → 0.10, polyols −0.25 each with erythritol −0.10 extra,
+  stevia / monk fruit → 0.70) plus a **declared-polyol load** dock from the
+  new `Nutrients.polyols_g` (OFF `polyols_100g`, EU "of which polyols"):
+  ≥ 10 g/100 g ×0.85, ≥ 20 g ×0.70 (EU mandates the laxative warning above
+  10 % polyols; maltitol bars routinely carry 20–45 g/100 g).
+- **S14 `proteinBar`** (10) — `IngredientIntegrity.evaluate` with protein
+  sources **neutral** (dropped from the whole-food ratio, neither whole food
+  nor dock) and protein isolate markers exempt from the isolate score; syrups,
+  maltodextrin, modified starch still count. **S1** skips the three isolate
+  text signals on this profile. **S4** (2) treats > 3 000 mg/100 g as a unit
+  error (Perfect Bar 161 538 mg). Generic changes shipped alongside:
+  `sugar` / `cane sugar` removed from the S14 whole-food whitelist (a
+  refined NOVA-2 ingredient cannot be "real food" — "Oat, Cane sugar, Cocoa
+  paste" scored S14 = 1.00); plural nuts / seeds, nut butters, dried fruit,
+  milk / egg powders, cocoa mass added; `palm kernel oil` / palm fat /
+  fractionated palm family added to the S15 low tier (82 % saturated, always
+  refined — it was invisible and a palm-kernel-coated bar scored S15 = no data)
+  and `mixed nuts` to the high tier. Shelf drift outside bars: nut butters
+  +4 (plural "peanuts" now real food), cereal / chocolate +0.8, cookies /
+  ice cream −0.3/−0.6 (sugar off the whitelist), everything else ≤ ±0.4 mean,
+  no routing changes except 51 snack-bar rows moving to `protein_bars`.
+- **Calibration (fixtures, label values):** egg-white + nut bar with no sugar
+  or sweeteners 92 · RXBAR 73–79 (Excellent; whole-food protein, date sugar
+  half-counted) · Aloha 73 · Perfect Bar 70 (clean list, 27 g added sugar) ·
+  Quest 67 (35 g protein, 1.7 g sugar, but sucralose + stevia + erythritol and
+  23 g isolated fiber) · Built / ONE 65 · Nature Valley Protein 62 · Pure
+  Protein 62 · Kirkland 61 · Barebells 59 (maltitol + sucralose + glycerol +
+  palm fat, collagen second) · Grenade 58 · think! 56. Same bar = same score
+  whatever the tags / NOVA (RXBAR 54–68 → one number). Real OFF set: the
+  390 bars spread 27–87 with junk-list outliers removed by the recognition
+  guard; Isostar "energy sport bar" tagged protein-bars (5 g protein, 35 g
+  sugar) bottoms out at 27 — honest.
+- **Deliberately not scored:** packaging, sourcing / certifications, lab
+  testing (Oasis factors — ethics / hygiene, not health); protein "quality"
+  beyond the DIAAS-style source table (no leucine claims); caffeine
+  (`energyDrinkEvidence` still rerails a caffeinated bar to drinks only if it
+  is a liquid — bars keep S8 off).
+- `rulesetV550Rescored` one-shot migration; overview cache stays `exp-v9`.
+  `RulesetV509.json` untouched (kill-switch path keeps bars on `snacks`).
+  Builder: `generate_candidates.py` now pulls `serving_size` and
+  `polyols_100g`; `AlternativeCandidate` decodes `serving_size` (pre-v5.5
+  datasets fall back to the pack size / 50 g).
+
+## V5.4.0 Bread (dedicated profile)
+
+Bread used to ride the shared `breads` grains profile (cereals, pasta, rice,
+oats, flours — renamed **`grains`** in this release so it cannot be confused
+with `bread`) and the shipped shelf compressed into **50–75**: Mestemacher
+whole-kernel rye (rye, water, salt, yeast) scored 69, white sourdoughs made
+from fortified refined flour 65–71, Wonder white 50, and brioche (6 g sat fat,
+10 g sugar) outscored plain sourdough. Four structural causes, found with the
+CLI harness over the 96-product shelf, 27 archetype fixtures and ~400 real
+OFF records (US / UK / FR / DE / CA):
+
+1. **`wholeGrain` was a binary keyword hit** on name + ingredients + tags —
+   2 % rye flour in a white sourdough, "sprouted", "oat" (also matching
+   "goat"), or a `whole-wheat-breads` tag earned the full 12 points; 85 / 96
+   shelf breads scored 1.0 on it.
+2. **Generic S12** spends 40 % on protein per kcal against a 15 g/100 kcal
+   anchor (bread: ~3.5) and 25 % on fruit/veg share (bread: 0) — the
+   fiber axis that the whole-grain literature actually runs on carried 35 %
+   of 12 points.
+3. **S2 read OFF's NOVA tag**, which is noisy on bread (an M&S baguette
+   tagged NOVA 1; Ezekiel tagged 3 on one barcode and 4 on the next), and
+   NOVA 3 is the *best* class a traditional bread can be (flour + water +
+   salt + leaven is group 3 by definition), so every honest loaf lost 9.6
+   points with zero discrimination among them.
+4. **S14's whitelist accepted refined "wheat flour" but not "whole wheat
+   flour"** (the `whole` prefix is deliberately not strippable), counted
+   water as a non-real ingredient, and treated "raisin juice concentrate"
+   as an isolate protein (S12 ×0.5). US enriched flour's niacin and
+   riboflavin were also S1 penalties (E375 / E101 resolved to the knowledge
+   base's "low" risk → mild tier) — ~3 points on every US loaf for vitamins.
+
+Oasis' bread methodology (SCR_BREADS v4.7.0) is 85 % amount-weighted
+ingredient grades (A whole / B refined / C filler / D engineered, with caps
+for C/D ingredients and industrial oils), 15 % packaging, 15 % sourcing
+signals, lab testing as a badge — and **no nutrition panel at all** (no
+fiber, no salt, no sugar). What Sage borrows is the *amount-ordered* reading
+of the label (first ingredients weigh most; declared percentages override
+position; water excluded from the ratio; added vitamins/minerals neutral).
+What Sage deliberately does not: packaging, sourcing certifications and
+testing badges (not health pathways), and ignoring the panel — fiber per
+100 g, sodium and sat fat are exactly where bread health evidence lives
+(DGA whole-grain guidance, Nutri-Score 2023 bread fiber/salt points, UK
+2024 salt targets).
+
+- **`bread` profile** — S1 16, S2 14 (`bread`), wholeGrain 16 (`bread`),
+  S12 14 (`grain`), S3 10 (`bread` 2 / 6 / 12 g), S4 12 (`bread`), S5 6,
+  S14 8, S15 4. **No S13**: the micronutrients that whole grains actually
+  deliver (Mg, Zn, Se) are almost never declared, so the rule could only
+  ever reward fortified white flour (UK mandatory calcium/iron) — which
+  would rank white above whole. S5 added (brioche, naan, shortening
+  tortillas have real sat fat; plain bread trivially scores 1.0). Routing:
+  all bread tags (`breads` + white / whole-wheat / whole-grain / sliced /
+  special / flat / baguettes / sandwich / buns / bagels / toasts / rye /
+  sourdough / pita / tortillas / wraps / naans / crispbreads / english
+  muffins / rolls / ciabattas / focaccias / brioches / pumpernickel) →
+  `bread`; cereals, pasta, rice, oats and flours **stay on the grains
+  profile** (`breads` → `grains`, rules and weights untouched).
+- **wholeGrain `bread` (graded, `BreadScoring.wholeGrainShare`)** — grain
+  tokens are classified whole / partial (0.5: rye flour, spelt flour,
+  barley, cornmeal, bran, ancient-grain flours) / refined from a
+  multilingual vocabulary (EN / FR / DE / IT / ES / PT / NL / SE); non-grain
+  tokens (gluten, malt extract, seeds, nut flours, yeast…) are ignored.
+  Parenthetical sub-lists are read ("Grains (whole kernel rye, whole grain
+  rye flour)"; "rye (flour, bran)" → rye flour, rye bran), weights are
+  rank-halving × list position, and a **declared percentage overrides**
+  position ("Sprouted Whole Spelt (2.5 %)" is a 2.5 % weight; Hovis
+  Granary's 11 % malted wheat flakes on white flour → 0.07). A regulated /
+  explicit front-label claim ("100 % whole wheat", UK "wholemeal") lifts a
+  whole-first list to 0.9 — never a refined-first one. **Fiber
+  cross-check**: a whole-first list declaring < 3.5 g fiber is capped at
+  0.35 (brown-washing or label error), < 5 g at 0.7. No list → tag / name
+  prior 0.6 / 0.2, unknown-tier.
+- **S2 `bread` (evidence-based, `BreadScoring.s2Credit`)** — 16
+  ultra-processing **marker families** (HFCS / glucose syrups, modified
+  starch, mono-/diglycerides, DATEM, stearoyl lactylates, lecithin,
+  polysorbates, gums & thickeners, dough conditioners, flavors, colors,
+  sweeteners, protein isolates, hydrogenated / interesterified fat, flavor
+  enhancers, bulking fibers), matched by text phrase *or* additive code and
+  counted once per family. 0 families → **0.70** (traditional NOVA 3 — the
+  ceiling for bread, deliberately above the generic 0.40); 1 → 0.40; 2 →
+  0.25; 3 → 0.12; 4+ → 0. Preservatives (calcium propionate, sorbic acid,
+  vinegar, cultured wheat flour), ascorbic acid, enzymes, raising agents,
+  UK flour fortification and **vital wheat gluten** are not markers
+  (strict NOVA would count gluten; the UPF cohort evidence for bread is
+  weak — Cordova 2023 EPIC, Chen 2024 BMJ — and gluten is in nearly every
+  US whole-wheat loaf, so counting it would penalise the whole-grain
+  category wholesale without an outcome behind it). No list → OFF NOVA,
+  capped at 0.70 (a bread tagged NOVA 1 is a data error).
+- **S12 `grain`** — `0.7 · fiberCredit + 0.3 · proteinCredit`; fiber per
+  100 g linear 1.5 g → 0, 7 g → 1 (Nutri-Score 2023 tops out at 7.4 g;
+  white 2–2.7, whole wheat 6–7, whole rye 8+, crispbread 15+); protein
+  /12 g. Isolated fibers (oat fiber, cellulose, polydextrose, inulin,
+  resistant starch…) on a non-whole base earn half (FDA 2016: weaker
+  evidence than intrinsic cereal fiber) — a 45-calorie cellulose loaf does
+  not out-fiber whole wheat. Fiber undeclared → prior 0.55 / 0.20 from the
+  whole-grain evidence, unknown-tier. No kcal axis, so the kcal confidence
+  haircut does not apply. Overview topic **"fiber and protein"**.
+- **S4 `bread`** — anchors 200 / 450 / 700 mg (UK 2024 target 1.0 g salt =
+  400 mg; typical loaves 380–600): 300 mg → 0.84, 450 → 0.60, 600 → 0.42,
+  700 → 0.30. Bread is the top dietary sodium source, hence weight 12.
+  **Plausibility guard**: sodium < 40 mg on a loaf that lists salt (OFF
+  "salt 0.001 g") → unknown 0.30, never full credit; an unsalted corn
+  tortilla at 45 mg keeps 1.0.
+- **Generic fixes (all profiles)** — S14 whitelist gains whole-grain
+  flours / rye / spelt / oats / seeds / yeast / sourdough / vinegar / malt
+  / semolina in eight languages; strippable qualifiers gain unbleached /
+  enriched / fortified / stone ground / sprouted / toasted / rolled /
+  malted…; **water is excluded from the whole-food ratio** (not from the
+  count); `hasIsolateProtein` requires *protein* concentrate;
+  `tokens(from:)` cuts trailing allergen / back-of-pack boilerplate
+  ("Allergen advice", "Contains:", "If you have any questions…");
+  marketing prose in the ingredients field (≥ 9 words per token *and*
+  brand-voice words) is treated as missing; **nutrient fortificants**
+  (E101, E375, E300, E170, E306/307) are `exempt` in S1 regardless of the
+  knowledge-base display risk. Shelf drift outside bread: 511 / 1 776
+  products move, all +1…+7 (pasta mean +5: durum semolina is real food;
+  cereal +3.6: oats), one garbage-list bar −21 → unknown-tier; no routing
+  changes outside bread.
+- **Calibration (fixtures + real OFF):** Ezekiel sprouted 94, corn tortilla
+  92, seeded whole-grain loaf 90, Wasa rye crispbread 90, Mestemacher whole
+  rye 88, whole-wheat pita 88, pumpernickel 87, whole-wheat sourdough 87,
+  Dave's 21 Whole Grains 83 (11 g sugar), Silver Hills soft wheat 76,
+  Nature's Own 100 % whole wheat 64 (DATEM / monoglycerides / soybean
+  oil), white sourdough 63, baguette / white pita 61, plain bagel 59,
+  brioche 58, naan 56, gluten-free starch bread 45, Hawaiian rolls 39,
+  light cellulose bread 39, brown-washed "honey wheat" 36, keto isolate
+  bread 34, Wonder white 33, mass-market flour tortilla 33. Real shelf:
+  44–94 (was 50–75), mean 75; UK supermarket white sourdoughs 62–70,
+  Warburtons / Hovis sliced whites 37–44, Schär gluten-free 52–57, Mission
+  flour tortillas 23–35. Tests: `BreadScoringV54Tests`.
+- **Deliberately not scored:** sourdough fermentation (GI / phytate
+  evidence is modest and "sourdough" is an unregulated marketing word —
+  a clean levain list already earns the traditional S2 credit), organic,
+  packaging, sourcing, lab testing, glycemic index (not on labels),
+  "ancient grain" marketing (spelt / einkorn / kamut flours are partial
+  credit unless labelled whole).
+- `rulesetV540Rescored` one-shot migration; overview cache stays `exp-v9`
+  (invalidated by the migration flag). `RulesetV509.json` untouched (kill
+  switch keeps bread on the frozen `breads` grains profile).
 
 ## V5.3.0 Eggs (dedicated profile)
 

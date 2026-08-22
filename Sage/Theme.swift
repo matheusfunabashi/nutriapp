@@ -297,6 +297,8 @@ final class AppStore: ObservableObject {
         invalidateAndRescoreForV510IfNeeded()
         invalidateAndRescoreForV520IfNeeded()
         invalidateAndRescoreForV530IfNeeded()
+        invalidateAndRescoreForV540IfNeeded()
+        invalidateAndRescoreForV550IfNeeded()
     }
 
     /// Decode a stored snapshot, migrating legacy `deltaReason` → `overview`.
@@ -377,6 +379,29 @@ final class AppStore: ObservableObject {
     /// egg-dominance routing guard, NOVA inference, S14 token / whitelist fixes).
     private func invalidateAndRescoreForV530IfNeeded() {
         let key = "rulesetV530Rescored"
+        guard !UserDefaults.standard.bool(forKey: key) else { return }
+        rescoreAll()
+        UserDefaults.standard.set(true, forKey: key)
+        UserDefaults.standard.set(true, forKey: "overviewExpV9Invalidated")
+    }
+
+    /// One-shot V5.4.0 — dedicated `bread` profile (graded whole-grain share,
+    /// evidence-based processing, S12 grain variant, bread sodium anchors,
+    /// S14 whitelist / water fixes).
+    private func invalidateAndRescoreForV540IfNeeded() {
+        let key = "rulesetV540Rescored"
+        guard !UserDefaults.standard.bool(forKey: key) else { return }
+        rescoreAll()
+        UserDefaults.standard.set(true, forKey: key)
+        UserDefaults.standard.set(true, forKey: "overviewExpV9Invalidated")
+    }
+
+    /// One-shot V5.5.0 — dedicated `protein_bars` profile (protein delivery +
+    /// source quality, evidence-based processing, sweetener tiers, capped
+    /// fruit-sugar discount, S14 whitelist / neutral protein sources,
+    /// palm-kernel fat tier).
+    private func invalidateAndRescoreForV550IfNeeded() {
+        let key = "rulesetV550Rescored"
         guard !UserDefaults.standard.bool(forKey: key) else { return }
         rescoreAll()
         UserDefaults.standard.set(true, forKey: key)

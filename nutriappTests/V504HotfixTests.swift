@@ -91,7 +91,7 @@ struct V504HotfixTests {
             ingredientsText: "durum wheat semolina",
             categories: ["pastas"]
         )
-        #expect(ScoringEngineV4.route(pasta, ruleset: rs) == "breads")
+        #expect(ScoringEngineV4.route(pasta, ruleset: rs) == "grains")
     }
 
     @Test func wholeFoodsRouterHasNoUmbrellaProductsTags() {
@@ -266,7 +266,7 @@ struct V504HotfixTests {
     }
 
     @Test func rulesetVersionIsV504() {
-        #expect(rs.version == "2026.08-v5.3.0")
+        #expect(rs.version == "2026.08-v5.5.0")
         #expect(rs.multipliers?.preference?["high protein"]?["S12"] == 1.25)
     }
 }

@@ -1,5 +1,5 @@
 {
-  "version": "2026.08-v5.3.0",
+  "version": "2026.08-v5.5.0",
   "bands": {
     "excellent": 75,
     "good": 55,
@@ -140,6 +140,13 @@
     400,
     800
   ],
+  "s4ThresholdsByVariant": {
+    "bread": [
+      200,
+      450,
+      700
+    ]
+  },
   "s5Thresholds": {
     "standard": [
       3,
@@ -157,6 +164,2246 @@
       40
     ]
   },
+  "proteinBars": {
+    "gate": {
+      "barTags": [
+        "protein-bars",
+        "protein-energy-bars",
+        "bars",
+        "cereal-bars",
+        "energy-bars",
+        "nut-bars",
+        "snack-bars",
+        "granola-bars",
+        "fruit-bars",
+        "chocolate-cereal-bars",
+        "bars-covered-with-chocolate",
+        "protein-snacks",
+        "fruits-cereal-bars",
+        "nuts-cereal-bars",
+        "oat-bars",
+        "muesli-bars",
+        "flapjacks"
+      ],
+      "barWords": [
+        "bar",
+        "bars",
+        "barre",
+        "barres",
+        "barra",
+        "barras",
+        "barrita",
+        "barritas",
+        "barretta",
+        "barrette",
+        "riegel",
+        "reep",
+        "repen",
+        "baton",
+        "batony",
+        "tyčinka",
+        "flapjack"
+      ],
+      "proteinWords": [
+        "protein",
+        "proteins",
+        "proteína",
+        "proteina",
+        "proteínas",
+        "proteine",
+        "protéine",
+        "protéines",
+        "proteico",
+        "proteica",
+        "proteici",
+        "proteiche",
+        "eiweiß",
+        "eiweiss",
+        "eiwit",
+        "proteïne",
+        "białko",
+        "proteinowy",
+        "proteinowa",
+        "proteinový",
+        "proteinová"
+      ],
+      "minKcal": 200,
+      "maxKcal": 650,
+      "maxProteinG": 55,
+      "minProteinShareNamed": 0.12,
+      "minProteinShareUnnamed": 0.2,
+      "minProteinGUnnamed": 10,
+      "fallbackProfiles": [
+        "snacks",
+        "general",
+        "grains",
+        "breads",
+        "whole_foods"
+      ]
+    },
+    "serving": {
+      "defaultG": 50,
+      "minG": 20,
+      "maxG": 120
+    },
+    "s12": {
+      "servingFullG": 20,
+      "shareFull": 0.35,
+      "per100FullG": 40,
+      "proteinWeight": 0.8,
+      "qualityFloor": 0.6,
+      "fiberWeight": 0.2,
+      "fiberFullG": 8,
+      "isolatedFiberDamp": 0.5,
+      "unknownFiberCredit": 0.35,
+      "rankDecay": 0.5,
+      "unknownQuality": 0.6,
+      "unknownCredit": 0.4,
+      "sources": [
+        {
+          "match": "whey",
+          "credit": 1.0,
+          "density": 0.85
+        },
+        {
+          "match": "milk protein",
+          "credit": 1.0,
+          "density": 0.85
+        },
+        {
+          "match": "casein",
+          "credit": 1.0,
+          "density": 0.85
+        },
+        {
+          "match": "caseinate",
+          "credit": 1.0,
+          "density": 0.9
+        },
+        {
+          "match": "egg white",
+          "credit": 1.0,
+          "density": 0.8
+        },
+        {
+          "match": "albumen",
+          "credit": 1.0,
+          "density": 0.8
+        },
+        {
+          "match": "whole egg",
+          "credit": 1.0,
+          "density": 0.47
+        },
+        {
+          "match": "egg powder",
+          "credit": 1.0,
+          "density": 0.47
+        },
+        {
+          "match": "dried egg",
+          "credit": 1.0,
+          "density": 0.47
+        },
+        {
+          "match": "egg",
+          "credit": 1.0,
+          "density": 0.3
+        },
+        {
+          "match": "milk powder",
+          "credit": 1.0,
+          "density": 0.3
+        },
+        {
+          "match": "dry milk",
+          "credit": 1.0,
+          "density": 0.35
+        },
+        {
+          "match": "skim milk",
+          "credit": 1.0,
+          "density": 0.35
+        },
+        {
+          "match": "skimmed milk",
+          "credit": 1.0,
+          "density": 0.35
+        },
+        {
+          "match": "milk",
+          "credit": 1.0,
+          "density": 0.2
+        },
+        {
+          "match": "yogurt",
+          "credit": 1.0,
+          "density": 0.2
+        },
+        {
+          "match": "yoghurt",
+          "credit": 1.0,
+          "density": 0.2
+        },
+        {
+          "match": "quark",
+          "credit": 1.0,
+          "density": 0.3
+        },
+        {
+          "match": "beef",
+          "credit": 1.0,
+          "density": 0.5
+        },
+        {
+          "match": "chicken",
+          "credit": 1.0,
+          "density": 0.5
+        },
+        {
+          "match": "cricket",
+          "credit": 0.85,
+          "density": 0.6
+        },
+        {
+          "match": "insect",
+          "credit": 0.85,
+          "density": 0.6
+        },
+        {
+          "match": "soy protein",
+          "credit": 0.9,
+          "density": 0.85
+        },
+        {
+          "match": "soya protein",
+          "credit": 0.9,
+          "density": 0.85
+        },
+        {
+          "match": "soy isolate",
+          "credit": 0.9,
+          "density": 0.85
+        },
+        {
+          "match": "soy crisps",
+          "credit": 0.9,
+          "density": 0.6
+        },
+        {
+          "match": "soy protein crisps",
+          "credit": 0.9,
+          "density": 0.6
+        },
+        {
+          "match": "soybean",
+          "credit": 0.9,
+          "density": 0.35
+        },
+        {
+          "match": "soy flour",
+          "credit": 0.9,
+          "density": 0.45
+        },
+        {
+          "match": "potato protein",
+          "credit": 0.9,
+          "density": 0.8
+        },
+        {
+          "match": "mung bean protein",
+          "credit": 0.85,
+          "density": 0.8
+        },
+        {
+          "match": "chickpea protein",
+          "credit": 0.8,
+          "density": 0.7
+        },
+        {
+          "match": "pea protein",
+          "credit": 0.82,
+          "density": 0.8
+        },
+        {
+          "match": "fava bean protein",
+          "credit": 0.7,
+          "density": 0.8
+        },
+        {
+          "match": "faba bean protein",
+          "credit": 0.7,
+          "density": 0.8
+        },
+        {
+          "match": "pumpkin seed protein",
+          "credit": 0.65,
+          "density": 0.6
+        },
+        {
+          "match": "sunflower protein",
+          "credit": 0.65,
+          "density": 0.55
+        },
+        {
+          "match": "hemp protein",
+          "credit": 0.6,
+          "density": 0.5
+        },
+        {
+          "match": "hemp seed",
+          "credit": 0.6,
+          "density": 0.3
+        },
+        {
+          "match": "rice protein",
+          "credit": 0.55,
+          "density": 0.8
+        },
+        {
+          "match": "brown rice protein",
+          "credit": 0.55,
+          "density": 0.8
+        },
+        {
+          "match": "almond protein",
+          "credit": 0.5,
+          "density": 0.5
+        },
+        {
+          "match": "peanut protein",
+          "credit": 0.55,
+          "density": 0.5
+        },
+        {
+          "match": "peanut flour",
+          "credit": 0.55,
+          "density": 0.5
+        },
+        {
+          "match": "peanut butter",
+          "credit": 0.6,
+          "density": 0.25
+        },
+        {
+          "match": "peanut",
+          "credit": 0.6,
+          "density": 0.25
+        },
+        {
+          "match": "almond butter",
+          "credit": 0.5,
+          "density": 0.21
+        },
+        {
+          "match": "almond",
+          "credit": 0.5,
+          "density": 0.21
+        },
+        {
+          "match": "cashew",
+          "credit": 0.5,
+          "density": 0.18
+        },
+        {
+          "match": "pistachio",
+          "credit": 0.6,
+          "density": 0.2
+        },
+        {
+          "match": "walnut",
+          "credit": 0.45,
+          "density": 0.15
+        },
+        {
+          "match": "hazelnut",
+          "credit": 0.45,
+          "density": 0.15
+        },
+        {
+          "match": "pecan",
+          "credit": 0.4,
+          "density": 0.09
+        },
+        {
+          "match": "macadamia",
+          "credit": 0.4,
+          "density": 0.08
+        },
+        {
+          "match": "nuts",
+          "credit": 0.5,
+          "density": 0.2
+        },
+        {
+          "match": "pumpkin seed",
+          "credit": 0.6,
+          "density": 0.3
+        },
+        {
+          "match": "sunflower seed",
+          "credit": 0.6,
+          "density": 0.2
+        },
+        {
+          "match": "chia",
+          "credit": 0.6,
+          "density": 0.17
+        },
+        {
+          "match": "flax",
+          "credit": 0.6,
+          "density": 0.18
+        },
+        {
+          "match": "quinoa",
+          "credit": 0.8,
+          "density": 0.14
+        },
+        {
+          "match": "oat",
+          "credit": 0.5,
+          "density": 0.13
+        },
+        {
+          "match": "protein crisps",
+          "credit": 0.7,
+          "density": 0.6
+        },
+        {
+          "match": "protein blend",
+          "credit": 0.7,
+          "density": 0.85
+        },
+        {
+          "match": "plant protein",
+          "credit": 0.7,
+          "density": 0.8
+        },
+        {
+          "match": "vegetable protein",
+          "credit": 0.7,
+          "density": 0.8
+        },
+        {
+          "match": "collagen",
+          "credit": 0.25,
+          "density": 0.9
+        },
+        {
+          "match": "gelatin",
+          "credit": 0.25,
+          "density": 0.85
+        },
+        {
+          "match": "gelatine",
+          "credit": 0.25,
+          "density": 0.85
+        }
+      ],
+      "complementaryPairs": [
+        [
+          "pea protein",
+          "rice protein"
+        ],
+        [
+          "pea protein",
+          "brown rice protein"
+        ],
+        [
+          "pea protein",
+          "pumpkin seed protein"
+        ]
+      ],
+      "complementaryCredit": 0.9
+    },
+    "s3": {
+      "fvnDiscountCap": 0.5
+    },
+    "s2": {
+      "clean": 1.0,
+      "minRecognizedShare": 0.3,
+      "markerCredits": [
+        0.8,
+        0.62,
+        0.46,
+        0.32,
+        0.2,
+        0.1
+      ],
+      "novaFourNoList": 0.2,
+      "novaThreeNoList": 0.5,
+      "novaLowNoList": 0.8,
+      "unknownCredit": 0.3,
+      "upfMarkers": [
+        {
+          "family": "flavorings",
+          "text": [
+            "natural flavor",
+            "natural flavour",
+            "artificial flavor",
+            "artificial flavour",
+            "flavoring",
+            "flavouring",
+            "flavors",
+            "flavours",
+            "flavor",
+            "flavour",
+            "aroma",
+            "arôme",
+            "arome",
+            "aromas",
+            "aromi",
+            "sabor natural",
+            "aromat",
+            "aromaty",
+            "arom",
+            "aromer",
+            "aromi naturali",
+            "aroma naturale",
+            "arôme naturel",
+            "arômes",
+            "sabor",
+            "saborizante",
+            "aromatizante",
+            "smaakstof",
+            "smaakstoffen",
+            "aromastoffe",
+            "aromastoff",
+            "natürliches aroma",
+            "naturligt arom",
+            "naturlig aroma",
+            "luontainen aromi",
+            "aromit",
+            "příchuť",
+            "aroma naturalny"
+          ],
+          "codes": []
+        },
+        {
+          "family": "non-nutritive sweeteners",
+          "text": [
+            "sucralose",
+            "acesulfame",
+            "aspartame",
+            "saccharin",
+            "neotame",
+            "advantame",
+            "stevia",
+            "steviol",
+            "rebaudioside",
+            "monk fruit",
+            "monkfruit",
+            "luo han guo",
+            "sucralosio",
+            "acessulfame",
+            "sacarina",
+            "estévia",
+            "sukralos",
+            "sukraloza",
+            "sucralosa",
+            "sukralóza",
+            "acesulfam",
+            "acesulfaam",
+            "aspartam",
+            "sacharin",
+            "stevioli",
+            "sötningsmedel",
+            "sødemiddel",
+            "søtningsstoff",
+            "søtstoff",
+            "makeutusaine",
+            "makeutusaineet",
+            "słodzik",
+            "substancja słodząca",
+            "substancje słodzące",
+            "sladidlo",
+            "sladidla",
+            "zoetstof",
+            "zoetstoffen",
+            "süßungsmittel",
+            "süssungsmittel",
+            "édulcorant",
+            "édulcorants",
+            "edulcorante",
+            "edulcorantes",
+            "dolcificante",
+            "dolcificanti",
+            "glykosidy steviolu"
+          ],
+          "codes": [
+            "e950",
+            "e951",
+            "e954",
+            "e955",
+            "e957",
+            "e959",
+            "e960",
+            "e961",
+            "e962",
+            "e969"
+          ]
+        },
+        {
+          "family": "sugar alcohols",
+          "text": [
+            "maltitol",
+            "erythritol",
+            "xylitol",
+            "sorbitol",
+            "isomalt",
+            "lactitol",
+            "mannitol",
+            "polyols",
+            "polyol",
+            "eritritol",
+            "xilitol",
+            "maltitolo",
+            "eritritolo",
+            "maltit",
+            "maltitoli",
+            "maltitolsirap",
+            "maltitolsirup",
+            "maltitol syrup",
+            "erytrytol",
+            "erytritol",
+            "erythrit",
+            "erytritoli",
+            "ksylitol",
+            "xylit",
+            "ksylitoli",
+            "sorbit",
+            "sorbitoli",
+            "isomalto",
+            "polyoler",
+            "polioli",
+            "poliole",
+            "polyalkoholer",
+            "polyoli",
+            "sokerialkoholi",
+            "sokerialkoholit"
+          ],
+          "codes": [
+            "e420",
+            "e421",
+            "e953",
+            "e965",
+            "e966",
+            "e967",
+            "e968"
+          ]
+        },
+        {
+          "family": "humectants",
+          "text": [
+            "glycerin",
+            "glycerine",
+            "glycerol",
+            "vegetable glycerin",
+            "propylene glycol",
+            "glicerina",
+            "glicerol",
+            "fuktighetsbevarande",
+            "fugtighedsbevarende",
+            "fuktighetsbevarende",
+            "kosteudensäilyttäjä",
+            "kosteudensäilyttäjät",
+            "substancja utrzymująca wilgoć",
+            "zvlhčující látka",
+            "bevochtigingsmiddel",
+            "feuchthaltemittel",
+            "humectant",
+            "humectante",
+            "umidificante",
+            "glicerolo",
+            "glyserol",
+            "glyseroli",
+            "gliceryna"
+          ],
+          "codes": [
+            "e422",
+            "e1520"
+          ]
+        },
+        {
+          "family": "refined syrups",
+          "text": [
+            "glucose syrup",
+            "corn syrup",
+            "tapioca syrup",
+            "brown rice syrup",
+            "rice syrup",
+            "invert sugar",
+            "maltodextrin",
+            "dextrose",
+            "fructose",
+            "glucose-fructose",
+            "fructose-glucose",
+            "isomalto-oligosaccharides",
+            "isomaltooligosaccharides",
+            "isomalto oligosaccharides",
+            "oligosaccharides",
+            "maltose",
+            "sciroppo di glucosio",
+            "xarope de glicose",
+            "sirop de glucose",
+            "jarabe de glucosa",
+            "maltodextrina",
+            "maltodestrina",
+            "glukossirap",
+            "glukosesirup",
+            "glukoosisiirappi",
+            "syrop glukozowy",
+            "glukózový sirup",
+            "glucosestroop",
+            "maltodekstrin",
+            "dekstroza",
+            "dekstroosi",
+            "fruktos",
+            "fruktoosi",
+            "fruktoza",
+            "fruktóza",
+            "invertsocker",
+            "invertsukker",
+            "inverttisokeri",
+            "cukier inwertowany",
+            "invertní cukr",
+            "invertsuiker",
+            "invertzucker",
+            "sirop de riz",
+            "sciroppo di riso",
+            "jarabe de arroz",
+            "xarope de arroz",
+            "reissirup",
+            "rijststroop",
+            "tapiokasirap",
+            "tapiokasirup",
+            "syrop tapiokowy",
+            "isomaltooligosackarider",
+            "isomaltooligosaccharider",
+            "oligosacharydy",
+            "oligosaccaridi"
+          ],
+          "codes": []
+        },
+        {
+          "family": "isolated fibers",
+          "text": [
+            "soluble corn fiber",
+            "soluble corn fibre",
+            "soluble tapioca fiber",
+            "soluble tapioca fibre",
+            "tapioca fiber",
+            "tapioca fibre",
+            "corn fiber",
+            "corn fibre",
+            "polydextrose",
+            "resistant dextrin",
+            "resistant maltodextrin",
+            "inulin",
+            "chicory root fiber",
+            "chicory root fibre",
+            "chicory fiber",
+            "chicory fibre",
+            "chicory root extract",
+            "oat fiber",
+            "oat fibre",
+            "oat hull fiber",
+            "cellulose",
+            "fructooligosaccharides",
+            "fructo-oligosaccharides",
+            "oligofructose",
+            "prebiotic fiber",
+            "prebiotic fibre",
+            "vegetable fiber",
+            "vegetable fibre",
+            "citrus fiber",
+            "citrus fibre",
+            "bamboo fiber",
+            "bamboo fibre",
+            "wheat fiber",
+            "wheat fibre",
+            "pea fiber",
+            "pea fibre",
+            "apple fiber",
+            "apple fibre",
+            "acacia fiber",
+            "acacia fibre",
+            "fibra de",
+            "fibre de",
+            "fibra di",
+            "lösliga majsfibrer",
+            "løselige majsfibre",
+            "liukoinen maissikuitu",
+            "rozpuszczalny błonnik kukurydziany",
+            "rozpustná kukuřičná vlákna",
+            "oplosbare maïsvezel",
+            "lösliche maisfaser",
+            "fibre de maïs",
+            "fibra di mais",
+            "fibra de maíz",
+            "fibra de milho",
+            "polydextros",
+            "polidekstroza",
+            "polydextróza",
+            "inuliini",
+            "inulina",
+            "cikoriafiber",
+            "cikorierodsfiber",
+            "juurisikurikuitu",
+            "błonnik z korzenia cykorii",
+            "vláknina z čekanky",
+            "cichoreiwortelvezel",
+            "zichorienwurzelfaser",
+            "fibre de racine de chicorée",
+            "fibra di radice di cicoria",
+            "fibra de raíz de achicoria",
+            "havrefiber",
+            "havrefibre",
+            "kaurakuitu",
+            "błonnik owsiany",
+            "ovesná vláknina",
+            "havervezel",
+            "haferfaser",
+            "fibre d'avoine",
+            "fibra di avena",
+            "fibra de avena",
+            "tapiokafiber",
+            "tapiokafibre",
+            "błonnik z tapioki",
+            "tapiocavezel",
+            "tapiokafaser",
+            "fibre de tapioca",
+            "fibra di tapioca",
+            "fibra de tapioca",
+            "vegetabiliska fibrer",
+            "kostfiber",
+            "vláknina"
+          ],
+          "codes": [
+            "e1200",
+            "e460",
+            "e460i",
+            "e460ii"
+          ]
+        },
+        {
+          "family": "emulsifiers",
+          "text": [
+            "lecithin",
+            "lecithins",
+            "lecitina",
+            "lécithine",
+            "mono- and diglycerides",
+            "mono and diglycerides",
+            "monoglycerides",
+            "diglycerides",
+            "polyglycerol",
+            "pgpr",
+            "polyricinoleate",
+            "sodium stearoyl",
+            "datem",
+            "emulsifier",
+            "emulsifiers",
+            "emulsionante",
+            "émulsifiant",
+            "emulgator",
+            "emulgeringsmedel",
+            "emulgatorer",
+            "emulgeringsmiddel",
+            "emulgointiaine",
+            "emulgointiaineet",
+            "emulgatory",
+            "emulgátor",
+            "emulgátory",
+            "emulgatoren",
+            "émulsifiants",
+            "emulsionantes",
+            "emulsionanti",
+            "lecitin",
+            "lecitiner",
+            "lesitiini",
+            "lecytyna",
+            "lecithine",
+            "sojalecitin",
+            "solroslecitin",
+            "solsikkelecitin",
+            "auringonkukkalesitiini",
+            "lecytyna słonecznikowa",
+            "mono- och diglycerider",
+            "mono- og diglycerider",
+            "mono- ja diglyseridit",
+            "mono- i diglicerydy",
+            "mono- a diglyceridy",
+            "mono- en diglyceriden",
+            "mono- und diglyceride",
+            "mono- et diglycérides",
+            "mono- e digliceridi",
+            "mono- y diglicéridos"
+          ],
+          "codes": [
+            "e322",
+            "e471",
+            "e472a",
+            "e472b",
+            "e472c",
+            "e472e",
+            "e473",
+            "e475",
+            "e476",
+            "e481",
+            "e482",
+            "e491"
+          ]
+        },
+        {
+          "family": "thickeners & gums",
+          "text": [
+            "xanthan",
+            "guar gum",
+            "carrageenan",
+            "gellan",
+            "locust bean",
+            "gum arabic",
+            "acacia gum",
+            "gum acacia",
+            "cellulose gum",
+            "carboxymethylcellulose",
+            "carboxymethyl cellulose",
+            "agar",
+            "pectin",
+            "thickener",
+            "thickeners",
+            "stabiliser",
+            "stabilizer",
+            "stabilisers",
+            "stabilizers",
+            "goma",
+            "gomme",
+            "förtjockningsmedel",
+            "fortykningsmiddel",
+            "sakeuttamisaine",
+            "substancja zagęszczająca",
+            "zahušťovadlo",
+            "verdikkingsmiddel",
+            "verdickungsmittel",
+            "épaississant",
+            "espesante",
+            "addensante",
+            "espessante",
+            "stabilisator",
+            "stabilisatorer",
+            "stabilisaattori",
+            "stabilizator",
+            "stabilizátor",
+            "stabilisatie",
+            "stabilisant",
+            "estabilizante",
+            "stabilizzante",
+            "xantangummi",
+            "xanthangummi",
+            "ksantaanikumi",
+            "guma ksantanowa",
+            "xanthaangom",
+            "gomme xanthane",
+            "goma xantana",
+            "gomma di xanthan",
+            "guarkärnmjöl",
+            "guargummi",
+            "guarkumi",
+            "guma guar",
+            "guarpitmeel",
+            "gomme de guar",
+            "goma guar",
+            "gomma di guar",
+            "karragenan",
+            "karrageeni",
+            "karagen",
+            "carrageen",
+            "carraghénane",
+            "carragenina",
+            "carragenano",
+            "johannesbrödkärnmjöl",
+            "johannesbrødkernemel",
+            "johanneksenleipäpuujauhe",
+            "mączka chleba świętojańskiego",
+            "johannesbroodpitmeel",
+            "johannisbrotkernmehl",
+            "farine de graines de caroube",
+            "farina di semi di carrube",
+            "goma garrofín",
+            "gummi arabicum",
+            "arabikumi",
+            "guma arabska",
+            "arabische gom",
+            "gomme arabique",
+            "gomma arabica",
+            "goma arábiga",
+            "cellulosagummi",
+            "cellulosegummi",
+            "selluloosakumi",
+            "guma celulozowa",
+            "cellulosegom",
+            "carboxyméthylcellulose",
+            "carbossimetilcellulosa",
+            "carboximetilcelulosa"
+          ],
+          "codes": [
+            "e400",
+            "e401",
+            "e406",
+            "e407",
+            "e410",
+            "e412",
+            "e414",
+            "e415",
+            "e417",
+            "e418",
+            "e440",
+            "e461",
+            "e464",
+            "e466"
+          ]
+        },
+        {
+          "family": "refined hard fats",
+          "text": [
+            "palm kernel",
+            "palm fat",
+            "palm oil",
+            "palm stearin",
+            "fractionated",
+            "hydrogenated",
+            "interesterified",
+            "shea",
+            "vegetable fat",
+            "vegetable fats",
+            "gordura vegetal",
+            "grasa vegetal",
+            "graisse végétale",
+            "grasso vegetale",
+            "pflanzenfett",
+            "palmfett",
+            "palmöl",
+            "huile de palme",
+            "olio di palma",
+            "óleo de palma",
+            "aceite de palma",
+            "palmolja",
+            "palmeolie",
+            "palmeolje",
+            "palmuöljy",
+            "olej palmowy",
+            "palmový olej",
+            "palmolie",
+            "palmkärnolja",
+            "palmekerneolie",
+            "palmukernolje",
+            "palmuydinöljy",
+            "olej z ziaren palmowych",
+            "olej palmojádrový",
+            "palmpitolie",
+            "huile de palmiste",
+            "olio di palmisto",
+            "aceite de palmiste",
+            "óleo de palmiste",
+            "härdat",
+            "härdad",
+            "hærdet",
+            "herdet",
+            "kovetettu",
+            "utwardzony",
+            "utwardzone",
+            "ztužený",
+            "gehard",
+            "gehärtet",
+            "hydrogéné",
+            "hidrogenado",
+            "idrogenato",
+            "vegetabiliskt fett",
+            "vegetabilsk fedt",
+            "vegetabilsk fett",
+            "kasvirasva",
+            "tłuszcz roślinny",
+            "rostlinný tuk",
+            "plantaardig vet",
+            "matière grasse végétale",
+            "sheasmör",
+            "sheabutter",
+            "sheafett",
+            "karitesmør",
+            "sheavoi",
+            "masło shea",
+            "bambucké máslo",
+            "sheaboter",
+            "beurre de karité",
+            "burro di karitè",
+            "manteca de karité",
+            "manteiga de karité",
+            "frakcjonowany",
+            "frakcionovaný",
+            "fraktioneret",
+            "fraktionerad",
+            "fraktioniert",
+            "fractionné",
+            "frazionato",
+            "fraccionado",
+            "fracionado"
+          ],
+          "codes": []
+        },
+        {
+          "family": "compound coatings",
+          "text": [
+            "coating",
+            "flavored coating",
+            "flavoured coating",
+            "yogurt coating",
+            "yoghurt coating",
+            "compound chocolate",
+            "chocolate flavored",
+            "chocolate flavoured",
+            "chocolate flavour coating",
+            "cobertura",
+            "enrobage",
+            "ricopertura",
+            "copertura",
+            "überzug",
+            "överdrag",
+            "overtræk",
+            "overtrekk",
+            "päällyste",
+            "polewa",
+            "poleva",
+            "glazuur",
+            "glasur",
+            "glaçage",
+            "glassa",
+            "smak av choklad",
+            "chokoladesmag",
+            "sjokoladesmak",
+            "suklaanmakuinen",
+            "o smaku czekoladowym",
+            "s příchutí čokolády",
+            "chocoladesmaak",
+            "schokoladengeschmack",
+            "saveur chocolat",
+            "gusto cioccolato",
+            "sabor chocolate"
+          ],
+          "codes": []
+        },
+        {
+          "family": "colors",
+          "text": [
+            "color",
+            "colour",
+            "colors",
+            "colours",
+            "colorant",
+            "colorante",
+            "colorants",
+            "coloring",
+            "colouring",
+            "annatto",
+            "caramel color",
+            "caramel colour",
+            "beta carotene",
+            "beta-carotene",
+            "carmine",
+            "carmim",
+            "farbstoff",
+            "färgämne",
+            "farvestof",
+            "fargestoff",
+            "väriaine",
+            "väriaineet",
+            "barwnik",
+            "barwniki",
+            "barvivo",
+            "barviva",
+            "kleurstof",
+            "kleurstoffen",
+            "farbstoffe",
+            "coloranti",
+            "corante",
+            "corantes",
+            "karamellfärg",
+            "karamel",
+            "karamell",
+            "caramello",
+            "karmin",
+            "karmiini",
+            "karmín",
+            "karmijn",
+            "carmin",
+            "carminio",
+            "spirulinaextrakt",
+            "spirulina extract",
+            "ekstrakt ze spiruliny",
+            "extrait de spiruline",
+            "estratto di spirulina",
+            "extracto de espirulina",
+            "betakaroten",
+            "beta-karoten",
+            "betakaroteeni",
+            "beta-karotenas",
+            "betacaroteno",
+            "betacarotene",
+            "bêta-carotène"
+          ],
+          "codes": [
+            "e100",
+            "e101",
+            "e102",
+            "e104",
+            "e110",
+            "e120",
+            "e122",
+            "e124",
+            "e127",
+            "e129",
+            "e131",
+            "e132",
+            "e133",
+            "e140",
+            "e141",
+            "e150a",
+            "e150b",
+            "e150c",
+            "e150d",
+            "e153",
+            "e160a",
+            "e160b",
+            "e160c",
+            "e160d",
+            "e160e",
+            "e161b",
+            "e162",
+            "e163",
+            "e171",
+            "e172",
+            "e173",
+            "e174",
+            "e175"
+          ]
+        },
+        {
+          "family": "preservatives",
+          "text": [
+            "potassium sorbate",
+            "sodium benzoate",
+            "calcium propionate",
+            "sodium propionate",
+            "sorbate",
+            "benzoate",
+            "preservative",
+            "preservatives",
+            "conservante",
+            "conservateur",
+            "konservierungsstoff",
+            "sulfite",
+            "sulphite",
+            "metabisulphite",
+            "metabisulfite",
+            "bha",
+            "bht",
+            "konserveringsmedel",
+            "konserveringsmiddel",
+            "säilöntäaine",
+            "säilöntäaineet",
+            "substancja konserwująca",
+            "konzervant",
+            "konzervační látka",
+            "conserveermiddel",
+            "conservanti",
+            "conservador",
+            "kaliumsorbat",
+            "potassiumsorbat",
+            "kaliumsorbaatti",
+            "sorbinian potasu",
+            "sorban draselný",
+            "kaliumsorbaat",
+            "sorbate de potassium",
+            "sorbato di potassio",
+            "sorbato de potasio",
+            "sorbato de potássio",
+            "natriumbensoat",
+            "natriumbenzoat",
+            "natriumbentsoaatti",
+            "benzoesan sodu",
+            "benzoan sodný",
+            "natriumbenzoaat",
+            "benzoate de sodium",
+            "benzoato di sodio",
+            "benzoato de sodio",
+            "benzoato de sódio"
+          ],
+          "codes": [
+            "e200",
+            "e201",
+            "e202",
+            "e203",
+            "e210",
+            "e211",
+            "e212",
+            "e213",
+            "e220",
+            "e221",
+            "e222",
+            "e223",
+            "e224",
+            "e228",
+            "e280",
+            "e281",
+            "e282",
+            "e283",
+            "e320",
+            "e321"
+          ]
+        },
+        {
+          "family": "modified starch",
+          "text": [
+            "modified starch",
+            "modified food starch",
+            "modified corn starch",
+            "modified tapioca starch",
+            "modified wheat starch",
+            "modified potato starch",
+            "amido modificado",
+            "amido modificato",
+            "amidon modifié",
+            "almidón modificado",
+            "modifizierte stärke",
+            "modifierad stärkelse",
+            "modificeret stivelse",
+            "modifisert stivelse",
+            "muunnettu tärkkelys",
+            "skrobia modyfikowana",
+            "modifikovaný škrob",
+            "gemodificeerd zetmeel",
+            "modified maize starch",
+            "modifizierte maisstärke",
+            "amidon de maïs modifié",
+            "amido di mais modificato",
+            "almidón de maíz modificado",
+            "amido de milho modificado"
+          ],
+          "codes": [
+            "e1400",
+            "e1401",
+            "e1402",
+            "e1403",
+            "e1404",
+            "e1405",
+            "e1410",
+            "e1412",
+            "e1413",
+            "e1414",
+            "e1420",
+            "e1422",
+            "e1440",
+            "e1442",
+            "e1450",
+            "e1451"
+          ]
+        }
+      ]
+    },
+    "s1ExemptSignals": [
+      "whey protein isolate",
+      "milk protein isolate",
+      "soy protein isolate"
+    ],
+    "s6": {
+      "polyolLoadG": [
+        10,
+        20
+      ],
+      "polyolLoadFactors": [
+        0.85,
+        0.7
+      ]
+    },
+    "sodiumMaxPlausibleMg": 3000,
+    "s14": {
+      "neutralTokenKw": [
+        "whey",
+        "milk protein",
+        "casein",
+        "caseinate",
+        "soy protein",
+        "soya protein",
+        "soy isolate",
+        "pea protein",
+        "rice protein",
+        "brown rice protein",
+        "hemp protein",
+        "pumpkin seed protein",
+        "sunflower protein",
+        "potato protein",
+        "mung bean protein",
+        "chickpea protein",
+        "fava bean protein",
+        "faba bean protein",
+        "almond protein",
+        "peanut protein",
+        "collagen",
+        "gelatin",
+        "gelatine",
+        "protein blend",
+        "protein crisps",
+        "plant protein",
+        "vegetable protein",
+        "egg white protein",
+        "egg protein",
+        "beef protein",
+        "protein isolate",
+        "protein concentrate",
+        "protein hydrolysate",
+        "proteína",
+        "proteina",
+        "protéine",
+        "proteine",
+        "eiweiß",
+        "eiweiss"
+      ],
+      "neutralIsolateMarkers": [
+        "isolate",
+        "isolado",
+        "isolato",
+        "concentrate",
+        "concentrado",
+        "concentrato",
+        "hydrolyzed",
+        "hydrolysate",
+        "hidrolisado",
+        "idrolizzato",
+        "protein blend",
+        "whey protein",
+        "milk protein",
+        "soy protein",
+        "pea protein",
+        "rice protein",
+        "collagen peptides",
+        "collagen peptide",
+        "hydrolyzed protein",
+        "proteína hidrolisada"
+      ]
+    }
+  },
+  "bread": {
+    "wholeGrainKw": [
+      "whole wheat",
+      "whole-wheat",
+      "wholewheat",
+      "whole grain",
+      "wholegrain",
+      "whole-grain",
+      "wholemeal",
+      "whole meal",
+      "whole rye",
+      "whole kernel",
+      "whole spelt",
+      "whole oat",
+      "whole barley",
+      "whole corn",
+      "whole durum",
+      "whole einkorn",
+      "whole emmer",
+      "whole khorasan",
+      "whole kamut",
+      "whole millet",
+      "whole sorghum",
+      "graham flour",
+      "rolled oats",
+      "oat flakes",
+      "oatmeal",
+      "oat flour",
+      "oats",
+      "sprouted",
+      "bulgur",
+      "cracked wheat",
+      "wheat berries",
+      "brown rice",
+      "masa",
+      "nixtamal",
+      "integral",
+      "intégral",
+      "complet",
+      "complète",
+      "vollkorn",
+      "integrale",
+      "volkoren",
+      "fullkorn",
+      "helkorn",
+      "whole rye meal",
+      "rye meal",
+      "whole-kernel",
+      "buckwheat",
+      "millet",
+      "quinoa",
+      "amaranth",
+      "sorghum",
+      "teff",
+      "kibbled",
+      "malted wheat flakes",
+      "wheat flakes",
+      "malted wheat grains",
+      "malted wheat kernels",
+      "malted grains",
+      "kibbled malted wheat",
+      "rye flakes",
+      "oat groats",
+      "wheat groats",
+      "whole grains",
+      "whole flour",
+      "schrot",
+      "roggenschrot",
+      "weizenschrot",
+      "vollkornschrot",
+      "haferflocken",
+      "hafervollkorn",
+      "roggenvollkorn",
+      "weizenvollkorn",
+      "dinkelvollkorn",
+      "vollkornmehl",
+      "pain complet",
+      "blé complet",
+      "farine complète",
+      "farine intégrale",
+      "seigle complet",
+      "épeautre complet",
+      "avoine complète",
+      "flocons d'avoine",
+      "farro integrale",
+      "grano integrale",
+      "farina integrale",
+      "segale integrale",
+      "fiocchi d'avena",
+      "trigo integral",
+      "centeio integral",
+      "aveia integral",
+      "farinha integral",
+      "harina integral",
+      "avena integral",
+      "copos de avena",
+      "flocos de aveia",
+      "grano saraceno",
+      "sarrasin",
+      "trigo sarraceno",
+      "blé germé",
+      "germinado",
+      "gekeimt",
+      "gekeimte",
+      "sprouted whole grain"
+    ],
+    "partialWholeKw": [
+      "rye flour",
+      "rye",
+      "spelt flour",
+      "spelt",
+      "einkorn",
+      "emmer",
+      "kamut",
+      "khorasan",
+      "barley flour",
+      "barley flakes",
+      "barley",
+      "cornmeal",
+      "corn flour",
+      "maize flour",
+      "oat bran",
+      "wheat bran",
+      "rice bran",
+      "bran",
+      "germ",
+      "seigle",
+      "épeautre",
+      "roggen",
+      "dinkel",
+      "centeio",
+      "segale",
+      "farro",
+      "centeno",
+      "roggenmehl",
+      "dinkelmehl",
+      "farine de seigle",
+      "farine d'épeautre",
+      "farina di segale",
+      "farina di farro",
+      "harina de centeno",
+      "farinha de centeio",
+      "gerste",
+      "orge",
+      "orzo",
+      "cevada",
+      "cebada",
+      "hirse",
+      "miglio",
+      "millet",
+      "mijo",
+      "painço",
+      "son de blé",
+      "crusca",
+      "farelo",
+      "salvado",
+      "kleie",
+      "weizenkleie",
+      "haferkleie",
+      "avoine",
+      "hafer",
+      "aveia",
+      "avena"
+    ],
+    "refinedKw": [
+      "wheat flour",
+      "wheatflour",
+      "enriched flour",
+      "enriched wheat flour",
+      "unbleached flour",
+      "unbleached wheat flour",
+      "unbleached enriched flour",
+      "bleached flour",
+      "bleached wheat flour",
+      "white flour",
+      "all-purpose flour",
+      "all purpose flour",
+      "bread flour",
+      "plain flour",
+      "strong flour",
+      "flour",
+      "farina",
+      "semolina",
+      "semola",
+      "durum",
+      "rice flour",
+      "white rice",
+      "tapioca starch",
+      "tapioca flour",
+      "potato starch",
+      "potato flour",
+      "corn starch",
+      "cornstarch",
+      "wheat starch",
+      "maida",
+      "farinha de trigo",
+      "farine de blé",
+      "farine de froment",
+      "weizenmehl",
+      "harina de trigo",
+      "farina di grano",
+      "farina di frumento",
+      "tipo 00",
+      "tipo 0",
+      "starch",
+      "fécule",
+      "amido",
+      "almidón",
+      "mehl",
+      "maisstärke",
+      "kartoffelstärke",
+      "weizenstärke",
+      "tapiokastärke",
+      "reismehl",
+      "maismehl",
+      "stärke",
+      "farine",
+      "farine de riz",
+      "farine de maïs",
+      "amidon",
+      "farina di riso",
+      "farina di mais",
+      "harina",
+      "harina de arroz",
+      "harina de maíz",
+      "fécula",
+      "farinha",
+      "farinha de arroz",
+      "farinha de milho",
+      "polvilho",
+      "grieß",
+      "hartweizengrieß",
+      "semoule"
+    ],
+    "grainIgnoreKw": [
+      "gluten",
+      "almond flour",
+      "coconut flour",
+      "chickpea flour",
+      "lentil flour",
+      "soy flour",
+      "soya flour",
+      "flaxseed",
+      "flax seed",
+      "linseed",
+      "sunflower",
+      "pumpkin",
+      "sesame",
+      "chia",
+      "poppy",
+      "protein",
+      "fiber",
+      "fibre",
+      "yeast",
+      "vinegar",
+      "lecithin",
+      "flavor",
+      "flavour",
+      "caramel",
+      "color",
+      "colour",
+      "juice",
+      "syrup",
+      "sugar",
+      "honey",
+      "molasses",
+      "oil",
+      "butter",
+      "milk",
+      "egg",
+      "water",
+      "salt",
+      "cultured",
+      "fermented wheat flour",
+      "malt extract",
+      "barley malt",
+      "malted barley",
+      "malt flour",
+      "malted barley flour",
+      "malted wheat flour",
+      "malted rye flour",
+      "malted grain flour",
+      "malz",
+      "malto",
+      "malte",
+      "glúten",
+      "glutine",
+      "hefe",
+      "levure",
+      "lievito",
+      "levedura",
+      "levadura",
+      "huile",
+      "olio",
+      "óleo",
+      "aceite",
+      "öl",
+      "zucker",
+      "sucre",
+      "zucchero",
+      "açúcar",
+      "azúcar",
+      "sel",
+      "sale",
+      "salz",
+      "eau",
+      "acqua",
+      "água",
+      "wasser",
+      "agua",
+      "vinaigre",
+      "aceto",
+      "essig",
+      "vinagre",
+      "proteína",
+      "proteine",
+      "eiweiß",
+      "faser",
+      "fibra"
+    ],
+    "partialCredit": 0.5,
+    "rankDecay": 0.5,
+    "nameWholeClaims": [
+      "100% whole",
+      "100 % whole",
+      "100% wholemeal",
+      "100% wholegrain",
+      "100% whole grain",
+      "wholemeal",
+      "vollkorn",
+      "100% integral",
+      "intégral",
+      "integrale",
+      "complet",
+      "complète",
+      "volkoren",
+      "integral",
+      "fullkorn"
+    ],
+    "nameClaimShare": 0.9,
+    "wholeTagFallback": [
+      "whole-wheat-breads",
+      "whole-grain-breads",
+      "wholemeal-breads",
+      "rye-breads",
+      "pumpernickel"
+    ],
+    "unknownCredit": 0.2,
+    "unknownWholeCredit": 0.6,
+    "fiberCaps": [
+      {
+        "belowG": 3.5,
+        "maxShare": 0.35
+      },
+      {
+        "belowG": 5.0,
+        "maxShare": 0.7
+      }
+    ],
+    "isolatedFiberKw": [
+      "oat fiber",
+      "oat fibre",
+      "oat hull fiber",
+      "oat hull fibre",
+      "cellulose",
+      "polydextrose",
+      "inulin",
+      "chicory root",
+      "chicory fiber",
+      "chicory fibre",
+      "resistant starch",
+      "resistant dextrin",
+      "soluble corn fiber",
+      "soluble corn fibre",
+      "wheat fiber",
+      "wheat fibre",
+      "vegetable fiber",
+      "vegetable fibre",
+      "bamboo fiber",
+      "bamboo fibre",
+      "pea fiber",
+      "pea fibre",
+      "potato fiber",
+      "potato fibre",
+      "citrus fiber",
+      "citrus fibre",
+      "corn fiber",
+      "corn fibre",
+      "psyllium"
+    ],
+    "upfMarkers": [
+      {
+        "family": "hfcs / glucose syrups",
+        "text": [
+          "high fructose corn syrup",
+          "high-fructose corn syrup",
+          "corn syrup",
+          "glucose syrup",
+          "glucose-fructose syrup",
+          "fructose-glucose syrup",
+          "invert sugar",
+          "dextrose",
+          "maltodextrin",
+          "xarope de glicose",
+          "sciroppo di glucosio",
+          "sirop de glucose"
+        ],
+        "codes": []
+      },
+      {
+        "family": "modified starch",
+        "text": [
+          "modified starch",
+          "modified wheat starch",
+          "modified food starch",
+          "modified corn starch",
+          "modified tapioca starch",
+          "amido modificado",
+          "amidon modifié"
+        ],
+        "codes": [
+          "e1404",
+          "e1410",
+          "e1412",
+          "e1413",
+          "e1414",
+          "e1420",
+          "e1422",
+          "e1440",
+          "e1442",
+          "e1450",
+          "e1451"
+        ]
+      },
+      {
+        "family": "mono- and diglycerides",
+        "text": [
+          "mono- and diglycerides",
+          "mono and diglycerides",
+          "mono-and diglycerides",
+          "monoglycerides",
+          "diglycerides",
+          "mono- e diglicerídeos",
+          "mono e diglicerídeos",
+          "mono- et diglycérides"
+        ],
+        "codes": [
+          "e471"
+        ]
+      },
+      {
+        "family": "datem / esters of mono- and diglycerides",
+        "text": [
+          "datem",
+          "diacetyl tartaric",
+          "esters of mono",
+          "ésteres de mono"
+        ],
+        "codes": [
+          "e472a",
+          "e472b",
+          "e472c",
+          "e472d",
+          "e472e",
+          "e472f"
+        ]
+      },
+      {
+        "family": "stearoyl lactylates",
+        "text": [
+          "sodium stearoyl lactylate",
+          "calcium stearoyl lactylate",
+          "stearoyl lactylate",
+          "sodium stearoyl-2-lactylate"
+        ],
+        "codes": [
+          "e481",
+          "e482"
+        ]
+      },
+      {
+        "family": "lecithin",
+        "text": [
+          "lecithin",
+          "lecitina",
+          "lécithine"
+        ],
+        "codes": [
+          "e322"
+        ]
+      },
+      {
+        "family": "polysorbate",
+        "text": [
+          "polysorbate"
+        ],
+        "codes": [
+          "e432",
+          "e433",
+          "e434",
+          "e435",
+          "e436"
+        ]
+      },
+      {
+        "family": "gums and thickeners",
+        "text": [
+          "xanthan gum",
+          "guar gum",
+          "carrageenan",
+          "cellulose gum",
+          "carboxymethylcellulose",
+          "carboxymethyl cellulose",
+          "locust bean gum",
+          "gum arabic",
+          "acacia gum",
+          "hydroxypropyl methylcellulose",
+          "methylcellulose",
+          "goma xantana",
+          "goma guar"
+        ],
+        "codes": [
+          "e400",
+          "e401",
+          "e402",
+          "e403",
+          "e404",
+          "e405",
+          "e406",
+          "e407",
+          "e407a",
+          "e410",
+          "e412",
+          "e413",
+          "e414",
+          "e415",
+          "e416",
+          "e417",
+          "e418",
+          "e460",
+          "e461",
+          "e462",
+          "e463",
+          "e464",
+          "e465",
+          "e466",
+          "e468",
+          "e469"
+        ]
+      },
+      {
+        "family": "dough conditioners",
+        "text": [
+          "azodicarbonamide",
+          "l-cysteine",
+          "potassium bromate",
+          "calcium peroxide",
+          "calcium iodate",
+          "dough conditioner",
+          "dough conditioners",
+          "dough improver",
+          "improver"
+        ],
+        "codes": [
+          "e920",
+          "e921",
+          "e924",
+          "e924a",
+          "e927a",
+          "e928",
+          "e930"
+        ]
+      },
+      {
+        "family": "flavors",
+        "text": [
+          "natural flavor",
+          "natural flavour",
+          "artificial flavor",
+          "artificial flavour",
+          "natural flavors",
+          "natural flavours",
+          "artificial flavors",
+          "artificial flavours",
+          "flavoring",
+          "flavouring",
+          "flavorings",
+          "flavourings",
+          "aroma",
+          "arôme",
+          "arômes",
+          "aromas"
+        ],
+        "codes": []
+      },
+      {
+        "family": "colors",
+        "text": [
+          "caramel color",
+          "caramel colour",
+          "caramel coloring",
+          "color added",
+          "colour added",
+          "coloring",
+          "colouring",
+          "corante",
+          "colorant",
+          "colorante",
+          "annatto",
+          "turmeric color",
+          "beta carotene (color)"
+        ],
+        "codes": [
+          "e100",
+          "e102",
+          "e104",
+          "e110",
+          "e120",
+          "e122",
+          "e124",
+          "e129",
+          "e131",
+          "e132",
+          "e133",
+          "e140",
+          "e141",
+          "e150a",
+          "e150b",
+          "e150c",
+          "e150d",
+          "e153",
+          "e155",
+          "e160a",
+          "e160b",
+          "e160c",
+          "e160d",
+          "e161b",
+          "e162",
+          "e163",
+          "e171",
+          "e172"
+        ]
+      },
+      {
+        "family": "sweeteners",
+        "text": [
+          "sucralose",
+          "aspartame",
+          "acesulfame",
+          "saccharin",
+          "stevia",
+          "steviol",
+          "maltitol",
+          "sorbitol",
+          "xylitol",
+          "erythritol",
+          "isomalt",
+          "monk fruit",
+          "allulose",
+          "neotame",
+          "sucralosa",
+          "aspartamo"
+        ],
+        "codes": [
+          "e420",
+          "e421",
+          "e950",
+          "e951",
+          "e952",
+          "e954",
+          "e955",
+          "e957",
+          "e959",
+          "e960",
+          "e961",
+          "e962",
+          "e964",
+          "e965",
+          "e966",
+          "e967",
+          "e968",
+          "e969"
+        ]
+      },
+      {
+        "family": "protein isolates",
+        "text": [
+          "protein isolate",
+          "protein concentrate",
+          "soy protein",
+          "whey protein",
+          "pea protein",
+          "milk protein",
+          "hydrolyzed",
+          "hydrolysed",
+          "texturized",
+          "textured vegetable protein",
+          "proteína isolada",
+          "proteína de soja",
+          "isolat de protéine",
+          "wheat protein"
+        ],
+        "codes": []
+      },
+      {
+        "family": "hydrogenated / interesterified fat",
+        "text": [
+          "hydrogenated",
+          "interesterified",
+          "hidrogenad",
+          "interesterificad",
+          "hydrogénée",
+          "idrogenat"
+        ],
+        "codes": []
+      },
+      {
+        "family": "flavor enhancers",
+        "text": [
+          "monosodium glutamate",
+          "yeast extract",
+          "autolyzed yeast",
+          "hydrolyzed yeast",
+          "extracto de levadura",
+          "extrait de levure"
+        ],
+        "codes": [
+          "e620",
+          "e621",
+          "e622",
+          "e623",
+          "e624",
+          "e625",
+          "e626",
+          "e627",
+          "e628",
+          "e629",
+          "e630",
+          "e631",
+          "e632",
+          "e633",
+          "e634",
+          "e635",
+          "e640"
+        ]
+      },
+      {
+        "family": "bulking fibers",
+        "text": [
+          "polydextrose",
+          "cellulose fiber",
+          "cellulose fibre",
+          "powdered cellulose",
+          "oat hull fiber",
+          "oat hull fibre"
+        ],
+        "codes": [
+          "e1200"
+        ]
+      }
+    ],
+    "s2": {
+      "traditional": 0.7,
+      "markerCredits": [
+        0.4,
+        0.25,
+        0.12,
+        0.0
+      ],
+      "novaFourNoList": 0.12,
+      "unknownCredit": 0.4
+    },
+    "s12": {
+      "fiberZeroG": 1.5,
+      "fiberFullG": 7.0,
+      "proteinTargetG": 12.0,
+      "fiberWeight": 0.7,
+      "proteinWeight": 0.3,
+      "isolatedFiberDamp": 0.5,
+      "unknownFiberPrior": 0.2,
+      "unknownFiberPriorWhole": 0.55
+    },
+    "sodium": {
+      "minSodiumMgWithSalt": 40,
+      "saltWords": [
+        "salt",
+        "sea salt",
+        "rock salt",
+        "kosher salt",
+        "iodized salt",
+        "iodised salt",
+        "sel",
+        "sel de mer",
+        "sal",
+        "sal marina",
+        "sal marinho",
+        "salz",
+        "meersalz",
+        "sale",
+        "sale marino",
+        "zout",
+        "speisesalz",
+        "jodsalz",
+        "sel marin",
+        "sale iodato",
+        "sal iodado",
+        "sal yodada",
+        "sale marino integrale"
+      ]
+    }
+  },
   "micronutrients": {
     "dv": {
       "iron_mg": 18,
@@ -172,6 +2419,54 @@
     "dataFloor": true
   },
   "profiles": {
+    "protein_bars": [
+      {
+        "rule": "S12",
+        "w": 26,
+        "variant": "proteinBar"
+      },
+      {
+        "rule": "S3",
+        "w": 16,
+        "variant": "proteinBar"
+      },
+      {
+        "rule": "S6",
+        "w": 10,
+        "variant": "proteinBar"
+      },
+      {
+        "rule": "S2",
+        "w": 10,
+        "variant": "proteinBar"
+      },
+      {
+        "rule": "S1",
+        "w": 8
+      },
+      {
+        "rule": "S14",
+        "w": 10,
+        "variant": "proteinBar"
+      },
+      {
+        "rule": "S15",
+        "w": 8
+      },
+      {
+        "rule": "S5",
+        "w": 8
+      },
+      {
+        "rule": "S4",
+        "w": 2,
+        "variant": "proteinBar"
+      },
+      {
+        "rule": "S13",
+        "w": 2
+      }
+    ],
     "general": [
       {
         "rule": "S1",
@@ -443,7 +2738,18 @@
         "w": 6
       }
     ],
-    "breads": [
+    "bread": [
+      { "rule": "S1", "w": 16 },
+      { "rule": "S2", "w": 14, "variant": "bread" },
+      { "rule": "wholeGrain", "w": 16, "variant": "bread" },
+      { "rule": "S12", "w": 14, "variant": "grain" },
+      { "rule": "S3", "w": 10, "variant": "bread" },
+      { "rule": "S4", "w": 12, "variant": "bread" },
+      { "rule": "S5", "w": 6 },
+      { "rule": "S14", "w": 8 },
+      { "rule": "S15", "w": 4 }
+    ],
+    "grains": [
       {
         "rule": "S1",
         "w": 18
@@ -1111,72 +3417,132 @@
       "profile": "unscored_sweetener"
     },
     {
+      "match": "protein-bars",
+      "profile": "protein_bars"
+    },
+    {
+      "match": "protein-energy-bars",
+      "profile": "protein_bars"
+    },
+    {
+      "match": "rye-breads",
+      "profile": "bread"
+    },
+    {
+      "match": "sourdough-breads",
+      "profile": "bread"
+    },
+    {
+      "match": "pita-breads",
+      "profile": "bread"
+    },
+    {
+      "match": "tortillas",
+      "profile": "bread"
+    },
+    {
+      "match": "wraps",
+      "profile": "bread"
+    },
+    {
+      "match": "naans",
+      "profile": "bread"
+    },
+    {
+      "match": "crispbreads",
+      "profile": "bread"
+    },
+    {
+      "match": "english-muffins",
+      "profile": "bread"
+    },
+    {
+      "match": "bread-rolls",
+      "profile": "bread"
+    },
+    {
+      "match": "ciabattas",
+      "profile": "bread"
+    },
+    {
+      "match": "focaccias",
+      "profile": "bread"
+    },
+    {
+      "match": "brioches",
+      "profile": "bread"
+    },
+    {
+      "match": "pumpernickel",
+      "profile": "bread"
+    },
+    {
       "match": "breads",
-      "profile": "breads"
+      "profile": "bread"
     },
     {
       "match": "white-breads",
-      "profile": "breads"
+      "profile": "bread"
     },
     {
       "match": "wheat-breads",
-      "profile": "breads"
+      "profile": "bread"
     },
     {
       "match": "whole-wheat-breads",
-      "profile": "breads"
+      "profile": "bread"
     },
     {
       "match": "whole-grain-breads",
-      "profile": "breads"
+      "profile": "bread"
     },
     {
       "match": "sliced-breads",
-      "profile": "breads"
+      "profile": "bread"
     },
     {
       "match": "special-breads",
-      "profile": "breads"
+      "profile": "bread"
     },
     {
       "match": "flatbreads",
-      "profile": "breads"
+      "profile": "bread"
     },
     {
       "match": "baguettes",
-      "profile": "breads"
+      "profile": "bread"
     },
     {
       "match": "sandwich-breads",
-      "profile": "breads"
+      "profile": "bread"
     },
     {
       "match": "buns",
-      "profile": "breads"
+      "profile": "bread"
     },
     {
       "match": "hamburger-buns",
-      "profile": "breads"
+      "profile": "bread"
     },
     {
       "match": "bagels",
-      "profile": "breads"
+      "profile": "bread"
     },
     {
       "match": "toasts",
-      "profile": "breads"
+      "profile": "bread"
     },
     {
       "match": "breakfast-cereals",
-      "profile": "breads"
+      "profile": "grains"
     },
     {
       "match": "mueslis",
-      "profile": "breads"
+      "profile": "grains"
     },
     {
       "match": "oatmeals",
-      "profile": "breads"
+      "profile": "grains"
     },
     {
       "match": "instant-noodles",
@@ -1188,31 +3554,31 @@
     },
     {
       "match": "pastas",
-      "profile": "breads"
+      "profile": "grains"
     },
     {
       "match": "stuffed-pastas",
-      "profile": "breads"
+      "profile": "grains"
     },
     {
       "match": "fresh-pastas",
-      "profile": "breads"
+      "profile": "grains"
     },
     {
       "match": "rices",
-      "profile": "breads"
+      "profile": "grains"
     },
     {
       "match": "cereal-grains",
-      "profile": "breads"
+      "profile": "grains"
     },
     {
       "match": "flours",
-      "profile": "breads"
+      "profile": "grains"
     },
     {
       "match": "oats",
-      "profile": "breads"
+      "profile": "grains"
     },
     {
       "match": "frozen-desserts",

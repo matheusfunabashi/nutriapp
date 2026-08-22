@@ -22,6 +22,8 @@
 		TRB001BF012 /* DrinksScoring.swift in Sources */ = {isa = PBXBuildFile; fileRef = TRB001SF012 /* DrinksScoring.swift */; };
 		TRB001BF013 /* FatQuality.swift in Sources */ = {isa = PBXBuildFile; fileRef = TRB001SF013 /* FatQuality.swift */; };
 		TRB001BF014 /* IngredientIntegrity.swift in Sources */ = {isa = PBXBuildFile; fileRef = TRB001SF014 /* IngredientIntegrity.swift */; };
+		TRB001BF015 /* BreadScoring.swift in Sources */ = {isa = PBXBuildFile; fileRef = TRB001SF015 /* BreadScoring.swift */; };
+		TRB001BF016 /* ProteinBarScoring.swift in Sources */ = {isa = PBXBuildFile; fileRef = TRB001SF016 /* ProteinBarScoring.swift */; };
 		TRB001COPYBF001 /* RulesetV5.json in CopyFiles */ = {isa = PBXBuildFile; fileRef = TRB001REFF002 /* RulesetV5.json */; };
 		TRB001COPYBF002 /* Additives.json in CopyFiles */ = {isa = PBXBuildFile; fileRef = TRB001REFF001 /* Additives.json */; };
 		TRB001COPYBF003 /* AdditiveKnowledgeBase.json in CopyFiles */ = {isa = PBXBuildFile; fileRef = TRB001REFF003 /* AdditiveKnowledgeBase.json */; };
@@ -90,6 +92,8 @@
 		TRB001SF012 /* DrinksScoring.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DrinksScoring.swift; sourceTree = "<group>"; };
 		TRB001SF013 /* FatQuality.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FatQuality.swift; sourceTree = "<group>"; };
 		TRB001SF014 /* IngredientIntegrity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IngredientIntegrity.swift; sourceTree = "<group>"; };
+		TRB001SF015 /* BreadScoring.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BreadScoring.swift; sourceTree = "<group>"; };
+		TRB001SF016 /* ProteinBarScoring.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProteinBarScoring.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -201,6 +205,8 @@
 				TRB001SF012 /* DrinksScoring.swift */,
 				TRB001SF013 /* FatQuality.swift */,
 				TRB001SF014 /* IngredientIntegrity.swift */,
+				TRB001SF015 /* BreadScoring.swift */,
+				TRB001SF016 /* ProteinBarScoring.swift */,
 			);
 			name = ScoringSources;
 			path = Sage;
@@ -428,6 +434,8 @@
 				TRB001BF012 /* DrinksScoring.swift in Sources */,
 				TRB001BF013 /* FatQuality.swift in Sources */,
 				TRB001BF014 /* IngredientIntegrity.swift in Sources */,
+				TRB001BF015 /* BreadScoring.swift in Sources */,
+				TRB001BF016 /* ProteinBarScoring.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
