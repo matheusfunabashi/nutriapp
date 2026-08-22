@@ -19,10 +19,10 @@ enum KeyIngredients {
 
         var label: String {
             switch self {
-            case .avoid:   return "Avoid"
-            case .limit:   return "Limit"
-            case .good:    return "Good"
-            case .neutral: return "Fine"
+            case .avoid:   return String(localized: "Avoid")
+            case .limit:   return String(localized: "Limit")
+            case .good:    return String(localized: "Good")
+            case .neutral: return String(localized: "Fine")
             }
         }
 

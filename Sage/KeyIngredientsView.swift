@@ -35,7 +35,7 @@ struct IngredientTallyRows: View {
         }
     }
 
-    private func row(icon: String, title: String, count: Int, dot: Color) -> some View {
+    private func row(icon: String, title: LocalizedStringKey, count: Int, dot: Color) -> some View {
         HStack(spacing: 12) {
             Image(systemName: icon)
                 .font(.sageSemiBold(15))
@@ -56,7 +56,7 @@ struct IngredientTallyRows: View {
             Theme.hairline.frame(height: 0.5).padding(.horizontal, 20)
         }
         .accessibilityElement(children: .combine)
-        .accessibilityLabel("\(title): \(count)")
+        .accessibilityLabel(Text(title) + Text(": \(count)"))
     }
 }
 
@@ -190,12 +190,14 @@ struct IngredientDetailSheet: View {
     }
 
     private var positionLine: String {
-        var parts = ["Ingredient \(item.position + 1) of \(total)"]
+        let n = item.position + 1
+        var parts = [String(localized: "Ingredient \(n) of \(total)")]
         if let share = item.share {
             let pct = share >= 10 ? String(format: "%.0f", share) : String(format: "%.1f", share)
-            parts.append(item.shareIsDeclared ? "\(pct)% declared" : "~\(pct)% estimated")
+            parts.append(item.shareIsDeclared ? String(localized: "\(pct)% declared")
+                                              : String(localized: "~\(pct)% estimated"))
         } else if item.position == 0 {
-            parts.append("listed first, so the largest share")
+            parts.append(String(localized: "listed first, so the largest share"))
         }
         return parts.joined(separator: " · ")
     }

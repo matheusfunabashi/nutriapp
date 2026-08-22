@@ -445,7 +445,7 @@ struct ResultView: View {
         .padding(.horizontal, 20)
     }
 
-    private func actionPill(icon: String, title: String, accessibility: String,
+    private func actionPill(icon: String, title: LocalizedStringKey, accessibility: LocalizedStringKey,
                             action: @escaping () -> Void) -> some View {
         Button(action: action) {
             HStack(spacing: 6) {
@@ -649,9 +649,10 @@ struct ResultView: View {
            let cap = liveProduct.bindingCap,
            cap.kind == "avoidList",
            cap.shortLabel == item.lowercased() {
-            return ("\(titled) — on your avoid list", "Caps your score at \(cap.value).")
+            return (String(localized: "\(titled) — on your avoid list"),
+                    String(localized: "Caps your score at \(cap.value)."))
         }
-        return ("\(titled) — on your avoid list", nil)
+        return (String(localized: "\(titled) — on your avoid list"), nil)
     }
 
     // MARK: Section chrome
@@ -661,7 +662,7 @@ struct ResultView: View {
     // hairlines. Cards are reserved for alerts (allergen, avoid-list, diet)
     // and the Better-options rail.
 
-    private func sectionHeader<Trailing: View>(_ title: String, topPadding: CGFloat = 28,
+    private func sectionHeader<Trailing: View>(_ title: LocalizedStringKey, topPadding: CGFloat = 28,
                                                @ViewBuilder trailing: () -> Trailing) -> some View {
         HStack(alignment: .center, spacing: 12) {
             Text(title)
@@ -675,7 +676,7 @@ struct ResultView: View {
         .padding(.top, topPadding).padding(.bottom, 10)
     }
 
-    private func sectionHeader(_ title: String, topPadding: CGFloat = 28) -> some View {
+    private func sectionHeader(_ title: LocalizedStringKey, topPadding: CGFloat = 28) -> some View {
         sectionHeader(title, topPadding: topPadding) { EmptyView() }
     }
 
@@ -686,23 +687,23 @@ struct ResultView: View {
     // MARK: Processing (NOVA) + Nutri-Score
 
     private static let novaShort = [
-        1: "Minimally processed", 2: "Culinary ingredient",
-        3: "Processed", 4: "Ultra-processed",
+        1: String(localized: "Minimally processed"), 2: String(localized: "Culinary ingredient"),
+        3: String(localized: "Processed"), 4: String(localized: "Ultra-processed"),
     ]
     private static let novaLong = [
-        1: "Unprocessed or minimally processed",
-        2: "Processed culinary ingredients",
-        3: "Processed",
-        4: "Ultra-processed",
+        1: String(localized: "Unprocessed or minimally processed"),
+        2: String(localized: "Processed culinary ingredients"),
+        3: String(localized: "Processed"),
+        4: String(localized: "Ultra-processed"),
     ]
     private static let novaExplainer = [
-        1: "Whole foods, or foods altered only by cleaning, drying, freezing, pasteurizing or fermenting — nothing added that you wouldn't find in a kitchen.",
-        2: "Oils, butter, sugar, salt, flours: ingredients pressed, refined or milled from whole foods, meant to cook with rather than eat on their own.",
-        3: "A whole food plus a few culinary ingredients — canned vegetables, cheese, fresh bread, cured fish. Recognizable, usually short lists.",
-        4: "Industrial formulations built from isolates, modified starches, hydrogenated fats, flavorings, emulsifiers and colors. Designed for shelf life and palatability; regular intake tracks with poorer health outcomes.",
+        1: String(localized: "Whole foods, or foods altered only by cleaning, drying, freezing, pasteurizing or fermenting — nothing added that you wouldn't find in a kitchen."),
+        2: String(localized: "Oils, butter, sugar, salt, flours: ingredients pressed, refined or milled from whole foods, meant to cook with rather than eat on their own."),
+        3: String(localized: "A whole food plus a few culinary ingredients — canned vegetables, cheese, fresh bread, cured fish. Recognizable, usually short lists."),
+        4: String(localized: "Industrial formulations built from isolates, modified starches, hydrogenated fats, flavorings, emulsifiers and colors. Designed for shelf life and palatability; regular intake tracks with poorer health outcomes."),
     ]
-    private static let novaFootnote =
-        "NOVA grades processing, not nutrition — olive oil is NOVA 2 and a diet soda NOVA 4. Sage scores the processing evidence on the label, not the group number alone."
+    private static let novaFootnote = String(localized:
+        "NOVA grades processing, not nutrition — olive oil is NOVA 2 and a diet soda NOVA 4. Sage scores the processing evidence on the label, not the group number alone.")
 
     /// NOVA / Nutri-Score palettes are external grading scales and keep their
     /// own colors (design.md), not theme tokens.
@@ -1509,12 +1510,12 @@ struct RestrictionBannerView: View {
         let fg = Color.cautionMuted
         let headline: String = {
             if showCap {
-                return "Conflicts with your \(type.lowercased()). Caps your score at \(capValue)."
+                return String(localized: "Conflicts with your \(type.lowercased()). Caps your score at \(capValue).")
             }
             return String(format: String(localized: "Conflicts with your %@."), type.lowercased())
         }()
         FlagRow(icon: "exclamationmark.triangle.fill", tint: fg,
-                title: headline, detail: "Trigger: \(trigger)")
+                title: headline, detail: String(localized: "Trigger: \(trigger)"))
     }
 }
 
@@ -1537,10 +1538,10 @@ struct SeriousFlag: View {
     var body: some View {
         let fg = Color.cautionMuted
         let subtitle = isHeaviestScorePenalty
-            ? "Caps the overall score at 35 — industrial trans fat has no safe intake."
-            : "Industrial trans fats have no safe intake level. Overall score capped at 34 when above 0.2 g/100 g."
+            ? String(localized: "Caps the overall score at 35 — industrial trans fat has no safe intake.")
+            : String(localized: "Industrial trans fats have no safe intake level. Overall score capped at 34 when above 0.2 g/100 g.")
         FlagRow(icon: "exclamationmark.circle.fill", tint: fg,
-                title: "Contains trans fats", detail: subtitle)
+                title: String(localized: "Contains trans fats"), detail: subtitle)
     }
 }
 
@@ -1593,10 +1594,12 @@ struct AllergenBanner: View {
     let fromTag: Bool
     let dark: Bool
     var body: some View {
+        let name = label.lowercased()
         FlagRow(icon: "exclamationmark.octagon.fill", tint: Color.scoreBad,
-                title: "\(fromTag ? "Contains" : "May contain") \(label.lowercased())",
-                detail: fromTag ? "Listed as an allergen for this product"
-                                : "Detected in the ingredient list")
+                title: fromTag ? String(localized: "Contains \(name)")
+                               : String(localized: "May contain \(name)"),
+                detail: fromTag ? String(localized: "Listed as an allergen for this product")
+                                : String(localized: "Detected in the ingredient list"))
     }
 }
 
