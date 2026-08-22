@@ -40,20 +40,15 @@ struct ResultView: View {
                     allergenSection(dark: dark)
                     avoidFlagsSection(dark: dark)
                     betterOptionsSection(dark: dark)
-                    if showNutriCard || showNovaCard {
-                        SectionTitle(title: "Breakdown")
-                        gradesRow(dark: dark)
-                    }
+                    processingSection(dark: dark)
                     if product.showsTransFatFlag {
                         SeriousFlag(
                             isHeaviestScorePenalty: TransFatAttribution.isHeaviestPenalty(in: product)
                         )
-                        .padding(.horizontal, 16).padding(.top, 8)
+                        .padding(.horizontal, 16).padding(.top, 20)
                     }
-                    nutrientsHeader(dark: dark)
-                    nutrientsCard(dark: dark).padding(.horizontal, 16)
-                    EyebrowLabel(text: additivesEyebrow(dark: dark))
-                    additivesCard(dark: dark).padding(.horizontal, 16)
+                    nutritionSection(dark: dark)
+                    additivesSection(dark: dark)
                     fullIngredientsSection(dark: dark)
                     detectedSection(dark: dark)
                     restrictionBanners(dark: dark)
@@ -149,7 +144,7 @@ struct ResultView: View {
                         .accessibilityLabel("See all top rated \(shelfName)")
                     }
                 }
-                .padding(.horizontal, 24).padding(.top, 20).padding(.bottom, 10)
+                .padding(.horizontal, 20).padding(.top, 28).padding(.bottom, 10)
 
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 12) {
@@ -180,17 +175,14 @@ struct ResultView: View {
                             .foregroundColor(Theme.inkSecondary)
                     }
                 }
-                .padding(.horizontal, 14).padding(.vertical, 12)
-                .background(
-                    RoundedRectangle(cornerRadius: Theme.Radius.control, style: .continuous)
-                        .fill(Theme.card)
-                )
+                .padding(.horizontal, 20).padding(.vertical, 14)
+                .overlay(alignment: .top) { rowDivider }
+                .overlay(alignment: .bottom) { rowDivider }
                 .contentShape(Rectangle())
             }
             .buttonStyle(canSeeAll ? .pressable : .pressableStatic)
             .accessibilityLabel("Among the best \(shelfName) we've scored")
-            .padding(.horizontal, 16)
-            .padding(.top, 12)
+            .padding(.top, 20)
         case .noShelf, .unscored, .noBetterPeers:
             EmptyView()
         }
@@ -233,20 +225,26 @@ struct ResultView: View {
 
     private func productHero(dark: Bool) -> some View {
         let tint = primaryScore.map(scoreColor) ?? Theme.inkSecondary
+        // No photo on record → a smaller, quieter tile; the glow only earns
+        // its place behind a real pack shot.
+        let hasPhoto = product.detailImageURL != nil
         return ZStack {
             // Soft tinted glow behind the pack shot — a background, not a
             // shadow, so it doesn't fight the one-card-shadow rule.
-            Circle()
-                .fill(tint.opacity(dark ? 0.16 : 0.09))
-                .frame(width: 220, height: 220)
-                .blur(radius: 40)
-            ProductThumb(glyph: product.glyph, score: product.yourScore, size: 176,
+            if hasPhoto {
+                Circle()
+                    .fill(tint.opacity(dark ? 0.16 : 0.09))
+                    .frame(width: 220, height: 220)
+                    .blur(radius: 40)
+            }
+            ProductThumb(glyph: product.glyph, score: product.yourScore,
+                         size: hasPhoto ? 176 : 120,
                          neutral: true, imageURL: product.detailImageURL,
                          fallbackImageURL: product.imageFallbackURL,
                          processCutout: product.shouldProcessCutout)
         }
         .frame(maxWidth: .infinity)
-        .frame(height: 204)
+        .frame(height: hasPhoto ? 204 : 140)
         .padding(.top, 4)
         .accessibilityHidden(true)
     }
@@ -596,24 +594,171 @@ struct ResultView: View {
         return "\(titled) — on your avoid list"
     }
 
-    private func nutrientsHeader(dark: Bool) -> some View {
-        HStack(spacing: 6) {
-            Text("Per 100 g / 100 ml")
-                .font(.sageBold(12)).tracking(-0.1)
-                .foregroundColor(Theme.inkSecondary)
-            Button {
-                showLabelLegend = true
-            } label: {
-                Image(systemName: "info.circle")
-                    .font(.sageSemiBold(13))
+    // MARK: Section chrome
+    //
+    // Sections sit straight on the background: one 18pt header (optionally
+    // with a pill / count / caption on the right), rows separated by
+    // hairlines. Cards are reserved for alerts (allergen, avoid-list, diet)
+    // and the Better-options rail.
+
+    private func sectionHeader<Trailing: View>(_ title: String, topPadding: CGFloat = 28,
+                                               @ViewBuilder trailing: () -> Trailing) -> some View {
+        HStack(alignment: .center, spacing: 12) {
+            Text(title)
+                .font(.sageSemiBold(18)).tracking(-0.4)
+                .foregroundColor(Theme.ink)
+                .accessibilityAddTraits(.isHeader)
+            Spacer(minLength: 8)
+            trailing()
+        }
+        .padding(.horizontal, 20)
+        .padding(.top, topPadding).padding(.bottom, 10)
+    }
+
+    private func sectionHeader(_ title: String, topPadding: CGFloat = 28) -> some View {
+        sectionHeader(title, topPadding: topPadding) { EmptyView() }
+    }
+
+    private var rowDivider: some View {
+        Theme.hairline.frame(height: 0.5).padding(.horizontal, 20)
+    }
+
+    // MARK: Processing (NOVA) + Nutri-Score
+
+    private static let novaShort = [
+        1: "Minimally processed", 2: "Culinary ingredient",
+        3: "Processed", 4: "Ultra-processed",
+    ]
+    private static let novaLong = [
+        1: "Unprocessed or minimally processed",
+        2: "Processed culinary ingredients",
+        3: "Processed",
+        4: "Ultra-processed",
+    ]
+    private static let novaExplainer = [
+        1: "Whole foods, or foods altered only by cleaning, drying, freezing, pasteurizing or fermenting — nothing added that you wouldn't find in a kitchen.",
+        2: "Oils, butter, sugar, salt, flours: ingredients pressed, refined or milled from whole foods, meant to cook with rather than eat on their own.",
+        3: "A whole food plus a few culinary ingredients — canned vegetables, cheese, fresh bread, cured fish. Recognizable, usually short lists.",
+        4: "Industrial formulations built from isolates, modified starches, hydrogenated fats, flavorings, emulsifiers and colors. Designed for shelf life and palatability; regular intake tracks with poorer health outcomes.",
+    ]
+    private static let novaFootnote =
+        "NOVA grades processing, not nutrition — olive oil is NOVA 2 and a diet soda NOVA 4. Sage scores the processing evidence on the label, not the group number alone."
+
+    /// NOVA / Nutri-Score palettes are external grading scales and keep their
+    /// own colors (design.md), not theme tokens.
+    private func novaColor(_ group: Int) -> Color {
+        switch group {
+        case 1:  return Color(hex: "1F8A5B")
+        case 2:  return Color(hex: "7BA935")
+        case 3:  return Color(hex: "D4A02D")
+        default: return Color(hex: "C9442B")
+        }
+    }
+
+    private func nutriColor(_ grade: String) -> Color {
+        switch grade.uppercased() {
+        case "A": return Color(hex: "1F8A5B")
+        case "B": return Color(hex: "7BA935")
+        case "C": return Color(hex: "D4A02D")
+        case "D": return Color(hex: "E07A26")
+        case "E": return Color(hex: "C9442B")
+        default:  return Color.neutralMuted
+        }
+    }
+
+    /// "Processing" header carrying the NOVA verdict as a tinted pill, a plain
+    /// explainer for that group, and the Nutri-Score as one row beneath.
+    @ViewBuilder private func processingSection(dark: Bool) -> some View {
+        if showNovaCard || showNutriCard {
+            VStack(alignment: .leading, spacing: 0) {
+                if showNovaCard {
+                    let g = product.novaGroup
+                    let c = novaColor(g)
+                    sectionHeader("Processing") {
+                        Text("NOVA \(g) · \(Self.novaShort[g] ?? "")")
+                            .font(.sageSemiBold(12)).tracking(-0.1)
+                            .foregroundColor(c)
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.85)
+                            .padding(.horizontal, 10).padding(.vertical, 6)
+                            .background(Capsule().fill(c.opacity(dark ? 0.18 : 0.12)))
+                            .accessibilityLabel("NOVA \(g), \(Self.novaLong[g] ?? "")")
+                    }
+                    Text(Self.novaExplainer[g] ?? "")
+                        .font(.sageRegular(15))
+                        .foregroundColor(Theme.ink)
+                        .lineSpacing(3)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .padding(.horizontal, 20)
+                    Text(Self.novaFootnote)
+                        .font(.sageRegular(13))
+                        .foregroundColor(Theme.inkSecondary)
+                        .lineSpacing(2)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .padding(.horizontal, 20)
+                        .padding(.top, 10)
+                } else {
+                    sectionHeader("Labels")
+                }
+                if showNutriCard {
+                    nutriScoreRow(dark: dark)
+                        .padding(.top, showNovaCard ? 16 : 0)
+                }
+            }
+        }
+    }
+
+    private func nutriScoreRow(dark: Bool) -> some View {
+        let g = product.nutriGrade.uppercased()
+        let c = nutriColor(g)
+        return HStack(spacing: 12) {
+            VStack(alignment: .leading, spacing: 2) {
+                Text("Nutri-Score")
+                    .font(.sageSemiBold(15)).tracking(-0.2)
+                    .foregroundColor(Theme.ink)
+                Text("Front-of-pack nutrition grade, A to E")
+                    .font(.sageRegular(12))
                     .foregroundColor(Theme.inkSecondary)
             }
-            .buttonStyle(.plain)
-            .accessibilityLabel("What the labels mean")
-            Spacer(minLength: 0)
+            Spacer(minLength: 8)
+            Text(g)
+                .font(.sageBold(16))
+                .foregroundColor(.white)
+                .frame(width: 32, height: 32)
+                .background(
+                    RoundedRectangle(cornerRadius: Theme.Radius.chip, style: .continuous).fill(c)
+                )
         }
-        .padding(.horizontal, 24)
-        .padding(.top, 14).padding(.bottom, 6)
+        .padding(.horizontal, 20).padding(.vertical, 12)
+        .overlay(alignment: .top) { rowDivider }
+        .overlay(alignment: .bottom) { rowDivider }
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("Nutri-Score \(g), nutrition grade")
+    }
+
+    // MARK: Nutrition
+
+    private func nutritionSection(dark: Bool) -> some View {
+        VStack(spacing: 0) {
+            sectionHeader("Nutrition") {
+                Button {
+                    showLabelLegend = true
+                } label: {
+                    HStack(spacing: 4) {
+                        Text("Per 100 g / ml")
+                            .font(.sageMedium(13))
+                        Image(systemName: "info.circle")
+                            .font(.sageSemiBold(13))
+                    }
+                    .foregroundColor(Theme.inkSecondary)
+                    .padding(.vertical, 6)
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel("Values per 100 grams or millilitres. What the labels mean")
+            }
+            nutrientRows(dark: dark)
+            rowDivider
+        }
     }
 
     private func deltaBadgeLabel(delta: Int) -> String? {
@@ -669,31 +814,15 @@ struct ResultView: View {
     }
     private var showNovaCard: Bool { product.hasKnownNova }
 
-    private func gradesRow(dark: Bool) -> some View {
-        HStack(alignment: .center, spacing: 8) {
-            if showNutriCard {
-                NutriScoreCard(grade: product.nutriGrade, dark: dark)
-                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
-            }
-            if showNovaCard {
-                NovaCard(group: product.novaGroup, dark: dark)
-                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
-            }
-        }
-        .fixedSize(horizontal: false, vertical: true)
-        .padding(.horizontal, 16).padding(.bottom, 8)
-    }
-
-    private func nutrientsCard(dark: Bool) -> some View {
+    private func nutrientRows(dark: Bool) -> some View {
         let n = product.nutrients
-        return CardView() {
-            VStack(spacing: 0) {
+        return VStack(spacing: 0) {
                 // Levels come from NutrientLevels — the same source the
                 // scoring factor labels and the LLM prompt read, so badge
                 // and sentence can never disagree.
                 nutrientRow(label: "Sugar", value: n.sugar_g, unit: "g",
                             level: n.sugar_g.map(NutrientLevels.sugar),
-                            higherIsBetter: false, divider: false, dark: dark)
+                            higherIsBetter: false, divider: true, dark: dark)
                 nutrientRow(label: "Sodium", value: n.sodium_mg, unit: "mg",
                             level: n.sodium_mg.map(NutrientLevels.sodium),
                             higherIsBetter: false, divider: true, dark: dark)
@@ -733,8 +862,6 @@ struct ResultView: View {
                                 bonus: product.bonuses.contains("potassium"),
                                 divider: true, dark: dark)
                 }
-            }
-            .padding(.vertical, 4)
         }
     }
 
@@ -744,61 +871,70 @@ struct ResultView: View {
         let display = value.map { "\(fmt($0)) \(unit)" } ?? "—"
         let tag = level.map { nutrientTag($0, higherIsBetter: higherIsBetter) }
         return NutrientRow(label: label, value: display, tag: tag,
-                           bonus: bonus, divider: divider, dark: dark)
+                           bonus: bonus, divider: divider, dark: dark,
+                           horizontalPadding: 20)
     }
 
-    private func additivesEyebrow(dark: Bool) -> String {
-        if product.additiveIngredientTextMissing == true { return "Additives" }
+    private var additivesCountCaption: String? {
+        if product.additiveIngredientTextMissing == true { return nil }
         let count = product.additives.count
         if product.additiveUndercountSuspected == true {
-            return "Additives · \(count) (may be undercounted)"
+            return "\(count) · may be undercounted"
         }
-        return "Additives · \(count)"
+        return count == 0 ? nil : "\(count) detected"
     }
 
-    private func additivesCard(dark: Bool) -> some View {
+    // MARK: Additives
+
+    private func additivesSection(dark: Bool) -> some View {
         let sweeteners = IngredientIntegrity.sweetenerSystemMatches(
             ingredientsText: liveProduct.ingredientsText)
-        return CardView() {
+        return VStack(spacing: 0) {
+            sectionHeader("Additives") {
+                if let caption = additivesCountCaption {
+                    Text(caption)
+                        .font(.sageMedium(13))
+                        .foregroundColor(Theme.inkSecondary)
+                }
+            }
             VStack(spacing: 0) {
                 if product.additiveIngredientTextMissing == true {
                     HStack(spacing: 10) {
                         RiskDot(risk: .unrated)
                         Text("No ingredient data")
-                            .font(.sageSemiBold(14))
+                            .font(.sageSemiBold(15))
                             .foregroundColor(Theme.inkSecondary)
+                        Spacer(minLength: 0)
                     }
-                    .padding(.horizontal, 16).padding(.vertical, 14)
+                    .padding(.horizontal, 20).padding(.vertical, 14)
+                    .overlay(alignment: .top) { rowDivider }
                 } else if product.additives.isEmpty && sweeteners.isEmpty {
                     HStack(spacing: 10) {
                         RiskDot(risk: .low)
                         Text("No additives detected")
-                            .font(.sageSemiBold(14))
+                            .font(.sageSemiBold(15))
                             .foregroundColor(Theme.ink)
+                        Spacer(minLength: 0)
                     }
-                    .padding(.horizontal, 16).padding(.vertical, 14)
+                    .padding(.horizontal, 20).padding(.vertical, 14)
+                    .overlay(alignment: .top) { rowDivider }
                 } else {
                     if !product.additives.isEmpty {
                         SeverityBar(additives: product.additives, allowAlarmRed: !yourScoreIsWorstSignal)
-                            .padding(.horizontal, 16).padding(.vertical, 12)
-                            .overlay(alignment: .bottom) {
-                                Theme.hairline.frame(height: 0.5)
-                            }
-                        ForEach(Array(product.additives.enumerated()), id: \.element.id) { (i, a) in
+                            .padding(.horizontal, 20).padding(.vertical, 12)
+                            .overlay(alignment: .top) { rowDivider }
+                        ForEach(Array(product.additives.enumerated()), id: \.element.id) { (_, a) in
                             Button {
                                 selectedAdditive = a
                             } label: {
-                                AdditiveRow(additive: a, divider: i > 0, dark: dark,
-                                            allowAlarmRed: !yourScoreIsWorstSignal)
+                                AdditiveRow(additive: a, divider: true, dark: dark,
+                                            allowAlarmRed: !yourScoreIsWorstSignal,
+                                            horizontalPadding: 20)
                             }
                             .buttonStyle(.plain)
                         }
                     }
                     if !sweeteners.isEmpty {
-                        if !product.additives.isEmpty {
-                            Theme.hairline.frame(height: 0.5)
-                                .padding(.horizontal, 16)
-                        }
                         HStack(alignment: .top, spacing: 10) {
                             Image(systemName: "info.circle.fill")
                                 .font(.sageSemiBold(14))
@@ -822,13 +958,14 @@ struct ResultView: View {
                             }
                             Spacer(minLength: 0)
                         }
-                        .padding(.horizontal, 16).padding(.vertical, 12)
+                        .padding(.horizontal, 20).padding(.vertical, 12)
+                        .overlay(alignment: .top) { rowDivider }
                         .accessibilityElement(children: .combine)
                         .accessibilityLabel("Sweetener system, \(sweeteners.count) detected: \(sweeteners.joined(separator: ", "))")
                     }
                 }
             }
-            .padding(.vertical, 4)
+            rowDivider
         }
     }
 
@@ -846,16 +983,16 @@ struct ResultView: View {
                 } label: {
                     HStack(spacing: 8) {
                         Text("Full ingredients")
-                            .font(.sageBold(12)).tracking(-0.1)
-                            .foregroundColor(Theme.inkSecondary)
+                            .font(.sageSemiBold(18)).tracking(-0.4)
+                            .foregroundColor(Theme.ink)
                         Spacer(minLength: 0)
                         Image(systemName: "chevron.down")
-                            .font(.sageSemiBold(11))
+                            .font(.sageSemiBold(12))
                             .foregroundColor(Theme.inkSecondary)
                             .rotationEffect(.degrees(ingredientsExpanded ? 180 : 0))
                     }
-                    .padding(.horizontal, 24)
-                    .padding(.top, 14).padding(.bottom, 6)
+                    .padding(.horizontal, 20)
+                    .padding(.top, 28).padding(.bottom, 10)
                     .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
@@ -864,7 +1001,7 @@ struct ResultView: View {
 
                 if ingredientsExpanded {
                     highlightedIngredients(display, needles: needles, dark: dark)
-                        .padding(.horizontal, 16)
+                        .padding(.horizontal, 20)
                         .padding(.bottom, 8)
                 }
             }
@@ -902,14 +1039,9 @@ struct ResultView: View {
     private func highlightedIngredients(_ text: String, needles: [String], dark: Bool) -> some View {
         let attributed = highlightedAttributedString(text, needles: needles, dark: dark)
         return Text(attributed)
-            .font(.sageRegular(13))
-            .lineSpacing(3)
+            .font(.sageRegular(15))
+            .lineSpacing(4)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(14)
-            .background(
-                RoundedRectangle(cornerRadius: Theme.Radius.card, style: .continuous)
-                    .fill(Theme.card)
-            )
     }
 
     private func highlightedAttributedString(_ text: String, needles: [String],
@@ -943,8 +1075,8 @@ struct ResultView: View {
         }
         return Group {
             if show {
-                EyebrowLabel(text: "Detected")
-                VStack(spacing: 6) {
+                sectionHeader("Detected")
+                VStack(spacing: 0) {
                     if hasCaffeine, let mg = product.caffeine_mg {
                         InfoRow(emoji: "☕", label: "Contains caffeine",
                                 detail: "\(fmt(mg)) mg per \(isBeverage ? "100 ml" : "100 g")", dark: dark)
@@ -975,8 +1107,8 @@ struct ResultView: View {
                             dark: dark
                         )
                     }
+                    rowDivider
                 }
-                .padding(.horizontal, 16)
             }
         }
     }
@@ -1079,184 +1211,6 @@ struct ResultView: View {
 
 // MARK: - Sub-components
 
-/// Shared height for the side-by-side Breakdown grade cards.
-private let breakdownCardHeight: CGFloat = 108
-
-struct NutriScoreCard: View {
-    let grade: String
-    let dark: Bool
-
-    private var isKnown: Bool { ["A", "B", "C", "D", "E"].contains(grade.uppercased()) }
-
-    var body: some View {
-        if isKnown {
-            knownBody
-        } else {
-            unknownBody
-        }
-    }
-
-    private var knownBody: some View {
-        let colors: [String: Color] = [
-            "A": Color(hex: "1F8A5B"), "B": Color(hex: "7BA935"),
-            "C": Color(hex: "D4A02D"), "D": Color(hex: "E07A26"),
-            "E": Color(hex: "C9442B"),
-        ]
-        let g = grade.uppercased()
-        let c = colors[g] ?? Color.neutralMuted
-        return HStack(alignment: .center, spacing: 12) {
-            Text(g)
-                .font(.sageHeadline).tracking(-1)
-                .foregroundColor(.white)
-                .frame(width: 52, height: 52)
-                .background(RoundedRectangle(cornerRadius: Theme.Radius.control, style: .continuous).fill(c))
-            VStack(alignment: .leading, spacing: 3) {
-                Text("Nutri-Score \(g)")
-                    .font(.sageBold(13)).tracking(-0.2)
-                    .foregroundColor(Theme.ink)
-                Text("Nutrition grade")
-                    .font(.sageSemiBold(11))
-                    .foregroundColor(c)
-                    .lineLimit(2)
-                    .minimumScaleFactor(0.85)
-            }
-            Spacer(minLength: 0)
-        }
-        .padding(14)
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
-        .frame(height: breakdownCardHeight)
-        .background(
-            RoundedRectangle(cornerRadius: Theme.Radius.card, style: .continuous).fill(Theme.card)
-        )
-        .cardShadow()
-        .accessibilityLabel("Nutri-Score \(g), nutrition grade")
-    }
-
-    private var unknownBody: some View {
-        HStack(alignment: .center, spacing: 12) {
-            Text("?")
-                .font(.sageBold(24)).tracking(-0.5)
-                .foregroundColor(Theme.inkSecondary)
-                .frame(width: 52, height: 52)
-                .background(
-                    RoundedRectangle(cornerRadius: Theme.Radius.control, style: .continuous)
-                        .fill(Theme.fillTrack)
-                )
-            VStack(alignment: .leading, spacing: 3) {
-                Text("Nutri-Score")
-                    .font(.sageBold(13)).tracking(-0.2)
-                    .foregroundColor(Theme.ink)
-                Text("Not rated")
-                    .font(.sageSemiBold(11))
-                    .foregroundColor(Color.neutralMuted)
-                    .lineLimit(2)
-                    .minimumScaleFactor(0.85)
-            }
-            Spacer(minLength: 0)
-        }
-        .padding(14)
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
-        .frame(height: breakdownCardHeight)
-        .background(
-            RoundedRectangle(cornerRadius: Theme.Radius.card, style: .continuous).fill(Theme.card)
-        )
-        .cardShadow()
-        .accessibilityLabel("Nutri-Score not rated")
-    }
-}
-
-struct NovaCard: View {
-    let group: Int
-    let dark: Bool
-
-    private var isKnown: Bool { (1...4).contains(group) }
-
-    var body: some View {
-        if isKnown {
-            knownBody
-        } else {
-            unknownBody
-        }
-    }
-
-    private var knownBody: some View {
-        let labels = [
-            1: "Unprocessed or minimally processed",
-            2: "Processed culinary ingredients",
-            3: "Processed",
-            4: "Ultra-processed",
-        ]
-        let colors: [Int: Color] = [
-            1: Color(hex: "1F8A5B"), 2: Color(hex: "7BA935"),
-            3: Color(hex: "D4A02D"), 4: Color(hex: "C9442B"),
-        ]
-        let c = colors[group] ?? Color.neutralMuted
-        let labelColor = group >= 4 ? Color.cautionMuted : c
-        return HStack(alignment: .center, spacing: 12) {
-            HStack(alignment: .bottom, spacing: 3) {
-                ForEach(1...4, id: \.self) { g in
-                    RoundedRectangle(cornerRadius: 2)
-                        .fill(g <= group ? c
-                              : (Theme.fillTrack))
-                        .frame(width: 6, height: CGFloat(8 + g * 7))
-                }
-            }
-            .frame(width: 52, height: 52, alignment: .bottom)
-            VStack(alignment: .leading, spacing: 3) {
-                Text("NOVA \(group)")
-                    .font(.sageBold(13)).tracking(-0.2)
-                    .foregroundColor(Theme.ink)
-                Text(labels[group] ?? "")
-                    .font(.sageSemiBold(11))
-                    .foregroundColor(labelColor)
-                    .lineLimit(2)
-                    .minimumScaleFactor(0.85)
-            }
-            Spacer(minLength: 0)
-        }
-        .padding(14)
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
-        .frame(height: breakdownCardHeight)
-        .background(
-            RoundedRectangle(cornerRadius: Theme.Radius.card, style: .continuous).fill(Theme.card)
-        )
-        .cardShadow()
-        .accessibilityLabel("NOVA \(group), \(labels[group] ?? "")")
-    }
-
-    private var unknownBody: some View {
-        HStack(alignment: .center, spacing: 12) {
-            HStack(alignment: .bottom, spacing: 3) {
-                ForEach(1...4, id: \.self) { g in
-                    RoundedRectangle(cornerRadius: 2)
-                        .fill(Theme.fillTrack)
-                        .frame(width: 6, height: CGFloat(8 + g * 7))
-                }
-            }
-            .frame(width: 52, height: 52, alignment: .bottom)
-            VStack(alignment: .leading, spacing: 3) {
-                Text("NOVA")
-                    .font(.sageBold(13)).tracking(-0.2)
-                    .foregroundColor(Theme.ink)
-                Text("Not rated")
-                    .font(.sageSemiBold(11))
-                    .foregroundColor(Color.neutralMuted)
-                    .lineLimit(2)
-                    .minimumScaleFactor(0.85)
-            }
-            Spacer(minLength: 0)
-        }
-        .padding(14)
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
-        .frame(height: breakdownCardHeight)
-        .background(
-            RoundedRectangle(cornerRadius: Theme.Radius.card, style: .continuous).fill(Theme.card)
-        )
-        .cardShadow()
-        .accessibilityLabel("NOVA not rated")
-    }
-}
-
 struct NutrientRow: View {
     let label: String
     let value: String
@@ -1264,6 +1218,7 @@ struct NutrientRow: View {
     var bonus: Bool = false
     let divider: Bool
     let dark: Bool
+    var horizontalPadding: CGFloat = 14
 
     /// The word states the measured amount (Low/Mod/High); the tone says how
     /// that amount should feel for this nutrient — they must stay independent
@@ -1316,10 +1271,11 @@ struct NutrientRow: View {
                     .fixedSize(horizontal: true, vertical: false)
             }
         }
-        .padding(.horizontal, 14).padding(.vertical, 12)
+        .padding(.horizontal, horizontalPadding).padding(.vertical, 12)
         .overlay(alignment: .top) {
             if divider {
-                Theme.hairline.frame(height: 0.5).padding(.horizontal, 8)
+                Theme.hairline.frame(height: 0.5)
+                    .padding(.horizontal, horizontalPadding == 14 ? 8 : horizontalPadding)
             }
         }
     }
@@ -1330,6 +1286,7 @@ struct AdditiveRow: View {
     let divider: Bool
     let dark: Bool
     var allowAlarmRed: Bool = true
+    var horizontalPadding: CGFloat = 16
 
     private var riskFg: Color {
         if additive.risk == .high { return Color.scoreBad }
@@ -1368,10 +1325,13 @@ struct AdditiveRow: View {
                 .font(.sageSemiBold(10))
                 .foregroundColor(Theme.inkSecondary.opacity(0.6))
         }
-        .padding(.horizontal, 16).padding(.vertical, 12)
+        .padding(.horizontal, horizontalPadding).padding(.vertical, 12)
         .contentShape(Rectangle())
         .overlay(alignment: .top) {
-            if divider { Theme.hairline.frame(height: 0.5).padding(.horizontal, 8) }
+            if divider {
+                Theme.hairline.frame(height: 0.5)
+                    .padding(.horizontal, horizontalPadding == 16 ? 8 : horizontalPadding)
+            }
         }
         .accessibilityHint("Shows additive details")
     }
@@ -1473,11 +1433,10 @@ struct InfoRow: View {
             }
             Spacer()
         }
-        .padding(.horizontal, 14).padding(.vertical, 10)
-        .background(
-            RoundedRectangle(cornerRadius: Theme.Radius.control, style: .continuous).fill(Theme.card)
-        )
-        .cardShadow()
+        .padding(.horizontal, 20).padding(.vertical, 12)
+        .overlay(alignment: .top) {
+            Theme.hairline.frame(height: 0.5).padding(.horizontal, 20)
+        }
     }
 }
 

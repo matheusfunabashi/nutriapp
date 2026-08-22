@@ -89,8 +89,11 @@ struct ProductImageView: View {
     var body: some View {
         ZStack {
             if showsCardChrome {
+                // Large frames (the product-page hero) keep the skeleton quiet:
+                // a 176pt white tile with a barcode glyph shouts; a soft fill
+                // reads as "photo pending".
                 RoundedRectangle(cornerRadius: corner, style: .continuous)
-                    .fill(Theme.card)
+                    .fill(finished == nil && size >= 120 ? Theme.fillQuiet : Theme.card)
             }
 
             if let finished {
@@ -213,7 +216,7 @@ struct ProductImageSkeleton: View {
 
     var body: some View {
         Image(systemName: "barcode")
-            .font(.system(size: size * 0.34, weight: .regular))
+            .font(.system(size: size * (size >= 120 ? 0.22 : 0.34), weight: .regular))
             .foregroundStyle(Theme.inkSecondary.opacity(0.35))
             .accessibilityHidden(true)
     }
