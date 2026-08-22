@@ -41,7 +41,8 @@ enum AdditiveCatalog {
                 risk: kb.risk,
                 note: kb.summary.resolved(),
                 code: code,
-                tier: tier(from: kb.risk)
+                // V5.4: fortificant vitamins / minerals stay exempt (never an S1 penalty).
+                tier: nutrientFortificantCodes.contains(code) ? .exempt : tier(from: kb.risk)
             )
         }
         if let info = entries[code] {
@@ -56,7 +57,14 @@ enum AdditiveCatalog {
     static func productAdditive(from detected: Additive) -> ProductAdditive {
         let code = normalize(detected.eNumber)
         let kb = AdditiveKnowledgeBase.entry(for: code)
-        let scoredTier = kb.map { tier(from: $0.risk) } ?? detected.tier
+        // V5.4: nutrient fortificants (enrichment vitamins / minerals) are
+        // never an S1 penalty — enriched flour's niacin and riboflavin used to
+        // cost every US bread ~3 S1 points. Scoped to the fortificant set: the
+        // knowledge base deliberately re-tiers other detector-exempt codes
+        // (gums, lecithin, polyols), and those stay as they are.
+        let scoredTier: AdditiveTier = nutrientFortificantCodes.contains(code)
+            ? .exempt
+            : (kb.map { tier(from: $0.risk) } ?? detected.tier)
         let resolvedRisk: RiskLevel = {
             if let kb { return kb.risk }
             return risk(for: scoredTier)
@@ -79,6 +87,13 @@ enum AdditiveCatalog {
             detectedAs: detectedAs
         )
     }
+
+    /// Vitamins and minerals added as nutrients (flour enrichment / fortification):
+    /// riboflavin, niacin, ascorbic acid, calcium carbonate, tocopherols.
+    static let nutrientFortificantCodes: Set<String> = [
+        "e101", "e101a", "e101i", "e101ii", "e375", "e300", "e170", "e170i",
+        "e306", "e307", "e307a", "e307b", "e307c",
+    ]
 
     static func tier(from risk: RiskLevel) -> AdditiveTier {
         switch risk {
@@ -324,7 +339,11 @@ struct OpenFoodFactsService {
             restrictions: [],            // populated by the ScoringEngine per profile
             dietFlags: dietFlags,
             allergenTags: allergenTags,
-            ingredientsText: off.ingredientsText,
+            // V5.4: marketing prose pasted into the ingredients field (field
+            // QA: a Wonder loaf whose "ingredients" were a 250th-birthday
+            // blurb) is not an ingredient list — treated as missing.
+            ingredientsText: IngredientIntegrity.looksLikeIngredientList(off.ingredientsText)
+                ? off.ingredientsText : nil,
             imageURL: resolved.map { $0.displayURL.absoluteString },
             imageThumbURL: resolved?.thumbURL?.absoluteString,
             imageIsLowQuality: resolved.map(\.isLowQuality),

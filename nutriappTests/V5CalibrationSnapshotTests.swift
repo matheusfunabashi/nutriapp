@@ -248,7 +248,7 @@ struct V5CalibrationSnapshotTests {
         #expect(ScoringEngineV4.route(fixtures.first { $0.name == "Jif" }!) == "general")
         #expect(ScoringEngineV4.route(fixtures.first { $0.name == "fresh coconut" }!) == "whole_foods")
         #expect(lines.count == fixtures.count + 2)
-        #expect(rs.version == "2026.08-v5.3.0")
+        #expect(rs.version == "2026.08-v5.4.0")
         #expect(rs.profiles["sweeteners"] == nil)
         #expect(rs.flags?.rulesetV510Enabled == true)
     }

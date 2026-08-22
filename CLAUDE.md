@@ -1,5 +1,48 @@
 **Follow [design.md](design.md) for all UI work** — typography scale, color tokens, radii, spacing grid, and interaction rules. No raw hex values, off-scale font sizes, or ad-hoc radii in views.
 
+# Session Changelog — 2026-08-21 — Bread scoring (v5.4.0)
+
+Audit of bread scoring against the live engine (CLI harness over the
+96-product shelf, 27 archetype fixtures, ~400 real OFF records US/UK/FR/DE/CA)
+and Oasis' SCR_BREADS v4.7.0. The shipped shelf compressed into 50–75:
+whole-kernel rye tied with white sourdough, brioche beat plain sourdough,
+and 85/96 breads got the full binary whole-grain credit (2 % rye flour,
+"sprouted", "oat" matching "goat"). Ruleset `2026.08-v5.4.0`; full
+rationale in SCORING_V5.md §"V5.4.0 Bread"; tests `BreadScoringV54Tests`.
+
+- **`bread` profile** (S1 16, S2 14 `bread`, wholeGrain 16 `bread`, S12 14
+  `grain`, S3 10, S4 12 `bread`, S5 6, S14 8, S15 4; no S13) routed from all
+  bread tags; cereals / pasta / rice / oats / flours stay on the legacy grains
+  profile, **renamed `breads` → `grains`** (rules untouched). New `Sage/BreadScoring.swift`.
+- **Graded whole-grain share**: position-weighted, declared-% override,
+  parenthetical sub-lists, multilingual whole / partial / refined vocab,
+  name-claim lift only for whole-first lists, fiber cross-check caps.
+- **Evidence-based S2**: 16 UPF marker families from text or E-codes; 0
+  families → 0.70 (traditional NOVA 3 is bread's ceiling); preservatives,
+  ascorbic acid, fortification and vital wheat gluten are not markers.
+- **S12 `grain`** fiber/100 g + protein (isolated fiber on refined base ×0.5);
+  **S4 `bread`** 200/450/700 mg + sodium plausibility guard; **S5** added;
+  S13 dropped (only ever rewarded fortified white flour).
+- **Generic fixes**: S14 whitelist (whole-grain flours, oats, seeds, yeast,
+  sourdough, semolina…), water excluded from the real-food ratio,
+  `hasIsolateProtein` needs *protein* concentrate, allergen / boilerplate
+  tails cut from tokens, marketing prose in the ingredients field → missing,
+  enrichment vitamins (E101/E375/E300/E170/E306) exempt from S1. Drift outside
+  bread: 511/1 776 move, all +1…+7 (pasta +5, cereal +3.6), one garbage list
+  −21; no routing changes.
+- Calibration: Ezekiel 94, whole rye 88, whole-wheat sourdough 87, Dave's 83,
+  Nature's Own 100 % WW 64, white sourdough 63, baguette 61, brioche 58,
+  gluten-free 45, Hawaiian rolls 39, Wonder 33, mass tortilla 33. Real shelf
+  44–94 (mean 75). Deliberately unscored: sourdough fermentation, organic,
+  packaging, sourcing, GI.
+- Not done (follow-ups): the legacy binary `wholeGrain` still serves cereals
+  / pasta / rice (same "oat"→"goat" substring issue); crispbreads are judged
+  per 100 g dry (fiber and sodium both inflated vs fresh bread); Top Rated
+  bread shelf ordering changed (re-check the `bread-tr` hero pick);
+  Alternatives.json `precomputed_score` for bread is stale until regenerated.
+
+---
+
 # Session Changelog — 2026-08-21 — Egg scoring (v5.3.0)
 
 Audit of egg scoring against the live engine (CLI harness over 29 real OFF

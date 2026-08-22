@@ -138,11 +138,11 @@ struct ScoringV4Tests {
 
     @Test func bundledRulesetLoads() {
         let rs = RulesetV4.bundled
-        #expect(rs.version == "2026.08-v5.3.0")
+        #expect(rs.version == "2026.08-v5.4.0")
         #expect(rs.bands.excellent == 75)
         #expect(rs.bands.good == 55)
         #expect(rs.bands.ok == 35)
-        #expect(rs.profiles.count == 14)
+        #expect(rs.profiles.count == 15)
         #expect(rs.bandLabel(80) == "Excellent")
         #expect(rs.bandLabel(55) == "Good")
         #expect(rs.bandLabel(35) == "OK")
@@ -164,7 +164,7 @@ struct ScoringV4Tests {
         #expect(ScoringEngineV4.route(greekYogurt) == "yogurt_cheese")
         #expect(ScoringEngineV4.route(blackTea) == "tea_coffee")
         #expect(ScoringEngineV4.route(honey) == "unscored_sweetener")
-        #expect(ScoringEngineV4.route(whiteBread) == "breads")
+        #expect(ScoringEngineV4.route(whiteBread) == "bread")
         #expect(ScoringEngineV4.route(bacon) == "meat")
         #expect(ScoringEngineV4.route(product(categories: ["frozen-desserts", "ice-creams"])) == "ice_cream")
         // Plant "milk-substitutes" beat dairy; bottled iced tea beats dry tea.
@@ -326,7 +326,7 @@ struct ScoringV4Tests {
 
     @Test func anchorBreadsProfile() {
         let white = ScoringEngineV4.score(whiteBread)!
-        #expect(white.profileId == "breads")
+        #expect(white.profileId == "bread")   // V5.4: dedicated bread profile
         #expect(RulesetV4.bundled.bandLabel(white.base) == "OK"
                 || RulesetV4.bundled.bandLabel(white.base) == "Bad"
                 || RulesetV4.bundled.bandLabel(white.base) == "Good")

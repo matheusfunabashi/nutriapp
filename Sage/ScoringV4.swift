@@ -43,6 +43,8 @@ struct RulesetV4: Codable {
     let textSignals: [String: String]
     let s3Thresholds: [String: [Double]]
     let s4Thresholds: [Double]
+    /// V5.4: per-variant sodium anchors (e.g. `bread`); falls back to `s4Thresholds`.
+    var s4ThresholdsByVariant: [String: [Double]]? = nil
     let s5Thresholds: [String: [Double]]
     /// Removed in v5 (packaging non-health); kept optional for older downloads.
     let s7Materials: [String: Double]?
@@ -155,6 +157,52 @@ struct RulesetV4: Codable {
         }
     }
     var eggs: EggConfig? = nil
+
+    // V5.4 bread — optional so older rulesets (and frozen v5.0.9) keep their
+    // behavior when the config is absent. Shapes live in BreadScoring.swift.
+    struct BreadConfig: Codable {
+        struct FiberCap: Codable { let belowG: Double; let maxShare: Double }
+        struct UPFMarker: Codable { let family: String; let text: [String]; let codes: [String]? }
+        struct S2: Codable {
+            /// Credit for a list with no ultra-processing markers (NOVA 3 —
+            /// the best class a bread can be).
+            let traditional: Double
+            /// Credit by distinct marker-family count (index 0 = one family;
+            /// the last entry covers every larger count).
+            let markerCredits: [Double]
+            let novaFourNoList: Double
+            let unknownCredit: Double
+        }
+        struct S12: Codable {
+            let fiberZeroG: Double
+            let fiberFullG: Double
+            let proteinTargetG: Double
+            let fiberWeight: Double
+            let proteinWeight: Double
+            let isolatedFiberDamp: Double
+            let unknownFiberPrior: Double
+            let unknownFiberPriorWhole: Double
+        }
+        struct Sodium: Codable { let minSodiumMgWithSalt: Double; let saltWords: [String] }
+        let wholeGrainKw: [String]
+        let partialWholeKw: [String]
+        let refinedKw: [String]
+        let grainIgnoreKw: [String]
+        let partialCredit: Double
+        let rankDecay: Double
+        let nameWholeClaims: [String]
+        let nameClaimShare: Double
+        let wholeTagFallback: [String]
+        let unknownCredit: Double
+        let unknownWholeCredit: Double
+        let fiberCaps: [FiberCap]
+        let isolatedFiberKw: [String]
+        let upfMarkers: [UPFMarker]
+        let s2: S2
+        let s12: S12
+        let sodium: Sodium
+    }
+    var bread: BreadConfig? = nil
 
     // S13 — beneficial micronutrient credit (positive-only). NRF-style: each
     // present nutrient contributes min(cap, %DV per 100g); the capped sum is
@@ -1262,6 +1310,10 @@ enum ScoringEngineV4 {
         case "S8":
             return f >= 0.75 ? ("low caffeine", true) : ("high caffeine", false)
         case "S13": return f >= 0.5 ? ("rich in vitamins & minerals", true) : nil
+        case "wholeGrain":
+            if f >= 0.6 { return ("whole grain", true) }
+            if f <= 0.25 { return ("refined grains", false) }
+            return nil
         default:    return nil
         }
     }
@@ -1548,9 +1600,10 @@ enum ScoringEngineV4 {
         // The dairy S12 variant runs on protein + calcium; fiber and kcal are
         // not inputs there, so their absence must not shave milk's confidence.
         // Same for the V5.3 egg variant (protein per 100 g only).
+        // V5.4: the grain variant has no kcal axis either.
         let s12IsDairy: Bool = {
             let note = results.first { $0.rule == "S12" }?.note ?? ""
-            return note.hasPrefix("dairy") || note.hasPrefix("egg")
+            return note.hasPrefix("dairy") || note.hasPrefix("egg") || note.hasPrefix("grain")
         }()
         if n.sugar_g == nil, let w = byRule["S3"] { haircutPP += w / 2 }
         if n.satFat_g == nil, let w = byRule["S5"] { haircutPP += w / 2 }
@@ -1588,11 +1641,22 @@ enum ScoringEngineV4 {
         case "S1":
             let r = s1(p, rs: rs); return (r.0, r.1, nil)
         case "S2":
+            // V5.4: bread processing is read off the ingredient list (marker
+            // families), not OFF's NOVA tag — see BreadScoring.s2Credit.
+            if variant == "bread", let cfg = rs.bread {
+                return BreadScoring.s2Credit(p, cfg: cfg)
+            }
             let r = s2(p); return (r.0, r.1, nil)
         case "S3":
             return s3(p, variant: variant ?? "foods", rs: rs, profileId: profileId)
         case "S4":
-            let r = stepped(p.nutrients.sodium_mg, thresholds: rs.s4Thresholds,
+            let thresholds = variant.flatMap { rs.s4ThresholdsByVariant?[$0] } ?? rs.s4Thresholds
+            // V5.4: salt entered in the wrong unit (1 mg sodium on a salted
+            // loaf) must not earn full credit — unknown, not low.
+            if variant == "bread", let cfg = rs.bread, BreadScoring.sodiumIsImplausible(p, cfg: cfg) {
+                return (0.30, false, "S4 bread: sodium implausible for a salted bread → unknown")
+            }
+            let r = stepped(p.nutrients.sodium_mg, thresholds: thresholds,
                             unknownCredit: 0.30)
             return (r.0, r.1, nil)
         case "S5":
@@ -1636,6 +1700,12 @@ enum ScoringEngineV4 {
                 let r = s12EggCredit(p, cfg: rs.eggs)
                 return (r.0, r.1, "egg: protein basis")
             }
+            // V5.4: bread has no fruit/veg axis and a flat ~250 kcal, so the
+            // grain variant scores fiber per 100 g + protein.
+            if variant == "grain", let cfg = rs.bread {
+                let r = BreadScoring.s12GrainCredit(p, cfg: cfg)
+                return (r.0, r.1, "grain: " + r.2)
+            }
             let r = s12(p, variant: variant); return (r.0, r.1, nil)
         case "S13":
             if variant == "egg" { return s13Egg(p, rs: rs) }
@@ -1661,6 +1731,9 @@ enum ScoringEngineV4 {
                              fallback: rs.sweetenerProcessingDefault ?? 0.6)
             return (r.0, r.1, nil)
         case "wholeGrain":
+            if variant == "bread", let cfg = rs.bread {
+                return BreadScoring.wholeGrainCredit(p, cfg: cfg)
+            }
             let r = wholeGrain(p, rs: rs); return (r.0, r.1, nil)
         default:
             return (0, false, nil)
@@ -2518,6 +2591,7 @@ enum ScoringEngineV4 {
             guard let v = ruleList.first(where: { $0.rule == "S12" })?.variant else { return nil }
             if v == "dairy" || v == "dairyDense" { return "protein and calcium" }
             if v == "egg" { return "protein" }
+            if v == "grain" { return "fiber and protein" }
             return nil
         }()
         var rules: [OverviewRuleInput] = []

@@ -299,7 +299,9 @@ struct EggScoringV53Tests {
         #expect(hardBoiledPreserved < hardBoiledClean - 10)
         #expect(hardBoiledPreserved >= rs.bands.excellent)
         #expect(pickled < hardBoiledPreserved)
-        #expect(pickled >= rs.bands.good && pickled < rs.bands.excellent)
+        // V5.4: vinegar is real food and water leaves the S14 ratio, which puts
+        // pickled eggs exactly on the Excellent boundary (74 → 75).
+        #expect(pickled >= rs.bands.good && pickled <= rs.bands.excellent)
         #expect(formulatedWhites < pickled)
         #expect(formulatedWhites >= rs.bands.good && formulatedWhites < 70, "formulated whites \(formulatedWhites)")
     }
