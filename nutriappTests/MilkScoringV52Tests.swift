@@ -49,7 +49,7 @@ struct MilkScoringV52Tests {
         let r = ScoringEngineV4.score(p)!
         let dp = rule("dairyProcessing", r)!
         #expect(dp.hadData)
-        #expect(abs(dp.fraction - 0.40) < 0.001)
+        #expect(abs(dp.fraction - 0.70) < 0.001)
     }
 
     @Test func pasteurizedTagIsEvidenceNotAssumption() {
@@ -57,15 +57,17 @@ struct MilkScoringV52Tests {
         let r = ScoringEngineV4.score(p)!
         let dp = rule("dairyProcessing", r)!
         #expect(dp.hadData)
-        #expect(abs(dp.fraction - 0.85) < 0.001)
+        #expect(abs(dp.fraction - 1.0) < 0.001)
     }
 
     @Test func untaggedMilkStillFallsToUnknownDefault() {
         let p = milk()
         let r = ScoringEngineV4.score(p)!
         let dp = rule("dairyProcessing", r)!
-        #expect(!dp.hadData)
-        #expect(abs(dp.fraction - 0.85) < 0.001)
+        // V5.6: retail fluid milk is pasteurized by law unless labelled raw
+        // (checked separately) — the default is evidence, not assumption.
+        #expect(dp.hadData)
+        #expect(abs(dp.fraction - 1.0) < 0.001)
     }
 
     // MARK: Raw milk — processing credit + safety cap
@@ -89,7 +91,7 @@ struct MilkScoringV52Tests {
             milk(name: "Fat Free Milk Lactose Free Ultra-Pasteurized"))!
         let dp = rule("dairyProcessing", up)!
         #expect(dp.hadData)
-        #expect(abs(dp.fraction - 0.40) < 0.001)
+        #expect(abs(dp.fraction - 0.70) < 0.001)
     }
 
     @Test func yoghurtNameNeverMatchesUHT() {
@@ -156,7 +158,9 @@ struct MilkScoringV52Tests {
         let s13With = rule("S13", with)!
         let s13Without = rule("S13", without)!
         #expect(s13With.hadData)
-        #expect(!s13Without.hadData)
+        // V5.6: the dairy reference prior is evidence of the food's identity,
+        // so both are data-backed; declared calcium can only lift.
+        #expect(s13Without.hadData)
         #expect(s13With.fraction >= s13Without.fraction)
         #expect(with.base >= without.base,
                 "reporting calcium lowered the score: \(with.base) vs \(without.base)")
@@ -218,10 +222,12 @@ struct MilkScoringV52Tests {
                  ingredientsText: "ultrafiltered milk, lactase enzyme, vitamin a, vitamin d3",
                  categories: ["dairies", "milks", "ultrafiltered-milks"]))!
         let plain = ScoringEngineV4.score(milk())!
-        #expect(rule("dairyProcessing", uf)!.fraction == 0.25)
-        #expect(rule("S2", uf)!.fraction == 0.0)
-        #expect(uf.base < plain.base - 10,
-                "ultrafiltered must stay well below plain milk: \(uf.base) vs \(plain.base)")
+        // V5.6: ultrafiltration is a membrane step, not ultra-processing —
+        // one graded dock (0.7), no NOVA-4 zero, no real-food miss.
+        #expect(abs(rule("dairyProcessing", uf)!.fraction - 0.7) < 0.001)
+        #expect(rule("S2", uf)!.fraction == 1.0)
+        #expect(uf.base < plain.base, "still below plain milk: \(uf.base) vs \(plain.base)")
+        #expect(plain.base - uf.base <= 8)
     }
 
     // MARK: Powdered milk — judged as reconstituted, not as concentrate
@@ -288,7 +294,9 @@ struct MilkScoringV52Tests {
                  categories: ["dairies", "milks", "raw-milks"]))!.base
         #expect(vat >= pasteurized)
         #expect(pasteurized > uht)
-        #expect(uht > ultrafiltered)
+        // V5.6: UHT and ultrafiltered share the 0.7 heat/filtration tier; UF's
+        // higher protein and calcium can rank it at or above UHT.
+        #expect(abs(uht - ultrafiltered) <= 4)
         #expect(ultrafiltered > raw, "unverifiable raw safety ranks below any pasteurized option")
         #expect(pasteurized >= 90 && raw <= 54)
     }

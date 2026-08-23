@@ -157,7 +157,7 @@ struct V5CalibrationTests {
     }
 
     private var yorgus: Product {
-        // Sparse ingredients → provisional; yogurt_cheese profile.
+        // Sparse ingredients → provisional; dairy_fermented profile.
         product(kcal: 97, protein: 4.5, fiber: 0, sugar: 12, satFat: 2.5, sodium: 50,
                 calcium: 120, nova: 4, name: "Yorgus",
                 ingredientsText: nil,
@@ -167,7 +167,7 @@ struct V5CalibrationTests {
     // MARK: Structural
 
     @Test func rulesetVersionAndBands() {
-        #expect(rs.version == "2026.08-v5.5.0")
+        #expect(rs.version == "2026.08-v5.6.0")
         #expect(ScoringEngineV4.engineVersion == "v5")
         #expect(rs.bands.excellent == 75)
         #expect(rs.bands.good == 55)
@@ -304,12 +304,15 @@ struct V5CalibrationTests {
         #expect(rs.additiveTiers["e969"] == "C")
     }
 
-    @Test func dairyProcessingDefaultIsUnknownTier() {
+    @Test func dairyProcessingDefaultIsPasteurizedByLaw() {
+        // V5.6: retail fluid milk is pasteurized unless labelled raw (which
+        // is checked separately), so the default is evidence, not assumption.
         let milk = product(kcal: 64, protein: 3.3, sugar: 4.8, satFat: 1.9, sodium: 44,
                            calcium: 120, nova: 1, ingredientsText: "milk",
                            categories: ["dairies", "milks"])
         let r = ScoringEngineV4.score(milk)!
         let dp = r.rules.first { $0.rule == "dairyProcessing" }
-        #expect(dp?.hadData == false)
+        #expect(dp?.hadData == true)
+        #expect(dp.map { abs($0.fraction - 1.0) < 0.001 } == true)
     }
 }
