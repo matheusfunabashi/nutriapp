@@ -61,6 +61,13 @@ const R2_KEY_PREFIX = "product-images/";
 const FRESH_MS = 30 * 24 * 60 * 60 * 1000;       // 30 days
 const KV_TTL_SECONDS = 40 * 24 * 60 * 60;         // keep past freshness for SWR
 const MISS_TTL_SECONDS = 7 * 24 * 60 * 60;        // 7 days
+// A *cleared* miss is overwritten with "0" instead of deleted: KV free tier
+// allows 1M writes/day but only 1,000 deletes/day, and we were unconditionally
+// deleting on every successful resolve. "0" reads as "no active miss" (identical
+// to an absent key, see resolveProductImage), so this is a short-lived tombstone
+// that neutralizes the "1" then auto-expires. 60s is the KV minimum; the exact
+// value isn't correctness-critical because "0" and absent are equivalent.
+const MISS_CLEARED_TTL_SECONDS = 60;
 const KROGER_BACKOFF_TTL_SECONDS = 6 * 60 * 60;   // 6 hours
 
 function isCacheVersionCurrent(meta: ImageCacheMeta): boolean {
@@ -93,8 +100,12 @@ export async function resolveProductImage(
   const trimmed = barcode.trim();
   if (!trimmed) return null;
 
-  // Negative cache: nothing anywhere.
-  if (await env.CACHE.get(missKey(trimmed))) {
+  // Negative cache: nothing anywhere. A cleared miss is stored as "0" (see
+  // MISS_CLEARED_TTL_SECONDS), which must read identically to an absent key —
+  // so only a live "1" short-circuits. Guard against the "0" string being
+  // truthy in JS.
+  const miss = await env.CACHE.get(missKey(trimmed));
+  if (miss && miss !== "0") {
     return null;
   }
 
@@ -395,8 +406,10 @@ async function ingestUpstream(
   await env.CACHE.put(metaKey(barcode), JSON.stringify(meta), {
     expirationTtl: KV_TTL_SECONDS,
   });
-  // Clear any prior miss / backoff for this barcode.
-  await env.CACHE.delete(missKey(barcode));
+  // Clear any prior miss for this barcode. Overwrite with "0" rather than
+  // delete to stay under the KV free-tier delete budget (1k/day vs 1M writes);
+  // "0" reads as no active miss (see MISS_CLEARED_TTL_SECONDS).
+  await env.CACHE.put(missKey(barcode), "0", { expirationTtl: MISS_CLEARED_TTL_SECONDS });
 
   return meta;
 }
@@ -458,8 +471,18 @@ export async function serveCachedImage(
     const origin = opts.origin
       ?? "https://sage-backend.sage-app1710.workers.dev";
     // Clear a prior miss so a previous broken lazy attempt (no OFF fetch)
-    // doesn't poison this retry for a week.
-    await env.CACHE.delete(missKey(trimmed)).catch(() => {});
+    // doesn't poison this retry for a week. Overwrite with "0" rather than
+    // delete to stay under the KV free-tier delete budget; "0" reads as no
+    // active miss (see MISS_CLEARED_TTL_SECONDS). Log failures instead of
+    // swallowing them — an empty catch here hid the KV 429s that surfaced this.
+    await env.CACHE.put(missKey(trimmed), "0", { expirationTtl: MISS_CLEARED_TTL_SECONDS })
+      .catch((err) => {
+        console.log(JSON.stringify({
+          event: "image_miss_clear_error",
+          barcode: trimmed,
+          error: String(err),
+        }));
+      });
     const offProduct = await fetchOFF(trimmed).catch((err) => {
       console.log(JSON.stringify({
         event: "image_lazy_off_error",
