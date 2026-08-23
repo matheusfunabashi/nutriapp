@@ -186,6 +186,12 @@ export function validateOverview(text: string, input: ExplainRequest): string | 
           return ["trans fat", `capped at ${overallCap.value}`];
         case "nns":
           return ["non-nutritive", `capped at ${overallCap.value}`, "sweetener"];
+        case "dairyFreeSugar":
+          return ["added sugar", `capped at ${overallCap.value}`, "caps the overall"];
+        case "dairyNns":
+          return ["sweetener", `capped at ${overallCap.value}`, "caps the overall"];
+        case "dairySodium":
+          return ["sodium", `capped at ${overallCap.value}`, "caps the overall"];
         default:
           return [`capped at ${overallCap.value}`];
       }
@@ -251,6 +257,12 @@ function overallCapLead(cap: NonNullable<ExplainRequest["overallBindingCap"]>): 
       return `It contains industrial trans fat, which caps the overall score at ${cap.value}.`;
     case "nns":
       return `As a non-nutritive sweetener, its score is capped at ${cap.value}.`;
+    case "dairyFreeSugar":
+      return `Its added sugar caps the overall score at ${cap.value}.`;
+    case "dairyNns":
+      return `The artificial sweetener caps the overall score at ${cap.value}.`;
+    case "dairySodium":
+      return `Its very high sodium caps the overall score at ${cap.value}.`;
     default:
       return `A health cap limits the overall score at ${cap.value}.`;
   }

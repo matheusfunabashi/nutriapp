@@ -4,7 +4,7 @@
   ],
   "country": "us",
   "generated_at": "2026-08-22T15:55:20Z",
-  "ruleset_version": "2026.08-v5.5.0",
+  "ruleset_version": "2026.08-v5.6.0",
   "shelves": {
     "babyFood": [
       {
@@ -943,7 +943,7 @@
           "sugars_100g": 3.030303030303
         },
         "nutriscore_grade": "not-applicable",
-        "precomputed_score": 80,
+        "precomputed_score": 83,
         "image_quality": "good"
       },
       {
@@ -1240,7 +1240,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "not-applicable",
-        "precomputed_score": 78,
+        "precomputed_score": 79,
         "serving_size": "4 oz. (113 g)",
         "image_quality": "low"
       },
@@ -1899,7 +1899,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "not-applicable",
-        "precomputed_score": 74,
+        "precomputed_score": 76,
         "serving_size": "91g",
         "image_quality": "low"
       },
@@ -2223,7 +2223,7 @@
           "vitamin-d_100g": 0
         },
         "nutriscore_grade": "not-applicable",
-        "precomputed_score": 68,
+        "precomputed_score": 69,
         "serving_size": "0.25 cup (28 g)",
         "image_quality": "good"
       },
@@ -2978,7 +2978,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "not-applicable",
-        "precomputed_score": 54,
+        "precomputed_score": 57,
         "serving_size": "1 serving (7 g)",
         "image_quality": "good"
       },
@@ -3094,7 +3094,7 @@
           "sugars_100g": 12.5
         },
         "nutriscore_grade": "not-applicable",
-        "precomputed_score": 52,
+        "precomputed_score": 53,
         "image_quality": "good"
       },
       {
@@ -3395,7 +3395,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "not-applicable",
-        "precomputed_score": 42,
+        "precomputed_score": 44,
         "serving_size": "6g",
         "image_quality": "good"
       },
@@ -4889,7 +4889,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "b",
-        "precomputed_score": 76,
+        "precomputed_score": 78,
         "serving_size": "1 slice (43 g)",
         "image_quality": "good"
       },
@@ -4950,7 +4950,7 @@
           "vitamin-d_100g": 0
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 73,
+        "precomputed_score": 75,
         "serving_size": "1 portion (62 g)",
         "image_quality": "good"
       },
@@ -5104,7 +5104,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "b",
-        "precomputed_score": 72,
+        "precomputed_score": 73,
         "serving_size": "1 slice (43 g)",
         "image_quality": "good"
       },
@@ -5217,7 +5217,7 @@
           "vitamin-d_100g": 0
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 71,
+        "precomputed_score": 72,
         "serving_size": "1 bagel (95 g)",
         "image_quality": "good"
       },
@@ -5277,7 +5277,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 70,
+        "precomputed_score": 73,
         "serving_size": "2 tortillas (47 g)",
         "image_quality": "good"
       },
@@ -5444,7 +5444,7 @@
           "vitamin-d_100g": 0
         },
         "nutriscore_grade": "b",
-        "precomputed_score": 69,
+        "precomputed_score": 72,
         "serving_size": "43.0g",
         "image_quality": "good"
       },
@@ -5504,7 +5504,7 @@
           "vitamin-d_100g": 0
         },
         "nutriscore_grade": "b",
-        "precomputed_score": 69,
+        "precomputed_score": 70,
         "serving_size": "25.0g",
         "image_quality": "good"
       },
@@ -5565,7 +5565,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 69,
+        "precomputed_score": 71,
         "serving_size": "3 tortillas (57 g)",
         "image_quality": "good"
       },
@@ -5684,7 +5684,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "b",
-        "precomputed_score": 65,
+        "precomputed_score": 66,
         "serving_size": "1 slice (43 g)",
         "image_quality": "good"
       },
@@ -5739,7 +5739,7 @@
           "vitamin-d_100g": 0
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 65,
+        "precomputed_score": 67,
         "serving_size": "1 slice (43 g)",
         "image_quality": "good"
       },
@@ -5864,7 +5864,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 64,
+        "precomputed_score": 66,
         "serving_size": "2 slices (114 g)",
         "image_quality": "low"
       },
@@ -5922,7 +5922,7 @@
           "sugars_100g": 2
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 64,
+        "precomputed_score": 65,
         "serving_size": "2 tortilla (50 g)",
         "image_quality": "good"
       },
@@ -5980,7 +5980,7 @@
           "sugars_100g": 7.14285714285714
         },
         "nutriscore_grade": "unknown",
-        "precomputed_score": 64,
+        "precomputed_score": 65,
         "serving_size": "2 slice (56 g)",
         "image_quality": "good"
       },
@@ -6503,7 +6503,7 @@
           "vitamin-d_100g": 0
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 60,
+        "precomputed_score": 62,
         "serving_size": "1 slice (26 g)",
         "image_quality": "good"
       },
@@ -6567,7 +6567,7 @@
           "sugars_100g": 3.84615384615385
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 59,
+        "precomputed_score": 60,
         "serving_size": "1 slice (26 g)",
         "image_quality": "good"
       },
@@ -6690,7 +6690,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "b",
-        "precomputed_score": 59,
+        "precomputed_score": 60,
         "serving_size": "1 slice (43 g)",
         "image_quality": "good"
       },
@@ -6746,7 +6746,7 @@
           "vitamin-d_100g": 0
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 58,
+        "precomputed_score": 60,
         "serving_size": "1 slice (37 g)",
         "image_quality": "good"
       },
@@ -6807,7 +6807,7 @@
           "vitamin-d_100g": 6.45161290322581e-07
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 58,
+        "precomputed_score": 59,
         "serving_size": "1 muffin (62 g)",
         "image_quality": "good"
       },
@@ -6882,7 +6882,7 @@
           "vitamin-d_100g": 0
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 57,
+        "precomputed_score": 59,
         "serving_size": "1 tortilla (45 g)",
         "image_quality": "good"
       },
@@ -6942,7 +6942,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 56,
+        "precomputed_score": 57,
         "serving_size": "1 bagel (95 g)",
         "image_quality": "good"
       },
@@ -6994,7 +6994,7 @@
           "sugars_100g": 1
         },
         "nutriscore_grade": "unknown",
-        "precomputed_score": 56,
+        "precomputed_score": 58,
         "serving_size": "1 slice (65 g)",
         "image_quality": "good"
       },
@@ -7227,7 +7227,7 @@
           "sugars_100g": 4.65116279069767
         },
         "nutriscore_grade": "unknown",
-        "precomputed_score": 54,
+        "precomputed_score": 55,
         "serving_size": "1 slice (43 g)",
         "image_quality": "good"
       },
@@ -7290,7 +7290,7 @@
           "vitamin-d_100g": 0
         },
         "nutriscore_grade": "b",
-        "precomputed_score": 54,
+        "precomputed_score": 55,
         "serving_size": "1 portion (57 g)",
         "image_quality": "good"
       },
@@ -7534,7 +7534,7 @@
           "vitamin-d_100g": 0
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 52,
+        "precomputed_score": 53,
         "serving_size": "1 slice (26 g)",
         "image_quality": "good"
       },
@@ -7663,7 +7663,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 50,
+        "precomputed_score": 52,
         "serving_size": "1 slice (38 g)",
         "image_quality": "good"
       },
@@ -7735,7 +7735,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 50,
+        "precomputed_score": 51,
         "serving_size": "1 slice (42 g)",
         "image_quality": "good"
       },
@@ -7874,7 +7874,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "b",
-        "precomputed_score": 48,
+        "precomputed_score": 50,
         "serving_size": "2 slices (57 g)",
         "image_quality": "good"
       },
@@ -7932,7 +7932,7 @@
           "vitamin-c_100g": 0.000615384615384615
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 48,
+        "precomputed_score": 49,
         "serving_size": "1 slice (28 g)",
         "image_quality": "good"
       },
@@ -7993,7 +7993,7 @@
           "vitamin-d_100g": 0
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 47,
+        "precomputed_score": 49,
         "serving_size": "2 slices (44 g)",
         "image_quality": "good"
       },
@@ -8058,7 +8058,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 45,
+        "precomputed_score": 46,
         "serving_size": "1 slice (42 g)",
         "image_quality": "good"
       },
@@ -8126,7 +8126,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 44,
+        "precomputed_score": 45,
         "serving_size": "1 pita (37 g)",
         "image_quality": "good"
       },
@@ -8189,7 +8189,7 @@
           "sugars_100g": 6.31578947368421
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 43,
+        "precomputed_score": 45,
         "serving_size": "1 portion (95 g)",
         "image_quality": "good"
       },
@@ -8256,7 +8256,7 @@
           "sugars_100g": 2.3
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 43,
+        "precomputed_score": 44,
         "serving_size": "1 serving (45 g)",
         "image_quality": "good"
       },
@@ -8313,7 +8313,7 @@
           "vitamin-d_100g": 0
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 43,
+        "precomputed_score": 44,
         "serving_size": "1 slice (28 g)",
         "image_quality": "good"
       },
@@ -9601,7 +9601,7 @@
           "zinc_100g": 0.000980392156862745
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 78,
+        "precomputed_score": 82,
         "serving_size": "2 biscuits (51 g)",
         "image_quality": "good"
       },
@@ -9661,7 +9661,7 @@
           "zinc_100g": 0.00366666666666667
         },
         "nutriscore_grade": "unknown",
-        "precomputed_score": 78,
+        "precomputed_score": 81,
         "serving_size": "1.333 cups (60 g)",
         "image_quality": "good"
       },
@@ -10327,7 +10327,7 @@
           "vitamin-d_100g": 0
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 70,
+        "precomputed_score": 69,
         "serving_size": "0.75 cup cereal (55 g)",
         "image_quality": "good"
       },
@@ -10396,7 +10396,7 @@
           "zinc_100g": 0.003
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 70,
+        "precomputed_score": 69,
         "serving_size": "1 1/2 cup/taza (39 g)",
         "image_quality": "good"
       },
@@ -10456,7 +10456,7 @@
           "zinc_100g": 0.00254237288135593
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 68,
+        "precomputed_score": 65,
         "serving_size": "1 cup (59 g)",
         "image_quality": "good"
       },
@@ -10570,7 +10570,7 @@
           "sugars_100g": 23.6363636363636
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 68,
+        "precomputed_score": 67,
         "serving_size": "0.667 cup (55 g)",
         "image_quality": "low"
       },
@@ -10697,7 +10697,7 @@
           "zinc_100g": 0.00769230769230769
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 66,
+        "precomputed_score": 65,
         "serving_size": "1 ½ cup (39 g)",
         "image_quality": "good"
       },
@@ -11167,7 +11167,7 @@
           "zinc_100g": 0.01736842
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 65,
+        "precomputed_score": 64,
         "serving_size": "1 cup (38 g)",
         "image_quality": "good"
       },
@@ -11410,7 +11410,7 @@
           "vitamin-d_100g": 0
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 64,
+        "precomputed_score": 63,
         "serving_size": "1 portion (54 g)",
         "image_quality": "low"
       },
@@ -11710,7 +11710,7 @@
           "sugars_100g": 16.3636363636364
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 61,
+        "precomputed_score": 62,
         "serving_size": "1 serving (55 g)",
         "image_quality": "good"
       },
@@ -12218,7 +12218,7 @@
           "sugars_100g": 24.6153846153846
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 60,
+        "precomputed_score": 59,
         "serving_size": "0.667 cup (65 g)",
         "image_quality": "good"
       },
@@ -13259,7 +13259,7 @@
           "zinc_100g": 0.0185185185185185
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 55,
+        "precomputed_score": 56,
         "serving_size": "0.5 cup (54 g)",
         "image_quality": "good"
       }
@@ -13325,7 +13325,7 @@
           "zinc_100g": 0.000454545454545455
         },
         "nutriscore_grade": "b",
-        "precomputed_score": 87,
+        "precomputed_score": 86,
         "serving_size": "1 serving (110 g)",
         "image_quality": "low"
       },
@@ -13549,7 +13549,7 @@
           "vitamin-d_100g": 0
         },
         "nutriscore_grade": "b",
-        "precomputed_score": 85,
+        "precomputed_score": 78,
         "serving_size": "0.5 cup (113 g)",
         "image_quality": "good"
       },
@@ -13610,7 +13610,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 84,
+        "precomputed_score": 87,
         "serving_size": "109g",
         "image_quality": "good"
       },
@@ -13669,7 +13669,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "b",
-        "precomputed_score": 84,
+        "precomputed_score": 82,
         "serving_size": "0.5 cup (113 g)",
         "image_quality": "low"
       },
@@ -13722,7 +13722,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "b",
-        "precomputed_score": 83,
+        "precomputed_score": 84,
         "serving_size": "0.5 cup (113 g)",
         "image_quality": "low"
       },
@@ -13829,7 +13829,7 @@
           "zinc_100g": 0.00047008547008547
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 82,
+        "precomputed_score": 76,
         "serving_size": "0.5 cup (117 g)",
         "image_quality": "good"
       },
@@ -13888,7 +13888,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 80,
+        "precomputed_score": 81,
         "serving_size": "1 ONZ (28 g)",
         "image_quality": "low"
       },
@@ -13938,7 +13938,7 @@
           "vitamin-d_100g": 0
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 78,
+        "precomputed_score": 87,
         "serving_size": "1 Slice (18 g)",
         "image_quality": "good"
       },
@@ -13986,7 +13986,7 @@
           "vitamin-c_100g": 0
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 77,
+        "precomputed_score": 87,
         "serving_size": "1 SLICE (19 g)",
         "image_quality": "low"
       },
@@ -14043,7 +14043,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 77,
+        "precomputed_score": 78,
         "serving_size": "1 slice (21 g)",
         "image_quality": "good"
       },
@@ -14096,7 +14096,7 @@
           "sugars_100g": 3.41880341880342
         },
         "nutriscore_grade": "b",
-        "precomputed_score": 77,
+        "precomputed_score": 81,
         "serving_size": "0.5 cup (117 g)",
         "image_quality": "good"
       },
@@ -14148,7 +14148,7 @@
           "sugars_100g": 5.88235294117647
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 76,
+        "precomputed_score": 78,
         "serving_size": "1 container (170 g)",
         "image_quality": "good"
       },
@@ -14202,7 +14202,7 @@
           "vitamin-d_100g": 0
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 76,
+        "precomputed_score": 85,
         "serving_size": "1 ONZ (28 g)",
         "image_quality": "good"
       },
@@ -14261,7 +14261,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 75,
+        "precomputed_score": 81,
         "serving_size": "1 portion (28 g)",
         "image_quality": "low"
       },
@@ -14375,7 +14375,7 @@
           "vitamin-d_100g": 1.30434782608696e-06
         },
         "nutriscore_grade": "b",
-        "precomputed_score": 75,
+        "precomputed_score": 72,
         "serving_size": "0.5 cup (115 g)",
         "image_quality": "good"
       },
@@ -14424,7 +14424,7 @@
           "vitamin-d_100g": 3.57142857142857e-07
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 75,
+        "precomputed_score": 78,
         "serving_size": "1 piece (28 g)",
         "image_quality": "good"
       },
@@ -14529,7 +14529,7 @@
           "vitamin-d_100g": 7.14285714285714e-07
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 74,
+        "precomputed_score": 69,
         "serving_size": "1.0 portion (28.0 g)",
         "image_quality": "good"
       },
@@ -14586,7 +14586,7 @@
           "zinc_100g": 0.000414424
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 74,
+        "precomputed_score": 71,
         "serving_size": "28.349g",
         "image_quality": "low"
       },
@@ -14632,7 +14632,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 74,
+        "precomputed_score": 71,
         "serving_size": "2 tbsp (31 g)",
         "image_quality": "low"
       },
@@ -14682,7 +14682,7 @@
           "sugars_100g": 6.66666666666667
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 74,
+        "precomputed_score": 73,
         "serving_size": "1 portion (30 g)",
         "image_quality": "good"
       },
@@ -14739,7 +14739,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 74,
+        "precomputed_score": 80,
         "serving_size": "21.0g",
         "image_quality": "good"
       },
@@ -14851,7 +14851,7 @@
           "vitamin-d_100g": 3.57142857142857e-07
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 74,
+        "precomputed_score": 77,
         "serving_size": "0.25 cup (28 g)",
         "image_quality": "good"
       },
@@ -14903,7 +14903,7 @@
           "vitamin-d_100g": 5.26315789473684e-07
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 74,
+        "precomputed_score": 75,
         "serving_size": "1 Slice (19 g)",
         "image_quality": "good"
       },
@@ -14959,7 +14959,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 73,
+        "precomputed_score": 74,
         "serving_size": "5g",
         "image_quality": "good"
       },
@@ -15011,7 +15011,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 73,
+        "precomputed_score": 75,
         "serving_size": "1 ONZ (28 g)",
         "image_quality": "good"
       },
@@ -15058,7 +15058,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 72,
+        "precomputed_score": 76,
         "serving_size": "1 ONZ (28 g)",
         "image_quality": "good"
       },
@@ -15116,7 +15116,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 72,
+        "precomputed_score": 74,
         "serving_size": "1 slice (19 g)",
         "image_quality": "low"
       },
@@ -15174,7 +15174,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "unknown",
-        "precomputed_score": 71,
+        "precomputed_score": 75,
         "serving_size": "1 portion (28 g)",
         "image_quality": "good"
       },
@@ -15224,7 +15224,7 @@
           "vitamin-d_100g": 4.76190476190476e-07
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 71,
+        "precomputed_score": 73,
         "serving_size": "1 silice (21 g)",
         "image_quality": "good"
       },
@@ -15271,7 +15271,7 @@
           "vitamin-c_100g": 0
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 71,
+        "precomputed_score": 74,
         "serving_size": "1 ONZ (28 g)",
         "image_quality": "good"
       },
@@ -15385,7 +15385,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 71,
+        "precomputed_score": 76,
         "serving_size": "0.5 cup (114 g)",
         "image_quality": "good"
       },
@@ -15436,7 +15436,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 71,
+        "precomputed_score": 55,
         "serving_size": "2 tbsp (22 g)",
         "image_quality": "good"
       },
@@ -15492,7 +15492,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 70,
+        "precomputed_score": 74,
         "serving_size": "5g",
         "image_quality": "good"
       },
@@ -15549,7 +15549,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 70,
+        "precomputed_score": 73,
         "serving_size": "10 z (28 g)",
         "image_quality": "good"
       },
@@ -15611,7 +15611,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 70,
+        "precomputed_score": 44,
         "serving_size": "2 tbsp (22 g)",
         "image_quality": "good"
       },
@@ -15669,7 +15669,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 70,
+        "precomputed_score": 66,
         "serving_size": "1 Serving (28 g)",
         "image_quality": "good"
       },
@@ -15721,7 +15721,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 70,
+        "precomputed_score": 68,
         "serving_size": "1 portion (28.349 g)",
         "image_quality": "good"
       },
@@ -15776,7 +15776,7 @@
           "sugars_100g": 3.57142857142857
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 69,
+        "precomputed_score": 74,
         "serving_size": "0.25 cup (28 g)",
         "image_quality": "good"
       },
@@ -15827,7 +15827,7 @@
           "vitamin-d_100g": 3.57142857142857e-07
         },
         "nutriscore_grade": "unknown",
-        "precomputed_score": 69,
+        "precomputed_score": 75,
         "serving_size": "1 serving (28 g)",
         "image_quality": "low"
       },
@@ -15882,7 +15882,7 @@
           "vitamin-d_100g": 3.57142857142857e-07
         },
         "nutriscore_grade": "e",
-        "precomputed_score": 69,
+        "precomputed_score": 54,
         "serving_size": "0.333 Cup (28 g)",
         "image_quality": "low"
       },
@@ -15942,7 +15942,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 69,
+        "precomputed_score": 70,
         "serving_size": "28 g",
         "image_quality": "low"
       },
@@ -15997,7 +15997,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 68,
+        "precomputed_score": 65,
         "serving_size": "2 Tbsp (31 g)",
         "image_quality": "good"
       },
@@ -16053,7 +16053,7 @@
           "vitamin-d_100g": 0
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 68,
+        "precomputed_score": 66,
         "serving_size": "2 Tbsp (30 g)",
         "image_quality": "good"
       },
@@ -16109,7 +16109,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 68,
+        "precomputed_score": 71,
         "serving_size": "1 SLICE (19 g)",
         "image_quality": "good"
       },
@@ -16162,7 +16162,7 @@
           "trans-fat_100g": 0.666666666666667
         },
         "nutriscore_grade": "unknown",
-        "precomputed_score": 68,
+        "precomputed_score": 55,
         "serving_size": "2 tbsp (30 g)",
         "image_quality": "good"
       },
@@ -16223,7 +16223,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 68,
+        "precomputed_score": 69,
         "serving_size": "0.33 cup (28 g)",
         "image_quality": "good"
       },
@@ -16279,7 +16279,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 68,
+        "precomputed_score": 70,
         "serving_size": "0.25 cup (28 g)",
         "image_quality": "good"
       },
@@ -16338,7 +16338,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 67,
+        "precomputed_score": 72,
         "serving_size": "0.5 cup (113 g)",
         "image_quality": "good"
       },
@@ -16394,7 +16394,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "unknown",
-        "precomputed_score": 67,
+        "precomputed_score": 70,
         "serving_size": "0.25 cup (28 g)",
         "image_quality": "good"
       },
@@ -16449,7 +16449,7 @@
           "vitamin-d_100g": 0
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 67,
+        "precomputed_score": 66,
         "serving_size": "0.25 cup (28 g)",
         "image_quality": "good"
       },
@@ -16500,7 +16500,7 @@
           "sugars_100g": 0
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 66,
+        "precomputed_score": 65,
         "serving_size": "30.0 g",
         "image_quality": "good"
       },
@@ -16552,7 +16552,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 66,
+        "precomputed_score": 56,
         "serving_size": "14g",
         "image_quality": "good"
       },
@@ -16608,7 +16608,7 @@
           "vitamin-d_100g": 7.14285714285714e-07
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 66,
+        "precomputed_score": 68,
         "serving_size": "0.25 cup (28 g)",
         "image_quality": "good"
       },
@@ -16661,7 +16661,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "e",
-        "precomputed_score": 66,
+        "precomputed_score": 58,
         "serving_size": "1 serving (29 g)",
         "image_quality": "good"
       },
@@ -16714,7 +16714,7 @@
           "vitamin-d_100g": 0
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 66,
+        "precomputed_score": 67,
         "serving_size": "1 tbsp (5 g)",
         "image_quality": "good"
       },
@@ -16774,7 +16774,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "e",
-        "precomputed_score": 66,
+        "precomputed_score": 54,
         "serving_size": "1 portion (28 g)",
         "image_quality": "good"
       },
@@ -16834,7 +16834,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "b",
-        "precomputed_score": 65,
+        "precomputed_score": 72,
         "serving_size": "0.5 cup (114 g)",
         "image_quality": "good"
       },
@@ -16887,7 +16887,7 @@
           "vitamin-d_100g": 0
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 65,
+        "precomputed_score": 64,
         "serving_size": "1 oz (28 g)",
         "image_quality": "good"
       },
@@ -17087,7 +17087,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 64,
+        "precomputed_score": 52,
         "serving_size": "30 g, 2 tbsp",
         "image_quality": "good"
       },
@@ -17146,7 +17146,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "e",
-        "precomputed_score": 63,
+        "precomputed_score": 57,
         "serving_size": "1 serving (28 g)",
         "image_quality": "good"
       },
@@ -17193,7 +17193,7 @@
           "vitamin-c_100g": 0
         },
         "nutriscore_grade": "e",
-        "precomputed_score": 62,
+        "precomputed_score": 54,
         "serving_size": "1 Tbsp (5 g)",
         "image_quality": "good"
       },
@@ -17245,7 +17245,7 @@
           "vitamin-d_100g": 0
         },
         "nutriscore_grade": "e",
-        "precomputed_score": 62,
+        "precomputed_score": 54,
         "serving_size": "2 tsp (5 g)",
         "image_quality": "good"
       },
@@ -17299,7 +17299,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "e",
-        "precomputed_score": 62,
+        "precomputed_score": 54,
         "image_quality": "good"
       },
       {
@@ -17340,7 +17340,7 @@
           "sodium_100g": 0.714285714285714
         },
         "nutriscore_grade": "unknown",
-        "precomputed_score": 61,
+        "precomputed_score": 68,
         "serving_size": "0.25 cup (28 g)",
         "image_quality": "good"
       },
@@ -17395,7 +17395,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "unknown",
-        "precomputed_score": 61,
+        "precomputed_score": 51,
         "serving_size": "1 tsp, 5g",
         "image_quality": "good"
       },
@@ -17505,7 +17505,7 @@
           "vitamin-d_100g": 4.76190476190476e-07
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 60,
+        "precomputed_score": 68,
         "serving_size": "1 slice (21 g)",
         "image_quality": "good"
       },
@@ -17560,7 +17560,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 60,
+        "precomputed_score": 56,
         "serving_size": "2 tbsp (31 g)",
         "image_quality": "good"
       },
@@ -17616,7 +17616,7 @@
           "vitamin-d_100g": 0
         },
         "nutriscore_grade": "e",
-        "precomputed_score": 60,
+        "precomputed_score": 58,
         "serving_size": "1 wedge (19 g)",
         "image_quality": "good"
       },
@@ -17675,7 +17675,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 60,
+        "precomputed_score": 67,
         "serving_size": "2 tbsp (31 g)",
         "image_quality": "good"
       }
@@ -17743,7 +17743,7 @@
           "vitamin-c_100g": 0.0212014134275618
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 76,
+        "precomputed_score": 72,
         "serving_size": "1 portion (28.3 g)",
         "image_quality": "good"
       },
@@ -18089,7 +18089,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 73,
+        "precomputed_score": 68,
         "serving_size": "14g",
         "image_quality": "good"
       },
@@ -18809,7 +18809,7 @@
           "vitamin-d_100g": 0
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 68,
+        "precomputed_score": 70,
         "serving_size": "16 chips (28 g)",
         "image_quality": "good"
       },
@@ -19554,7 +19554,7 @@
           "vitamin-d_100g": 0
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 65,
+        "precomputed_score": 67,
         "serving_size": "28g",
         "image_quality": "good"
       },
@@ -21097,7 +21097,7 @@
           "vitamin-d_100g": 0
         },
         "nutriscore_grade": "e",
-        "precomputed_score": 60,
+        "precomputed_score": 64,
         "serving_size": "1 portion (28.349 g)",
         "image_quality": "good"
       },
@@ -21490,7 +21490,7 @@
           "vitamin-d_100g": 1.42857142857143e-06
         },
         "nutriscore_grade": "unknown",
-        "precomputed_score": 59,
+        "precomputed_score": 62,
         "serving_size": "1 portion (28 g)",
         "image_quality": "good"
       },
@@ -21993,7 +21993,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 55,
+        "precomputed_score": 57,
         "serving_size": "1 package (38.9 g)",
         "image_quality": "good"
       },
@@ -22041,7 +22041,7 @@
           "sugars_100g": 0.833333333333333
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 55,
+        "precomputed_score": 56,
         "serving_size": "1 serving (12 g)",
         "image_quality": "low"
       },
@@ -22261,7 +22261,7 @@
           "sugars_100g": 3.57142857142857
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 52,
+        "precomputed_score": 53,
         "serving_size": "1 serving (28 g)",
         "image_quality": "good"
       }
@@ -22648,7 +22648,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "e",
-        "precomputed_score": 67,
+        "precomputed_score": 68,
         "serving_size": "0.5 bar (30 g)",
         "image_quality": "good"
       },
@@ -23222,7 +23222,7 @@
           "vitamin-d_100g": 0
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 60,
+        "precomputed_score": 61,
         "serving_size": "3 bites (34 g)",
         "image_quality": "low"
       },
@@ -23283,7 +23283,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 60,
+        "precomputed_score": 61,
         "serving_size": "3 pieces (34 g)",
         "image_quality": "good"
       },
@@ -23456,7 +23456,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "e",
-        "precomputed_score": 56,
+        "precomputed_score": 57,
         "serving_size": "2 pieces (25 g)",
         "image_quality": "good"
       },
@@ -23516,7 +23516,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "e",
-        "precomputed_score": 54,
+        "precomputed_score": 55,
         "serving_size": "1 SECTION (15 g)",
         "image_quality": "good"
       },
@@ -23565,7 +23565,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 53,
+        "precomputed_score": 54,
         "serving_size": "1 portion (15 g)",
         "image_quality": "good"
       },
@@ -23623,7 +23623,7 @@
           "vitamin-d_100g": 0
         },
         "nutriscore_grade": "e",
-        "precomputed_score": 52,
+        "precomputed_score": 53,
         "serving_size": "17 chips (15 g)",
         "image_quality": "good"
       },
@@ -23683,7 +23683,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "e",
-        "precomputed_score": 52,
+        "precomputed_score": 53,
         "serving_size": "2 pieces (25 g)",
         "image_quality": "good"
       },
@@ -23736,7 +23736,7 @@
           "vitamin-d_100g": 0
         },
         "nutriscore_grade": "e",
-        "precomputed_score": 52,
+        "precomputed_score": 53,
         "serving_size": "25g",
         "image_quality": "low"
       },
@@ -23795,7 +23795,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "e",
-        "precomputed_score": 52,
+        "precomputed_score": 53,
         "serving_size": "1 PACK (40 g)",
         "image_quality": "good"
       },
@@ -23856,7 +23856,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "e",
-        "precomputed_score": 51,
+        "precomputed_score": 52,
         "serving_size": "2 PIECES (25 g)",
         "image_quality": "good"
       },
@@ -23911,7 +23911,7 @@
           "vitamin-d_100g": 1.6e-06
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 51,
+        "precomputed_score": 52,
         "serving_size": "1 bar (25 g)",
         "image_quality": "low"
       },
@@ -23969,7 +23969,7 @@
           "sugars_100g": 30
         },
         "nutriscore_grade": "e",
-        "precomputed_score": 51,
+        "precomputed_score": 53,
         "serving_size": "3 pieces (30 g)",
         "image_quality": "good"
       },
@@ -24079,7 +24079,7 @@
           "sugars_100g": 33.3333333333333
         },
         "nutriscore_grade": "e",
-        "precomputed_score": 50,
+        "precomputed_score": 52,
         "serving_size": "11 pieces (30 g)",
         "image_quality": "good"
       },
@@ -24149,7 +24149,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "e",
-        "precomputed_score": 50,
+        "precomputed_score": 51,
         "serving_size": "1 portion (28.349 g)",
         "image_quality": "good"
       },
@@ -24210,7 +24210,7 @@
           "vitamin-d_100g": 0
         },
         "nutriscore_grade": "e",
-        "precomputed_score": 50,
+        "precomputed_score": 52,
         "serving_size": "3 pieces (30 g)",
         "image_quality": "good"
       },
@@ -24267,7 +24267,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "unknown",
-        "precomputed_score": 48,
+        "precomputed_score": 49,
         "serving_size": "30 pieces (15 g)",
         "image_quality": "good"
       },
@@ -24325,7 +24325,7 @@
           "sugars_100g": 43.3333333333333
         },
         "nutriscore_grade": "e",
-        "precomputed_score": 48,
+        "precomputed_score": 50,
         "serving_size": "3 pieces (30 g)",
         "image_quality": "good"
       },
@@ -24382,7 +24382,7 @@
           "sugars_100g": 23.8095238095238
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 47,
+        "precomputed_score": 48,
         "serving_size": "1 piece (21 g)",
         "image_quality": "good"
       },
@@ -24444,7 +24444,7 @@
           "vitamin-d_100g": 0
         },
         "nutriscore_grade": "e",
-        "precomputed_score": 47,
+        "precomputed_score": 48,
         "serving_size": "1 portion (31 g)",
         "image_quality": "good"
       },
@@ -24501,7 +24501,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 47,
+        "precomputed_score": 48,
         "serving_size": "0.5 cup (28 g)",
         "image_quality": "low"
       },
@@ -24561,7 +24561,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "unknown",
-        "precomputed_score": 46,
+        "precomputed_score": 47,
         "serving_size": "5 pieces (31 g)",
         "image_quality": "good"
       },
@@ -24747,7 +24747,7 @@
           "vitamin-d_100g": 0
         },
         "nutriscore_grade": "not-applicable",
-        "precomputed_score": 44,
+        "precomputed_score": 45,
         "serving_size": "330ml",
         "image_quality": "low"
       },
@@ -24877,7 +24877,7 @@
           "vitamin-d_100g": 0
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 35,
+        "precomputed_score": 38,
         "serving_size": "12 pieces (30 g)",
         "image_quality": "good"
       },
@@ -25551,7 +25551,7 @@
           "sugars_100g": 56.6666666666667
         },
         "nutriscore_grade": "e",
-        "precomputed_score": 31,
+        "precomputed_score": 32,
         "serving_size": "10 duds (30 g)",
         "image_quality": "good"
       },
@@ -26407,7 +26407,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 49,
+        "precomputed_score": 50,
         "serving_size": "30 g",
         "image_quality": "good"
       },
@@ -26764,7 +26764,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "e",
-        "precomputed_score": 44,
+        "precomputed_score": 45,
         "serving_size": "28g",
         "image_quality": "low"
       },
@@ -26821,7 +26821,7 @@
           "sugars_100g": 39.2857142857143
         },
         "nutriscore_grade": "e",
-        "precomputed_score": 44,
+        "precomputed_score": 45,
         "serving_size": "6 cookies (28 g)",
         "image_quality": "low"
       },
@@ -26884,7 +26884,7 @@
           "vitamin-d_100g": 0
         },
         "nutriscore_grade": "e",
-        "precomputed_score": 41,
+        "precomputed_score": 42,
         "serving_size": "2 cookies (28 g)",
         "image_quality": "good"
       },
@@ -26950,7 +26950,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "e",
-        "precomputed_score": 41,
+        "precomputed_score": 42,
         "serving_size": "28 g",
         "image_quality": "good"
       },
@@ -27080,7 +27080,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "e",
-        "precomputed_score": 40,
+        "precomputed_score": 42,
         "serving_size": "2 cookies (28 g)",
         "image_quality": "good"
       },
@@ -27139,7 +27139,7 @@
           "vitamin-d_100g": 0
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 39,
+        "precomputed_score": 40,
         "serving_size": "8 crackers (30 g)",
         "image_quality": "good"
       },
@@ -27205,7 +27205,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "e",
-        "precomputed_score": 39,
+        "precomputed_score": 40,
         "serving_size": "2 cookies (28 g)",
         "image_quality": "good"
       },
@@ -27282,7 +27282,7 @@
           "sugars_100g": 19.2982456140351
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 38,
+        "precomputed_score": 41,
         "serving_size": "1 cookie (114 g)",
         "image_quality": "good"
       },
@@ -27343,7 +27343,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "e",
-        "precomputed_score": 37,
+        "precomputed_score": 38,
         "serving_size": "8 cookies (30 g)",
         "image_quality": "low"
       },
@@ -27477,7 +27477,7 @@
           "sugars_100g": 36.5384615384615
         },
         "nutriscore_grade": "e",
-        "precomputed_score": 35,
+        "precomputed_score": 37,
         "serving_size": "2 pastries (104 g)",
         "image_quality": "good"
       },
@@ -27592,7 +27592,7 @@
           "sugars_100g": 22
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 35,
+        "precomputed_score": 36,
         "serving_size": "1 pack (50 g)",
         "image_quality": "good"
       },
@@ -27763,7 +27763,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "e",
-        "precomputed_score": 34,
+        "precomputed_score": 35,
         "serving_size": "1 COOKIE (28 g)",
         "image_quality": "good"
       },
@@ -27946,7 +27946,7 @@
           "sugars_100g": 28.5714285714286
         },
         "nutriscore_grade": "e",
-        "precomputed_score": 33,
+        "precomputed_score": 34,
         "serving_size": "1 packet (28 g)",
         "image_quality": "good"
       },
@@ -28003,7 +28003,7 @@
           "sugars_100g": 24
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 33,
+        "precomputed_score": 34,
         "serving_size": "4 biscuits (50 g)",
         "image_quality": "good"
       },
@@ -28070,7 +28070,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 31,
+        "precomputed_score": 30,
         "serving_size": "4 Crackers (14 g)",
         "image_quality": "good"
       },
@@ -28134,7 +28134,7 @@
           "vitamin-d_100g": 0
         },
         "nutriscore_grade": "e",
-        "precomputed_score": 31,
+        "precomputed_score": 33,
         "serving_size": "2 cookies (57 g)",
         "image_quality": "good"
       },
@@ -28192,7 +28192,7 @@
           "sodium_100g": 0.444444444444444
         },
         "nutriscore_grade": "unknown",
-        "precomputed_score": 31,
+        "precomputed_score": 32,
         "serving_size": "18 g",
         "image_quality": "good"
       },
@@ -28315,7 +28315,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "e",
-        "precomputed_score": 29,
+        "precomputed_score": 30,
         "serving_size": "29 g",
         "image_quality": "good"
       },
@@ -28381,7 +28381,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "e",
-        "precomputed_score": 28,
+        "precomputed_score": 29,
         "serving_size": "4 cookies (33 g)",
         "image_quality": "good"
       },
@@ -30839,7 +30839,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 94,
+        "precomputed_score": 95,
         "serving_size": "1 EGG (44 g)",
         "image_quality": "good"
       },
@@ -31509,7 +31509,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 62,
+        "precomputed_score": 63,
         "serving_size": "2 wraps (57 g)",
         "image_quality": "good"
       },
@@ -31558,7 +31558,7 @@
           "vitamin-d_100g": 0
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 61,
+        "precomputed_score": 62,
         "serving_size": "2 wraps (57 g)",
         "image_quality": "good"
       },
@@ -31604,7 +31604,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "unknown",
-        "precomputed_score": 56,
+        "precomputed_score": 57,
         "serving_size": "1 EGG (50 g)",
         "image_quality": "good"
       },
@@ -31659,7 +31659,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 52,
+        "precomputed_score": 54,
         "serving_size": "1 portion (130 g)",
         "image_quality": "good"
       }
@@ -31790,7 +31790,7 @@
           "sugars_100g": 0.89285714285714
         },
         "nutriscore_grade": "b",
-        "precomputed_score": 52,
+        "precomputed_score": 55,
         "image_quality": "good"
       },
       {
@@ -31833,7 +31833,7 @@
           "sugars_100g": 0
         },
         "nutriscore_grade": "b",
-        "precomputed_score": 49,
+        "precomputed_score": 50,
         "serving_size": "12 oz",
         "image_quality": "good"
       },
@@ -31885,7 +31885,7 @@
           "vitamin-c_100g": 0.00375711738925427
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 49,
+        "precomputed_score": 62,
         "serving_size": "2 portion (18 fl oz)",
         "image_quality": "good"
       },
@@ -31932,7 +31932,7 @@
           "sugars_100g": 0
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 40,
+        "precomputed_score": 42,
         "serving_size": "355 ml",
         "image_quality": "good"
       },
@@ -31975,7 +31975,7 @@
           "vitamin-c_100g": 0.0169014084507042
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 40,
+        "precomputed_score": 42,
         "serving_size": "355 ml",
         "image_quality": "good"
       },
@@ -32076,7 +32076,7 @@
           "vitamin-d_100g": 0
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 40,
+        "precomputed_score": 42,
         "serving_size": "355ml",
         "image_quality": "good"
       },
@@ -32170,7 +32170,7 @@
           "sugars_100g": 0
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 40,
+        "precomputed_score": 42,
         "serving_size": "355mL",
         "image_quality": "good"
       },
@@ -32213,7 +32213,7 @@
           "sugars_100g": 0
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 39,
+        "precomputed_score": 41,
         "image_quality": "good"
       },
       {
@@ -32249,7 +32249,7 @@
           "sugars_100g": 0
         },
         "nutriscore_grade": "unknown",
-        "precomputed_score": 36,
+        "precomputed_score": 38,
         "image_quality": "good"
       },
       {
@@ -32289,7 +32289,7 @@
           "sugars_100g": 0
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 35,
+        "precomputed_score": 36,
         "serving_size": "355ml",
         "image_quality": "low"
       },
@@ -32463,7 +32463,7 @@
           "vitamin-c_100g": 0.0169
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 29,
+        "precomputed_score": 31,
         "serving_size": "1 serving (355 g)",
         "image_quality": "good"
       },
@@ -32509,7 +32509,7 @@
           "sugars_100g": 0
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 28,
+        "precomputed_score": 22,
         "serving_size": "1.0 can (248.0 ml)",
         "image_quality": "good"
       },
@@ -32560,7 +32560,7 @@
           "vitamin-d_100g": 0.00047887323943662
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 28,
+        "precomputed_score": 30,
         "serving_size": "355ml",
         "image_quality": "good"
       },
@@ -32612,7 +32612,7 @@
           "vitamin-b12_100g": 7.68e-07
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 28,
+        "precomputed_score": 29,
         "serving_size": "1 can (250 g)",
         "image_quality": "good"
       },
@@ -32659,7 +32659,7 @@
           "sugars_100g": 0
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 26,
+        "precomputed_score": 27,
         "serving_size": "12 fl oz",
         "image_quality": "good"
       },
@@ -32714,7 +32714,7 @@
           "vitamin-c_100g": 0.0190204067830997
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 26,
+        "precomputed_score": 34,
         "serving_size": "1 can (16 fl oz)",
         "image_quality": "good"
       },
@@ -32976,7 +32976,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 24,
+        "precomputed_score": 30,
         "serving_size": "473ml",
         "image_quality": "good"
       },
@@ -33029,7 +33029,7 @@
           "vitamin-c_100g": 0.0169014084507042
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 24,
+        "precomputed_score": 25,
         "serving_size": "355ml",
         "image_quality": "good"
       },
@@ -33079,7 +33079,7 @@
           "vitamin-b12_100g": 6.21333288247925e-06
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 24,
+        "precomputed_score": 30,
         "serving_size": "473ml, 16 fl oz",
         "image_quality": "good"
       },
@@ -33123,7 +33123,7 @@
           "sugars_100g": 0.65502183406114
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 24,
+        "precomputed_score": 25,
         "image_quality": "good"
       },
       {
@@ -33173,7 +33173,7 @@
           "vitamin-c_100g": 0.0190274841437632
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 24,
+        "precomputed_score": 31,
         "serving_size": "1 can (473 ml)",
         "image_quality": "good"
       },
@@ -33217,7 +33217,7 @@
           "sugars_100g": 0
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 23,
+        "precomputed_score": 24,
         "image_quality": "good"
       },
       {
@@ -33266,7 +33266,7 @@
           "vitamin-c_100g": 0.0190204067830997
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 23,
+        "precomputed_score": 30,
         "serving_size": "1 Can (16 fl oz)",
         "image_quality": "good"
       },
@@ -33321,7 +33321,7 @@
           "sugars_100g": 0
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 23,
+        "precomputed_score": 24,
         "serving_size": "355mL",
         "image_quality": "good"
       },
@@ -33376,7 +33376,7 @@
           "vitamin-c_100g": 0.01902748
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 23,
+        "precomputed_score": 31,
         "serving_size": "1 serving (473 ml)",
         "image_quality": "good"
       },
@@ -33441,7 +33441,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 23,
+        "precomputed_score": 29,
         "serving_size": "1 Can (16 fl oz)",
         "image_quality": "good"
       },
@@ -33489,7 +33489,7 @@
           "sugars_100g": 0
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 22,
+        "precomputed_score": 23,
         "serving_size": "16 oz",
         "image_quality": "good"
       },
@@ -33542,7 +33542,7 @@
           "vitamin-c_100g": 0.0190204067830997
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 22,
+        "precomputed_score": 30,
         "serving_size": "16 fl oz",
         "image_quality": "good"
       },
@@ -33642,7 +33642,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 22,
+        "precomputed_score": 23,
         "serving_size": "355ml",
         "image_quality": "low"
       },
@@ -33694,7 +33694,7 @@
           "vitamin-d_100g": 4.44444444444444e-07
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 18,
+        "precomputed_score": 21,
         "serving_size": "1 serving (450 g)",
         "image_quality": "good"
       },
@@ -33745,7 +33745,7 @@
           "sugars_100g": 0
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 17,
+        "precomputed_score": 23,
         "serving_size": "1 serving (16 fl oz)",
         "image_quality": "good"
       },
@@ -33856,7 +33856,7 @@
           "vitamin-c_100g": 0.00677200902934537
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 16,
+        "precomputed_score": 25,
         "serving_size": "443 ml (443 ml)",
         "image_quality": "good"
       },
@@ -33907,7 +33907,7 @@
           "vitamin-c_100g": 0.00422675706291105
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 14,
+        "precomputed_score": 16,
         "serving_size": "1 can (236.588 g)",
         "image_quality": "low"
       },
@@ -33981,7 +33981,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 14,
+        "precomputed_score": 20,
         "serving_size": "473ml",
         "image_quality": "good"
       },
@@ -34091,7 +34091,7 @@
           "vitamin-c_100g": 0.00422675706291105
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 13,
+        "precomputed_score": 16,
         "serving_size": "1 can (236.588 g)",
         "image_quality": "good"
       },
@@ -34135,7 +34135,7 @@
           "vitamin-c_100g": 0.0190204067830997
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 12,
+        "precomputed_score": 21,
         "serving_size": "1 can (16 fl oz)",
         "image_quality": "good"
       },
@@ -34193,7 +34193,7 @@
           "vitamin-d_100g": 0
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 12,
+        "precomputed_score": 21,
         "serving_size": "16 fl oz",
         "image_quality": "good"
       },
@@ -34245,7 +34245,7 @@
           "sugars_100g": 2.5
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 12,
+        "precomputed_score": 10,
         "serving_size": "8 OZA (240 ml)",
         "image_quality": "good"
       },
@@ -34301,7 +34301,7 @@
           "vitamin-d_100g": 0.0168
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 12,
+        "precomputed_score": 13,
         "serving_size": "355.0g",
         "image_quality": "good"
       },
@@ -34415,7 +34415,7 @@
           "sugars_100g": 0
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 11,
+        "precomputed_score": 12,
         "serving_size": "355ml",
         "image_quality": "good"
       },
@@ -34464,7 +34464,7 @@
           "vitamin-b12_100g": 7.04225352112676e-07
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 11,
+        "precomputed_score": 12,
         "serving_size": "355ml",
         "image_quality": "good"
       },
@@ -34520,7 +34520,7 @@
           "sugars_100g": 0.654465609741066
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 11,
+        "precomputed_score": 19,
         "serving_size": "1 can (15.5 fl oz)",
         "image_quality": "good"
       },
@@ -34673,7 +34673,7 @@
           "vitamin-d_100g": 0.0168
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 10,
+        "precomputed_score": 11,
         "serving_size": "1 can",
         "image_quality": "good"
       },
@@ -34763,7 +34763,7 @@
           "sugars_100g": 0.873362445414847
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 10,
+        "precomputed_score": 14,
         "serving_size": "1 can (458 ml)",
         "image_quality": "good"
       },
@@ -34866,7 +34866,7 @@
           "vitamin-b12_100g": 7.04225352112676e-07
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 10,
+        "precomputed_score": 12,
         "serving_size": "355 mL",
         "image_quality": "good"
       },
@@ -38598,7 +38598,7 @@
           "sugars_100g": 5.6
         },
         "nutriscore_grade": "b",
-        "precomputed_score": 86,
+        "precomputed_score": 88,
         "serving_size": "1 serving (125 g)",
         "image_quality": "good"
       },
@@ -39775,7 +39775,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "b",
-        "precomputed_score": 62,
+        "precomputed_score": 66,
         "serving_size": "1 serving (3.6 fl oz)",
         "image_quality": "low"
       },
@@ -39883,7 +39883,7 @@
           "vitamin-d_100g": 3.8961038961039e-07
         },
         "nutriscore_grade": "e",
-        "precomputed_score": 55,
+        "precomputed_score": 54,
         "serving_size": "1 bar (77 g)",
         "image_quality": "good"
       },
@@ -39932,7 +39932,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 54,
+        "precomputed_score": 55,
         "serving_size": "2/3 cup (140g)",
         "image_quality": "low"
       },
@@ -39985,7 +39985,7 @@
           "vitamin-d_100g": 1.05263157894737e-07
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 53,
+        "precomputed_score": 54,
         "serving_size": "0.67 cup (95 g)",
         "image_quality": "good"
       },
@@ -40033,7 +40033,7 @@
           "vitamin-c_100g": 0
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 53,
+        "precomputed_score": 54,
         "serving_size": "1/2 cup (58 g)",
         "image_quality": "good"
       },
@@ -40092,7 +40092,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 53,
+        "precomputed_score": 54,
         "serving_size": "0.66 cup (95 g)",
         "image_quality": "good"
       },
@@ -40143,7 +40143,7 @@
           "sugars_100g": 21
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 53,
+        "precomputed_score": 54,
         "serving_size": "1 serving (81 g)",
         "image_quality": "good"
       },
@@ -40195,7 +40195,7 @@
           "sugars_100g": 9.45945945945946
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 53,
+        "precomputed_score": 56,
         "serving_size": "1 serving (74 g)",
         "image_quality": "good"
       },
@@ -40257,7 +40257,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 52,
+        "precomputed_score": 53,
         "serving_size": "0.66 cup (111 g)",
         "image_quality": "good"
       },
@@ -40312,7 +40312,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "e",
-        "precomputed_score": 51,
+        "precomputed_score": 50,
         "serving_size": "1 bar (78 g)",
         "image_quality": "low"
       },
@@ -40367,7 +40367,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 51,
+        "precomputed_score": 53,
         "serving_size": "0.667 cup (96 g)",
         "image_quality": "low"
       },
@@ -40427,7 +40427,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 51,
+        "precomputed_score": 53,
         "serving_size": "1 bar (143 g)",
         "image_quality": "good"
       },
@@ -40483,7 +40483,7 @@
           "vitamin-c_100g": 0
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 51,
+        "precomputed_score": 52,
         "serving_size": "0.67 cup (131 g)",
         "image_quality": "good"
       },
@@ -40541,7 +40541,7 @@
           "vitamin-d_100g": 0
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 50,
+        "precomputed_score": 52,
         "serving_size": "0.667 cup (85 g)",
         "image_quality": "good"
       },
@@ -40595,7 +40595,7 @@
           "vitamin-c_100g": 0
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 50,
+        "precomputed_score": 53,
         "serving_size": "0.667 cup (128 g)",
         "image_quality": "good"
       },
@@ -40647,7 +40647,7 @@
           "sugars_100g": 25.2631578947368
         },
         "nutriscore_grade": "e",
-        "precomputed_score": 49,
+        "precomputed_score": 51,
         "serving_size": "1 serving (95 g)",
         "image_quality": "good"
       },
@@ -40694,7 +40694,7 @@
           "sugars_100g": 20.6896551724138
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 49,
+        "precomputed_score": 52,
         "serving_size": "1 serving (87 g)",
         "image_quality": "good"
       },
@@ -40748,7 +40748,7 @@
           "vitamin-d_100g": 0
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 49,
+        "precomputed_score": 50,
         "serving_size": "1 bar (48 g)",
         "image_quality": "good"
       },
@@ -40805,7 +40805,7 @@
           "vitamin-d_100g": 1.12359550561798e-06
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 49,
+        "precomputed_score": 51,
         "serving_size": "0.666 Cup (89 g)",
         "image_quality": "good"
       },
@@ -40859,7 +40859,7 @@
           "sugars_100g": 18.6567164179104
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 48,
+        "precomputed_score": 50,
         "serving_size": "1 serving (134 g)",
         "image_quality": "good"
       },
@@ -40917,7 +40917,7 @@
           "vitamin-d_100g": 0
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 48,
+        "precomputed_score": 52,
         "serving_size": "1 bar (65 g)",
         "image_quality": "good"
       },
@@ -40974,7 +40974,7 @@
           "vitamin-c_100g": 0
         },
         "nutriscore_grade": "e",
-        "precomputed_score": 48,
+        "precomputed_score": 49,
         "serving_size": "1 CONTAINER (95 g)",
         "image_quality": "good"
       },
@@ -41030,7 +41030,7 @@
           "vitamin-d_100g": 1.20300751879699e-06
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 48,
+        "precomputed_score": 50,
         "serving_size": "1 serving (133 g)",
         "image_quality": "good"
       },
@@ -41086,7 +41086,7 @@
           "vitamin-d_100g": 0
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 48,
+        "precomputed_score": 49,
         "serving_size": "1 bar (45 g)",
         "image_quality": "good"
       },
@@ -41148,7 +41148,7 @@
           "vitamin-d_100g": 3.84615384615385e-07
         },
         "nutriscore_grade": "e",
-        "precomputed_score": 47,
+        "precomputed_score": 49,
         "serving_size": "1 bar (78 g)",
         "image_quality": "good"
       },
@@ -41199,7 +41199,7 @@
           "sugars_100g": 26
         },
         "nutriscore_grade": "e",
-        "precomputed_score": 47,
+        "precomputed_score": 48,
         "serving_size": "1 serving (100 g)",
         "image_quality": "good"
       },
@@ -41259,7 +41259,7 @@
           "vitamin-d_100g": 5.43478260869565e-07
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 47,
+        "precomputed_score": 48,
         "serving_size": "0.667 cup (92 g)",
         "image_quality": "good"
       },
@@ -41317,7 +41317,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 47,
+        "precomputed_score": 50,
         "serving_size": "1 serving (95 g)",
         "image_quality": "good"
       },
@@ -41373,7 +41373,7 @@
           "vitamin-c_100g": 5.55555555555556e-06
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 46,
+        "precomputed_score": 48,
         "serving_size": "1 serving (90 g)",
         "image_quality": "good"
       },
@@ -41427,7 +41427,7 @@
           "vitamin-d_100g": 6.42857142857143e-07
         },
         "nutriscore_grade": "e",
-        "precomputed_score": 46,
+        "precomputed_score": 49,
         "serving_size": "1 serving (140 g)",
         "image_quality": "low"
       },
@@ -41524,7 +41524,7 @@
           "vitamin-c_100g": 0.0012
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 46,
+        "precomputed_score": 49,
         "serving_size": "1 serving (133 g)",
         "image_quality": "good"
       },
@@ -41585,7 +41585,7 @@
           "vitamin-d_100g": 2.12765957446808e-07
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 45,
+        "precomputed_score": 47,
         "serving_size": "1 serving (94 g)",
         "image_quality": "good"
       },
@@ -41648,7 +41648,7 @@
           "vitamin-d_100g": 9.19540229885057e-07
         },
         "nutriscore_grade": "e",
-        "precomputed_score": 45,
+        "precomputed_score": 47,
         "serving_size": "1 Container (2 cup)",
         "image_quality": "good"
       },
@@ -41708,7 +41708,7 @@
           "sugars_100g": 21.6216216216216
         },
         "nutriscore_grade": "e",
-        "precomputed_score": 45,
+        "precomputed_score": 47,
         "serving_size": "2 portion (74 g)",
         "image_quality": "good"
       },
@@ -41763,7 +41763,7 @@
           "vitamin-d_100g": 1.21951219512195e-06
         },
         "nutriscore_grade": "e",
-        "precomputed_score": 45,
+        "precomputed_score": 48,
         "serving_size": "0.666 Cup (123 g)",
         "image_quality": "low"
       },
@@ -41820,7 +41820,7 @@
           "vitamin-c_100g": 0.0015
         },
         "nutriscore_grade": "e",
-        "precomputed_score": 45,
+        "precomputed_score": 48,
         "serving_size": "1 BAR (80 g)",
         "image_quality": "good"
       },
@@ -41888,7 +41888,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 45,
+        "precomputed_score": 47,
         "serving_size": "1 SANDWICH (66 g)",
         "image_quality": "good"
       },
@@ -41946,7 +41946,7 @@
           "sugars_100g": 10.3448275862069
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 45,
+        "precomputed_score": 47,
         "serving_size": "0.67 Cup (87 g)",
         "image_quality": "good"
       },
@@ -42006,7 +42006,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 44,
+        "precomputed_score": 47,
         "serving_size": "89 g",
         "image_quality": "good"
       },
@@ -42074,7 +42074,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 44,
+        "precomputed_score": 45,
         "serving_size": "65g",
         "image_quality": "good"
       },
@@ -42134,7 +42134,7 @@
           "vitamin-d_100g": 2.71317829457364e-07
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 44,
+        "precomputed_score": 45,
         "serving_size": "1 serving (258 g)",
         "image_quality": "good"
       },
@@ -42204,7 +42204,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 44,
+        "precomputed_score": 46,
         "serving_size": "1 portion (64 g)",
         "image_quality": "low"
       },
@@ -42258,7 +42258,7 @@
           "sugars_100g": 25.263157894737
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 44,
+        "precomputed_score": 47,
         "serving_size": "95g",
         "image_quality": "good"
       },
@@ -42375,7 +42375,7 @@
           "vitamin-d_100g": 0
         },
         "nutriscore_grade": "e",
-        "precomputed_score": 43,
+        "precomputed_score": 44,
         "serving_size": "28 g",
         "image_quality": "good"
       },
@@ -42436,7 +42436,7 @@
           "vitamin-d_100g": 2.32558139534884e-07
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 43,
+        "precomputed_score": 45,
         "serving_size": "1 pint (473 g)",
         "image_quality": "good"
       },
@@ -42499,7 +42499,7 @@
           "vitamin-d_100g": 0
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 42,
+        "precomputed_score": 46,
         "serving_size": "1 sandwich (56 g)",
         "image_quality": "good"
       },
@@ -42560,7 +42560,7 @@
           "vitamin-d_100g": 0
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 42,
+        "precomputed_score": 43,
         "serving_size": "1 sandwich (71 g)",
         "image_quality": "good"
       },
@@ -42628,7 +42628,7 @@
           "zinc_100g": 0.00034965034965035
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 41,
+        "precomputed_score": 42,
         "serving_size": "1 serving (143 g)",
         "image_quality": "good"
       },
@@ -42684,7 +42684,7 @@
           "sugars_100g": 23.1578947368421
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 41,
+        "precomputed_score": 42,
         "serving_size": "1 sandwich (95 g)",
         "image_quality": "good"
       },
@@ -42740,7 +42740,7 @@
           "sugars_100g": 27.678571428571
         },
         "nutriscore_grade": "e",
-        "precomputed_score": 41,
+        "precomputed_score": 43,
         "serving_size": "0.67 cup (111 g)",
         "image_quality": "good"
       },
@@ -42797,7 +42797,7 @@
           "sugars_100g": 30.9090909090909
         },
         "nutriscore_grade": "e",
-        "precomputed_score": 41,
+        "precomputed_score": 44,
         "serving_size": "1 sandwich (110 g)",
         "image_quality": "low"
       },
@@ -42880,7 +42880,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 40,
+        "precomputed_score": 41,
         "serving_size": "0.666 cup (99 g)",
         "image_quality": "good"
       },
@@ -42932,7 +42932,7 @@
           "vitamin-d_100g": 1.4e-06
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 40,
+        "precomputed_score": 43,
         "serving_size": "1 portion (100 g)",
         "image_quality": "low"
       },
@@ -43001,7 +43001,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "e",
-        "precomputed_score": 40,
+        "precomputed_score": 41,
         "serving_size": "84g",
         "image_quality": "low"
       },
@@ -43061,7 +43061,7 @@
           "vitamin-c_100g": 0
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 39,
+        "precomputed_score": 41,
         "serving_size": "1 SANDWICH (86 g)",
         "image_quality": "good"
       },
@@ -43129,7 +43129,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 38,
+        "precomputed_score": 39,
         "serving_size": "1 sandwich (77 g)",
         "image_quality": "good"
       },
@@ -43184,7 +43184,7 @@
           "sugars_100g": 17.7304964539007
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 38,
+        "precomputed_score": 42,
         "serving_size": "1 container (282 g)",
         "image_quality": "good"
       },
@@ -43240,7 +43240,7 @@
           "sugars_100g": 12.3595505617978
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 38,
+        "precomputed_score": 41,
         "serving_size": "3 serving (267 g)",
         "image_quality": "good"
       },
@@ -43300,7 +43300,7 @@
           "vitamin-d_100g": 8e-07
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 38,
+        "precomputed_score": 41,
         "serving_size": "2 cups (100 g)",
         "image_quality": "good"
       },
@@ -43349,7 +43349,7 @@
           "sugars_100g": 30
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 38,
+        "precomputed_score": 39,
         "serving_size": "1 serving (20 g)",
         "image_quality": "good"
       },
@@ -43409,7 +43409,7 @@
           "vitamin-d_100g": 0
         },
         "nutriscore_grade": "unknown",
-        "precomputed_score": 36,
+        "precomputed_score": 40,
         "serving_size": "2/3 cup (89g)",
         "image_quality": "good"
       },
@@ -43524,7 +43524,7 @@
           "vitamin-d_100g": 3.63636363636364e-07
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 36,
+        "precomputed_score": 38,
         "serving_size": "1 bar (55 g)",
         "image_quality": "good"
       }
@@ -43760,7 +43760,7 @@
           "vitamin-d_100g": 0
         },
         "nutriscore_grade": "unknown",
-        "precomputed_score": 65,
+        "precomputed_score": 66,
         "serving_size": "1 bag (100 g)",
         "image_quality": "good"
       },
@@ -43939,7 +43939,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "unknown",
-        "precomputed_score": 55,
+        "precomputed_score": 56,
         "image_quality": "low"
       },
       {
@@ -44002,7 +44002,7 @@
           "vitamin-d_100g": 0
         },
         "nutriscore_grade": "unknown",
-        "precomputed_score": 53,
+        "precomputed_score": 57,
         "serving_size": "1 bowl (226 g)",
         "image_quality": "good"
       },
@@ -44127,7 +44127,7 @@
           "vitamin-d_100g": 0
         },
         "nutriscore_grade": "unknown",
-        "precomputed_score": 51,
+        "precomputed_score": 52,
         "serving_size": "113g",
         "image_quality": "low"
       },
@@ -44372,7 +44372,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "unknown",
-        "precomputed_score": 46,
+        "precomputed_score": 47,
         "serving_size": "56 g (56 g)",
         "image_quality": "good"
       },
@@ -44428,7 +44428,7 @@
           "vitamin-d_100g": 0
         },
         "nutriscore_grade": "unknown",
-        "precomputed_score": 42,
+        "precomputed_score": 44,
         "serving_size": "1 package (96 g)",
         "image_quality": "good"
       },
@@ -44542,7 +44542,7 @@
           "vitamin-d_100g": 0
         },
         "nutriscore_grade": "unknown",
-        "precomputed_score": 42,
+        "precomputed_score": 44,
         "serving_size": "90g",
         "image_quality": "low"
       },
@@ -44604,7 +44604,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "unknown",
-        "precomputed_score": 42,
+        "precomputed_score": 43,
         "serving_size": "1 package (120 g)",
         "image_quality": "low"
       },
@@ -44654,7 +44654,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "unknown",
-        "precomputed_score": 41,
+        "precomputed_score": 42,
         "serving_size": "2 cups (85 g)",
         "image_quality": "low"
       },
@@ -44726,7 +44726,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "unknown",
-        "precomputed_score": 40,
+        "precomputed_score": 41,
         "serving_size": "1 serving (120 g)",
         "image_quality": "low"
       },
@@ -44910,7 +44910,7 @@
           "vitamin-d_100g": 0
         },
         "nutriscore_grade": "unknown",
-        "precomputed_score": 37,
+        "precomputed_score": 39,
         "serving_size": "1.0 package (95.0 g)",
         "image_quality": "good"
       },
@@ -44960,7 +44960,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "unknown",
-        "precomputed_score": 37,
+        "precomputed_score": 38,
         "serving_size": "70g",
         "image_quality": "low"
       },
@@ -45009,7 +45009,7 @@
           "sugars_100g": 3.2624113475177
         },
         "nutriscore_grade": "unknown",
-        "precomputed_score": 36,
+        "precomputed_score": 37,
         "image_quality": "low"
       },
       {
@@ -45082,7 +45082,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "unknown",
-        "precomputed_score": 36,
+        "precomputed_score": 38,
         "serving_size": "1 pack (100 g)",
         "image_quality": "low"
       },
@@ -45148,7 +45148,7 @@
           "sugars_100g": 7.05882352941176
         },
         "nutriscore_grade": "unknown",
-        "precomputed_score": 36,
+        "precomputed_score": 37,
         "serving_size": "1 pack (85 g)",
         "image_quality": "good"
       },
@@ -45209,7 +45209,7 @@
           "vitamin-d_100g": 0
         },
         "nutriscore_grade": "unknown",
-        "precomputed_score": 35,
+        "precomputed_score": 36,
         "serving_size": "102g",
         "image_quality": "low"
       },
@@ -45287,7 +45287,7 @@
           "zinc_100g": 0.00164705882352941
         },
         "nutriscore_grade": "unknown",
-        "precomputed_score": 35,
+        "precomputed_score": 36,
         "serving_size": "0.5 package (85 g)",
         "image_quality": "good"
       },
@@ -45356,7 +45356,7 @@
           "sugars_100g": 5
         },
         "nutriscore_grade": "unknown",
-        "precomputed_score": 35,
+        "precomputed_score": 38,
         "serving_size": "140 g",
         "image_quality": "low"
       },
@@ -45411,7 +45411,7 @@
           "trans-fat_100g": 0.128571428571429
         },
         "nutriscore_grade": "unknown",
-        "precomputed_score": 35,
+        "precomputed_score": 36,
         "serving_size": "70 g",
         "image_quality": "good"
       },
@@ -45529,7 +45529,7 @@
           "sugars_100g": 6.3636363636364
         },
         "nutriscore_grade": "unknown",
-        "precomputed_score": 35,
+        "precomputed_score": 36,
         "image_quality": "good"
       },
       {
@@ -45662,7 +45662,7 @@
           "sugars_100g": 8.18181818181818
         },
         "nutriscore_grade": "unknown",
-        "precomputed_score": 34,
+        "precomputed_score": 37,
         "serving_size": "110 g",
         "image_quality": "low"
       },
@@ -45737,7 +45737,7 @@
           "sugars_100g": 3.48837209302326
         },
         "nutriscore_grade": "unknown",
-        "precomputed_score": 34,
+        "precomputed_score": 38,
         "serving_size": "1 bol (86 g)",
         "image_quality": "good"
       },
@@ -45810,7 +45810,7 @@
           "sugars_100g": 3.84615
         },
         "nutriscore_grade": "unknown",
-        "precomputed_score": 33,
+        "precomputed_score": 35,
         "serving_size": "1 container (130 g)",
         "image_quality": "good"
       },
@@ -45886,7 +45886,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "unknown",
-        "precomputed_score": 33,
+        "precomputed_score": 35,
         "serving_size": "1 portion (140 g)",
         "image_quality": "good"
       },
@@ -46015,7 +46015,7 @@
           "sugars_100g": 4
         },
         "nutriscore_grade": "unknown",
-        "precomputed_score": 33,
+        "precomputed_score": 34,
         "serving_size": "1 sac (130 g)",
         "image_quality": "good"
       },
@@ -46086,7 +46086,7 @@
           "vitamin-d_100g": 0
         },
         "nutriscore_grade": "unknown",
-        "precomputed_score": 33,
+        "precomputed_score": 34,
         "serving_size": "1 container (64 g)",
         "image_quality": "good"
       },
@@ -46196,7 +46196,7 @@
           "sugars_100g": 8.33333333333333
         },
         "nutriscore_grade": "unknown",
-        "precomputed_score": 32,
+        "precomputed_score": 34,
         "serving_size": "1 serving (60 g)",
         "image_quality": "good"
       },
@@ -46268,7 +46268,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "unknown",
-        "precomputed_score": 32,
+        "precomputed_score": 34,
         "serving_size": "1 serving (100 g)",
         "image_quality": "good"
       },
@@ -46384,7 +46384,7 @@
           "sugars_100g": 2.32558139534884
         },
         "nutriscore_grade": "unknown",
-        "precomputed_score": 31,
+        "precomputed_score": 32,
         "serving_size": "1 noodle block with (86 g)",
         "image_quality": "good"
       },
@@ -46439,7 +46439,7 @@
           "sugars_100g": 4.61538
         },
         "nutriscore_grade": "unknown",
-        "precomputed_score": 31,
+        "precomputed_score": 35,
         "serving_size": "65g",
         "image_quality": "good"
       },
@@ -46499,7 +46499,7 @@
           "vitamin-d_100g": 0
         },
         "nutriscore_grade": "unknown",
-        "precomputed_score": 31,
+        "precomputed_score": 35,
         "serving_size": "1 bowl (76 g)",
         "image_quality": "good"
       },
@@ -46562,7 +46562,7 @@
           "vitamin-d_100g": 0
         },
         "nutriscore_grade": "unknown",
-        "precomputed_score": 31,
+        "precomputed_score": 32,
         "serving_size": "0.5 bag (65 g)",
         "image_quality": "good"
       },
@@ -46635,7 +46635,7 @@
           "sugars_100g": 5.9
         },
         "nutriscore_grade": "unknown",
-        "precomputed_score": 31,
+        "precomputed_score": 34,
         "serving_size": "1 serving (135 g)",
         "image_quality": "good"
       },
@@ -46704,7 +46704,7 @@
           "sugars_100g": 2.32558139534884
         },
         "nutriscore_grade": "unknown",
-        "precomputed_score": 31,
+        "precomputed_score": 32,
         "serving_size": "1 serving (86 g)",
         "image_quality": "good"
       },
@@ -46774,7 +46774,7 @@
           "vitamin-d_100g": 0
         },
         "nutriscore_grade": "unknown",
-        "precomputed_score": 30,
+        "precomputed_score": 32,
         "serving_size": "85g",
         "image_quality": "good"
       },
@@ -46827,7 +46827,7 @@
           "sugars_100g": 2.7
         },
         "nutriscore_grade": "unknown",
-        "precomputed_score": 30,
+        "precomputed_score": 32,
         "image_quality": "good"
       },
       {
@@ -47034,7 +47034,7 @@
           "vitamin-d_100g": 0
         },
         "nutriscore_grade": "unknown",
-        "precomputed_score": 29,
+        "precomputed_score": 30,
         "serving_size": "1 package 115 g",
         "image_quality": "good"
       },
@@ -47091,7 +47091,7 @@
           "vitamin-c_100g": 0
         },
         "nutriscore_grade": "unknown",
-        "precomputed_score": 29,
+        "precomputed_score": 30,
         "serving_size": "100g",
         "image_quality": "good"
       },
@@ -47162,7 +47162,7 @@
           "sugars_100g": 2.9
         },
         "nutriscore_grade": "unknown",
-        "precomputed_score": 29,
+        "precomputed_score": 30,
         "image_quality": "low"
       },
       {
@@ -47223,7 +47223,7 @@
           "vitamin-d_100g": 0
         },
         "nutriscore_grade": "unknown",
-        "precomputed_score": 29,
+        "precomputed_score": 28,
         "serving_size": "85g",
         "image_quality": "good"
       },
@@ -47292,7 +47292,7 @@
           "vitamin-c_100g": 0
         },
         "nutriscore_grade": "unknown",
-        "precomputed_score": 29,
+        "precomputed_score": 31,
         "serving_size": "86g",
         "image_quality": "good"
       },
@@ -47373,7 +47373,7 @@
           "vitamin-d_100g": 0
         },
         "nutriscore_grade": "unknown",
-        "precomputed_score": 29,
+        "precomputed_score": 32,
         "serving_size": "1 bag (135 g)",
         "image_quality": "good"
       },
@@ -47514,7 +47514,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "unknown",
-        "precomputed_score": 29,
+        "precomputed_score": 30,
         "serving_size": "113 g",
         "image_quality": "good"
       },
@@ -47597,7 +47597,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "unknown",
-        "precomputed_score": 29,
+        "precomputed_score": 30,
         "serving_size": "1 bag (120 g)",
         "image_quality": "good"
       },
@@ -47669,7 +47669,7 @@
           "sodium_100g": 0.568253968253968
         },
         "nutriscore_grade": "unknown",
-        "precomputed_score": 29,
+        "precomputed_score": 32,
         "serving_size": "1 serving (63 g)",
         "image_quality": "good"
       },
@@ -47880,7 +47880,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "unknown",
-        "precomputed_score": 28,
+        "precomputed_score": 29,
         "serving_size": "1 pack (70 g)",
         "image_quality": "good"
       },
@@ -47951,7 +47951,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "unknown",
-        "precomputed_score": 27,
+        "precomputed_score": 28,
         "serving_size": "1 CONTAINER (64 g)",
         "image_quality": "good"
       },
@@ -48099,7 +48099,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "unknown",
-        "precomputed_score": 27,
+        "precomputed_score": 28,
         "serving_size": "1 bowl (86 g)",
         "image_quality": "good"
       },
@@ -48163,7 +48163,7 @@
           "sugars_100g": 2
         },
         "nutriscore_grade": "unknown",
-        "precomputed_score": 27,
+        "precomputed_score": 29,
         "serving_size": "1 pack (100 g)",
         "image_quality": "good"
       },
@@ -48299,7 +48299,7 @@
           "vitamin-d_100g": 0
         },
         "nutriscore_grade": "unknown",
-        "precomputed_score": 26,
+        "precomputed_score": 28,
         "serving_size": "71 g",
         "image_quality": "good"
       },
@@ -48358,7 +48358,7 @@
           "vitamin-c_100g": 0
         },
         "nutriscore_grade": "unknown",
-        "precomputed_score": 26,
+        "precomputed_score": 27,
         "serving_size": "0.5 BLOCK OF NOODLES WITH SEASONING (43 g)",
         "image_quality": "good"
       },
@@ -48427,7 +48427,7 @@
           "sugars_100g": 2.32558139534884
         },
         "nutriscore_grade": "unknown",
-        "precomputed_score": 26,
+        "precomputed_score": 27,
         "serving_size": "0.5 noodle block and 1/2 seasoning packet (43 g)",
         "image_quality": "good"
       },
@@ -48619,7 +48619,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "unknown",
-        "precomputed_score": 25,
+        "precomputed_score": 27,
         "serving_size": "1 container (64 g)",
         "image_quality": "good"
       },
@@ -48686,7 +48686,7 @@
           "vitamin-d_100g": 0
         },
         "nutriscore_grade": "unknown",
-        "precomputed_score": 25,
+        "precomputed_score": 26,
         "serving_size": "1 package (100 g)",
         "image_quality": "good"
       }
@@ -49162,7 +49162,7 @@
           "sugars_100g": 8.0645161290323
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 45,
+        "precomputed_score": 23,
         "serving_size": "248ml",
         "image_quality": "good"
       },
@@ -49222,7 +49222,7 @@
           "vitamin-d_100g": 1.04166666666667e-06
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 40,
+        "precomputed_score": 20,
         "serving_size": "240ml",
         "image_quality": "good"
       },
@@ -49274,7 +49274,7 @@
           "vitamin-c_100g": 0.0228244881397197
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 40,
+        "precomputed_score": 20,
         "serving_size": "240 ml, 8 fl oz",
         "image_quality": "good"
       },
@@ -49329,7 +49329,7 @@
           "vitamin-d_100g": 0
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 40,
+        "precomputed_score": 20,
         "serving_size": "240 mL",
         "image_quality": "good"
       },
@@ -49382,7 +49382,7 @@
           "vitamin-d_100g": 0
         },
         "nutriscore_grade": "e",
-        "precomputed_score": 40,
+        "precomputed_score": 20,
         "serving_size": "1 can (177 ml)",
         "image_quality": "low"
       },
@@ -49433,7 +49433,7 @@
           "vitamin-d_100g": 0
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 40,
+        "precomputed_score": 20,
         "serving_size": "1 serving(s) (240 ml)",
         "image_quality": "good"
       },
@@ -49488,7 +49488,7 @@
           "vitamin-d_100g": 1.04166666666667e-06
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 40,
+        "precomputed_score": 20,
         "serving_size": "8 OZA, 240 ml",
         "image_quality": "good"
       },
@@ -49540,7 +49540,7 @@
           "vitamin-d_100g": 0.00833333333333333
         },
         "nutriscore_grade": "unknown",
-        "precomputed_score": 40,
+        "precomputed_score": 20,
         "serving_size": "1 portion (240 ml)",
         "image_quality": "good"
       },
@@ -49592,7 +49592,7 @@
           "vitamin-c_100g": 0.03
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 40,
+        "precomputed_score": 20,
         "serving_size": "8 OZA (240 ml)",
         "image_quality": "good"
       },
@@ -49640,7 +49640,7 @@
           "vitamin-c_100g": 0.03
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 40,
+        "precomputed_score": 20,
         "serving_size": "1 BOX (200 ml)",
         "image_quality": "good"
       },
@@ -49693,7 +49693,7 @@
           "vitamin-c_100g": 0.0228244881397197
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 40,
+        "precomputed_score": 20,
         "serving_size": "240 ml, 8 fl oz",
         "image_quality": "good"
       },
@@ -49745,7 +49745,7 @@
           "vitamin-c_100g": 0.0288
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 38,
+        "precomputed_score": 20,
         "serving_size": "1 cup (250 ml)",
         "image_quality": "good"
       },
@@ -49791,7 +49791,7 @@
           "vitamin-c_100g": 0.025
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 38,
+        "precomputed_score": 20,
         "serving_size": "8 OZA (240 ml)",
         "image_quality": "low"
       },
@@ -49846,7 +49846,7 @@
           "vitamin-d_100g": 0
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 38,
+        "precomputed_score": 20,
         "serving_size": "1 portion (8 fl oz)",
         "image_quality": "low"
       },
@@ -49889,7 +49889,7 @@
           "sugars_100g": 9.58333333333333
         },
         "nutriscore_grade": "unknown",
-        "precomputed_score": 38,
+        "precomputed_score": 20,
         "serving_size": "1 portion (240 ml)",
         "image_quality": "good"
       },
@@ -49934,7 +49934,7 @@
           "sugars_100g": 9.58
         },
         "nutriscore_grade": "unknown",
-        "precomputed_score": 38,
+        "precomputed_score": 20,
         "serving_size": "1 portion (240 ml)",
         "image_quality": "good"
       },
@@ -49990,7 +49990,7 @@
           "vitamin-d_100g": 0
         },
         "nutriscore_grade": "e",
-        "precomputed_score": 38,
+        "precomputed_score": 20,
         "serving_size": "8 OZA (240 ml)",
         "image_quality": "good"
       },
@@ -50046,7 +50046,7 @@
           "zinc_100g": 2.91666666666667e-05
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 38,
+        "precomputed_score": 20,
         "serving_size": "240.0ml",
         "image_quality": "good"
       },
@@ -50098,7 +50098,7 @@
           "zinc_100g": 0.00025
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 35,
+        "precomputed_score": 20,
         "serving_size": "8 OZA (240 ml)",
         "image_quality": "good"
       },
@@ -50149,7 +50149,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 35,
+        "precomputed_score": 20,
         "serving_size": "1 portion (240 ml)",
         "image_quality": "good"
       },
@@ -50197,7 +50197,7 @@
           "vitamin-c_100g": 0.0320833333333333
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 35,
+        "precomputed_score": 20,
         "serving_size": "1 portion (240 ml)",
         "image_quality": "low"
       },
@@ -50254,7 +50254,7 @@
           "vitamin-c_100g": 0.024
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 35,
+        "precomputed_score": 20,
         "serving_size": "1 portion (250 ml)",
         "image_quality": "good"
       },
@@ -50306,7 +50306,7 @@
           "vitamin-c_100g": 0.024
         },
         "nutriscore_grade": "e",
-        "precomputed_score": 35,
+        "precomputed_score": 20,
         "serving_size": "1 tasse (250 ml)",
         "image_quality": "low"
       },
@@ -50357,7 +50357,7 @@
           "vitamin-d_100g": 0
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 35,
+        "precomputed_score": 20,
         "serving_size": "1 portion (240 ml)",
         "image_quality": "good"
       },
@@ -50411,7 +50411,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 33,
+        "precomputed_score": 20,
         "serving_size": "8 fl oz (240 ml)",
         "image_quality": "good"
       },
@@ -50451,7 +50451,7 @@
           "sugars_100g": 10.4166666666667
         },
         "nutriscore_grade": "unknown",
-        "precomputed_score": 32,
+        "precomputed_score": 20,
         "serving_size": "1 serving (240 ml)",
         "image_quality": "missing"
       },
@@ -50502,7 +50502,7 @@
           "sugars_100g": 10.4166666666667
         },
         "nutriscore_grade": "e",
-        "precomputed_score": 32,
+        "precomputed_score": 20,
         "serving_size": "240 mL",
         "image_quality": "good"
       },
@@ -50550,7 +50550,7 @@
           "sugars_100g": 10.42
         },
         "nutriscore_grade": "e",
-        "precomputed_score": 32,
+        "precomputed_score": 20,
         "serving_size": "8 OZA (240 ml)",
         "image_quality": "good"
       },
@@ -50600,7 +50600,7 @@
           "vitamin-d_100g": 0
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 30,
+        "precomputed_score": 20,
         "serving_size": "1 portion (240 ml)",
         "image_quality": "good"
       },
@@ -50652,7 +50652,7 @@
           "vitamin-c_100g": 0.09
         },
         "nutriscore_grade": "e",
-        "precomputed_score": 30,
+        "precomputed_score": 20,
         "serving_size": "8 OZ (240 ml)",
         "image_quality": "good"
       },
@@ -50702,7 +50702,7 @@
           "vitamin-c_100g": 0.025
         },
         "nutriscore_grade": "e",
-        "precomputed_score": 30,
+        "precomputed_score": 20,
         "serving_size": "8 OZA (240 ml)",
         "image_quality": "good"
       },
@@ -50748,7 +50748,7 @@
           "sugars_100g": 11.25
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 28,
+        "precomputed_score": 20,
         "serving_size": "8 OZA (240 ml)",
         "image_quality": "good"
       },
@@ -50801,7 +50801,7 @@
           "vitamin-c_100g": 0.0125
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 28,
+        "precomputed_score": 20,
         "serving_size": "240 ml (240 ml)",
         "image_quality": "good"
       },
@@ -50854,7 +50854,7 @@
           "vitamin-c_100g": 0.025
         },
         "nutriscore_grade": "e",
-        "precomputed_score": 28,
+        "precomputed_score": 20,
         "serving_size": "8 OZA (240 ml)",
         "image_quality": "good"
       },
@@ -50908,7 +50908,7 @@
           "vitamin-d_100g": 0
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 28,
+        "precomputed_score": 20,
         "serving_size": "1 portion (240 ml)",
         "image_quality": "good"
       },
@@ -50963,7 +50963,7 @@
           "vitamin-c_100g": 0.0456489762794394
         },
         "nutriscore_grade": "e",
-        "precomputed_score": 25,
+        "precomputed_score": 20,
         "serving_size": "1 serving (8 fl oz)",
         "image_quality": "good"
       },
@@ -51011,7 +51011,7 @@
           "vitamin-c_100g": 0.045
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 25,
+        "precomputed_score": 20,
         "serving_size": "240 mL",
         "image_quality": "good"
       },
@@ -51062,7 +51062,7 @@
           "vitamin-c_100g": 0.0325
         },
         "nutriscore_grade": "e",
-        "precomputed_score": 25,
+        "precomputed_score": 20,
         "serving_size": "8 OZA (240 ml)",
         "image_quality": "good"
       },
@@ -51113,7 +51113,7 @@
           "vitamin-c_100g": 0.0253605423774663
         },
         "nutriscore_grade": "e",
-        "precomputed_score": 25,
+        "precomputed_score": 20,
         "serving_size": "1 serving (8 fl oz)",
         "image_quality": "good"
       },
@@ -52560,7 +52560,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "e",
-        "precomputed_score": 18,
+        "precomputed_score": 13,
         "serving_size": "1 serving (8 fl oz)",
         "image_quality": "good"
       },
@@ -52727,7 +52727,7 @@
           "vitamin-c_100g": 0.00422675706291105
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 14,
+        "precomputed_score": 16,
         "serving_size": "1 can (236.588 g)",
         "image_quality": "low"
       },
@@ -52784,7 +52784,7 @@
           "vitamin-d_100g": 0
         },
         "nutriscore_grade": "e",
-        "precomputed_score": 12,
+        "precomputed_score": 13,
         "serving_size": "8 FL  OZ (240 mL).",
         "image_quality": "good"
       }
@@ -52838,7 +52838,7 @@
           "vitamin-d_100g": 1.04166666666667e-06
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 93,
+        "precomputed_score": 99,
         "serving_size": "1 portion-cup (240 ml)",
         "image_quality": "good"
       },
@@ -52886,7 +52886,7 @@
           "vitamin-d_100g": 1.17e-06
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 93,
+        "precomputed_score": 98,
         "serving_size": "1 serving (200 g)",
         "image_quality": "low"
       },
@@ -52934,7 +52934,7 @@
           "vitamin-d_100g": 3.125e-08
         },
         "nutriscore_grade": "b",
-        "precomputed_score": 93,
+        "precomputed_score": 98,
         "serving_size": "1 serving (240 ml)",
         "image_quality": "low"
       },
@@ -52986,7 +52986,7 @@
           "vitamin-d_100g": 1.05e-06
         },
         "nutriscore_grade": "b",
-        "precomputed_score": 93,
+        "precomputed_score": 99,
         "serving_size": "240.0g",
         "image_quality": "good"
       },
@@ -53042,7 +53042,7 @@
           "vitamin-d_100g": 1.25e-06
         },
         "nutriscore_grade": "b",
-        "precomputed_score": 93,
+        "precomputed_score": 100,
         "serving_size": "1 Portion (240 ml)",
         "image_quality": "good"
       },
@@ -53088,7 +53088,7 @@
           "vitamin-d_100g": 1.04166666666667e-06
         },
         "nutriscore_grade": "b",
-        "precomputed_score": 93,
+        "precomputed_score": 99,
         "serving_size": "240 ml (240 ml)",
         "image_quality": "good"
       },
@@ -53135,7 +53135,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "b",
-        "precomputed_score": 93,
+        "precomputed_score": 98,
         "serving_size": "1 portion (240 ml)",
         "image_quality": "good"
       },
@@ -53183,7 +53183,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 93,
+        "precomputed_score": 98,
         "serving_size": "1 Serving (240 ml)",
         "image_quality": "low"
       },
@@ -53232,7 +53232,7 @@
           "vitamin-d_100g": 1.875e-06
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 93,
+        "precomputed_score": 99,
         "serving_size": "1 portion (240 ml)",
         "image_quality": "good"
       },
@@ -53271,7 +53271,7 @@
           "sugars_100g": 5
         },
         "nutriscore_grade": "b",
-        "precomputed_score": 93,
+        "precomputed_score": 98,
         "serving_size": "1 portion (240 ml)",
         "image_quality": "low"
       },
@@ -53319,7 +53319,7 @@
           "vitamin-d_100g": 1.04166666666667e-06
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 93,
+        "precomputed_score": 99,
         "serving_size": "240 ml",
         "image_quality": "good"
       },
@@ -53369,7 +53369,7 @@
           "vitamin-d_100g": 1.25e-06
         },
         "nutriscore_grade": "b",
-        "precomputed_score": 93,
+        "precomputed_score": 99,
         "serving_size": "1 portion (240 ml)",
         "image_quality": "low"
       },
@@ -53414,7 +53414,7 @@
           "vitamin-d_100g": 1.10169491525424e-06
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 93,
+        "precomputed_score": 99,
         "serving_size": "2 tbsp (354 g)",
         "image_quality": "good"
       },
@@ -53458,7 +53458,7 @@
           "vitamin-d_100g": 1.05e-06
         },
         "nutriscore_grade": "b",
-        "precomputed_score": 93,
+        "precomputed_score": 99,
         "serving_size": "1 cup (240 ml)",
         "image_quality": "good"
       },
@@ -53504,7 +53504,7 @@
           "vitamin-d_100g": 1.04e-06
         },
         "nutriscore_grade": "b",
-        "precomputed_score": 93,
+        "precomputed_score": 99,
         "serving_size": "1 portion (240 ml)",
         "image_quality": "good"
       },
@@ -53550,7 +53550,7 @@
           "vitamin-c_100g": 0
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 93,
+        "precomputed_score": 98,
         "serving_size": "1 cup (240 ml)",
         "image_quality": "good"
       },
@@ -53598,7 +53598,7 @@
           "zinc_100g": 0.000416666666666667
         },
         "nutriscore_grade": "b",
-        "precomputed_score": 93,
+        "precomputed_score": 99,
         "serving_size": "1 portion (240 ml)",
         "image_quality": "good"
       },
@@ -53646,7 +53646,7 @@
           "vitamin-d_100g": 1.26802711887332e-06
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 93,
+        "precomputed_score": 99,
         "serving_size": "1 portion (8 fl oz)",
         "image_quality": "good"
       },
@@ -53693,7 +53693,7 @@
           "vitamin-d_100g": 2.5e-06
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 93,
+        "precomputed_score": 97,
         "serving_size": "1 cup (240 ml)",
         "image_quality": "low"
       },
@@ -53733,7 +53733,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "b",
-        "precomputed_score": 93,
+        "precomputed_score": 98,
         "serving_size": "240g",
         "image_quality": "low"
       },
@@ -53779,7 +53779,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 93,
+        "precomputed_score": 98,
         "serving_size": "1 portion (1 cup)",
         "image_quality": "low"
       },
@@ -53828,7 +53828,7 @@
           "vitamin-d_100g": 1.25e-06
         },
         "nutriscore_grade": "b",
-        "precomputed_score": 93,
+        "precomputed_score": 99,
         "serving_size": "1 portion (240 ml)",
         "image_quality": "good"
       },
@@ -53875,7 +53875,7 @@
           "vitamin-d_100g": 1.04166666666667e-06
         },
         "nutriscore_grade": "unknown",
-        "precomputed_score": 93,
+        "precomputed_score": 100,
         "serving_size": "1 portion (240 g)",
         "image_quality": "good"
       },
@@ -53917,7 +53917,7 @@
           "vitamin-d_100g": 1.875e-06
         },
         "nutriscore_grade": "b",
-        "precomputed_score": 93,
+        "precomputed_score": 99,
         "serving_size": "240 g",
         "image_quality": "good"
       },
@@ -53964,7 +53964,7 @@
           "vitamin-d_100g": 1.05e-06
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 93,
+        "precomputed_score": 99,
         "serving_size": "1 cup (240 ml)",
         "image_quality": "good"
       },
@@ -54009,7 +54009,7 @@
           "vitamin-d_100g": 1.05e-06
         },
         "nutriscore_grade": "b",
-        "precomputed_score": 93,
+        "precomputed_score": 99,
         "serving_size": "1 cup (240 ml)",
         "image_quality": "low"
       },
@@ -54057,7 +54057,7 @@
           "vitamin-d_100g": 1.05e-06
         },
         "nutriscore_grade": "b",
-        "precomputed_score": 93,
+        "precomputed_score": 99,
         "serving_size": "1 portion (1 cup)",
         "image_quality": "good"
       },
@@ -54107,7 +54107,7 @@
           "vitamin-d_100g": 1.04166666666667e-05
         },
         "nutriscore_grade": "b",
-        "precomputed_score": 93,
+        "precomputed_score": 99,
         "serving_size": "1 portion (240 ml)",
         "image_quality": "good"
       },
@@ -54152,7 +54152,7 @@
           "sugars_100g": 5
         },
         "nutriscore_grade": "b",
-        "precomputed_score": 93,
+        "precomputed_score": 98,
         "image_quality": "low"
       },
       {
@@ -54195,7 +54195,7 @@
           "vitamin-d_100g": 1.04166666666667e-06
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 93,
+        "precomputed_score": 99,
         "serving_size": "240 ml (240 ml)",
         "image_quality": "good"
       },
@@ -54246,7 +54246,7 @@
           "vitamin-d_100g": 1.04166666666667e-06
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 93,
+        "precomputed_score": 99,
         "serving_size": "240ml",
         "image_quality": "good"
       },
@@ -54294,7 +54294,7 @@
           "vitamin-d_100g": 1.04166666666667e-06
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 93,
+        "precomputed_score": 99,
         "serving_size": "1 portion (240 ml)",
         "image_quality": "low"
       },
@@ -54345,7 +54345,7 @@
           "vitamin-d_100g": 1.05668926572776e-06
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 93,
+        "precomputed_score": 99,
         "serving_size": "1 serving (8 fl oz)",
         "image_quality": "good"
       },
@@ -54389,7 +54389,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "b",
-        "precomputed_score": 93,
+        "precomputed_score": 98,
         "serving_size": "1 portion (240 ml)",
         "image_quality": "good"
       },
@@ -54439,7 +54439,7 @@
           "vitamin-d_100g": 1.875e-06
         },
         "nutriscore_grade": "b",
-        "precomputed_score": 93,
+        "precomputed_score": 100,
         "serving_size": "1 serving (240 ml)",
         "image_quality": "good"
       },
@@ -54487,7 +54487,7 @@
           "vitamin-d_100g": 1.08333333333333e-06
         },
         "nutriscore_grade": "b",
-        "precomputed_score": 93,
+        "precomputed_score": 99,
         "serving_size": "1 serving (240 ml)",
         "image_quality": "good"
       },
@@ -54530,7 +54530,7 @@
           "sugars_100g": 5
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 93,
+        "precomputed_score": 98,
         "serving_size": "1 C (240 ml)",
         "image_quality": "good"
       },
@@ -54578,7 +54578,7 @@
           "vitamin-d_100g": 1.20833333333333e-06
         },
         "nutriscore_grade": "b",
-        "precomputed_score": 93,
+        "precomputed_score": 99,
         "serving_size": "1 portion (240 ml)",
         "image_quality": "low"
       },
@@ -54624,7 +54624,7 @@
           "vitamin-d_100g": 1.04166666666667e-06
         },
         "nutriscore_grade": "b",
-        "precomputed_score": 93,
+        "precomputed_score": 99,
         "serving_size": "1 serving (240 g)",
         "image_quality": "good"
       },
@@ -54673,7 +54673,7 @@
           "zinc_100g": 0.000416666666666667
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 92,
+        "precomputed_score": 97,
         "serving_size": "240ml",
         "image_quality": "good"
       },
@@ -54724,7 +54724,7 @@
           "zinc_100g": 0.000416666666666667
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 92,
+        "precomputed_score": 98,
         "serving_size": "240ml",
         "image_quality": "good"
       },
@@ -54770,7 +54770,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 92,
+        "precomputed_score": 98,
         "serving_size": "1 bottle (240 ml)",
         "image_quality": "good"
       },
@@ -54817,7 +54817,7 @@
           "vitamin-d_100g": 1.25e-06
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 92,
+        "precomputed_score": 98,
         "serving_size": "240 ml (240 ml)",
         "image_quality": "low"
       },
@@ -54870,7 +54870,7 @@
           "vitamin-d_100g": 0
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 92,
+        "precomputed_score": 98,
         "serving_size": "1 portion (240 ml)",
         "image_quality": "good"
       },
@@ -54920,7 +54920,7 @@
           "vitamin-d_100g": 2.592e-06
         },
         "nutriscore_grade": "e",
-        "precomputed_score": 91,
+        "precomputed_score": 74,
         "serving_size": "1 portion (1 cup)",
         "image_quality": "good"
       },
@@ -54961,7 +54961,7 @@
           "sugars_100g": 12
         },
         "nutriscore_grade": "e",
-        "precomputed_score": 91,
+        "precomputed_score": 74,
         "serving_size": "1 portion (226.796 g)",
         "image_quality": "low"
       },
@@ -55005,7 +55005,7 @@
           "vitamin-d_100g": 6.25e-07
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 91,
+        "precomputed_score": 97,
         "serving_size": "1 serving (240 ml)",
         "image_quality": "low"
       },
@@ -55055,7 +55055,7 @@
           "vitamin-d_100g": 1.04166666666667e-06
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 90,
+        "precomputed_score": 99,
         "serving_size": "1 serving (240 ml)",
         "image_quality": "good"
       },
@@ -55107,7 +55107,7 @@
           "vitamin-d_100g": 1.05932203389831e-06
         },
         "nutriscore_grade": "b",
-        "precomputed_score": 89,
+        "precomputed_score": 96,
         "serving_size": "8 OZ (236 ml)",
         "image_quality": "low"
       },
@@ -55152,7 +55152,7 @@
           "sugars_100g": 5
         },
         "nutriscore_grade": "b",
-        "precomputed_score": 89,
+        "precomputed_score": 98,
         "serving_size": "1 portion (240 g)",
         "image_quality": "good"
       },
@@ -55206,7 +55206,7 @@
           "vitamin-d_100g": 1.04166666666667e-06
         },
         "nutriscore_grade": "b",
-        "precomputed_score": 89,
+        "precomputed_score": 96,
         "serving_size": "240ml",
         "image_quality": "low"
       },
@@ -55313,7 +55313,7 @@
           "vitamin-d_100g": 1.05932203389831e-06
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 89,
+        "precomputed_score": 96,
         "serving_size": "1",
         "image_quality": "good"
       },
@@ -55361,7 +55361,7 @@
           "vitamin-d_100g": 1.04166666666667e-06
         },
         "nutriscore_grade": "b",
-        "precomputed_score": 89,
+        "precomputed_score": 96,
         "serving_size": "1 portion (240 ml)",
         "image_quality": "low"
       },
@@ -55407,7 +55407,7 @@
           "zinc_100g": 0.0005
         },
         "nutriscore_grade": "b",
-        "precomputed_score": 88,
+        "precomputed_score": 95,
         "serving_size": "240ml",
         "image_quality": "good"
       },
@@ -55457,7 +55457,7 @@
           "vitamin-d_100g": 1.04166666666667e-06
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 87,
+        "precomputed_score": 100,
         "serving_size": "1 portion (1 cup)",
         "image_quality": "good"
       },
@@ -55506,7 +55506,7 @@
           "vitamin-d_100g": 1.04166666666667e-06
         },
         "nutriscore_grade": "b",
-        "precomputed_score": 87,
+        "precomputed_score": 99,
         "serving_size": "240.0ml",
         "image_quality": "low"
       },
@@ -55560,7 +55560,7 @@
           "vitamin-d_100g": 1.25e-06
         },
         "nutriscore_grade": "b",
-        "precomputed_score": 87,
+        "precomputed_score": 96,
         "serving_size": "1 portion (240 ml)",
         "image_quality": "low"
       },
@@ -55602,7 +55602,7 @@
           "sugars_100g": 4.58333333333333
         },
         "nutriscore_grade": "b",
-        "precomputed_score": 87,
+        "precomputed_score": 98,
         "serving_size": "1 Cup (240 g)",
         "image_quality": "good"
       },
@@ -55649,7 +55649,7 @@
           "vitamin-d_100g": 3e-06
         },
         "nutriscore_grade": "b",
-        "precomputed_score": 87,
+        "precomputed_score": 99,
         "serving_size": "1 portion (240 g)",
         "image_quality": "low"
       },
@@ -55706,7 +55706,7 @@
           "vitamin-d_100g": 1.25e-06
         },
         "nutriscore_grade": "b",
-        "precomputed_score": 87,
+        "precomputed_score": 99,
         "serving_size": "1 portion (240 ml)",
         "image_quality": "low"
       },
@@ -55750,7 +55750,7 @@
           "sugars_100g": 5
         },
         "nutriscore_grade": "b",
-        "precomputed_score": 86,
+        "precomputed_score": 98,
         "serving_size": "1 serving (240 ml)",
         "image_quality": "low"
       },
@@ -55799,7 +55799,7 @@
           "vitamin-d_100g": 1.25e-06
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 84,
+        "precomputed_score": 96,
         "serving_size": "1 portion (240 ml)",
         "image_quality": "good"
       },
@@ -55845,7 +55845,7 @@
           "vitamin-d_100g": 8.33333333333333e-07
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 83,
+        "precomputed_score": 87,
         "serving_size": "240ml",
         "image_quality": "good"
       },
@@ -55901,7 +55901,7 @@
           "vitamin-d_100g": 9.375e-07
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 83,
+        "precomputed_score": 87,
         "serving_size": "1 portion (240 ml)",
         "image_quality": "good"
       },
@@ -55959,7 +55959,7 @@
           "zinc_100g": 0.00066667
         },
         "nutriscore_grade": "b",
-        "precomputed_score": 81,
+        "precomputed_score": 97,
         "serving_size": "1 portion (240 ml)",
         "image_quality": "good"
       },
@@ -56022,7 +56022,7 @@
           "zinc_100g": 0.00065
         },
         "nutriscore_grade": "b",
-        "precomputed_score": 81,
+        "precomputed_score": 97,
         "serving_size": "1 cup (240 g)",
         "image_quality": "good"
       },
@@ -56078,7 +56078,7 @@
           "zinc_100g": 0.00065
         },
         "nutriscore_grade": "b",
-        "precomputed_score": 81,
+        "precomputed_score": 97,
         "serving_size": "1 portion (240 g)",
         "image_quality": "good"
       },
@@ -56131,7 +56131,7 @@
           "vitamin-c_100g": 0
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 80,
+        "precomputed_score": 73,
         "serving_size": "8.25 fl oz (244 mL)",
         "image_quality": "good"
       },
@@ -56180,7 +56180,7 @@
           "vitamin-d_100g": 3e-06
         },
         "nutriscore_grade": "e",
-        "precomputed_score": 79,
+        "precomputed_score": 74,
         "serving_size": "1 serving (30 ml)",
         "image_quality": "good"
       },
@@ -56298,7 +56298,7 @@
           "vitamin-d_100g": 1.05932203389831e-06
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 77,
+        "precomputed_score": 69,
         "serving_size": "236 ml (1 CONTAINER)",
         "image_quality": "good"
       },
@@ -56460,7 +56460,7 @@
           "vitamin-d_100g": 1.22950819672131e-06
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 77,
+        "precomputed_score": 72,
         "serving_size": "244 mL",
         "image_quality": "good"
       },
@@ -56508,7 +56508,7 @@
           "vitamin-d_100g": 1.04166666666667e-06
         },
         "nutriscore_grade": "b",
-        "precomputed_score": 74,
+        "precomputed_score": 89,
         "serving_size": "240 ml (240 ml)",
         "image_quality": "good"
       },
@@ -59496,7 +59496,7 @@
           "zinc_100g": 0.00625
         },
         "nutriscore_grade": "b",
-        "precomputed_score": 83,
+        "precomputed_score": 86,
         "serving_size": "1 portion (16 g)",
         "image_quality": "good"
       },
@@ -60000,7 +60000,7 @@
           "vitamin-d_100g": 0
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 82,
+        "precomputed_score": 88,
         "serving_size": "2 tbsp (32 g)",
         "image_quality": "low"
       },
@@ -60802,7 +60802,7 @@
           "vitamin-c_100g": 0
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 80,
+        "precomputed_score": 87,
         "serving_size": "2 Tbsp (32 g)",
         "image_quality": "low"
       },
@@ -62793,7 +62793,7 @@
           "vitamin-d_100g": 0
         },
         "nutriscore_grade": "b",
-        "precomputed_score": 72,
+        "precomputed_score": 73,
         "serving_size": "1 slice (28 g)",
         "image_quality": "low"
       },
@@ -62952,7 +62952,7 @@
           "vitamin-d_100g": 0
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 71,
+        "precomputed_score": 69,
         "serving_size": "1 portion (56 g)",
         "image_quality": "good"
       },
@@ -63011,7 +63011,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 71,
+        "precomputed_score": 70,
         "serving_size": "2 ONZ (56 g)",
         "image_quality": "good"
       },
@@ -63124,7 +63124,7 @@
           "vitamin-d_100g": 0
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 71,
+        "precomputed_score": 70,
         "serving_size": "1 portion (56 g)",
         "image_quality": "good"
       },
@@ -63358,7 +63358,7 @@
           "zinc_100g": 0.00267857142857143
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 70,
+        "precomputed_score": 68,
         "serving_size": "1 portion (56.699 g)",
         "image_quality": "good"
       },
@@ -63642,7 +63642,7 @@
           "zinc_100g": 0.00196428571428571
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 68,
+        "precomputed_score": 66,
         "serving_size": "1 portion (56 g)",
         "image_quality": "good"
       },
@@ -64501,7 +64501,7 @@
           "zinc_100g": 0.00267857142857143
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 60,
+        "precomputed_score": 61,
         "serving_size": "1 serving (56 g)",
         "image_quality": "good"
       },
@@ -64567,7 +64567,7 @@
           "zinc_100g": 0.00267857142857143
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 59,
+        "precomputed_score": 60,
         "serving_size": "1 serving (56 g)",
         "image_quality": "good"
       },
@@ -64623,7 +64623,7 @@
           "zinc_100g": 0.00267857142857143
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 58,
+        "precomputed_score": 59,
         "serving_size": "1 portion (56 g)",
         "image_quality": "good"
       },
@@ -64682,7 +64682,7 @@
           "zinc_100g": 0.00267857142857143
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 58,
+        "precomputed_score": 59,
         "serving_size": "1 serving (56 g)",
         "image_quality": "good"
       },
@@ -64738,7 +64738,7 @@
           "zinc_100g": 0.00267857142857143
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 58,
+        "precomputed_score": 59,
         "serving_size": "1 dry (55 g)",
         "image_quality": "good"
       },
@@ -64849,7 +64849,7 @@
           "vitamin-d_100g": 0
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 58,
+        "precomputed_score": 59,
         "serving_size": "1 portion (56 g)",
         "image_quality": "good"
       },
@@ -65090,7 +65090,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 51,
+        "precomputed_score": 53,
         "serving_size": "1 serving (110 g)",
         "image_quality": "low"
       },
@@ -65144,7 +65144,7 @@
           "vitamin-d_100g": 0
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 48,
+        "precomputed_score": 50,
         "serving_size": "0.5 container (142 g)",
         "image_quality": "low"
       },
@@ -65200,7 +65200,7 @@
           "sugars_100g": 7.2289156626506
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 48,
+        "precomputed_score": 46,
         "serving_size": "1 serving (83 g)",
         "image_quality": "low"
       },
@@ -65428,7 +65428,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "b",
-        "precomputed_score": 43,
+        "precomputed_score": 45,
         "serving_size": "1 serving (442.252 g)",
         "image_quality": "good"
       },
@@ -65619,7 +65619,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "b",
-        "precomputed_score": 39,
+        "precomputed_score": 41,
         "serving_size": "1 can (425 g)",
         "image_quality": "good"
       },
@@ -65687,7 +65687,7 @@
           "trans-fat_100g": 0.0478468899521531
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 36,
+        "precomputed_score": 38,
         "serving_size": "1 can (418 g)",
         "image_quality": "good"
       },
@@ -65766,7 +65766,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "e",
-        "precomputed_score": 35,
+        "precomputed_score": 36,
         "serving_size": "1 can (425 g)",
         "image_quality": "good"
       },
@@ -65933,7 +65933,7 @@
           "vitamin-d_100g": 0
         },
         "nutriscore_grade": "not-applicable",
-        "precomputed_score": 79,
+        "precomputed_score": 78,
         "serving_size": "1 bar (55 g)",
         "image_quality": "low"
       },
@@ -66058,7 +66058,7 @@
           "sugars_100g": 10.7692307692308
         },
         "nutriscore_grade": "not-applicable",
-        "precomputed_score": 78,
+        "precomputed_score": 77,
         "serving_size": "1 bar (65 g)",
         "image_quality": "good"
       },
@@ -66121,7 +66121,7 @@
           "zinc_100g": 0.00176471
         },
         "nutriscore_grade": "not-applicable",
-        "precomputed_score": 78,
+        "precomputed_score": 76,
         "serving_size": "1 bar (71 g)",
         "image_quality": "good"
       },
@@ -66333,7 +66333,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "not-applicable",
-        "precomputed_score": 77,
+        "precomputed_score": 79,
         "serving_size": "1 portion (40 g)",
         "image_quality": "good"
       },
@@ -66398,7 +66398,7 @@
           "vitamin-d_100g": 0
         },
         "nutriscore_grade": "not-applicable",
-        "precomputed_score": 77,
+        "precomputed_score": 76,
         "serving_size": "1 bar (56 g)",
         "image_quality": "good"
       },
@@ -66452,7 +66452,7 @@
           "sugars_100g": 5
         },
         "nutriscore_grade": "not-applicable",
-        "precomputed_score": 77,
+        "precomputed_score": 78,
         "serving_size": "1 portion (40 g)",
         "image_quality": "good"
       },
@@ -66565,7 +66565,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "not-applicable",
-        "precomputed_score": 77,
+        "precomputed_score": 76,
         "serving_size": "1 bar (52 g)",
         "image_quality": "good"
       },
@@ -66667,7 +66667,7 @@
           "sugars_100g": 5
         },
         "nutriscore_grade": "not-applicable",
-        "precomputed_score": 76,
+        "precomputed_score": 77,
         "serving_size": "1 bar (40 g)",
         "image_quality": "good"
       },
@@ -66723,7 +66723,7 @@
           "sugars_100g": 11.5942028985507
         },
         "nutriscore_grade": "not-applicable",
-        "precomputed_score": 76,
+        "precomputed_score": 74,
         "serving_size": "1 portion (69 g)",
         "image_quality": "good"
       },
@@ -66786,7 +66786,7 @@
           "sugars_100g": 3.33333333333333
         },
         "nutriscore_grade": "not-applicable",
-        "precomputed_score": 76,
+        "precomputed_score": 75,
         "serving_size": "1 bar (60 g)",
         "image_quality": "good"
       },
@@ -66839,7 +66839,7 @@
           "vitamin-c_100g": 0.045
         },
         "nutriscore_grade": "not-applicable",
-        "precomputed_score": 76,
+        "precomputed_score": 77,
         "serving_size": "1 bar (40 g)",
         "image_quality": "good"
       },
@@ -66897,7 +66897,7 @@
           "sugars_100g": 3.33333333333333
         },
         "nutriscore_grade": "not-applicable",
-        "precomputed_score": 76,
+        "precomputed_score": 75,
         "serving_size": "1 serving (60 g)",
         "image_quality": "good"
       },
@@ -66965,7 +66965,7 @@
           "zinc_100g": 0.0211267605633803
         },
         "nutriscore_grade": "not-applicable",
-        "precomputed_score": 75,
+        "precomputed_score": 73,
         "serving_size": "1 serving (65 g)",
         "image_quality": "low"
       },
@@ -67059,7 +67059,7 @@
           "sugars_100g": 30.7692307692308
         },
         "nutriscore_grade": "unknown",
-        "precomputed_score": 74,
+        "precomputed_score": 77,
         "serving_size": "1 bar (26 g)",
         "image_quality": "low"
       },
@@ -67111,7 +67111,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "not-applicable",
-        "precomputed_score": 74,
+        "precomputed_score": 72,
         "serving_size": "1 bar (62 g)",
         "image_quality": "good"
       },
@@ -67166,7 +67166,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "not-applicable",
-        "precomputed_score": 73,
+        "precomputed_score": 74,
         "serving_size": "1 portion (40 g)",
         "image_quality": "good"
       },
@@ -67224,7 +67224,7 @@
           "sugars_100g": 5
         },
         "nutriscore_grade": "not-applicable",
-        "precomputed_score": 72,
+        "precomputed_score": 74,
         "serving_size": "1 bar (40 g)",
         "image_quality": "good"
       },
@@ -67275,7 +67275,7 @@
           "vitamin-d_100g": 0
         },
         "nutriscore_grade": "not-applicable",
-        "precomputed_score": 72,
+        "precomputed_score": 71,
         "serving_size": "1 bar (60 g)",
         "image_quality": "good"
       },
@@ -67342,7 +67342,7 @@
           "vitamin-c_100g": 0
         },
         "nutriscore_grade": "not-applicable",
-        "precomputed_score": 71,
+        "precomputed_score": 70,
         "serving_size": "1 BAR (60 g)",
         "image_quality": "good"
       },
@@ -67398,7 +67398,7 @@
           "sugars_100g": 1.67
         },
         "nutriscore_grade": "not-applicable",
-        "precomputed_score": 71,
+        "precomputed_score": 69,
         "serving_size": "1 portion (60 g)",
         "image_quality": "good"
       },
@@ -67501,7 +67501,7 @@
           "sugars_100g": 2.22222222222222
         },
         "nutriscore_grade": "not-applicable",
-        "precomputed_score": 70,
+        "precomputed_score": 71,
         "serving_size": "1 serving (45 g)",
         "image_quality": "good"
       },
@@ -67631,7 +67631,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "not-applicable",
-        "precomputed_score": 69,
+        "precomputed_score": 68,
         "serving_size": "1 bar (65 g)",
         "image_quality": "good"
       },
@@ -67682,7 +67682,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "not-applicable",
-        "precomputed_score": 69,
+        "precomputed_score": 72,
         "serving_size": "1 bar (26 g)",
         "image_quality": "good"
       },
@@ -67738,7 +67738,7 @@
           "sugars_100g": 1.66666666666667
         },
         "nutriscore_grade": "not-applicable",
-        "precomputed_score": 69,
+        "precomputed_score": 68,
         "serving_size": "1 serving (60 g)",
         "image_quality": "good"
       },
@@ -67801,7 +67801,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "not-applicable",
-        "precomputed_score": 69,
+        "precomputed_score": 68,
         "serving_size": "1 BAR (60 g)",
         "image_quality": "good"
       },
@@ -67901,7 +67901,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "not-applicable",
-        "precomputed_score": 68,
+        "precomputed_score": 67,
         "serving_size": "1 portion (60 g)",
         "image_quality": "good"
       },
@@ -67959,7 +67959,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "not-applicable",
-        "precomputed_score": 68,
+        "precomputed_score": 67,
         "serving_size": "60g",
         "image_quality": "good"
       },
@@ -68018,7 +68018,7 @@
           "vitamin-d_100g": 0
         },
         "nutriscore_grade": "not-applicable",
-        "precomputed_score": 68,
+        "precomputed_score": 67,
         "serving_size": "1 bar (60 g)",
         "image_quality": "good"
       },
@@ -68088,7 +68088,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "not-applicable",
-        "precomputed_score": 68,
+        "precomputed_score": 67,
         "serving_size": "60 g",
         "image_quality": "good"
       },
@@ -68249,7 +68249,7 @@
           "sugars_100g": 2.22222222222222
         },
         "nutriscore_grade": "not-applicable",
-        "precomputed_score": 68,
+        "precomputed_score": 69,
         "serving_size": "1 bar (45 g)",
         "image_quality": "good"
       },
@@ -68309,7 +68309,7 @@
           "vitamin-d_100g": 0
         },
         "nutriscore_grade": "not-applicable",
-        "precomputed_score": 68,
+        "precomputed_score": 69,
         "serving_size": "1 bar (45 g)",
         "image_quality": "low"
       },
@@ -68368,7 +68368,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "not-applicable",
-        "precomputed_score": 68,
+        "precomputed_score": 67,
         "serving_size": "1 bar (60 g)",
         "image_quality": "good"
       },
@@ -68432,7 +68432,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "not-applicable",
-        "precomputed_score": 68,
+        "precomputed_score": 70,
         "serving_size": "1 bar (40 g)",
         "image_quality": "good"
       },
@@ -68483,7 +68483,7 @@
           "sugars_100g": 16
         },
         "nutriscore_grade": "not-applicable",
-        "precomputed_score": 68,
+        "precomputed_score": 69,
         "serving_size": "1 bar (50 g)",
         "image_quality": "good"
       },
@@ -68547,7 +68547,7 @@
           "sugars_100g": 8.92857142857143
         },
         "nutriscore_grade": "not-applicable",
-        "precomputed_score": 68,
+        "precomputed_score": 67,
         "serving_size": "1 portion (56 g)",
         "image_quality": "good"
       },
@@ -68777,7 +68777,7 @@
           "sugars_100g": 20
         },
         "nutriscore_grade": "not-applicable",
-        "precomputed_score": 67,
+        "precomputed_score": 66,
         "serving_size": "1 bar (55 g)",
         "image_quality": "low"
       },
@@ -68835,7 +68835,7 @@
           "sugars_100g": 12.3076923076923
         },
         "nutriscore_grade": "not-applicable",
-        "precomputed_score": 67,
+        "precomputed_score": 66,
         "serving_size": "1 bar (65 g)",
         "image_quality": "good"
       },
@@ -68892,7 +68892,7 @@
           "vitamin-d_100g": 0
         },
         "nutriscore_grade": "not-applicable",
-        "precomputed_score": 67,
+        "precomputed_score": 68,
         "serving_size": "1 bar (40 g)",
         "image_quality": "good"
       },
@@ -68946,7 +68946,7 @@
           "vitamin-d_100g": 1.66666666666667e-07
         },
         "nutriscore_grade": "not-applicable",
-        "precomputed_score": 66,
+        "precomputed_score": 65,
         "serving_size": "1 bar (60 g)",
         "image_quality": "good"
       },
@@ -69130,7 +69130,7 @@
           "sugars_100g": 1.66666666666667
         },
         "nutriscore_grade": "not-applicable",
-        "precomputed_score": 66,
+        "precomputed_score": 64,
         "serving_size": "1 bar (60 g)",
         "image_quality": "good"
       },
@@ -69186,7 +69186,7 @@
           "sugars_100g": 12.5
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 66,
+        "precomputed_score": 67,
         "serving_size": "1 bar (40 g)",
         "image_quality": "good"
       },
@@ -69299,7 +69299,7 @@
           "sugars_100g": 1.66666666666667
         },
         "nutriscore_grade": "not-applicable",
-        "precomputed_score": 65,
+        "precomputed_score": 64,
         "serving_size": "1 serving (60 g)",
         "image_quality": "good"
       },
@@ -69536,7 +69536,7 @@
           "sugars_100g": 22.5
         },
         "nutriscore_grade": "not-applicable",
-        "precomputed_score": 65,
+        "precomputed_score": 66,
         "serving_size": "1 portion (40 g)",
         "image_quality": "good"
       },
@@ -69592,7 +69592,7 @@
           "sugars_100g": 3.3333333333333
         },
         "nutriscore_grade": "not-applicable",
-        "precomputed_score": 64,
+        "precomputed_score": 63,
         "serving_size": "1 bar (60 g)",
         "image_quality": "good"
       },
@@ -69710,7 +69710,7 @@
           "sugars_100g": 1.66666666666667
         },
         "nutriscore_grade": "not-applicable",
-        "precomputed_score": 63,
+        "precomputed_score": 61,
         "serving_size": "1 bar (60 g)",
         "image_quality": "good"
       },
@@ -69768,7 +69768,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "not-applicable",
-        "precomputed_score": 63,
+        "precomputed_score": 62,
         "serving_size": "60g",
         "image_quality": "good"
       },
@@ -69831,7 +69831,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "not-applicable",
-        "precomputed_score": 63,
+        "precomputed_score": 62,
         "serving_size": "55g",
         "image_quality": "good"
       },
@@ -70019,7 +70019,7 @@
           "zinc_100g": 0.0055
         },
         "nutriscore_grade": "not-applicable",
-        "precomputed_score": 63,
+        "precomputed_score": 65,
         "serving_size": "1 bar (40 g)",
         "image_quality": "good"
       },
@@ -70146,7 +70146,7 @@
           "sugars_100g": 17
         },
         "nutriscore_grade": "not-applicable",
-        "precomputed_score": 63,
+        "precomputed_score": 62,
         "serving_size": "1 bar (68 g)",
         "image_quality": "good"
       },
@@ -70269,7 +70269,7 @@
           "sugars_100g": 1.82
         },
         "nutriscore_grade": "not-applicable",
-        "precomputed_score": 62,
+        "precomputed_score": 61,
         "serving_size": "1 bar (55 g)",
         "image_quality": "good"
       },
@@ -70475,7 +70475,7 @@
           "vitamin-d_100g": 0
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 62,
+        "precomputed_score": 63,
         "serving_size": "2 bars (50 g)",
         "image_quality": "good"
       }
@@ -71277,7 +71277,7 @@
           "sugars_100g": 1.40845070422535
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 71,
+        "precomputed_score": 73,
         "serving_size": "1 can (355 ml)",
         "image_quality": "good"
       },
@@ -71332,7 +71332,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 53,
+        "precomputed_score": 55,
         "serving_size": "20 FL oz",
         "image_quality": "good"
       },
@@ -71396,7 +71396,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 49,
+        "precomputed_score": 50,
         "serving_size": "355 ml",
         "image_quality": "low"
       },
@@ -71453,7 +71453,7 @@
           "sugars_100g": 0
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 47,
+        "precomputed_score": 48,
         "serving_size": "1 bottle (591.47 g)",
         "image_quality": "low"
       },
@@ -71503,7 +71503,7 @@
           "sugars_100g": 0
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 37,
+        "precomputed_score": 38,
         "serving_size": "1 bottle (500 ml)",
         "image_quality": "good"
       },
@@ -71676,7 +71676,7 @@
           "sugars_100g": 0
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 36,
+        "precomputed_score": 35,
         "serving_size": "1 can (7.5 fl oz)",
         "image_quality": "good"
       },
@@ -71729,7 +71729,7 @@
           "sugars_100g": 0
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 36,
+        "precomputed_score": 38,
         "serving_size": "1 can (12 fl oz)",
         "image_quality": "low"
       },
@@ -71787,7 +71787,7 @@
           "sugars_100g": 0
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 35,
+        "precomputed_score": 36,
         "image_quality": "good"
       },
       {
@@ -71837,7 +71837,7 @@
           "sugars_100g": 0.303030303030303
         },
         "nutriscore_grade": "b",
-        "precomputed_score": 34,
+        "precomputed_score": 99,
         "serving_size": "330 mL",
         "image_quality": "low"
       },
@@ -71897,7 +71897,7 @@
           "vitamin-d_100g": 0
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 33,
+        "precomputed_score": 37,
         "serving_size": "1 bottle (20 fl oz)",
         "image_quality": "good"
       },
@@ -71937,7 +71937,7 @@
           "sugars_100g": 7.87878787878788
         },
         "nutriscore_grade": "unknown",
-        "precomputed_score": 30,
+        "precomputed_score": 25,
         "serving_size": "330 ml (330 ml)",
         "image_quality": "good"
       },
@@ -72960,7 +72960,7 @@
           "sugars_100g": 4.6
         },
         "nutriscore_grade": "d",
-        "precomputed_score": 17,
+        "precomputed_score": 12,
         "serving_size": "250ml",
         "image_quality": "low"
       },
@@ -73128,7 +73128,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 93,
+        "precomputed_score": 97,
         "serving_size": "0.667 cup (170 g)",
         "image_quality": "good"
       },
@@ -73186,7 +73186,7 @@
           "vitamin-d_100g": 5.88235294117647e-08
         },
         "nutriscore_grade": "b",
-        "precomputed_score": 93,
+        "precomputed_score": 97,
         "serving_size": "0.667 cup (170 g)",
         "image_quality": "low"
       },
@@ -73245,7 +73245,7 @@
           "vitamin-d_100g": 0
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 93,
+        "precomputed_score": 96,
         "serving_size": "0.75 cup (170 g)",
         "image_quality": "good"
       },
@@ -73306,7 +73306,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "b",
-        "precomputed_score": 91,
+        "precomputed_score": 98,
         "serving_size": "0.75 cup (170 g)",
         "image_quality": "good"
       },
@@ -73365,7 +73365,7 @@
           "vitamin-d_100g": 0
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 91,
+        "precomputed_score": 98,
         "serving_size": "6 oz",
         "image_quality": "low"
       },
@@ -73417,7 +73417,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 90,
+        "precomputed_score": 96,
         "serving_size": "0.75 cup (170 g)",
         "image_quality": "good"
       },
@@ -73474,7 +73474,7 @@
           "vitamin-d_100g": 0
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 90,
+        "precomputed_score": 97,
         "serving_size": "1 portion (170 g)",
         "image_quality": "good"
       },
@@ -73531,7 +73531,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 89,
+        "precomputed_score": 96,
         "serving_size": "1 portion (170 g)",
         "image_quality": "good"
       },
@@ -73592,7 +73592,7 @@
           "vitamin-d_100g": 0
         },
         "nutriscore_grade": "b",
-        "precomputed_score": 89,
+        "precomputed_score": 95,
         "serving_size": "1 pack (150 g)",
         "image_quality": "good"
       },
@@ -73648,7 +73648,7 @@
           "sugars_100g": 3.52941176470588
         },
         "nutriscore_grade": "b",
-        "precomputed_score": 89,
+        "precomputed_score": 93,
         "serving_size": "0.75 cup (170 g)",
         "image_quality": "low"
       },
@@ -73706,7 +73706,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 88,
+        "precomputed_score": 98,
         "serving_size": "1 serving (150 g)",
         "image_quality": "good"
       },
@@ -73763,7 +73763,7 @@
           "vitamin-d_100g": 0
         },
         "nutriscore_grade": "b",
-        "precomputed_score": 88,
+        "precomputed_score": 95,
         "serving_size": "0.75 cup (170 g)",
         "image_quality": "good"
       },
@@ -73821,7 +73821,7 @@
           "vitamin-d_100g": 0
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 88,
+        "precomputed_score": 95,
         "serving_size": "1 Serving (170 g)",
         "image_quality": "good"
       },
@@ -73879,7 +73879,7 @@
           "vitamin-d_100g": 0
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 87,
+        "precomputed_score": 96,
         "serving_size": "0.75 cup (170 g)",
         "image_quality": "good"
       },
@@ -73936,7 +73936,7 @@
           "vitamin-d_100g": 0
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 87,
+        "precomputed_score": 95,
         "serving_size": "1 portion (170 g)",
         "image_quality": "good"
       },
@@ -73995,7 +73995,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 86,
+        "precomputed_score": 92,
         "serving_size": "1 cup (227 g)",
         "image_quality": "good"
       },
@@ -74060,7 +74060,7 @@
           "vitamin-d_100g": 1.58333333333333e-06
         },
         "nutriscore_grade": "b",
-        "precomputed_score": 86,
+        "precomputed_score": 94,
         "serving_size": "240.0ml",
         "image_quality": "good"
       },
@@ -74113,7 +74113,7 @@
           "vitamin-d_100g": 0
         },
         "nutriscore_grade": "b",
-        "precomputed_score": 86,
+        "precomputed_score": 94,
         "serving_size": "1 portion (170 g)",
         "image_quality": "low"
       },
@@ -74178,7 +74178,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "b",
-        "precomputed_score": 86,
+        "precomputed_score": 94,
         "serving_size": "0.75 cup (170 g)",
         "image_quality": "good"
       },
@@ -74232,7 +74232,7 @@
           "vitamin-d_100g": 0
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 86,
+        "precomputed_score": 96,
         "serving_size": "0.75 cup (170 g)",
         "image_quality": "good"
       },
@@ -74304,7 +74304,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 86,
+        "precomputed_score": 93,
         "serving_size": "1 serving (150 g)",
         "image_quality": "good"
       },
@@ -74363,7 +74363,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 86,
+        "precomputed_score": 92,
         "serving_size": "1 cup (227 g)",
         "image_quality": "low"
       },
@@ -74421,7 +74421,7 @@
           "vitamin-d_100g": 0
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 85,
+        "precomputed_score": 96,
         "serving_size": "0.75 cup (170 g)",
         "image_quality": "good"
       },
@@ -74482,7 +74482,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 85,
+        "precomputed_score": 94,
         "serving_size": "0.75 cup (170 g)",
         "image_quality": "good"
       },
@@ -74535,7 +74535,7 @@
           "vitamin-d_100g": 0
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 85,
+        "precomputed_score": 92,
         "serving_size": "0.75 cup (170 g)",
         "image_quality": "low"
       },
@@ -74581,7 +74581,7 @@
           "sugars_100g": 2.941
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 85,
+        "precomputed_score": 93,
         "serving_size": "1 serving (100 g)",
         "image_quality": "low"
       },
@@ -74642,7 +74642,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 85,
+        "precomputed_score": 74,
         "serving_size": "1 portion (170 g)",
         "image_quality": "low"
       },
@@ -74696,7 +74696,7 @@
           "vitamin-d_100g": 0
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 84,
+        "precomputed_score": 86,
         "serving_size": "1 serving (150 g)",
         "image_quality": "good"
       },
@@ -74752,7 +74752,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 84,
+        "precomputed_score": 87,
         "serving_size": "1 serving (150 g)",
         "image_quality": "good"
       },
@@ -74815,7 +74815,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 83,
+        "precomputed_score": 86,
         "serving_size": "0.75 cup (170 g)",
         "image_quality": "low"
       },
@@ -74940,7 +74940,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 82,
+        "precomputed_score": 64,
         "serving_size": "1 cup (170 g)",
         "image_quality": "low"
       },
@@ -75001,7 +75001,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 82,
+        "precomputed_score": 64,
         "serving_size": "1 portion (170 g)",
         "image_quality": "good"
       },
@@ -75048,7 +75048,7 @@
           "sugars_100g": 3.9
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 81,
+        "precomputed_score": 84,
         "serving_size": "1 serving (125 g)",
         "image_quality": "good"
       },
@@ -75102,7 +75102,7 @@
           "vitamin-d_100g": 2.94117647058824e-06
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 81,
+        "precomputed_score": 92,
         "serving_size": "0.75 cup (170 g)",
         "image_quality": "good"
       },
@@ -75164,7 +75164,7 @@
           "vitamin-d_100g": 1.05e-06
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 81,
+        "precomputed_score": 88,
         "serving_size": "1 cup (240 ml)",
         "image_quality": "good"
       },
@@ -75222,7 +75222,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 81,
+        "precomputed_score": 85,
         "serving_size": "1 container (150 g)",
         "image_quality": "good"
       },
@@ -75277,7 +75277,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 81,
+        "precomputed_score": 89,
         "serving_size": "1 container (150 g)",
         "image_quality": "good"
       },
@@ -75389,7 +75389,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 80,
+        "precomputed_score": 64,
         "serving_size": "0.667 cup (170 g)",
         "image_quality": "low"
       },
@@ -75456,7 +75456,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 79,
+        "precomputed_score": 74,
         "serving_size": "150 g",
         "image_quality": "good"
       },
@@ -75508,7 +75508,7 @@
           "vitamin-c_100g": 0
         },
         "nutriscore_grade": "b",
-        "precomputed_score": 79,
+        "precomputed_score": 89,
         "serving_size": "1 cup (227 g)",
         "image_quality": "good"
       },
@@ -75571,7 +75571,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "b",
-        "precomputed_score": 79,
+        "precomputed_score": 74,
         "serving_size": "1 portion (170 g)",
         "image_quality": "good"
       },
@@ -75630,7 +75630,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 78,
+        "precomputed_score": 86,
         "serving_size": "1 portion (125 g)",
         "image_quality": "good"
       },
@@ -75695,7 +75695,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 78,
+        "precomputed_score": 74,
         "serving_size": "1 serving (170 g)",
         "image_quality": "good"
       },
@@ -75758,7 +75758,7 @@
           "vitamin-d_100g": 0
         },
         "nutriscore_grade": "e",
-        "precomputed_score": 76,
+        "precomputed_score": 54,
         "serving_size": "1 bottle (80 ml)",
         "image_quality": "good"
       },
@@ -75816,7 +75816,7 @@
           "vitamin-d_100g": 0
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 76,
+        "precomputed_score": 74,
         "serving_size": "0.75 cup (170 g)",
         "image_quality": "good"
       },
@@ -75872,7 +75872,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 75,
+        "precomputed_score": 74,
         "serving_size": "1 serving (170 g)",
         "image_quality": "good"
       },
@@ -75933,7 +75933,7 @@
           "vitamin-d_100g": 0
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 75,
+        "precomputed_score": 84,
         "serving_size": "1 bottle (207 ml)",
         "image_quality": "good"
       },
@@ -75993,7 +75993,7 @@
           "vitamin-d_100g": 1.29411764705882e-06
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 75,
+        "precomputed_score": 84,
         "serving_size": "0.75 cup (170 g)",
         "image_quality": "good"
       },
@@ -76232,7 +76232,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 73,
+        "precomputed_score": 87,
         "serving_size": "150.0g",
         "image_quality": "good"
       },
@@ -76290,7 +76290,7 @@
           "vitamin-d_100g": 1.33333333333333e-06
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 72,
+        "precomputed_score": 85,
         "serving_size": "1 portion (150 g)",
         "image_quality": "low"
       },
@@ -76350,7 +76350,7 @@
           "vitamin-d_100g": 1.35294117647059e-06
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 72,
+        "precomputed_score": 88,
         "serving_size": "0.75 Cup (170 g)",
         "image_quality": "good"
       },
@@ -76404,7 +76404,7 @@
           "sugars_100g": 8
         },
         "nutriscore_grade": "b",
-        "precomputed_score": 72,
+        "precomputed_score": 74,
         "serving_size": "1 container (150 g)",
         "image_quality": "good"
       },
@@ -76462,7 +76462,7 @@
           "vitamin-d_100g": 1.33e-06
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 72,
+        "precomputed_score": 85,
         "serving_size": "1 container (150 g)",
         "image_quality": "good"
       },
@@ -76525,7 +76525,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 72,
+        "precomputed_score": 85,
         "serving_size": "0.75 cup (170 g)",
         "image_quality": "good"
       },
@@ -76580,7 +76580,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 72,
+        "precomputed_score": 87,
         "serving_size": "1 portion (150 g)",
         "image_quality": "good"
       },
@@ -76648,7 +76648,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 72,
+        "precomputed_score": 74,
         "serving_size": "170 g",
         "image_quality": "good"
       },
@@ -76707,7 +76707,7 @@
           "vitamin-d_100g": 0
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 72,
+        "precomputed_score": 74,
         "serving_size": "1 serving (150 g)",
         "image_quality": "good"
       },
@@ -76766,7 +76766,7 @@
           "vitamin-d_100g": 1.33333333333333e-06
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 72,
+        "precomputed_score": 84,
         "serving_size": "1 container (150 g)",
         "image_quality": "good"
       },
@@ -76829,7 +76829,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 72,
+        "precomputed_score": 64,
         "serving_size": "0.75 cup (170 g)",
         "image_quality": "good"
       },
@@ -76890,7 +76890,7 @@
           "vitamin-d_100g": 0
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 72,
+        "precomputed_score": 74,
         "serving_size": "0.75 cup (170 g)",
         "image_quality": "good"
       },
@@ -76950,7 +76950,7 @@
           "vitamin-d_100g": 0
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 71,
+        "precomputed_score": 82,
         "serving_size": "150.0g",
         "image_quality": "good"
       },
@@ -77022,7 +77022,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "b",
-        "precomputed_score": 71,
+        "precomputed_score": 48,
         "serving_size": "3/4 cup (170 g)",
         "image_quality": "good"
       },
@@ -77088,7 +77088,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 71,
+        "precomputed_score": 82,
         "serving_size": "150g",
         "image_quality": "good"
       },
@@ -77150,7 +77150,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 71,
+        "precomputed_score": 82,
         "serving_size": "1 container (150 g)",
         "image_quality": "good"
       },
@@ -77207,7 +77207,7 @@
           "sugars_100g": 14.0625
         },
         "nutriscore_grade": "c",
-        "precomputed_score": 71,
+        "precomputed_score": 64,
         "serving_size": "1 serving (128 g)",
         "image_quality": "good"
       },
@@ -77262,7 +77262,7 @@
           "sugars_100g": 7.9646017699115
         },
         "nutriscore_grade": "b",
-        "precomputed_score": 71,
+        "precomputed_score": 74,
         "serving_size": "1 container (113 g)",
         "image_quality": "good"
       },
@@ -77325,7 +77325,7 @@
           "vitamin-d_100g": 2.22e-06
         },
         "nutriscore_grade": "b",
-        "precomputed_score": 70,
+        "precomputed_score": 88,
         "serving_size": "1 bottle (207 ml)",
         "image_quality": "good"
       },
@@ -77392,7 +77392,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 70,
+        "precomputed_score": 82,
         "serving_size": "150.0g",
         "image_quality": "good"
       },
@@ -77452,7 +77452,7 @@
           "vitamin-c_100g": 0
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 70,
+        "precomputed_score": 83,
         "serving_size": "0.75 cup (190 g)",
         "image_quality": "good"
       },
@@ -77510,7 +77510,7 @@
           "trans-fat_100g": 0
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 70,
+        "precomputed_score": 85,
         "serving_size": "1 container (190 g)",
         "image_quality": "good"
       },
@@ -77575,7 +77575,7 @@
           "zinc_100g": 0.000842105263157895
         },
         "nutriscore_grade": "not-applicable",
-        "precomputed_score": 70,
+        "precomputed_score": 86,
         "serving_size": "1 container (190 g)",
         "image_quality": "good"
       },
@@ -77639,7 +77639,7 @@
           "vitamin-d_100g": 2.1256038647343e-06
         },
         "nutriscore_grade": "b",
-        "precomputed_score": 69,
+        "precomputed_score": 82,
         "serving_size": "1 bottle (207 ml)",
         "image_quality": "good"
       },
@@ -77707,7 +77707,7 @@
           "vitamin-d_100g": 0
         },
         "nutriscore_grade": "e",
-        "precomputed_score": 69,
+        "precomputed_score": 74,
         "serving_size": "1 bottle (414 g)",
         "image_quality": "good"
       },
@@ -77764,7 +77764,7 @@
           "sugars_100g": 3.68
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 69,
+        "precomputed_score": 86,
         "serving_size": "190 g",
         "image_quality": "good"
       },
@@ -77828,7 +77828,7 @@
           "zinc_100g": 0
         },
         "nutriscore_grade": "a",
-        "precomputed_score": 68,
+        "precomputed_score": 82,
         "serving_size": "1 portion (150 g)",
         "image_quality": "good"
       }
