@@ -9,6 +9,14 @@ export const CURATED_R2_PREFIX = "curated-images/";
 export const PRODUCT_R2_PREFIX = "product-images/";
 export const IMAGE_KV_PREFIX = "image:v1:";
 export const MISS_KV_PREFIX = "image:miss:v1:";
+/**
+ * TTL for a *cleared* miss. Curated writes overwrite the miss key with "0"
+ * instead of deleting it, to stay under the KV free-tier delete budget
+ * (1k/day vs 1M writes). "0" is read as "no active miss" — identical to an
+ * absent key — in imageResolver.resolveProductImage. Kept in sync with the
+ * constant of the same name there.
+ */
+const MISS_CLEARED_TTL_SECONDS = 60;
 
 /** Max longest side for curated uploads (pixels). */
 export const CURATED_MAX_SIDE = 1000;
@@ -104,7 +112,9 @@ export async function putCuratedImage(
   await env.CACHE.put(imageMetaKey(trimmed), JSON.stringify(meta), {
     expirationTtl: 40 * 24 * 60 * 60,
   });
-  await env.CACHE.delete(imageMissKey(trimmed));
+  // Overwrite the miss with "0" rather than delete it (KV free-tier delete
+  // budget); "0" reads as no active miss (see MISS_CLEARED_TTL_SECONDS).
+  await env.CACHE.put(imageMissKey(trimmed), "0", { expirationTtl: MISS_CLEARED_TTL_SECONDS });
 
   console.log(JSON.stringify({
     event: "image_resolved",
@@ -161,7 +171,9 @@ export async function adoptCuratedIfPresent(
   await env.CACHE.put(imageMetaKey(trimmed), JSON.stringify(meta), {
     expirationTtl: 40 * 24 * 60 * 60,
   });
-  await env.CACHE.delete(imageMissKey(trimmed));
+  // Overwrite the miss with "0" rather than delete it (KV free-tier delete
+  // budget); "0" reads as no active miss (see MISS_CLEARED_TTL_SECONDS).
+  await env.CACHE.put(imageMissKey(trimmed), "0", { expirationTtl: MISS_CLEARED_TTL_SECONDS });
   console.log(JSON.stringify({
     event: "image_resolved",
     barcode: trimmed,
