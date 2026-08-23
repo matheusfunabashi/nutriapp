@@ -68,7 +68,7 @@ struct YogurtCheeseV52Tests {
         let r = s12(wholeYogurt)
         #expect(r?.note?.hasPrefix("dairyDense") == true)
         #expect((r?.fraction ?? 0) > 0.5, "plain yogurt earns its nutrient rule")
-        #expect((r?.weight ?? 0) == 8)
+        #expect((r?.weight ?? 0) == 18)
     }
 
     @Test func wholeVsNonfatYogurtIsNearTie() {
@@ -112,8 +112,9 @@ struct YogurtCheeseV52Tests {
                     ingredientsText: "raw milk, salt, cultures, enzymes",
                     categories: ["dairies", "cheeses", "cheddar-cheese", "raw-milk-cheeses"])
         let r = ScoringEngineV4.score(raw)!
-        let dp = r.rules.first { $0.rule == "dairyProcessing" }!
-        #expect(abs(dp.fraction - 0.5) < 0.001)
+        // V5.6: the graded dock moved to the form & cultures rule (0.8).
+        let dp = r.rules.first { $0.rule == "dairyForm" }!
+        #expect(abs(dp.fraction - 0.8) < 0.001)
         // The hard 54 cap is fluid-milk only (aged cheese is a different risk
         // class); cheese takes the graded dock instead.
         let gate = ScoringEngineV4.applyBaseCaps(base: 100, product: raw, rs: rs)
@@ -142,7 +143,8 @@ struct YogurtCheeseV52Tests {
         #expect(IngredientIntegrity.isWholeFoodToken("cultured milk"))
         #expect(IngredientIntegrity.isWholeFoodToken("rennet"))
         #expect(IngredientIntegrity.isWholeFoodToken("cheese cultures"))
-        // Salt and generic "enzymes" deliberately stay off the whitelist.
+        // V5.6: salt and enzymes are neutral tokens on the dairy profiles
+        // (dropped from the ratio); "enzymes" alone still isn't whole food.
         #expect(!IngredientIntegrity.isWholeFoodToken("enzymes"))
     }
 

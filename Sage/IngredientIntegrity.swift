@@ -53,7 +53,10 @@ enum IngredientIntegrity {
                        "write to us", "consumer relations", "distributed by", "manufactured by",
                        "manufactured for", "produced for", "packed for", "best before",
                        "store in a cool", "keep refrigerated", "ingrédients :", "ingrédients:",
-                       "ingredientes:", "ingredienti:", "zutaten:"] {
+                       "ingredientes:", "ingredienti:", "zutaten:",
+                       // V5.6 dairy carton boilerplate after the list.
+                       "contains milk", "contains: milk", "ingredient not in regular",
+                       "*ingredient not", "dist. and sold", "dist. by", "sold exclusively"] {
             if let r = lower.range(of: marker), r.lowerBound < cut { cut = r.lowerBound }
         }
         return cut == lower.endIndex ? text : String(text[..<cut])
@@ -66,7 +69,9 @@ enum IngredientIntegrity {
     /// have no such words and must stay lists.
     static func looksLikeIngredientList(_ text: String?) -> Bool {
         guard let text = text?.trimmingCharacters(in: .whitespacesAndNewlines), !text.isEmpty else { return false }
-        let parts = tokens(from: text)
+        // Comma-level tokens only: the ". " separator split (V5.6) would carve
+        // marketing prose into short sentence fragments that read as a list.
+        let parts = tokens(from: text, splittingPeriods: false)
         guard !parts.isEmpty else { return false }
         let words = parts.reduce(0) { $0 + $1.split(separator: " ").count }
         let avg = Double(words) / Double(parts.count)
@@ -79,6 +84,10 @@ enum IngredientIntegrity {
     }
 
     static func tokens(from text: String) -> [String] {
+        tokens(from: text, splittingPeriods: true)
+    }
+
+    static func tokens(from text: String, splittingPeriods: Bool) -> [String] {
         var cleaned = strippingTrailingStatements(text)
         while let open = cleaned.range(of: "("),
               let close = cleaned.range(of: ")", range: open.upperBound..<cleaned.endIndex) {
@@ -91,6 +100,15 @@ enum IngredientIntegrity {
         // OFF allergen markup wraps words in underscores ("_Œufs_ frais");
         // underscores are word characters to a regex, so strip them everywhere.
         cleaned = cleaned.replacingOccurrences(of: "_", with: "")
+        // V5.6: some labels use a period between ingredients ("reduced fat
+        // milk. vitamin a palmitate, vitamin d3"). A period after a word of
+        // three or more letters followed by a space is a separator; "l.
+        // bulgaricus" / "s. thermophilus" abbreviations are not.
+        if splittingPeriods {
+            cleaned = cleaned.replacingOccurrences(
+                of: #"(?<=[A-Za-zÀ-ÿ]{3})\.\s+(?=[A-Za-zÀ-ÿ(])"#, with: ",",
+                options: .regularExpression)
+        }
         return cleaned
             .components(separatedBy: CharacterSet(charactersIn: ",;•\n"))
             .map { $0.trimmingCharacters(in: .whitespacesAndNewlines).lowercased() }
@@ -125,7 +143,38 @@ enum IngredientIntegrity {
         "unbleached", "enriched", "fortified", "stone ground", "stone-ground",
         "stoneground", "sprouted", "toasted", "cracked", "rolled", "malted",
         "kibbled", "sifted", "untreated", "filtered", "sea", "kosher",
+        // V5.6 dairy qualifiers — certification, breed, feed, filtration and
+        // fat-level words that leave the milk itself unchanged ("certified
+        // organic grade a milk" is milk; "ultra-filtered reduced-fat milk" is
+        // milk — filtration is judged by the dairy processing rule, not here).
+        "certified", "usda organic", "certified organic", "a2", "grass-fed",
+        "grass fed", "grassfed", "ultra-filtered", "ultrafiltered", "ultra filtered",
+        "lactose-free", "lactose free", "reduced-fat", "fat-free", "part-skim",
+        "part skim", "partly skimmed", "ultra-pasteurized", "ultra pasteurized",
+        "ultra-pasteurised", "ultra pasteurised", "vitamin d", "rbst-free", "rbst free",
+        "non-homogenized", "non-homogenised", "cream-top", "cream top",
     ]
+
+    /// V5.6: starter and probiotic cultures are the live part of a fermented
+    /// food, not an additive — "live active yogurt cultures", "bacterial
+    /// cultures", "lactic ferments", "l. acidophilus", "bifidobacterium" and
+    /// friends all read as whole food, whatever the label's phrasing. Cultured
+    /// *ingredients* used as curing agents (cultured celery / dextrose / sugar)
+    /// are excluded: those are nitrite or flavour sources, not cultures.
+    private static let cultureFamilyMarkers = [
+        "culture", "ferment", "lactobacillus", "bifidobacter", "bifidus", "streptococcus",
+        "lactococcus", "leuconostoc", "s. thermophilus", "l. bulgaricus", "l. acidophilus",
+        "l. casei", "l. rhamnosus", "l. paracasei", "lactic acid bacteria", "probiotic",
+        "kefir grains", "kefir cultures", "acidophilus", "thermophilus", "bulgaricus",
+    ]
+    private static let cultureFamilyExclusions = [
+        "dextrose", "celery", "sugar", "corn", "wheat", "whey", "extract", "syrup",
+    ]
+
+    static func isCultureFamilyToken(_ token: String) -> Bool {
+        guard cultureFamilyMarkers.contains(where: { token.contains($0) }) else { return false }
+        return !cultureFamilyExclusions.contains { token.contains($0) }
+    }
 
     /// Plain water is not an ingredient to judge (Oasis excludes it too); it
     /// is dropped from the S14 whole-food ratio so "whole wheat flour, water,
@@ -145,7 +194,14 @@ enum IngredientIntegrity {
     /// V5.2: leading identity-preserving qualifiers are stripped before a
     /// retry, so "organic milk" / "raw milk" / "fresh goat milk" match.
     static func isWholeFoodToken(_ token: String) -> Bool {
+        // Refined fractions are never whole food, whatever prefix they carry —
+        // without this, qualifier stripping would expose "ultrafiltered milk
+        // protein isolate" to the "milk …" prefix match.
+        let refined = ["isolate", "isolado", "isolato", "concentrate", "concentrado",
+                       "concentrato", "hydrolyz", "hydrolys", "hidrolisad", "idrolizzat"]
+        if refined.contains(where: { token.contains($0) }) { return false }
         if matchesWhitelist(token) { return true }
+        if isCultureFamilyToken(token) { return true }
         var t = token
         var stripped = true
         while stripped {
@@ -155,7 +211,16 @@ enum IngredientIntegrity {
                 stripped = true
             }
         }
-        return t != token && matchesWhitelist(t)
+        if t != token, matchesWhitelist(t) { return true }
+        // V5.6: qualifiers can also sit mid-token ("reduced fat ultra-filtered
+        // milk", "grade a pasteurized skimmed milk") — drop every qualifier
+        // word-wise and retry once.
+        var u = token
+        for q in strippableQualifiers.sorted(by: { $0.count > $1.count }) {
+            u = u.replacingOccurrences(of: q + " ", with: "")
+        }
+        u = u.trimmingCharacters(in: .whitespaces)
+        return u != token && !u.isEmpty && matchesWhitelist(u)
     }
 
     private static func isWholeFood(_ token: String) -> Bool {

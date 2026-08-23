@@ -55,6 +55,12 @@ enum OverviewTemplate {
             return "It contains industrial trans fat, which caps the overall score at \(cap.value)."
         case "nns":
             return "As a non-nutritive sweetener, its score is capped at \(cap.value)."
+        case "dairyFreeSugar":
+            return "Its added sugar caps the overall score at \(cap.value)."
+        case "dairyNns":
+            return "The artificial sweetener caps the overall score at \(cap.value)."
+        case "dairySodium":
+            return "Its very high sodium caps the overall score at \(cap.value)."
         default:
             return "A health cap limits the overall score at \(cap.value)."
         }

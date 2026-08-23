@@ -198,7 +198,7 @@ struct ProteinBarScoringV55Tests {
         let cheeseBar = bar(name: "Cheddar cheese bar", ing: "pasteurized milk, salt, cultures, enzymes",
                             kcal: 400, prot: 25, sug: 0.5, fib: 0, sat: 21, na: 650, nova: 3,
                             categories: ["dairies", "cheeses", "cheddar-cheese"])
-        #expect(route(cheeseBar) == "yogurt_cheese")
+        #expect(route(cheeseBar) == "dairy_cheese")
     }
 
     // MARK: Serving

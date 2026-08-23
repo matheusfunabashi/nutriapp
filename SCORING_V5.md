@@ -66,13 +66,127 @@ of \(\sum w\). Confidence haircuts apply for missing nutrition inputs (floor 60%
 | `bread` | S1 16, S2 14 (`bread`), wholeGrain 16 (`bread`), S12 14 (`grain`), S3 10 (`bread`), S4 12 (`bread`), S5 6, S14 8, S15 4 — **no S13** |
 | `grains` (formerly `breads`: cereals, pasta, rice, oats, flours) | S1 18, wholeGrain 12, S3 8, S4 8, S2 16, S12 12, S13 4, S14 14, S15 8 |
 | `meat` | S1 30, S2 14, S4 10, S5 6, S12 14, S13 4, S14 14, S15 8 |
-| `dairy_milk` | S1 24, dairyProcessing 10, S3 6, S5 6, S2 6, S12 20 (`dairy`), S13 8, S14 14, S15 6 |
-| `yogurt_cheese` | S1 24, dairyProcessing 8, S3 10, S4 10, S5 12, S12 8 (`dairyDense`), S13 8, S14 14, S15 6 |
+| `dairy_milk` | S12 22 (`dairy`), S1 18, S14 14, S2 12 (`dairy` markers), dairyProcessing 10, S3 10 (free sugar), S13 8 (`dairy` prior), S5 6 — **no S15** |
+| `dairy_fermented` | S3 26 (`dairy` free sugar), S12 18 (`dairyDense`), S1 14, S14 12, S6 8 (`dairy`), dairyForm 6, S13 6 (`dairy` prior), S5 6, S4 4 (`fermented` prior 0.9) — **no S15** |
+| `dairy_cheese` | S4 24 (`cheese` 150/500/1000), S12 18 (`dairyCheese`), S5 14 (`cheese` 6/14/22), S1 12, S14 12, dairyForm 10, S13 6 (`dairy` prior), S3 4 — **no S15** |
+| `dairy_cream` | S5 34 (`cream` 1.5/5/10), S1 12, S3 12 (`dairy`), S14 10, S12 12 (`dairyDense`), S2 12 (`dairy` markers), dairyProcessing 6, S13 4 (`dairy` prior) — **no S15** |
 | `plant_milk` | S1 20, S10 16, contaminantRisk 8, S3 10, S5 4, S12 12, S2 10, S14 14, S15 6 |
 | `tea_coffee` | S1 28, S2 24, brewMaterial 12, S3 8 (`foods`), S12 14 (`dryBrew` — redistributes: beans/leaves never carry a micronutrient panel), S14 14 |
 | `drinks` | S1 23, S3 43 (`drinksServing`), S8 15 (caffeine), S6 13 (tiered sweeteners), S4 6 — **no S2, no S7** |
 | `juice_100` | same weights as `drinks`; dose-aware S3 + juice sugar cap + flat +3 micronutrient boost |
 | `protein_bars` | S12 26 (`proteinBar`), S3 16 (`proteinBar`), S6 10 (`proteinBar`), S2 10 (`proteinBar`), S1 8, S14 10 (`proteinBar`), S15 8, S5 8, S4 2 (`proteinBar`), S13 2 |
+
+## V5.6.0 Dairy (four forms, one family)
+
+Audit of the dairy scoring against the live engine (77 archetype fixtures,
+400 top-scanned US OFF records, the Milks / Yogurt / Cheese Top Rated shelves)
+and Oasis SCR_DAIRY v4.7.0. Findings: creams routed to `fats` (Daisy sour
+cream 95, half-and-half 97 — the highest dairy scores in the app); one
+`yogurt_cheese` profile served two foods with different risk axes, so
+S1+S14 (38 pts) outranked added sugar (10 pts) — Noosa honey 85 > Chobani
+strawberry 75, Yakult 76 "Excellent"; lactose was scored as sugar while the
+intrinsic ×0.7 discount double-counted *declared* added sugar; dairyProcessing
+returned 0.85 on 199/200 real yogurts/cheeses; S13 was 0.35 on every milk;
+S15 handed +6 to anything listing "cream"; infant formula scored 34 "Bad" on
+`general`; a plain milk with no ingredient list scored 61; OFF's junk
+`low-sugars` tag substring-tripped the free-sugar cap (grated parmesan 34).
+Ruleset `2026.08-v5.6.0`; tests `DairyScoringV56Tests`; shapes in
+`DairyScoring.swift`; config in the ruleset `dairy` block.
+
+Stance (V5.2/V5.3, now written down): **health only** — fat level is
+preference (whole = skim in Overall, personalized in Your Score); unknown is
+a confidence haircut with a form-appropriate prior, never a guess; raw fluid
+/ fresh-fermented milk is a safety cap (54); no points for sourcing, welfare,
+packaging or certification (Oasis' axes, deliberately not adopted — grass-fed
+/ organic / A2 / raw +6 have no human-outcome evidence a health score can
+carry; raw milk is the opposite of a bonus).
+
+- **Four forms** — `dairy_milk` (fluid, UF/UHT, powders reconstituted,
+  buttermilk, evaporated), `dairy_fermented` (yogurt, Greek, skyr, kefir,
+  quark, labneh, drinkable), `dairy_cheese` (fresh / aged / processed),
+  `dairy_cream` (new: heavy/light cream, half-and-half, sour cream, crème
+  fraîche, whipped; `creams` no longer routes to `fats`; mascarpone is cream
+  by composition). Router order: milks → specific fermented → cream → cheese
+  → generic `fermented-milk-products` (OFF stamps that ancestor on cheeses
+  and sour creams too).
+- **S3 = free sugar** — declared added sugar wins when sane (a value above
+  total sugar is an OFF entry error and is ignored); otherwise total minus a
+  lactose allowance (milk/cream 4.8/3.0, yogurt 4.0, strained 3.0, cheese
+  2.0 g/100 g — WHO's free-sugar definition excludes milk sugars). The
+  intrinsic ×0.7 discount is retired on dairy. Thresholds `dairy` 3/8/13.
+  **Free-sugar caps**: ≥5 g → 74, ≥8 → 64, ≥11 → 54 (a dessert yogurt is
+  never Excellent); tier-1 NNS on fermented/cream → cap 58; cheese ≥1200 mg
+  sodium → cap 54.
+- **S2 `dairy` (milk, cream)** — marker families read off the
+  fortification-stripped list (sugars, NNS, oils, starches, emulsifiers,
+  emulsifying salts, hydrocolloids, flavors, colors, protein fillers,
+  preservatives): 0 → 1.0 … ≥4 → 0.2. Evidence-NOVA: a list that is dairy
+  base + {cultures, enzymes/rennet, salt, lactase, vitamins} is NOVA 1
+  whatever OFF says.
+- **dairyForm (fermented, cheese)** replaces the dead dairyProcessing weight:
+  live cultures declared 1.0 · fermented w/o culture claim 0.9 ·
+  heat-treated after culturing 0.6 · natural cheese 1.0 · anti-caking 0.9 ·
+  raw-milk aged cheese 0.8 (no fluid cap — 60-day rule) · emulsifying salts
+  0.35 · vegetable oil in a "cheese" 0.1.
+- **dairyProcessing (milk, cream)** — HTST/vat 1.0 (pasteurized-by-law
+  default is *evidence*, so plain milk sheds the provisional banner), UHT /
+  ultra-pasteurized / sterilized 0.7, ultrafiltered 0.7 (0.6 if also UHT),
+  evaporated / condensed / powder 0.7, raw 0.5 + cap. UF milk is no longer
+  triple-docked (was processing 0.25 + NOVA-4 zero + S14 miss = −20).
+- **S13 `dairy` reference prior** (egg pattern): milk/fermented 0.70, cheese
+  0.70, cream 0.40; declared lifts vitamin D ≥1 µg +0.10, potassium ≥130 mg
+  +0.05, B12 ≥0.4 µg +0.05, calcium ≥ form target +0.05.
+- **S12** — `dairy` (protein 3.3 g + calcium 120 mg per 100 ml),
+  `dairyDense` unchanged (fermented, cream; cream protein declared exactly 0
+  is serving-rounding → unknown), new `dairyCheese` (0.7 × protein
+  [abs 20 g + 15 g/100 kcal density blend] + 0.3 × calcium 600 mg). Milk-
+  derived proteins (MPC, whey concentrate, milk powder) are exempt from the
+  isolate ×0.5 on dairy profiles.
+- **Identity gate (sparse records)** — tag + form nutrient envelope + no
+  additive tags → S1 unknown 0.75 (off-envelope 0.45, generic 0.20 stays for
+  everything else), S2 prior 0.85; plausibility guard rescales per-serving
+  panels entered as per-100 g through the declared serving (150 kcal "whole
+  milk", 8000 kcal grated parmesan).
+- **S14** — dairy neutral tokens (salt, enzymes, rennet, lactase, vitamins);
+  culture-family tokens are whole food ("live active yogurt cultures",
+  "l. bulgaricus", "ferments lactiques"; cultured dextrose / celery excluded);
+  qualifiers strippable mid-token and extended (certified, usda organic, a2,
+  grass-fed, ultra-filtered, lactose-free, part-skim, fat-free, vitamin d …);
+  multilingual dairy whitelist (lait, leche, latte, milch, mjölk, "milk and
+  cream", "sheep and goat milk"); tokenizer splits ". " between ingredients
+  (but never "l. bulgaricus") and drops "contains: milk" boilerplate.
+- **Routing evidence** — plant-based riding dairy tags leaves the family
+  (word-bounded: goat milk ≠ oat milk; "non-vegan" labels don't count):
+  milk-tagged → `plant_milk`, others → `general`. Sweetened flavored protein
+  shakes tagged `milks` (protein ≥6 g/100 ml + shake/protein name + flavor
+  or sweetener) → `drinks`. Infant formula → **unsupported** with its own
+  copy (was 34 "Bad" on `general`) behind a formula-evidence guard so junk
+  `baby-milks` tags on shakes don't unscore them.
+- **Generic fixes that rode along** — `isCaloricSweetener` no longer
+  substring-matches OFF nutrition-level tags (`low-sugars` capped a 0 g-sugar
+  parmesan at 34) and requires sugar ≥25 g when a panel exists; negated
+  labels ("no-sucralose", "no aspartame") no longer read as sweetener hits
+  on the drinks path (siggi's vanilla took the tier-1 cap for a "no
+  sucralose" claim); benign additive tiers — hydrocolloids, gelatin, plant
+  pigments (annatto), natamycin, cellulose, modified starches, lecithin →
+  soft; GRAS acidulants/coagulants (citric/lactic/acetic/malic, CaCl₂, GDL,
+  agar) → exempt; fortification exemption extended (folic acid, B-complex,
+  DHA/algal oil, choline, GOS/inulin, calcium salts).
+- **Calibration:** plain milk 97 (whole = skim ±1), lactose-free 98, goat 98,
+  UHT 94, ultrafiltered 95, buttermilk 97, powder (as prepared) 91,
+  evaporated 74, raw 54, sweetened condensed 34 · plain yogurt 92, Greek 0%
+  96, skyr 96, kefir 92, quark 95, labneh 91, Siggi's strawberry 91, Chobani
+  strawberry 74, Yoplait 64, Noosa honey 64 (cap), Yakult 64 (cap), Light &
+  Fit 58 (NNS cap), Oikos Triple Zero 88 · cottage 83–87, Swiss 86,
+  mozzarella 82, fresh mozzarella 83, ricotta 85, paneer 84, cheddar 71,
+  gouda 71, parmesan 75, brie 72, feta 70, blue 65, halloumi 54 (Na cap),
+  Laughing Cow 51, American singles 46, Velveeta 42 · half-and-half 74, sour
+  cream 65, crème fraîche 56, heavy cream 51–56, whipped topping 32–39,
+  mascarpone 54 · no-list plain milk 89 / cheddar 65 (provisional).
+  Deliberately unscored: sourcing, welfare, organic, grass-fed, A2,
+  packaging, lab testing (see the audit's Oasis comparison).
+- One-shot migration `rulesetV560Rescored`; backend ruleset copy must be
+  redeployed (`cp Sage/RulesetV5.json backend/src/ruleset.json`).
 
 ## V5.5.0 Protein bars (dedicated profile)
 

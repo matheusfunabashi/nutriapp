@@ -131,11 +131,10 @@ struct TopRatedTests {
     }
 
     @Test func provisionalMilkStillEligible() {
-        // dairy_milk carries a systemic unknown (`dairyProcessing`, w10 — no
-        // label can evidence pasteurization), so isProvisionalScore flags every
-        // milk. The Top Rated gate must tolerate that mid-weight unknown: a
-        // fully documented milk is eligible even though its detail screen shows
-        // the provisional banner.
+        // V5.6: retail fluid milk is pasteurized by law unless labelled raw,
+        // so the processing default became evidence and a fully documented
+        // milk no longer wears the provisional banner at all — and is
+        // eligible for Top Rated.
         let pool = candidates("""
         [{"barcode":"MILK1","name":"Whole Milk","brand":"Dairy Co",
           "countries":["us"],"categories_tags":["en:dairies","en:milks","en:whole-milks"],
@@ -145,7 +144,7 @@ struct TopRatedTests {
         """)
         let items = TopRated.items(from: pool, profile: MockData.user, ruleset: .bundled)
         #expect(items.map(\.product.id) == ["MILK1"])
-        #expect(ScoringEngineV4.isProvisionalScore(items[0].product, ruleset: .bundled))
+        #expect(!ScoringEngineV4.isProvisionalScore(items[0].product, ruleset: .bundled))
     }
 
     // MARK: Variety (brand cap + market-variant dedupe)

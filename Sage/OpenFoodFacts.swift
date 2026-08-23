@@ -42,7 +42,7 @@ enum AdditiveCatalog {
                 note: kb.summary.resolved(),
                 code: code,
                 // V5.4: fortificant vitamins / minerals stay exempt (never an S1 penalty).
-                tier: nutrientFortificantCodes.contains(code) ? .exempt : tier(from: kb.risk)
+                tier: scoringTier(code: code, base: tier(from: kb.risk))
             )
         }
         if let info = entries[code] {
@@ -62,9 +62,8 @@ enum AdditiveCatalog {
         // cost every US bread ~3 S1 points. Scoped to the fortificant set: the
         // knowledge base deliberately re-tiers other detector-exempt codes
         // (gums, lecithin, polyols), and those stay as they are.
-        let scoredTier: AdditiveTier = nutrientFortificantCodes.contains(code)
-            ? .exempt
-            : (kb.map { tier(from: $0.risk) } ?? detected.tier)
+        let scoredTier: AdditiveTier = scoringTier(
+            code: code, base: kb.map { tier(from: $0.risk) } ?? detected.tier)
         let resolvedRisk: RiskLevel = {
             if let kb { return kb.risk }
             return risk(for: scoredTier)
@@ -93,6 +92,37 @@ enum AdditiveCatalog {
     static let nutrientFortificantCodes: Set<String> = [
         "e101", "e101a", "e101i", "e101ii", "e375", "e300", "e170", "e170i",
         "e306", "e307", "e307a", "e307b", "e307c",
+    ]
+
+    /// Final S1 tier for a code: fortificants are exempt (V5.4); V5.6 adds a
+    /// benign set — GRAS acidulants / coagulants are exempt, and the
+    /// structural hydrocolloids, plant pigments, anti-caking fibres, gelatin
+    /// and modified starches drop to the soft tier. The knowledge base marks
+    /// all of these "low" risk, which maps to tier C (−9 % of S1 each): every
+    /// annatto cheddar lost 2 points and a grated parmesan ~5 for cellulose +
+    /// natamycin + sorbate, while the tiers are meant to track evidence of
+    /// harm, not mere presence. Carrageenan, phosphates, azo colours, NNS and
+    /// preservatives keep their knowledge-base tiers.
+    static func scoringTier(code: String, base: AdditiveTier) -> AdditiveTier {
+        if nutrientFortificantCodes.contains(code) { return .exempt }
+        if benignExemptCodes.contains(code) { return .exempt }
+        if benignSoftCodes.contains(code) { return .soft }
+        return base
+    }
+
+    /// GRAS acidulants and coagulants: citric / lactic / acetic / malic acid,
+    /// calcium chloride, glucono-delta-lactone, calcium citrate, agar.
+    static let benignExemptCodes: Set<String> = [
+        "e330", "e270", "e260", "e296", "e509", "e575", "e333", "e406",
+    ]
+
+    /// Hydrocolloids, gelatin, plant pigments, anti-caking fibres, natamycin,
+    /// modified starches — permitted, no outcome evidence at use levels.
+    static let benignSoftCodes: Set<String> = [
+        "e440", "e410", "e412", "e415", "e418", "e401", "e402", "e403", "e404",
+        "e428", "e441", "e460", "e461", "e463", "e464", "e466", "e160b", "e160a",
+        "e160c", "e160e", "e235", "e1400", "e1404", "e1410", "e1412", "e1413",
+        "e1414", "e1420", "e1422", "e1440", "e1442", "e1450", "e1451", "e322",
     ]
 
     static func tier(from risk: RiskLevel) -> AdditiveTier {

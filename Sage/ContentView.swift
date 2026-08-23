@@ -636,17 +636,33 @@ struct UnsupportedView: View {
         return !Set(product.categories ?? []).isDisjoint(with: alcohol)
     }
 
+    /// V5.6: infant and follow-on formula is a medically regulated food —
+    /// Sage doesn't rate it (it used to land on the general profile and read
+    /// "Bad" on a lactose sugar cap).
+    private var isInfantFormula: Bool {
+        let formula: Set = ["infant-formulas", "baby-milks", "follow-on-milks",
+                            "baby-formula", "infant-milks", "growing-up-milks"]
+        return !Set(product.categories ?? []).isDisjoint(with: formula)
+    }
+
     private var title: String {
-        isAlcohol ? "We don't score alcohol" : "We don't score water"
+        if isAlcohol { return "We don't score alcohol" }
+        if isInfantFormula { return "We don't score infant formula" }
+        return "We don't score water"
     }
 
     private var symbol: String {
-        isAlcohol ? "nosign" : "drop.fill"
+        if isAlcohol { return "nosign" }
+        if isInfantFormula { return "figure.and.child.holdinghands" }
+        return "drop.fill"
     }
 
     private var reason: String {
         if isAlcohol {
             return "Alcohol's health impact isn't something a nutrition score can capture responsibly — so Sage leaves it unscored rather than invent a number."
+        }
+        if isInfantFormula {
+            return "Infant and follow-on formula is a regulated medical food. The right choice depends on your baby and your pediatrician's advice, not on a packaged-food score — so Sage shows the label and leaves the number out."
         }
         return "Plain water isn't something a food score can judge fairly. Without lab data on minerals or contaminants, any number would be guesswork — so we'd rather show nothing than a misleading score."
     }

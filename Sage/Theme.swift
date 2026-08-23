@@ -299,6 +299,7 @@ final class AppStore: ObservableObject {
         invalidateAndRescoreForV530IfNeeded()
         invalidateAndRescoreForV540IfNeeded()
         invalidateAndRescoreForV550IfNeeded()
+        invalidateAndRescoreForV560IfNeeded()
     }
 
     /// Decode a stored snapshot, migrating legacy `deltaReason` → `overview`.
@@ -402,6 +403,18 @@ final class AppStore: ObservableObject {
     /// palm-kernel fat tier).
     private func invalidateAndRescoreForV550IfNeeded() {
         let key = "rulesetV550Rescored"
+        guard !UserDefaults.standard.bool(forKey: key) else { return }
+        rescoreAll()
+        UserDefaults.standard.set(true, forKey: key)
+        UserDefaults.standard.set(true, forKey: "overviewExpV9Invalidated")
+    }
+
+    /// One-shot V5.6.0 — dairy in four forms (milk / fermented / cheese /
+    /// cream), lactose allowance, marker-family processing, form & cultures,
+    /// S13 reference prior, identity gate, cream routing, infant formula
+    /// unsupported, benign additive tiers, S14 dairy whitelist / qualifiers.
+    private func invalidateAndRescoreForV560IfNeeded() {
+        let key = "rulesetV560Rescored"
         guard !UserDefaults.standard.bool(forKey: key) else { return }
         rescoreAll()
         UserDefaults.standard.set(true, forKey: key)

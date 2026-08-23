@@ -470,7 +470,7 @@ enum DrinksScoring {
         }
 
         let hay = folded(
-            ([p.ingredientsText ?? ""] + (p.labels ?? []) + [p.name]).joined(separator: " ")
+            ([p.ingredientsText ?? ""] + nonNegatedLabels(p) + [p.name]).joined(separator: " ")
         )
 
         for (name, code) in tier1NameToCode where hay.contains(folded(name)) {
@@ -489,11 +489,28 @@ enum DrinksScoring {
         return (canon1.count, canon2.count, canon3.count, keys, true)
     }
 
+    /// V5.6: "no-aspartame" / "no-sucralose" / "sugar-free" / "sans-édulcorant"
+    /// labels used to read as a sweetener hit (siggi's vanilla skyr took the
+    /// tier-1 cap for being labelled "no sucralose"). Negated labels are
+    /// dropped from the sweetener haystack.
+    static func nonNegatedLabels(_ p: Product) -> [String] {
+        let negations = ["no-", "no ", "no_", "without-", "without ", "sans-", "sans ", "sem-",
+                         "sem ", "senza-", "senza ", "ohne-", "ohne ", "zero-", "zero ", "free-of-",
+                         "free of ", "0-"]
+        return (p.labels ?? []).filter { raw in
+            let l = raw.lowercased()
+            let body = l.range(of: ":").map { String(l[$0.upperBound...]) } ?? l
+            if negations.contains(where: { body.hasPrefix($0) }) { return false }
+            if body.hasSuffix("-free") || body.contains("-free-") { return false }
+            return true
+        }
+    }
+
     /// F4b — erythritol detection (code or name), for the extra Tier-2 dock.
     static func containsErythritol(_ p: Product) -> Bool {
         if p.additives.contains(where: { $0.code?.lowercased() == "e968" }) { return true }
         let hay = folded(
-            ([p.ingredientsText ?? ""] + (p.labels ?? []) + [p.name]).joined(separator: " ")
+            ([p.ingredientsText ?? ""] + nonNegatedLabels(p) + [p.name]).joined(separator: " ")
         )
         return hay.contains("erythritol") || hay.contains("eritritol")
     }

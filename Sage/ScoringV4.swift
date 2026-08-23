@@ -101,6 +101,15 @@ struct RulesetV4: Codable {
     /// cream cheese above plain yogurt, density alone would break the
     /// whole-vs-nonfat neutrality stance.
     let s12DairyDense: S12Dairy?
+    /// V5.6 S12 `dairyCheese` variant: cheese-scaled protein (abs + density
+    /// blend) and calcium targets, protein-weighted.
+    struct S12DairyCheese: Codable {
+        let proteinTargetG: Double
+        let calciumTargetMg: Double
+        let proteinWeight: Double
+        let unknownCredit: Double
+    }
+    var s12DairyCheese: S12DairyCheese? = nil
     /// Powdered milk reconstitution: per-100 g panel → per-100 ml as prepared.
     struct DairyPowder: Codable {
         let factor: Double              // standard reconstitution (≈12.5 g/100 ml)
@@ -157,6 +166,11 @@ struct RulesetV4: Codable {
         }
     }
     var eggs: EggConfig? = nil
+
+    /// V5.6 dairy — four forms (milk / fermented / cheese / cream), lactose
+    /// allowance, marker-family processing, form & cultures, S13 reference
+    /// prior, identity gate, routing evidence. See DairyScoring.swift.
+    var dairy: DairyScoring.Config? = nil
 
     // V5.4 bread — optional so older rulesets (and frozen v5.0.9) keep their
     // behavior when the config is absent. Shapes live in BreadScoring.swift.
@@ -618,6 +632,9 @@ enum ScoringEngineV4 {
     /// reconstitution + evidence-based NOVA). One entry point so the score,
     /// the overview payload and the evidence summary always see the same product.
     static func normalizedForRules(_ p: Product, profileId: String, rs: RulesetV4) -> Product {
+        if let cfg = rs.dairy, let form = DairyScoring.form(profileId) {
+            return DairyScoring.normalized(p, form: form, rs: rs, cfg: cfg)
+        }
         switch profileId {
         case "dairy_milk": return dairyNormalized(p, rs: rs)
         case "yogurt_cheese": return dairyNormalized(p, rs: rs, includePowder: false)
@@ -798,7 +815,8 @@ enum ScoringEngineV4 {
                         switch $0.kind {
                         case "dietConflict": return 0
                         case "avoidList": return 1
-                        case "transFat", "freeSugar", "nns": return 2
+                        case "transFat", "freeSugar", "nns",
+                             "dairyFreeSugar", "dairyNns", "dairySodium", "rawMilk": return 2
                         default: return 3
                         }
                     }
@@ -1240,8 +1258,9 @@ enum ScoringEngineV4 {
             let name = p.name.lowercased()
             let evidenced = !tags.isDisjoint(with: gate.tags)
                 || (gate.names ?? []).contains { matchesWord($0, in: name) }
-            if evidenced,
-               route(p, ruleset: rs) == "dairy_milk" {
+            let routed = route(p, ruleset: rs)
+            let rawScope = routed == "dairy_milk" || routed == "dairy_fermented"
+            if evidenced, rawScope {
                 fired.append(ScoreCap(
                     id: "rawMilkCap",
                     value: gate.cap,
@@ -1250,6 +1269,17 @@ enum ScoringEngineV4 {
                     intensity: "full",
                     detail: "Unpasteurized milk can carry harmful bacteria such as Listeria, E. coli, and Salmonella. Public-health agencies advise young children, pregnant people, older adults, and immunocompromised people to avoid it. Caps the overall score at \(gate.cap)."
                 ))
+            }
+        }
+
+        // V5.6 dairy caps — sweet yogurt / dessert dairy is never Excellent,
+        // tier-1 sweeteners on fermented dairy and cream take the NNS ceiling,
+        // and very salty cheese tops out in the OK band.
+        if let cfg = rs.dairy, let form = DairyScoring.form(route(p, ruleset: rs)) {
+            let q = DairyScoring.normalized(p, form: form, rs: rs, cfg: cfg)
+            for hit in DairyScoring.caps(q, form: form, cfg: cfg) {
+                fired.append(ScoreCap(id: hit.id, value: hit.value, shortLabel: hit.shortLabel,
+                                      kind: hit.kind, intensity: "full", detail: hit.detail))
             }
         }
 
@@ -1292,6 +1322,7 @@ enum ScoringEngineV4 {
         guard let tf = p.nutrients.transFat_g, p.novaGroup == 4 else { return false }
         let profileId = route(p, ruleset: rs)
         let ruminant = ["dairy_milk", "yogurt_cheese", "meat"].contains(profileId)
+            || DairyScoring.isDairy(profileId)
         let threshold = ruminant ? 2.0 : gate.threshold
         return tf > threshold
     }
@@ -1301,7 +1332,19 @@ enum ScoringEngineV4 {
     private static func isCaloricSweetener(_ p: Product) -> Bool {
         let tags = (p.categories ?? []).map { $0.lowercased() }
         let needles = ["sugars", "honeys", "syrups", "molasses", "sweeteners"]
-        if tags.contains(where: { tag in needles.contains { tag.contains($0) } }) {
+        // V5.6: OFF also emits nutrition-level tags ("low-sugars",
+        // "no-added-sugars", "reduced-sugars") on every kind of product; a
+        // substring hit on those capped a 0 g-sugar grated parmesan at 34.
+        // Only real sweetener categories count, and never when the panel
+        // itself says the product is not sugar-rich.
+        let negations = ["low-", "no-", "reduced-", "without-", "less-", "free-", "zero-"]
+        let isSweetenerCategory = tags.contains { tag in
+            guard needles.contains(where: { tag == $0 || tag.hasSuffix("-" + $0) || tag.hasPrefix($0 + "-") })
+            else { return false }
+            return !negations.contains { tag.hasPrefix($0) } && !tag.contains("-free")
+        }
+        if isSweetenerCategory {
+            if let s = p.nutrients.sugar_g, s < 25 { return false }
             return true
         }
         if let s = p.nutrients.sugar_g, s >= 50, (p.nutrients.fvn ?? 0) < 80 {
@@ -1450,7 +1493,28 @@ enum ScoringEngineV4 {
             if entry.profile == "protein_bars", !ProteinBarScoring.passesGuard(p, rs: rs) {
                 continue
             }
+            // V5.6: infant-formula tags ride on shakes and growth milks; only
+            // a product that reads as formula is unsupported.
+            if entry.profile == "unsupported", infantFormulaRouterMatches.contains(entry.match),
+               !DairyScoring.looksLikeInfantFormula(p) {
+                continue
+            }
             var profile = entry.profile
+            // V5.6 dairy evidence gates — plant-based "milk" / "yogurt" /
+            // "cheese" riding dairy tags leave the dairy family (milk-tagged →
+            // plant_milk, the rest → general); sweetened protein shakes tagged
+            // `milks` score as drinks.
+            if let cfg = rs.dairy, let form = DairyScoring.form(profile) {
+                if DairyScoring.isPlantBased(p, cfg: cfg) {
+                    let used = form == .milk ? "plant_milk" : "general"
+                    logEvidenceRerail(p, attempted: profile, used: used, gate: "dairyPlantEvidence")
+                    return applyRoutingPlausibility(p, attempted: used, rs: rs)
+                }
+                if form == .milk, DairyScoring.isProteinShake(p, cfg: cfg) {
+                    logEvidenceRerail(p, attempted: profile, used: "drinks", gate: "dairyProteinShakeEvidence")
+                    return "drinks"
+                }
+            }
             // V5.5 evidence gate — a bar marketed on / built around protein
             // scores as a protein bar even when OFF only tagged it `snacks` /
             // `cereal-bars` (most US protein bars carry no `protein-bars` tag).
@@ -1492,6 +1556,11 @@ enum ScoringEngineV4 {
         }
         return applyRoutingPlausibility(p, attempted: "general", rs: rs)
     }
+
+    static let infantFormulaRouterMatches: Set<String> = [
+        "infant-formulas", "baby-milks", "follow-on-milks", "baby-formula", "infant-milks",
+        "growing-up-milks",
+    ]
 
     private static let alcoholRouterMatches: Set<String> = [
         "alcoholic-beverages", "beers", "wines", "spirits", "ciders",
@@ -1666,8 +1735,16 @@ enum ScoringEngineV4 {
             : ["ice_cream"]
         // V5.5: never on protein bars — isolated protein is the product's
         // purpose and the S12 `proteinBar` variant scores its quality directly.
+        // V5.6: milk-derived proteins (milk protein concentrate, whey protein
+        // concentrate, milk powder) are a dairy product's own protein — no halving.
+        let isolateHit: Bool = {
+            if DairyScoring.isDairy(profileId), let cfg = rs.dairy {
+                return DairyScoring.hasNonDairyIsolate(p, cfg: cfg)
+            }
+            return IngredientIntegrity.hasIsolateProtein(ingredientsText: p.ingredientsText)
+        }()
         if isolateProfiles.contains(profileId), profileId != "protein_bars",
-           IngredientIntegrity.hasIsolateProtein(ingredientsText: p.ingredientsText),
+           isolateHit,
            let idx = results.firstIndex(where: { $0.rule == "S12" }) {
             let r = results[idx]
             let match = IngredientIntegrity.evaluate(ingredientsText: p.ingredientsText)
@@ -1740,14 +1817,28 @@ enum ScoringEngineV4 {
     private static func evaluate(_ rule: String, variant: String?,
                                  product p: Product, rs: RulesetV4,
                                  profileId: String = "general") -> (Double, Bool, String?) {
+        let dairyForm = DairyScoring.form(profileId)
+        let dairyCfg = rs.dairy
         switch rule {
         case "S1":
             // V5.5: on protein bars the isolate text signals are the protein
             // source, not an additive — S12 `proteinBar` judges them instead.
             let exempt: Set<String> = profileId == "protein_bars"
                 ? Set(rs.proteinBars?.s1ExemptSignals ?? []) : []
-            let r = s1(p, rs: rs, exemptSignals: exempt); return (r.0, r.1, nil)
+            // V5.6: a sparse dairy record inside its identity envelope takes a
+            // form-appropriate unknown credit, not the packaged-food 0.20.
+            var unknown = 0.20
+            if let form = dairyForm, let cfg = dairyCfg, !p.hasIngredientData {
+                unknown = DairyScoring.s1UnknownCredit(p, form: form, cfg: cfg)
+            }
+            let r = s1(p, rs: rs, exemptSignals: exempt, unknownCredit: unknown)
+            return (r.0, r.1, r.1 ? nil : (unknown > 0.20 ? "S1 dairy: no list → identity prior" : nil))
         case "S2":
+            // V5.6: dairy processing is read off the list as marker families;
+            // a pure dairy list is NOVA 1 whatever OFF says.
+            if variant == "dairy", let form = dairyForm, let cfg = dairyCfg {
+                return DairyScoring.s2Credit(p, form: form, cfg: cfg)
+            }
             // V5.4: bread processing is read off the ingredient list (marker
             // families), not OFF's NOVA tag — see BreadScoring.s2Credit.
             if variant == "bread", let cfg = rs.bread {
@@ -1760,8 +1851,20 @@ enum ScoringEngineV4 {
             }
             let r = s2(p); return (r.0, r.1, nil)
         case "S3":
+            // V5.6: dairy scores free sugar (declared added, else total minus
+            // the form's lactose allowance) — no intrinsic discount, no
+            // sweetener cap (S6 grades sweeteners on fermented / cream).
+            if let form = dairyForm, let cfg = dairyCfg {
+                let t = rs.s3Thresholds[variant ?? "dairy"] ?? rs.s3Thresholds["dairy"] ?? [3, 8, 13]
+                return DairyScoring.s3Credit(p, form: form, rs: rs, cfg: cfg, thresholds: t)
+            }
             return s3(p, variant: variant ?? "foods", rs: rs, profileId: profileId)
         case "S4":
+            // V5.6: yogurt sodium is structurally 30–80 mg; an undeclared
+            // value is an omission, not a risk.
+            if variant == "fermented", p.nutrients.sodium_mg == nil, let cfg = dairyCfg {
+                return (cfg.s4FermentedPrior, false, "S4 fermented: sodium undeclared → structural prior")
+            }
             let thresholds = variant.flatMap { rs.s4ThresholdsByVariant?[$0] } ?? rs.s4Thresholds
             // V5.4: salt entered in the wrong unit (1 mg sodium on a salted
             // loaf) must not earn full credit — unknown, not low.
@@ -1784,6 +1887,10 @@ enum ScoringEngineV4 {
                             unknownCredit: 0.40)
             return (r.0, r.1, nil)
         case "S6":
+            // V5.6: fermented dairy / cream take the drinks sweetener tiers.
+            if variant == "dairy" {
+                return DairyScoring.s6Credit(p)
+            }
             // V5.5: protein bars take the drinks sweetener tiers plus a
             // declared-polyol load dock.
             if variant == "proteinBar", let cfg = rs.proteinBars {
@@ -1813,8 +1920,18 @@ enum ScoringEngineV4 {
                 return (r.0, r.1, "dairy: protein+calcium basis")
             }
             if variant == "dairyDense" {
+                // V5.6 cream: protein declared as exactly 0 is per-tablespoon
+                // label rounding, not a measured zero.
+                if DairyScoring.form(profileId) == .cream, DairyScoring.creamProteinIsRounding(p) {
+                    return (rs.s12DairyDense?.unknownCredit ?? 0.5, false,
+                            "dairyDense: protein 0 = serving rounding → unknown")
+                }
                 let r = s12DairyDenseCredit(p, cfg: rs.s12DairyDense)
                 return (r.0, r.1, "dairyDense: protein+calcium basis")
+            }
+            if variant == "dairyCheese" {
+                let r = DairyScoring.s12CheeseCredit(p, cfg: rs.s12DairyCheese)
+                return (r.0, r.1, "dairyCheese: protein+calcium basis")
             }
             // V5.3: eggs have no fiber/FVN axis either — protein per 100 g
             // against a reference whole egg; the yolk's micronutrient
@@ -1838,8 +1955,20 @@ enum ScoringEngineV4 {
             let r = s12(p, variant: variant); return (r.0, r.1, nil)
         case "S13":
             if variant == "egg" { return s13Egg(p, rs: rs) }
+            // V5.6: dairy reference prior (B12 / riboflavin / iodine /
+            // phosphorus / potassium / calcium matrix) + declared lifts.
+            if variant == "dairy", let form = dairyForm, let cfg = dairyCfg {
+                return DairyScoring.s13Credit(p, form: form, cfg: cfg)
+            }
             let r = s13(p, rs: rs); return (r.0, r.1, nil)
         case "S14":
+            // V5.6: salt, cultures, enzymes, rennet, lactase and vitamins are
+            // neutral in a dairy list — neither whole food nor a dock.
+            if dairyForm != nil, let cfg = dairyCfg {
+                let b = IngredientIntegrity.evaluate(ingredientsText: p.ingredientsText,
+                                                     neutralTokenKw: cfg.neutralTokens)
+                return (b.fraction, b.hadData, nil)
+            }
             // V5.5: protein sources are neutral in a protein bar's real-food
             // ratio — neither whole food nor a dock.
             if variant == "proteinBar", let cfg = rs.proteinBars {
@@ -1851,7 +1980,13 @@ enum ScoringEngineV4 {
         case "contaminantRisk":
             let r = contaminantRisk(p, rs: rs); return (r.0, r.1, nil)
         case "dairyProcessing":
+            if dairyForm != nil, let cfg = dairyCfg {
+                return DairyScoring.processingCredit(p, rs: rs, cfg: cfg)
+            }
             let r = dairyProcessing(p, rs: rs); return (r.0, r.1, nil)
+        case "dairyForm":
+            guard let form = dairyForm, let cfg = dairyCfg else { return (0.85, false, nil) }
+            return DairyScoring.formCredit(p, form: form, cfg: cfg)
         case "brewMaterial":
             let r = brewMaterial(p, rs: rs); return (r.0, r.1, nil)
         case "sweetenerType":
@@ -2033,7 +2168,8 @@ enum ScoringEngineV4 {
     // MARK: S1 — ingredient & additive risk
 
     private static func s1(_ p: Product, rs: RulesetV4,
-                           exemptSignals: Set<String> = []) -> (Double, Bool) {
+                           exemptSignals: Set<String> = [],
+                           unknownCredit: Double = 0.20) -> (Double, Bool) {
         // Whole-food bypass: NOVA 1–2 + no additives + no textSignals → clean,
         // even when ingredients_text is missing (single-ingredient produce).
         let additivesEmpty = p.additives.isEmpty
@@ -2046,7 +2182,7 @@ enum ScoringEngineV4 {
         }
 
         guard p.additiveIngredientTextMissing != true, p.hasIngredientData else {
-            return (0.20, false)
+            return (unknownCredit, false)
         }
 
         var penalties: [Double] = []
@@ -2134,7 +2270,7 @@ enum ScoringEngineV4 {
     private static func hasNonNutritiveSweetener(_ p: Product) -> Bool {
         let codes = Set(p.additives.compactMap(\.code))
         if !codes.isDisjoint(with: nnsCodes) { return true }
-        let hay = ([p.ingredientsText ?? ""] + (p.labels ?? []) + [p.name])
+        let hay = ([p.ingredientsText ?? ""] + DrinksScoring.nonNegatedLabels(p) + [p.name])
             .joined(separator: " ").lowercased()
         return nnsTextMarkers.contains { hay.contains($0) }
     }

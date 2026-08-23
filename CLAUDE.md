@@ -1,5 +1,70 @@
 **Follow [design.md](design.md) for all UI work** — typography scale, color tokens, radii, spacing grid, and interaction rules. No raw hex values, off-scale font sizes, or ad-hoc radii in views.
 
+# Session Changelog — 2026-08-23 — Dairy in four forms (v5.6.0)
+
+Audit of the dairy scoring against the live engine (CLI harness: 77 archetype
+fixtures + 400 top-scanned US OFF records + the Milks/Yogurt/Cheese shelves)
+and Oasis SCR_DAIRY v4.7.0, then the full V5.6.0 respec. Findings: creams
+routed to `fats` (sour cream 95, half-and-half 97 = highest dairy scores in
+the app); one `yogurt_cheese` profile meant S1+S14 (38 pts) outranked added
+sugar (10) — Noosa honey 85 > Chobani strawberry 75, Yakult 76 Excellent;
+lactose scored as sugar while the intrinsic ×0.7 discount double-counted
+declared added sugar; dairyProcessing/S13/S15 were dead or noise (≈22 pts);
+infant formula = 34 "Bad" on `general`; no-list plain milk 61; OFF's
+`low-sugars` tag substring-tripped the free-sugar cap (grated parmesan 34
+Bad); "no-sucralose" labels read as tier-1 sweetener hits. Full audit
+artifact: "Sage Dairy Scoring Audit". Ruleset `2026.08-v5.6.0`; rationale
+SCORING_V5.md §"V5.6.0 Dairy"; tests `DairyScoringV56Tests`; engine shapes
+in `DairyScoring.swift` + ruleset `dairy` block.
+
+- **Four forms**: `dairy_milk` (tuned), `dairy_fermented`, `dairy_cheese`,
+  `dairy_cream` (new — creams/sour cream/half-and-half/whipped/mascarpone off
+  the oils profile). Router order matters: specific fermented → cream →
+  cheese → generic `fermented-milk-products` (OFF stamps it on cheeses too).
+- **Free sugar** everywhere on dairy: declared added wins (ignored when >
+  total — OFF entry errors), else total − lactose allowance (4.8/4.0/3.0/2.0
+  g by form); caps ≥5 g → 74, ≥8 → 64, ≥11 → 54; tier-1 NNS on
+  fermented/cream → 58; cheese ≥1200 mg Na → 54.
+- **New rules**: S2 `dairy` marker families + evidence-NOVA (pure dairy list
+  = NOVA 1); `dairyForm` (live cultures 1.0 / heat-treated 0.6 / processed
+  cheese 0.35 / oil analogue 0.1 / raw-milk aged 0.8); S13 `dairy` reference
+  prior (egg pattern) + declared lifts; S12 `dairyCheese` variant;
+  processing HTST=1.0 (evidence — milk sheds the provisional banner), UHT/UF
+  0.7, raw 0.5+cap54 (now also raw fermented). S15 dropped on all dairy.
+- **Identity gate** for sparse records (envelope → S1 unknown 0.75, S2 0.85)
+  + per-serving-as-per-100g plausibility rescale (8000 kcal parmesan).
+- **S14**: dairy neutral tokens (salt/enzymes/rennet/lactase/vitamins),
+  culture-family whole-food match, mid-token qualifier stripping
+  ("certified organic grade a milk", "reduced fat ultra-filtered milk"),
+  multilingual milk whitelist, ". "-separator tokenization.
+- **Routing gates**: plant-based off dairy (word-bounded — goat ≠ oat;
+  "non-vegan" label ≠ vegan), protein shakes tagged `milks` → drinks,
+  infant formula → unsupported (new UnsupportedView copy) behind evidence
+  guard (junk `baby-milks` tags on shakes stay scored).
+- **Generic fixes**: `isCaloricSweetener` tag-substring bug (D12); negated
+  labels off the sweetener haystack (drinks path too); benign additive tiers
+  (annatto/natamycin/cellulose/gelatin/modified starch/lecithin → soft,
+  GRAS acidulants → exempt); fortification exemption extended (folic acid,
+  DHA, choline, GOS). MPC exempt from the S12 isolate halving on dairy.
+- **Calibration** (fixtures + 400 real records): milk 97, UHT 94, UF 95,
+  raw 54 · plain yogurt 92, Greek 96, skyr 96, Chobani strawberry 74,
+  Noosa/Yakult 64, Light & Fit 58 · cottage 83–87, Swiss 86, cheddar 71,
+  feta 70, halloumi 54, American 46, Velveeta 42 · half-and-half 74, sour
+  cream 65, heavy cream ~55, mascarpone 54. Cross-shelf drift outside dairy
+  ≤ ±1.5 mean (one +65: the D12 junk-tag cap bug un-capping a 3 kcal drink).
+- Migration `rulesetV560Rescored`; `backend/src/ruleset.json` copied —
+  **needs a Worker deploy**. Legacy tests updated (UHT 0.7, processing
+  default = evidence, raw-cheese dock on dairyForm, routes renamed,
+  provisional-milk expectation inverted).
+- Not done (follow-ups): Top Rated Milks/Yogurt/Cheese shelves not re-pulled
+  (rows re-score live; `precomputed_score` stale until regen; consider a
+  Creams shelf); `butters`/ghee still on `fats` pending F01; plant yogurts/
+  cheeses land on `general` (fine until a plant-food profile exists);
+  drinkable protein "yogurts" stay on fermented; pt-BR strings for the new
+  UnsupportedView copy.
+
+---
+
 # Session Changelog — 2026-08-22 — Scout-pass: product page, Key ingredients, Home rails
 
 Teardown of Scout's UI (six screenshots) against Sage's live simulator

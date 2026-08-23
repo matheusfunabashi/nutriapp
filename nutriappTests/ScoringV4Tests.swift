@@ -138,11 +138,11 @@ struct ScoringV4Tests {
 
     @Test func bundledRulesetLoads() {
         let rs = RulesetV4.bundled
-        #expect(rs.version == "2026.08-v5.5.0")
+        #expect(rs.version == "2026.08-v5.6.0")
         #expect(rs.bands.excellent == 75)
         #expect(rs.bands.good == 55)
         #expect(rs.bands.ok == 35)
-        #expect(rs.profiles.count == 16)
+        #expect(rs.profiles.count == 18)
         #expect(rs.bandLabel(80) == "Excellent")
         #expect(rs.bandLabel(55) == "Good")
         #expect(rs.bandLabel(35) == "OK")
@@ -161,7 +161,7 @@ struct ScoringV4Tests {
         // Activated categories route to their own profiles.
         #expect(ScoringEngineV4.route(oatMilk) == "plant_milk")
         #expect(ScoringEngineV4.route(wholeMilk) == "dairy_milk")
-        #expect(ScoringEngineV4.route(greekYogurt) == "yogurt_cheese")
+        #expect(ScoringEngineV4.route(greekYogurt) == "dairy_fermented")
         #expect(ScoringEngineV4.route(blackTea) == "tea_coffee")
         #expect(ScoringEngineV4.route(honey) == "unscored_sweetener")
         #expect(ScoringEngineV4.route(whiteBread) == "bread")
@@ -319,7 +319,7 @@ struct ScoringV4Tests {
         #expect(milk.profileId == "dairy_milk")
         #expect(milk.base >= 55)
         let yog = ScoringEngineV4.score(greekYogurt)!
-        #expect(yog.profileId == "yogurt_cheese")
+        #expect(yog.profileId == "dairy_fermented")
         #expect(yog.base >= 55)
         #expect(ScoringEngineV4.score(cheddar)!.base < yog.base)
     }

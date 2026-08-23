@@ -153,8 +153,12 @@ struct V501HotfixTests {
         #expect(drinks.contains(where: { $0.rule == "S6" }))
         let juice = rs.profiles["juice_100"] ?? []
         #expect(juice.contains(where: { $0.rule == "S6" }))
-        for (id, rules) in rs.profiles where id != "drinks" && id != "juice_100" {
-            #expect(!rules.contains(where: { $0.rule == "S6" }))
+        // V5.5 gave protein bars the sweetener tiers; V5.6 gave them to
+        // fermented dairy and cream. Everything else stays S6-free.
+        let s6Profiles: Set = ["drinks", "juice_100", "protein_bars",
+                               "dairy_fermented", "dairy_cream"]
+        for (id, rules) in rs.profiles where !s6Profiles.contains(id) {
+            #expect(!rules.contains(where: { $0.rule == "S6" }), "unexpected S6 on \(id)")
         }
     }
 
