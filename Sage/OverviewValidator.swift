@@ -98,6 +98,12 @@ enum OverviewValidator {
                     return ["trans fat", "capped at \(cap.value)"]
                 case "nns":
                     return ["non-nutritive", "capped at \(cap.value)", "sweetener"]
+                case "dairyFreeSugar":
+                    return ["added sugar", "capped at \(cap.value)", "caps the overall"]
+                case "dairyNns":
+                    return ["sweetener", "capped at \(cap.value)", "caps the overall"]
+                case "dairySodium":
+                    return ["sodium", "capped at \(cap.value)", "caps the overall"]
                 default:
                     return ["capped at \(cap.value)"]
                 }

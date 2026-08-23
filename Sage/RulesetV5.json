@@ -1,5 +1,5 @@
 {
-  "version": "2026.08-v5.5.0",
+  "version": "2026.08-v5.6.0",
   "bands": {
     "excellent": 75,
     "good": 55,
@@ -133,6 +133,11 @@
       10,
       18,
       28
+    ],
+    "dairy": [
+      3,
+      8,
+      13
     ]
   },
   "s4Thresholds": [
@@ -145,6 +150,11 @@
       200,
       450,
       700
+    ],
+    "cheese": [
+      150,
+      500,
+      1000
     ]
   },
   "s5Thresholds": {
@@ -162,6 +172,16 @@
       8,
       20,
       40
+    ],
+    "cheese": [
+      6,
+      14,
+      22
+    ],
+    "cream": [
+      1.5,
+      5,
+      10
     ]
   },
   "proteinBars": {
@@ -2660,94 +2680,205 @@
     ],
     "dairy_milk": [
       {
-        "rule": "S1",
-        "w": 24
-      },
-      {
-        "rule": "dairyProcessing",
-        "w": 10
-      },
-      {
-        "rule": "S3",
-        "w": 6,
-        "variant": "foods"
-      },
-      {
-        "rule": "S5",
-        "w": 6
-      },
-      {
-        "rule": "S2",
-        "w": 6
-      },
-      {
         "rule": "S12",
-        "w": 20,
+        "w": 22,
         "variant": "dairy"
       },
       {
-        "rule": "S13",
-        "w": 8
+        "rule": "S1",
+        "w": 18
       },
       {
         "rule": "S14",
         "w": 14
       },
       {
-        "rule": "S15",
-        "w": 6
-      }
-    ],
-    "yogurt_cheese": [
-      {
-        "rule": "S1",
-        "w": 24
+        "rule": "S2",
+        "w": 12,
+        "variant": "dairy"
       },
       {
         "rule": "dairyProcessing",
-        "w": 8
+        "w": 10
       },
       {
         "rule": "S3",
         "w": 10,
-        "variant": "yogurt"
-      },
-      {
-        "rule": "S4",
-        "w": 10
-      },
-      {
-        "rule": "S5",
-        "w": 12
-      },
-      {
-        "rule": "S12",
-        "w": 8,
-        "variant": "dairyDense"
+        "variant": "foods"
       },
       {
         "rule": "S13",
-        "w": 8
+        "w": 8,
+        "variant": "dairy"
       },
       {
-        "rule": "S14",
-        "w": 14
-      },
-      {
-        "rule": "S15",
+        "rule": "S5",
         "w": 6
       }
     ],
+    "dairy_fermented": [
+      {
+        "rule": "S3",
+        "w": 26,
+        "variant": "dairy"
+      },
+      {
+        "rule": "S12",
+        "w": 18,
+        "variant": "dairyDense"
+      },
+      {
+        "rule": "S1",
+        "w": 14
+      },
+      {
+        "rule": "S14",
+        "w": 12
+      },
+      {
+        "rule": "S6",
+        "w": 8,
+        "variant": "dairy"
+      },
+      {
+        "rule": "dairyForm",
+        "w": 6
+      },
+      {
+        "rule": "S13",
+        "w": 6,
+        "variant": "dairy"
+      },
+      {
+        "rule": "S5",
+        "w": 6
+      },
+      {
+        "rule": "S4",
+        "w": 4,
+        "variant": "fermented"
+      }
+    ],
+    "dairy_cheese": [
+      {
+        "rule": "S4",
+        "w": 24,
+        "variant": "cheese"
+      },
+      {
+        "rule": "S12",
+        "w": 18,
+        "variant": "dairyCheese"
+      },
+      {
+        "rule": "S5",
+        "w": 14,
+        "variant": "cheese"
+      },
+      {
+        "rule": "S1",
+        "w": 12
+      },
+      {
+        "rule": "S14",
+        "w": 12
+      },
+      {
+        "rule": "dairyForm",
+        "w": 10
+      },
+      {
+        "rule": "S13",
+        "w": 6,
+        "variant": "dairy"
+      },
+      {
+        "rule": "S3",
+        "w": 4,
+        "variant": "dairy"
+      }
+    ],
+    "dairy_cream": [
+      {
+        "rule": "S5",
+        "w": 34,
+        "variant": "cream"
+      },
+      {
+        "rule": "S1",
+        "w": 12
+      },
+      {
+        "rule": "S3",
+        "w": 10,
+        "variant": "dairy"
+      },
+      {
+        "rule": "S14",
+        "w": 10
+      },
+      {
+        "rule": "S12",
+        "w": 12,
+        "variant": "dairyDense"
+      },
+      {
+        "rule": "S2",
+        "w": 12,
+        "variant": "dairy"
+      },
+      {
+        "rule": "dairyProcessing",
+        "w": 6
+      },
+      {
+        "rule": "S13",
+        "w": 4,
+        "variant": "dairy"
+      }
+    ],
     "bread": [
-      { "rule": "S1", "w": 16 },
-      { "rule": "S2", "w": 14, "variant": "bread" },
-      { "rule": "wholeGrain", "w": 16, "variant": "bread" },
-      { "rule": "S12", "w": 14, "variant": "grain" },
-      { "rule": "S3", "w": 10, "variant": "bread" },
-      { "rule": "S4", "w": 12, "variant": "bread" },
-      { "rule": "S5", "w": 6 },
-      { "rule": "S14", "w": 8 },
-      { "rule": "S15", "w": 4 }
+      {
+        "rule": "S1",
+        "w": 16
+      },
+      {
+        "rule": "S2",
+        "w": 14,
+        "variant": "bread"
+      },
+      {
+        "rule": "wholeGrain",
+        "w": 16,
+        "variant": "bread"
+      },
+      {
+        "rule": "S12",
+        "w": 14,
+        "variant": "grain"
+      },
+      {
+        "rule": "S3",
+        "w": 10,
+        "variant": "bread"
+      },
+      {
+        "rule": "S4",
+        "w": 12,
+        "variant": "bread"
+      },
+      {
+        "rule": "S5",
+        "w": 6
+      },
+      {
+        "rule": "S14",
+        "w": 8
+      },
+      {
+        "rule": "S15",
+        "w": 4
+      }
     ],
     "grains": [
       {
@@ -2968,6 +3099,74 @@
     ]
   },
   "router": [
+    {
+      "match": "infant-formulas",
+      "profile": "unsupported"
+    },
+    {
+      "match": "baby-milks",
+      "profile": "unsupported"
+    },
+    {
+      "match": "follow-on-milks",
+      "profile": "unsupported"
+    },
+    {
+      "match": "baby-formula",
+      "profile": "unsupported"
+    },
+    {
+      "match": "infant-milks",
+      "profile": "unsupported"
+    },
+    {
+      "match": "growing-up-milks",
+      "profile": "unsupported"
+    },
+    {
+      "match": "plant-based-yogurt-alternatives",
+      "profile": "general"
+    },
+    {
+      "match": "yogurt-alternatives",
+      "profile": "general"
+    },
+    {
+      "match": "non-dairy-yogurts",
+      "profile": "general"
+    },
+    {
+      "match": "vegan-yogurts",
+      "profile": "general"
+    },
+    {
+      "match": "plant-based-yogurts",
+      "profile": "general"
+    },
+    {
+      "match": "cheese-alternatives",
+      "profile": "general"
+    },
+    {
+      "match": "plant-based-cheeses",
+      "profile": "general"
+    },
+    {
+      "match": "vegan-cheeses",
+      "profile": "general"
+    },
+    {
+      "match": "non-dairy-cheeses",
+      "profile": "general"
+    },
+    {
+      "match": "dairy-free-cheeses",
+      "profile": "general"
+    },
+    {
+      "match": "plant-based-cheese-alternatives",
+      "profile": "general"
+    },
     {
       "match": "flavored-waters",
       "profile": "drinks"
@@ -3201,10 +3400,6 @@
       "profile": "fats"
     },
     {
-      "match": "creams",
-      "profile": "fats"
-    },
-    {
       "match": "coconut-oils",
       "profile": "fats"
     },
@@ -3273,92 +3468,244 @@
       "profile": "dairy_milk"
     },
     {
-      "match": "fermented-milk-products",
-      "profile": "yogurt_cheese"
-    },
-    {
       "match": "fermented-milk-drinks",
-      "profile": "yogurt_cheese"
+      "profile": "dairy_fermented"
     },
     {
       "match": "yogurts",
-      "profile": "yogurt_cheese"
+      "profile": "dairy_fermented"
     },
     {
       "match": "yoghurts",
-      "profile": "yogurt_cheese"
+      "profile": "dairy_fermented"
     },
     {
       "match": "greek-yogurts",
-      "profile": "yogurt_cheese"
+      "profile": "dairy_fermented"
     },
     {
       "match": "drinkable-yogurts",
-      "profile": "yogurt_cheese"
-    },
-    {
-      "match": "cheeses",
-      "profile": "yogurt_cheese"
-    },
-    {
-      "match": "cow-cheeses",
-      "profile": "yogurt_cheese"
-    },
-    {
-      "match": "goat-cheeses",
-      "profile": "yogurt_cheese"
-    },
-    {
-      "match": "sheep-cheeses",
-      "profile": "yogurt_cheese"
-    },
-    {
-      "match": "cheddar-cheese",
-      "profile": "yogurt_cheese"
-    },
-    {
-      "match": "cream-cheeses",
-      "profile": "yogurt_cheese"
-    },
-    {
-      "match": "cottage-cheeses",
-      "profile": "yogurt_cheese"
-    },
-    {
-      "match": "sliced-cheeses",
-      "profile": "yogurt_cheese"
-    },
-    {
-      "match": "grated-cheese",
-      "profile": "yogurt_cheese"
-    },
-    {
-      "match": "soft-cheeses",
-      "profile": "yogurt_cheese"
-    },
-    {
-      "match": "hard-cheeses",
-      "profile": "yogurt_cheese"
+      "profile": "dairy_fermented"
     },
     {
       "match": "kefir",
-      "profile": "yogurt_cheese"
+      "profile": "dairy_fermented"
     },
     {
       "match": "quark",
-      "profile": "yogurt_cheese"
+      "profile": "dairy_fermented"
     },
     {
       "match": "fromage-blanc",
-      "profile": "yogurt_cheese"
+      "profile": "dairy_fermented"
     },
     {
       "match": "fromages-blancs",
-      "profile": "yogurt_cheese"
+      "profile": "dairy_fermented"
+    },
+    {
+      "match": "skyr",
+      "profile": "dairy_fermented"
+    },
+    {
+      "match": "labneh",
+      "profile": "dairy_fermented"
+    },
+    {
+      "match": "strained-yogurts",
+      "profile": "dairy_fermented"
+    },
+    {
+      "match": "ayran",
+      "profile": "dairy_fermented"
+    },
+    {
+      "match": "lassi",
+      "profile": "dairy_fermented"
+    },
+    {
+      "match": "yogurt-drinks",
+      "profile": "dairy_fermented"
+    },
+    {
+      "match": "cultured-buttermilks",
+      "profile": "dairy_fermented"
+    },
+    {
+      "match": "quarks",
+      "profile": "dairy_fermented"
+    },
+    {
+      "match": "skyrs",
+      "profile": "dairy_fermented"
+    },
+    {
+      "match": "kefirs",
+      "profile": "dairy_fermented"
+    },
+    {
+      "match": "fromages-blancs-petit-suisses-and-skyr",
+      "profile": "dairy_fermented"
+    },
+    {
+      "match": "petit-suisses",
+      "profile": "dairy_fermented"
+    },
+    {
+      "match": "mascarpone",
+      "profile": "dairy_cream"
+    },
+    {
+      "match": "creams",
+      "profile": "dairy_cream"
+    },
+    {
+      "match": "sour-creams",
+      "profile": "dairy_cream"
+    },
+    {
+      "match": "whipped-creams",
+      "profile": "dairy_cream"
+    },
+    {
+      "match": "whipping-creams",
+      "profile": "dairy_cream"
+    },
+    {
+      "match": "heavy-creams",
+      "profile": "dairy_cream"
+    },
+    {
+      "match": "double-creams",
+      "profile": "dairy_cream"
+    },
+    {
+      "match": "light-creams",
+      "profile": "dairy_cream"
+    },
+    {
+      "match": "cooking-creams",
+      "profile": "dairy_cream"
+    },
+    {
+      "match": "half-and-half",
+      "profile": "dairy_cream"
+    },
+    {
+      "match": "creme-fraiche",
+      "profile": "dairy_cream"
+    },
+    {
+      "match": "dairy-whipped-toppings",
+      "profile": "dairy_cream"
+    },
+    {
+      "match": "cheeses",
+      "profile": "dairy_cheese"
+    },
+    {
+      "match": "cow-cheeses",
+      "profile": "dairy_cheese"
+    },
+    {
+      "match": "goat-cheeses",
+      "profile": "dairy_cheese"
+    },
+    {
+      "match": "sheep-cheeses",
+      "profile": "dairy_cheese"
+    },
+    {
+      "match": "cheddar-cheese",
+      "profile": "dairy_cheese"
+    },
+    {
+      "match": "cream-cheeses",
+      "profile": "dairy_cheese"
+    },
+    {
+      "match": "cottage-cheeses",
+      "profile": "dairy_cheese"
+    },
+    {
+      "match": "sliced-cheeses",
+      "profile": "dairy_cheese"
+    },
+    {
+      "match": "grated-cheese",
+      "profile": "dairy_cheese"
+    },
+    {
+      "match": "soft-cheeses",
+      "profile": "dairy_cheese"
+    },
+    {
+      "match": "hard-cheeses",
+      "profile": "dairy_cheese"
     },
     {
       "match": "curds",
-      "profile": "yogurt_cheese"
+      "profile": "dairy_cheese"
+    },
+    {
+      "match": "processed-cheese",
+      "profile": "dairy_cheese"
+    },
+    {
+      "match": "processed-cheeses",
+      "profile": "dairy_cheese"
+    },
+    {
+      "match": "cheese-spreads",
+      "profile": "dairy_cheese"
+    },
+    {
+      "match": "cheese-snacks",
+      "profile": "dairy_cheese"
+    },
+    {
+      "match": "string-cheese",
+      "profile": "dairy_cheese"
+    },
+    {
+      "match": "mozzarella",
+      "profile": "dairy_cheese"
+    },
+    {
+      "match": "feta",
+      "profile": "dairy_cheese"
+    },
+    {
+      "match": "ricotta",
+      "profile": "dairy_cheese"
+    },
+    {
+      "match": "paneer",
+      "profile": "dairy_cheese"
+    },
+    {
+      "match": "halloumi",
+      "profile": "dairy_cheese"
+    },
+    {
+      "match": "blue-cheeses",
+      "profile": "dairy_cheese"
+    },
+    {
+      "match": "fresh-cheeses",
+      "profile": "dairy_cheese"
+    },
+    {
+      "match": "semi-hard-cheeses",
+      "profile": "dairy_cheese"
+    },
+    {
+      "match": "semi-soft-cheeses",
+      "profile": "dairy_cheese"
+    },
+    {
+      "match": "fermented-milk-products",
+      "profile": "dairy_fermented"
     },
     {
       "match": "sugars",
@@ -3796,31 +4143,51 @@
   "dairyProcessing": [
     {
       "match": "ultrafiltered",
-      "credit": 0.25
+      "credit": 0.7
     },
     {
       "match": "ultrafiltered-milks",
-      "credit": 0.25
+      "credit": 0.7
     },
     {
       "match": "ultra-filtered-milks",
-      "credit": 0.25
+      "credit": 0.7
     },
     {
       "match": "uht",
-      "credit": 0.4
+      "credit": 0.7
     },
     {
       "match": "uht-milks",
-      "credit": 0.4
+      "credit": 0.7
     },
     {
       "match": "sterilized-milks",
-      "credit": 0.4
+      "credit": 0.7
     },
     {
       "match": "sterilised-milks",
-      "credit": 0.4
+      "credit": 0.7
+    },
+    {
+      "match": "ultra-pasteurized-milks",
+      "credit": 0.7
+    },
+    {
+      "match": "evaporated-milks",
+      "credit": 0.7
+    },
+    {
+      "match": "condensed-milks",
+      "credit": 0.7
+    },
+    {
+      "match": "powdered-milks",
+      "credit": 0.7
+    },
+    {
+      "match": "milk-powders",
+      "credit": 0.7
     },
     {
       "match": "raw-milk",
@@ -3831,7 +4198,7 @@
       "credit": 0.5
     },
     {
-      "match": "raw-milk-cheeses",
+      "match": "raw-whole-milks",
       "credit": 0.5
     },
     {
@@ -3844,58 +4211,66 @@
     },
     {
       "match": "microfiltered-milks",
-      "credit": 0.9
+      "credit": 1.0
     },
     {
       "match": "micro-filtered-milks",
-      "credit": 0.9
+      "credit": 1.0
     },
     {
       "match": "pasteurised-milks",
-      "credit": 0.85
+      "credit": 1.0
     },
     {
       "match": "pasteurized-milks",
-      "credit": 0.85
+      "credit": 1.0
     },
     {
       "match": "fresh-milks",
-      "credit": 0.85
+      "credit": 1.0
     }
   ],
-  "dairyProcessingDefault": 0.85,
+  "dairyProcessingDefault": 1.0,
   "dairyProcessingName": [
     {
       "kw": "ultrafiltered",
-      "credit": 0.25
+      "credit": 0.7
     },
     {
       "kw": "ultra-filtered",
-      "credit": 0.25
+      "credit": 0.7
     },
     {
       "kw": "ultra filtered",
-      "credit": 0.25
+      "credit": 0.7
     },
     {
       "kw": "ultra-pasteurized",
-      "credit": 0.4
+      "credit": 0.7
     },
     {
       "kw": "ultra pasteurized",
-      "credit": 0.4
+      "credit": 0.7
     },
     {
       "kw": "ultra-pasteurised",
-      "credit": 0.4
+      "credit": 0.7
     },
     {
       "kw": "ultra pasteurised",
-      "credit": 0.4
+      "credit": 0.7
     },
     {
       "kw": "uht",
-      "credit": 0.4
+      "credit": 0.7
+    },
+    {
+      "kw": "evaporated",
+      "credit": 0.7
+    },
+    {
+      "kw": "condensed",
+      "credit": 0.7
     },
     {
       "kw": "raw milk",
@@ -3912,16 +4287,42 @@
     {
       "kw": "leite cru",
       "credit": 0.5
+    },
+    {
+      "kw": "vat pasteurized",
+      "credit": 1.0
+    },
+    {
+      "kw": "vat pasteurised",
+      "credit": 1.0
+    },
+    {
+      "kw": "low temp pasteurized",
+      "credit": 1.0
+    },
+    {
+      "kw": "low-temp pasteurized",
+      "credit": 1.0
+    },
+    {
+      "kw": "low temperature pasteurized",
+      "credit": 1.0
     }
   ],
   "s12Dairy": {
-    "proteinTargetG": 3.4,
-    "calciumTargetMg": 125,
+    "proteinTargetG": 3.3,
+    "calciumTargetMg": 120,
     "unknownCredit": 0.5
   },
   "s12DairyDense": {
     "proteinTargetG": 6,
     "calciumTargetMg": 150,
+    "unknownCredit": 0.5
+  },
+  "s12DairyCheese": {
+    "proteinTargetG": 20,
+    "calciumTargetMg": 600,
+    "proteinWeight": 0.7,
     "unknownCredit": 0.5
   },
   "dairyPowder": {
@@ -3951,13 +4352,50 @@
       "vitamine d",
       "cholecalciferol",
       "retinyl palmitate",
-      "lactase"
+      "lactase",
+      "folic acid",
+      "folate",
+      "vitamin e",
+      "vitamin k",
+      "vitamin b",
+      "vitamins and minerals",
+      "vitamin and mineral",
+      "vitamins",
+      "vitamina",
+      "vitamine",
+      "niacin",
+      "riboflavin",
+      "thiamin",
+      "pantothen",
+      "pyridox",
+      "cobalamin",
+      "biotin",
+      "calcium carbonate",
+      "tricalcium phosphate",
+      "calcium phosphate",
+      "dha",
+      "algal oil",
+      "omega-3",
+      "omega 3",
+      "choline",
+      "galactooligosaccharide",
+      "galacto-oligosaccharide",
+      "prebiotic fiber",
+      "prebiotic fibre",
+      "fructooligosaccharide",
+      "inulin",
+      "zinc",
+      "iron",
+      "iodine"
     ]
   },
   "eggs": {
     "proteinTargetG": 12.0,
     "s12UnknownCredit": 0.5,
-    "s13Prior": { "whole": 0.85, "whites": 0.45 },
+    "s13Prior": {
+      "whole": 0.85,
+      "whites": 0.45
+    },
     "s13EnrichmentStep": 0.05,
     "s13EnrichmentMaxLift": 0.1,
     "s13Enrichment": {
@@ -3968,34 +4406,122 @@
     },
     "s3UnknownCredit": 0.95,
     "eggWords": [
-      "egg", "eggs", "œuf", "œufs", "oeuf", "oeufs", "huevo", "huevos",
-      "ovo", "ovos", "uovo", "uova", "ei", "eier", "hühnerei", "hühnereier",
-      "vollei", "flüssigei", "albumen", "albume", "albumi", "eiweiß", "eiweiss",
-      "eiklar", "eigelb", "clara", "claras", "gema", "gemas", "yema", "yemas",
-      "tuorlo", "tuorli"
+      "egg",
+      "eggs",
+      "œuf",
+      "œufs",
+      "oeuf",
+      "oeufs",
+      "huevo",
+      "huevos",
+      "ovo",
+      "ovos",
+      "uovo",
+      "uova",
+      "ei",
+      "eier",
+      "hühnerei",
+      "hühnereier",
+      "vollei",
+      "flüssigei",
+      "albumen",
+      "albume",
+      "albumi",
+      "eiweiß",
+      "eiweiss",
+      "eiklar",
+      "eigelb",
+      "clara",
+      "claras",
+      "gema",
+      "gemas",
+      "yema",
+      "yemas",
+      "tuorlo",
+      "tuorli"
     ],
     "whitesWords": [
-      "egg white", "egg whites", "liquid egg white", "liquid egg whites",
-      "albumen", "albume", "albumi", "eiweiß", "eiweiss", "eiklar",
-      "clara de huevo", "claras de huevo", "clara de ovo", "claras de ovo",
-      "blanc d'œuf", "blancs d'œuf", "blancs d'œufs", "blanc d'oeuf", "blancs d'oeufs"
+      "egg white",
+      "egg whites",
+      "liquid egg white",
+      "liquid egg whites",
+      "albumen",
+      "albume",
+      "albumi",
+      "eiweiß",
+      "eiweiss",
+      "eiklar",
+      "clara de huevo",
+      "claras de huevo",
+      "clara de ovo",
+      "claras de ovo",
+      "blanc d'œuf",
+      "blancs d'œuf",
+      "blancs d'œufs",
+      "blanc d'oeuf",
+      "blancs d'oeufs"
     ],
-    "whitesTags": ["egg-white", "egg-whites", "egg-white-powder", "egg-white-cooked", "liquid-egg-whites"],
+    "whitesTags": [
+      "egg-white",
+      "egg-whites",
+      "egg-white-powder",
+      "egg-white-cooked",
+      "liquid-egg-whites"
+    ],
     "yolkWords": [
-      "egg yolk", "egg yolks", "tuorlo", "tuorli", "gema", "gemas", "yema", "yemas",
-      "jaune d'œuf", "jaunes d'œufs", "jaune d'oeuf", "jaunes d'oeufs", "eigelb"
+      "egg yolk",
+      "egg yolks",
+      "tuorlo",
+      "tuorli",
+      "gema",
+      "gemas",
+      "yema",
+      "yemas",
+      "jaune d'œuf",
+      "jaunes d'œufs",
+      "jaune d'oeuf",
+      "jaunes d'oeufs",
+      "eigelb"
     ],
-    "yolkTags": ["egg-yolk", "egg-yolks", "egg-yolk-powder", "cooked-egg-yolk"],
-    "whitesEnvelope": { "maxSatFatG": 0.3, "maxKcal": 70, "minProteinG": 8 },
-    "guard": { "minProteinG": 8, "maxProteinG": 18, "maxKcal": 220, "yolkMaxKcal": 340, "maxSugarG": 3 },
+    "yolkTags": [
+      "egg-yolk",
+      "egg-yolks",
+      "egg-yolk-powder",
+      "cooked-egg-yolk"
+    ],
+    "whitesEnvelope": {
+      "maxSatFatG": 0.3,
+      "maxKcal": 70,
+      "minProteinG": 8
+    },
+    "guard": {
+      "minProteinG": 8,
+      "maxProteinG": 18,
+      "maxKcal": 220,
+      "yolkMaxKcal": 340,
+      "maxSugarG": 3
+    },
     "powder": {
       "factor": 0.25,
       "kcalTrigger": 400,
       "keywords": [
-        "egg powder", "powdered egg", "powdered eggs", "dried egg", "dried eggs",
-        "dried whole egg", "dehydrated egg", "egg white powder", "whole egg powder",
-        "œuf en poudre", "oeuf en poudre", "poudre d'œuf", "huevo en polvo",
-        "ovo em pó", "uovo in polvere", "eipulver", "volleipulver"
+        "egg powder",
+        "powdered egg",
+        "powdered eggs",
+        "dried egg",
+        "dried eggs",
+        "dried whole egg",
+        "dehydrated egg",
+        "egg white powder",
+        "whole egg powder",
+        "œuf en poudre",
+        "oeuf en poudre",
+        "poudre d'œuf",
+        "huevo en polvo",
+        "ovo em pó",
+        "uovo in polvere",
+        "eipulver",
+        "volleipulver"
       ]
     }
   },
@@ -4509,6 +5035,10 @@
     "S15": {
       "displayName": "fat quality",
       "driverKind": "merit"
+    },
+    "dairyForm": {
+      "displayName": "form and cultures",
+      "driverKind": "hygiene"
     }
   },
   "contaminantRisk": {
@@ -4519,33 +5049,91 @@
   },
   "plainWaterEvidence": {
     "nameWaterWords": [
-      "water", "mineral water", "sparkling water", "spring water",
-      "agua", "água", "agua mineral", "água mineral", "agua con gas", "água com gás",
-      "acqua", "acqua minerale", "acqua frizzante", "acqua naturale",
-      "eau", "eau minérale", "eau gazeuse", "wasser", "mineralwasser"
+      "water",
+      "mineral water",
+      "sparkling water",
+      "spring water",
+      "agua",
+      "água",
+      "agua mineral",
+      "água mineral",
+      "agua con gas",
+      "água com gás",
+      "acqua",
+      "acqua minerale",
+      "acqua frizzante",
+      "acqua naturale",
+      "eau",
+      "eau minérale",
+      "eau gazeuse",
+      "wasser",
+      "mineralwasser"
     ],
     "maxKcalPer100ml": 5,
     "maxSugarGPer100ml": 0.5
   },
   "dairyLactoseAllowance": {
     "gPer100ml": 4.8,
-    "dairyTerms": ["milk", "leite", "latte", "lait", "leche", "cream", "nata", "panna"],
+    "dairyTerms": [
+      "milk",
+      "leite",
+      "latte",
+      "lait",
+      "leche",
+      "cream",
+      "nata",
+      "panna"
+    ],
     "plantMilkPhrases": [
-      "oat milk", "almond milk", "soy milk", "soya milk", "coconut milk",
-      "rice milk", "cashew milk", "coconut cream",
-      "leite de aveia", "leite de amendoa", "leite de amêndoa", "leite de coco",
-      "leite de arroz", "leite de soja", "creme de coco", "bebida vegetal",
-      "latte di avena", "latte di mandorla", "latte di cocco", "latte di riso",
-      "latte di soia", "lait d'avoine", "lait d'amande", "lait de coco",
-      "lait de riz", "lait de soja"
+      "oat milk",
+      "almond milk",
+      "soy milk",
+      "soya milk",
+      "coconut milk",
+      "rice milk",
+      "cashew milk",
+      "coconut cream",
+      "leite de aveia",
+      "leite de amendoa",
+      "leite de amêndoa",
+      "leite de coco",
+      "leite de arroz",
+      "leite de soja",
+      "creme de coco",
+      "bebida vegetal",
+      "latte di avena",
+      "latte di mandorla",
+      "latte di cocco",
+      "latte di riso",
+      "latte di soia",
+      "lait d'avoine",
+      "lait d'amande",
+      "lait de coco",
+      "lait de riz",
+      "lait de soja"
     ]
   },
   "s3DrinksServingCurve": [
-    [1, 1.0],
-    [5, 0.6],
-    [8, 0.48],
-    [16, 0.25],
-    [30, 0.0]
+    [
+      1,
+      1.0
+    ],
+    [
+      5,
+      0.6
+    ],
+    [
+      8,
+      0.48
+    ],
+    [
+      16,
+      0.25
+    ],
+    [
+      30,
+      0.0
+    ]
   ],
   "routingPlausibility": {
     "plant_milk": {
@@ -4688,5 +5276,453 @@
       "aroma naturale",
       "aromatizzanti"
     ]
+  },
+  "dairy": {
+    "lactoseAllowance": {
+      "milk": 4.8,
+      "fermented": 4.0,
+      "strained": 3.0,
+      "cheese": 2.0,
+      "cream": 3.0
+    },
+    "strainedMarkers": [
+      "greek",
+      "skyr",
+      "strained",
+      "labneh",
+      "quark",
+      "icelandic",
+      "grego"
+    ],
+    "s13Prior": {
+      "milk": 0.7,
+      "fermented": 0.7,
+      "cheese": 0.7,
+      "cream": 0.4
+    },
+    "s13Lifts": {
+      "vitaminD_ug": {
+        "threshold": 1.0,
+        "lift": 0.1
+      },
+      "potassium_mg": {
+        "threshold": 130.0,
+        "lift": 0.05
+      },
+      "vitaminB12_ug": {
+        "threshold": 0.4,
+        "lift": 0.05
+      }
+    },
+    "s13CalciumByForm": {
+      "milk": 120.0,
+      "fermented": 150.0,
+      "cheese": 500.0,
+      "cream": 100000.0
+    },
+    "s13CalciumLift": 0.05,
+    "s4FermentedPrior": 0.9,
+    "identityEnvelope": {
+      "milk": {
+        "kcalMin": 25,
+        "kcalMax": 90,
+        "proteinMin": 2.5,
+        "proteinMax": 7,
+        "sugarMax": 6.5,
+        "sodiumMax": 130
+      },
+      "fermented": {
+        "kcalMin": 35,
+        "kcalMax": 140,
+        "proteinMin": 2.5,
+        "proteinMax": 20,
+        "sugarMax": 6.5,
+        "sodiumMax": 150
+      },
+      "cheese": {
+        "kcalMin": 60,
+        "kcalMax": 480,
+        "proteinMin": 5,
+        "proteinMax": 45,
+        "sugarMax": 6,
+        "sodiumMax": 2000
+      },
+      "cream": {
+        "kcalMin": 90,
+        "kcalMax": 450,
+        "proteinMin": 0,
+        "proteinMax": 6,
+        "sugarMax": 6,
+        "sodiumMax": 200
+      }
+    },
+    "identityS1Unknown": 0.75,
+    "offEnvelopeS1Unknown": 0.45,
+    "identityS2Unknown": 0.85,
+    "plausibility": {
+      "milk": {
+        "kcalMax": 120
+      },
+      "fermented": {
+        "kcalMax": 280
+      },
+      "cheese": {
+        "kcalMax": 560
+      },
+      "cream": {
+        "kcalMax": 560
+      }
+    },
+    "markerFamilies": {
+      "sugar": [
+        "sugar",
+        "cane sugar",
+        "syrup",
+        "dextrose",
+        "glucose",
+        "fructose",
+        "honey",
+        "maltodextrin",
+        "açúcar",
+        "zucchero",
+        "sucre",
+        "azúcar",
+        "zucker"
+      ],
+      "sweetener": [
+        "sucralose",
+        "acesulfame",
+        "aspartame",
+        "stevia",
+        "steviol",
+        "monk fruit",
+        "saccharin",
+        "erythritol",
+        "sorbitol",
+        "maltitol",
+        "xylitol",
+        "allulose",
+        "sweetener",
+        "édulcorant",
+        "edulcorante",
+        "dolcificante"
+      ],
+      "oil": [
+        "vegetable oil",
+        "canola oil",
+        "soybean oil",
+        "palm oil",
+        "coconut oil",
+        "sunflower oil",
+        "corn oil",
+        "rapeseed oil",
+        "palm kernel",
+        "hydrogenated",
+        "óleo",
+        "huile",
+        "olio"
+      ],
+      "starch": [
+        "modified starch",
+        "modified corn starch",
+        "modified food starch",
+        "starch",
+        "amidon",
+        "amido",
+        "almidón",
+        "fécule",
+        "maltodextrin"
+      ],
+      "emulsifier": [
+        "mono- and diglycerides",
+        "mono and diglycerides",
+        "monoglycerides",
+        "diglycerides",
+        "lecithin",
+        "polysorbate",
+        "sodium stearoyl",
+        "datem",
+        "emulsifier",
+        "émulsifiant",
+        "emulsionante",
+        "emulsificante"
+      ],
+      "emulsifyingSalt": [
+        "sodium citrate",
+        "sodium phosphate",
+        "potassium phosphate",
+        "sodium polyphosphate",
+        "polyphosphate",
+        "phosphate",
+        "emulsifying salt",
+        "sels de fonte",
+        "sali di fusione",
+        "sales fundentes",
+        "citrate"
+      ],
+      "hydrocolloid": [
+        "carrageenan",
+        "gellan",
+        "guar gum",
+        "xanthan",
+        "locust bean gum",
+        "carob bean gum",
+        "gelatin",
+        "gelatine",
+        "pectin",
+        "agar",
+        "alginate",
+        "cellulose",
+        "gum"
+      ],
+      "flavor": [
+        "natural flavor",
+        "natural flavour",
+        "artificial flavor",
+        "artificial flavour",
+        "flavoring",
+        "flavouring",
+        "arôme",
+        "aroma",
+        "aromas",
+        "saborizante"
+      ],
+      "color": [
+        "color",
+        "colour",
+        "annatto",
+        "carmine",
+        "cochineal",
+        "beta carotene",
+        "caramel color",
+        "red 40",
+        "yellow 5",
+        "yellow 6",
+        "blue 1",
+        "titanium dioxide",
+        "colorant",
+        "corante",
+        "colorante"
+      ],
+      "proteinFiller": [
+        "milk protein concentrate",
+        "whey protein concentrate",
+        "whey protein",
+        "milk protein",
+        "sodium caseinate",
+        "caseinate",
+        "whey"
+      ],
+      "preservative": [
+        "potassium sorbate",
+        "sorbic acid",
+        "natamycin",
+        "nisin",
+        "sodium benzoate",
+        "benzoate",
+        "conservateur",
+        "conservante",
+        "conservador"
+      ]
+    },
+    "markerCredits": [
+      1.0,
+      0.8,
+      0.6,
+      0.4,
+      0.2
+    ],
+    "cultureMarkers": [
+      "culture",
+      "ferment",
+      "lactobacillus",
+      "bifidobacter",
+      "bifidus",
+      "streptococcus",
+      "lactococcus",
+      "acidophilus",
+      "thermophilus",
+      "bulgaricus",
+      "probiotic",
+      "kefir"
+    ],
+    "heatTreatedMarkers": [
+      "heat treated after",
+      "heat-treated after",
+      "pasteurized after",
+      "pasteurised after",
+      "traité thermiquement après",
+      "tratado termicamente após"
+    ],
+    "formCredits": {
+      "fermentedLive": 1.0,
+      "fermentedAssumed": 0.9,
+      "fermentedHeatTreated": 0.6,
+      "cheeseNatural": 1.0,
+      "cheeseAntiCake": 0.9,
+      "cheeseRawMilk": 0.8,
+      "cheeseProcessed": 0.35,
+      "cheeseAnalogue": 0.1,
+      "unknown": 0.85
+    },
+    "analogueMarkers": [
+      "vegetable oil",
+      "canola oil",
+      "palm oil",
+      "coconut oil",
+      "soybean oil",
+      "sunflower oil",
+      "corn oil",
+      "rapeseed oil",
+      "starch"
+    ],
+    "antiCakeMarkers": [
+      "cellulose",
+      "natamycin",
+      "potato starch",
+      "corn starch",
+      "anti-caking",
+      "anticaking",
+      "calcium sulfate"
+    ],
+    "processedCheeseTags": [
+      "processed-cheese",
+      "processed-cheeses",
+      "cheese-spreads",
+      "cheese-sauces"
+    ],
+    "rawMilkCheeseTags": [
+      "raw-milk-cheeses",
+      "raw-milk-cheese",
+      "au-lait-cru",
+      "lait-cru"
+    ],
+    "plantEvidence": {
+      "labels": [
+        "vegan",
+        "plant-based",
+        "dairy-free",
+        "non-dairy",
+        "lactose-free-vegan",
+        "vegetarian-society-vegan"
+      ],
+      "nameWords": [
+        "vegan",
+        "plant-based",
+        "plant based",
+        "dairy-free",
+        "dairy free",
+        "non-dairy",
+        "nondairy",
+        "almondmilk",
+        "almond milk",
+        "oatmilk",
+        "oat milk",
+        "soymilk",
+        "soy milk",
+        "soya milk",
+        "cashew milk",
+        "cashewmilk",
+        "coconut milk",
+        "coconutmilk",
+        "rice milk",
+        "pea milk",
+        "hemp milk",
+        "macadamia milk"
+      ],
+      "firstIngredients": [
+        "coconut",
+        "almond",
+        "cashew",
+        "oat",
+        "soy",
+        "soya",
+        "pea protein",
+        "rice",
+        "hemp",
+        "macadamia",
+        "water, coconut",
+        "filtered water, coconut",
+        "filtered water, almond",
+        "filtered water, cashew",
+        "filtered water, oat"
+      ]
+    },
+    "proteinShakeEvidence": {
+      "minProteinGPer100ml": 6.0,
+      "nameWords": [
+        "shake",
+        "protein",
+        "core power",
+        "muscle milk",
+        "nutrition plan"
+      ],
+      "flavorWords": [
+        "chocolate",
+        "vanilla",
+        "strawberry",
+        "banana",
+        "coffee",
+        "caramel",
+        "cookies",
+        "mocha",
+        "cocoa",
+        "peanut"
+      ]
+    },
+    "dairyProteinTerms": [
+      "milk protein concentrate",
+      "milk protein isolate",
+      "milk protein",
+      "whey protein concentrate",
+      "whey protein isolate",
+      "whey protein",
+      "ultrafiltered milk",
+      "ultra-filtered milk",
+      "skim milk powder",
+      "skimmed milk powder",
+      "nonfat milk powder",
+      "nonfat dry milk",
+      "milk powder",
+      "casein",
+      "caseinate"
+    ],
+    "neutralTokens": [
+      "salt",
+      "sea salt",
+      "celtic sea salt",
+      "kosher salt",
+      "enzymes",
+      "enzyme",
+      "microbial enzymes",
+      "rennet",
+      "microbial rennet",
+      "animal rennet",
+      "vegetable rennet",
+      "vegetarian rennet",
+      "lactase",
+      "lactase enzyme",
+      "vitamin",
+      "vitamins"
+    ],
+    "freeSugarCaps": [
+      [
+        5,
+        74
+      ],
+      [
+        8,
+        64
+      ],
+      [
+        11,
+        54
+      ]
+    ],
+    "sweetenerCap": 58,
+    "cheeseSodiumCap": {
+      "thresholdMg": 1200,
+      "cap": 54
+    }
   }
 }
