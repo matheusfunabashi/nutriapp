@@ -139,6 +139,33 @@ nutrient table, Pantry Score, our palette/typeface, native chrome.
   didn't fit the flattened page → all four are `FlagRow`s (tinted icon, title,
   detail, hairline) grouped directly under the tallies (diet-conflict rows
   moved up from the page bottom).
+- **Welcome screen redesign (2026-08-24, from a designer mock)**: sky-scene
+  hero rebuilt in SwiftUI (`OnboardingSky` palette in OnboardingComponents —
+  gradient + blurred cloud/meadow ellipses + fade into `Theme.background`;
+  rendered via `.background(_:)` on the content so the oversized blurs never
+  drive layout — a ZStack sibling inflated the screen to 700pt wide). White
+  DM Sans title + white SageMark lockup, glass scan card ("Scan any label" /
+  "Sage reads the ingredients, not the marketing") with the owner's in-aisle
+  Chobani photo (`onboarding-scan-photo` asset, cropped from IMG_4431) filled
+  in a rounded frame + white `ScanBrackets`, annotated with real scan output (Sugar 3.6 g GOOD,
+  "No additives detected", MiniScoreRing 93 · YOUR SCORE · Excellent) instead
+  of the mock's placeholder weight/tracking chips; no Apple/Google sign-in
+  (unsupported), single Get Started; 4.9★/1.2M stats row dropped with the
+  mock. Card ink is fixed dark (`OnboardingSky.cardInk`) — the glass is
+  always light.
+- **Welcome feedback (2026-08-24)**: blue sky gradient → **brand greens**
+  (`OnboardingSky` now 1C7A50 → 57A87E → DCEDE2 mint; the blue read as a
+  different app). Chips anchor to the **photo**, not the card (fixed card
+  offsets let the Sugar chip cover the caption on other iPhones); the score
+  chip cascades below the additives pill (collided at 375pt); the caption
+  wraps; SE-class heights (<750pt) get a compact rhythm (smaller photo,
+  tighter paddings) via GeometryReader. Verified on iPhone 16 Pro + a
+  created-then-deleted SE 3rd-gen sim. Back arrow on the first chromed step
+  fixed (was disabled until step 2). Then **inverted on request**: light
+  near-background top (dark ink title, green SageMark lockup) → deep brand
+  green grounding the CTA (the inverted white pill); card fill + hairline
+  both live in the card background — an .overlay stroke drew a line across
+  the chips that hang past the card edge.
 - **Owner feedback #2 (2026-08-24)**: the owner missed the two dials →
   Overall is back as a **smaller muted ring** ("OVERALL" eyebrow, 56pt,
   `neutralMuted`, gray tier word) beside the FOR YOU hero ring — the

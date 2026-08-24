@@ -38,8 +38,10 @@ struct OnboardingHeader: View {
                     .minHitArea(44) // visible 36, lift to 44 for WCAG
             }
             .buttonStyle(.pressable)
-            .opacity(step.rawValue > 1 ? 1 : 0.45)
-            .disabled(step.rawValue <= 1)
+            // Back works from the first chromed step (it returns to the
+            // welcome hero); only the welcome step itself has nowhere to go.
+            .opacity(step.rawValue > 0 ? 1 : 0.45)
+            .disabled(step.rawValue <= 0)
             .accessibilityLabel("Back")
 
             ProgressView(value: max(0, min(1, step.progress)))
@@ -280,6 +282,66 @@ struct OnboardingInvertedTitle: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.horizontal, 24)
         .padding(.bottom, 18)
+    }
+}
+
+// MARK: - Welcome scene (marketing surface)
+//
+// The welcome screen is a self-colored illustration — one deliberate look in
+// both schemes, like the inverted green steps. Palette lives here, not in
+// the view (design.md: no raw hex in views). The gradient runs the brand
+// greens (accent → sage → mint) so the hero reads as Sage, not as a
+// different app.
+
+enum OnboardingSky {
+    /// Near-background light at the very top (fixed — marketing surface).
+    static let top = Color(hex: "F5F7F2")
+    /// Washed mint under the title.
+    static let horizon = Color(hex: "DCEDE2")
+    /// Mid sage behind the card.
+    static let mid = Color(hex: "57A87E")
+    /// Deep brand green grounding the CTA.
+    static let deep = Color(hex: "1C7A50")
+    /// Fixed dark ink for the light top half and the glass card — the card is
+    /// always light, so the scheme-resolving Theme.ink would vanish on it.
+    static let cardInk = Color(hex: "111111")
+    static let cardInkSecondary = Color(hex: "111111").opacity(0.55)
+
+    /// Full-bleed scene, light-to-green: white air up top (dark ink, green
+    /// lockup), deep brand green grounding the CTA (white pill, like the
+    /// inverted steps).
+    struct Background: View {
+        var body: some View {
+            ZStack {
+                LinearGradient(colors: [top, horizon, mid, deep],
+                               startPoint: .top, endPoint: .bottom)
+                clouds
+            }
+            // Rendered via .background(_:) on the screen content, so the
+            // oversized blurred shapes never participate in layout.
+            .ignoresSafeArea()
+            .accessibilityHidden(true)
+        }
+
+        private var clouds: some View {
+            ZStack {
+                Group {
+                    cloud(width: 320, height: 110, opacity: 0.40, x: 110, y: 40)
+                    cloud(width: 260, height: 90, opacity: 0.30, x: -150, y: 150)
+                    cloud(width: 300, height: 100, opacity: 0.25, x: -110, y: 330)
+                    cloud(width: 240, height: 80, opacity: 0.18, x: 130, y: 420)
+                }
+            }
+        }
+
+        private func cloud(width: CGFloat, height: CGFloat, opacity: Double,
+                           x: CGFloat, y: CGFloat) -> some View {
+            Ellipse()
+                .fill(Color.white.opacity(opacity))
+                .frame(width: width, height: height)
+                .blur(radius: 36)
+                .offset(x: x, y: y)
+        }
     }
 }
 
