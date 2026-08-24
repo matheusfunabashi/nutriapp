@@ -38,8 +38,10 @@ struct OnboardingHeader: View {
                     .minHitArea(44) // visible 36, lift to 44 for WCAG
             }
             .buttonStyle(.pressable)
-            .opacity(step.rawValue > 1 ? 1 : 0.45)
-            .disabled(step.rawValue <= 1)
+            // Back works from the first chromed step (it returns to the
+            // welcome hero); only the welcome step itself has nowhere to go.
+            .opacity(step.rawValue > 0 ? 1 : 0.45)
+            .disabled(step.rawValue <= 0)
             .accessibilityLabel("Back")
 
             ProgressView(value: max(0, min(1, step.progress)))
