@@ -161,7 +161,11 @@ nutrient table, Pantry Score, our palette/typeface, native chrome.
   wraps; SE-class heights (<750pt) get a compact rhythm (smaller photo,
   tighter paddings) via GeometryReader. Verified on iPhone 16 Pro + a
   created-then-deleted SE 3rd-gen sim. Back arrow on the first chromed step
-  fixed (was disabled until step 2).
+  fixed (was disabled until step 2). Then **inverted on request**: light
+  near-background top (dark ink title, green SageMark lockup) → deep brand
+  green grounding the CTA (the inverted white pill); card fill + hairline
+  both live in the card background — an .overlay stroke drew a line across
+  the chips that hang past the card edge.
 - **Owner feedback #2 (2026-08-24)**: the owner missed the two dials →
   Overall is back as a **smaller muted ring** ("OVERALL" eyebrow, 56pt,
   `neutralMuted`, gray tier word) beside the FOR YOU hero ring — the
