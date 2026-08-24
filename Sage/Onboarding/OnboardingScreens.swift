@@ -25,7 +25,7 @@ struct OnboardingWelcomeScreen: View {
                         .multilineTextAlignment(.center)
                         .lineSpacing(2)
                         .padding(.horizontal, 24)
-                        .padding(.top, 22)
+                        .padding(.top, 48)
                 }
 
                 StaggeredAppear(index: 2) {
@@ -42,7 +42,7 @@ struct OnboardingWelcomeScreen: View {
                 StaggeredAppear(index: 3) {
                     scanCard
                         .padding(.horizontal, 44)
-                        .padding(.top, 30)
+                        .padding(.top, 34)
                 }
 
                 Spacer(minLength: 16)
@@ -74,13 +74,19 @@ struct OnboardingWelcomeScreen: View {
                     .font(.sageRegular(12))
                     .foregroundColor(OnboardingSky.cardInkSecondary)
             }
-            Image("alt-yogurt")
+            Image("onboarding-scan-photo")
                 .resizable()
-                .scaledToFit()
-                .frame(height: 185)
-                .padding(10)
-                .overlay(ScanBrackets().stroke(OnboardingSky.cardInk.opacity(0.65),
-                                               style: StrokeStyle(lineWidth: 3, lineCap: .round)))
+                .scaledToFill()
+                .frame(height: 235)
+                .frame(maxWidth: .infinity)
+                .clipShape(RoundedRectangle(cornerRadius: Theme.Radius.control, style: .continuous))
+                .overlay(
+                    ScanBrackets()
+                        .stroke(Color.white.opacity(0.95),
+                                style: StrokeStyle(lineWidth: 3, lineCap: .round))
+                        .padding(14)
+                        .shadow(color: .black.opacity(0.35), radius: 3, x: 0, y: 1)
+                )
         }
         .padding(.horizontal, 18).padding(.top, 16).padding(.bottom, 26)
         .frame(maxWidth: .infinity)

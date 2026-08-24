@@ -145,8 +145,9 @@ nutrient table, Pantry Score, our palette/typeface, native chrome.
   rendered via `.background(_:)` on the content so the oversized blurs never
   drive layout — a ZStack sibling inflated the screen to 700pt wide). White
   DM Sans title + white SageMark lockup, glass scan card ("Scan any label" /
-  "Sage reads the ingredients, not the marketing") with the bundled Chobani
-  cutout + `ScanBrackets`, annotated with real scan output (Sugar 3.6 g GOOD,
+  "Sage reads the ingredients, not the marketing") with the owner's in-aisle
+  Chobani photo (`onboarding-scan-photo` asset, cropped from IMG_4431) filled
+  in a rounded frame + white `ScanBrackets`, annotated with real scan output (Sugar 3.6 g GOOD,
   "No additives detected", MiniScoreRing 93 · YOUR SCORE · Excellent) instead
   of the mock's placeholder weight/tracking chips; no Apple/Google sign-in
   (unsupported), single Get Started; 4.9★/1.2M stats row dropped with the
