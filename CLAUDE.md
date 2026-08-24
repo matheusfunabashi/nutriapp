@@ -153,6 +153,15 @@ nutrient table, Pantry Score, our palette/typeface, native chrome.
   (unsupported), single Get Started; 4.9★/1.2M stats row dropped with the
   mock. Card ink is fixed dark (`OnboardingSky.cardInk`) — the glass is
   always light.
+- **Welcome feedback (2026-08-24)**: blue sky gradient → **brand greens**
+  (`OnboardingSky` now 1C7A50 → 57A87E → DCEDE2 mint; the blue read as a
+  different app). Chips anchor to the **photo**, not the card (fixed card
+  offsets let the Sugar chip cover the caption on other iPhones); the score
+  chip cascades below the additives pill (collided at 375pt); the caption
+  wraps; SE-class heights (<750pt) get a compact rhythm (smaller photo,
+  tighter paddings) via GeometryReader. Verified on iPhone 16 Pro + a
+  created-then-deleted SE 3rd-gen sim. Back arrow on the first chromed step
+  fixed (was disabled until step 2).
 - **Owner feedback #2 (2026-08-24)**: the owner missed the two dials →
   Overall is back as a **smaller muted ring** ("OVERALL" eyebrow, 56pt,
   `neutralMuted`, gray tier word) beside the FOR YOU hero ring — the

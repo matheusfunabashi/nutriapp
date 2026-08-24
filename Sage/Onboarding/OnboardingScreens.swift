@@ -7,7 +7,11 @@ struct OnboardingWelcomeScreen: View {
     let onContinue: () -> Void
 
     var body: some View {
-        VStack(spacing: 0) {
+        // Short screens (SE-class, ~667pt) get a tighter rhythm and a
+        // smaller photo so the pinned CTA never squeezes the content.
+        GeometryReader { geo in
+            let compact = geo.size.height < 750
+            VStack(spacing: 0) {
                 StaggeredAppear(index: 0) {
                     HStack(spacing: 10) {
                         SageMark(size: 34, color: .white)
@@ -25,7 +29,7 @@ struct OnboardingWelcomeScreen: View {
                         .multilineTextAlignment(.center)
                         .lineSpacing(2)
                         .padding(.horizontal, 24)
-                        .padding(.top, 48)
+                        .padding(.top, compact ? 16 : 48)
                 }
 
                 StaggeredAppear(index: 2) {
@@ -40,9 +44,9 @@ struct OnboardingWelcomeScreen: View {
                 }
 
                 StaggeredAppear(index: 3) {
-                    scanCard
+                    scanCard(photoHeight: compact ? 165 : 235)
                         .padding(.horizontal, 44)
-                        .padding(.top, 34)
+                        .padding(.top, compact ? 20 : 34)
                 }
 
                 Spacer(minLength: 16)
@@ -52,8 +56,9 @@ struct OnboardingWelcomeScreen: View {
                         .padding(.horizontal, 20)
                         .padding(.bottom, 36)
                 }
+            }
+            .frame(width: geo.size.width, height: geo.size.height)
         }
-        .frame(maxWidth: .infinity)
         .background { OnboardingSky.Background() }
     }
 
@@ -64,7 +69,7 @@ struct OnboardingWelcomeScreen: View {
     // personalized score. Values are the real ones for plain Greek yogurt
     // (the bundled pack shot), not lorem ipsum.
 
-    private var scanCard: some View {
+    private func scanCard(photoHeight: CGFloat) -> some View {
         VStack(spacing: 14) {
             VStack(spacing: 2) {
                 Text("Scan any label")
@@ -73,11 +78,13 @@ struct OnboardingWelcomeScreen: View {
                 Text("Sage reads the ingredients, not the marketing")
                     .font(.sageRegular(12))
                     .foregroundColor(OnboardingSky.cardInkSecondary)
+                    .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
             }
             Image("onboarding-scan-photo")
                 .resizable()
                 .scaledToFill()
-                .frame(height: 235)
+                .frame(height: photoHeight)
                 .frame(maxWidth: .infinity)
                 .clipShape(RoundedRectangle(cornerRadius: Theme.Radius.control, style: .continuous))
                 // The brackets ARE the photo frame: same rect, same corner
@@ -88,6 +95,19 @@ struct OnboardingWelcomeScreen: View {
                                 style: StrokeStyle(lineWidth: 3.5, lineCap: .round))
                         .shadow(color: .black.opacity(0.30), radius: 3, x: 0, y: 1)
                 )
+                // Chips hang off the photo itself, so they can never collide
+                // with the card's caption whatever the screen size.
+                .overlay(alignment: .topLeading) {
+                    sugarChip.offset(x: -30, y: -12)
+                }
+                .overlay(alignment: .bottomLeading) {
+                    additivesPill.offset(x: -22, y: 22)
+                }
+                .overlay(alignment: .bottomTrailing) {
+                    // Cascades a step below the additives pill so the two
+                    // never collide on narrow screens.
+                    scoreChip.offset(x: 22, y: 64)
+                }
         }
         .padding(.horizontal, 18).padding(.top, 16).padding(.bottom, 26)
         .frame(maxWidth: .infinity)
@@ -99,15 +119,6 @@ struct OnboardingWelcomeScreen: View {
             RoundedRectangle(cornerRadius: Theme.Radius.panel, style: .continuous)
                 .stroke(Color.white.opacity(0.65), lineWidth: 1)
         )
-        .overlay(alignment: .topLeading) {
-            sugarChip.offset(x: -28, y: 54)
-        }
-        .overlay(alignment: .bottomTrailing) {
-            scoreChip.offset(x: 30, y: 26)
-        }
-        .overlay(alignment: .bottomLeading) {
-            additivesPill.offset(x: -14, y: -8)
-        }
         .accessibilityElement(children: .ignore)
         .accessibilityLabel("A scanned yogurt: sugar 3.6 grams, good. No additives detected. Your Score 93, Excellent.")
     }

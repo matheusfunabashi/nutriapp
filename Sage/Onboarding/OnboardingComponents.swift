@@ -285,21 +285,23 @@ struct OnboardingInvertedTitle: View {
     }
 }
 
-// MARK: - Welcome sky (marketing surface)
+// MARK: - Welcome scene (marketing surface)
 //
 // The welcome screen is a self-colored illustration — one deliberate look in
 // both schemes, like the inverted green steps. Palette lives here, not in
-// the view (design.md: no raw hex in views).
+// the view (design.md: no raw hex in views). The gradient runs the brand
+// greens (accent → sage → mint) so the hero reads as Sage, not as a
+// different app.
 
 enum OnboardingSky {
-    /// Deep sky at the very top.
-    static let top = Color(hex: "4C97DC")
-    /// Mid sky behind the card.
-    static let mid = Color(hex: "8AC0EA")
-    /// Washed horizon above the meadow.
-    static let horizon = Color(hex: "DDEEF8")
-    /// Soft grass glow at the bottom of the scene.
-    static let meadow = Color(hex: "8FBF7C")
+    /// Deep brand green at the very top.
+    static let top = Color(hex: "1C7A50")
+    /// Mid sage behind the card.
+    static let mid = Color(hex: "57A87E")
+    /// Washed mint above the fade.
+    static let horizon = Color(hex: "DCEDE2")
+    /// Soft lighter-green glow at the bottom of the scene.
+    static let meadow = Color(hex: "A9CFA0")
     /// Fixed dark ink for the glass card — the card is always light, so the
     /// scheme-resolving Theme.ink (white in dark mode) would vanish on it.
     static let cardInk = Color(hex: "111111")
