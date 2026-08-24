@@ -139,6 +139,13 @@ nutrient table, Pantry Score, our palette/typeface, native chrome.
   didn't fit the flattened page → all four are `FlagRow`s (tinted icon, title,
   detail, hairline) grouped directly under the tallies (diet-conflict rows
   moved up from the page bottom).
+- **Owner feedback #2 (2026-08-24)**: the owner missed the two dials →
+  Overall is back as a **smaller muted ring** ("OVERALL" eyebrow, 56pt,
+  `neutralMuted`, gray tier word) beside the FOR YOU hero ring — the
+  onboarding "what everyone sees" metaphor, not the old boxed card. Shown
+  only when a personalized score exists. The caption slims to the delta
+  ("−29 for you" / "Same as overall") + cap chip since the dial now carries
+  the Overall number.
 - Not done (follow-ups): onboarding screens still show **screenshots of the
   old product page** (two-dial card) — re-shoot `OnboardingScreens` assets;
   `StarterPickCard` still boxes its thumb (could drop the tile like the
