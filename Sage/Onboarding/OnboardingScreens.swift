@@ -9,10 +9,10 @@ struct OnboardingWelcomeScreen: View {
     var body: some View {
         VStack(spacing: 0) {
                 StaggeredAppear(index: 0) {
-                    HStack(spacing: 8) {
-                        SageMark(size: 26, color: .white)
+                    HStack(spacing: 10) {
+                        SageMark(size: 34, color: .white)
                         Text("Sage")
-                            .font(.sageBold(22)).tracking(-0.6)
+                            .font(.sageBold(28)).tracking(-0.6)
                             .foregroundColor(.white)
                     }
                     .padding(.top, 12)
@@ -50,7 +50,7 @@ struct OnboardingWelcomeScreen: View {
                 StaggeredAppear(index: 4) {
                     OnboardingCTAButton(title: "Get Started", action: onContinue)
                         .padding(.horizontal, 20)
-                        .padding(.bottom, 32)
+                        .padding(.bottom, 36)
                 }
         }
         .frame(maxWidth: .infinity)
@@ -80,12 +80,13 @@ struct OnboardingWelcomeScreen: View {
                 .frame(height: 235)
                 .frame(maxWidth: .infinity)
                 .clipShape(RoundedRectangle(cornerRadius: Theme.Radius.control, style: .continuous))
+                // The brackets ARE the photo frame: same rect, same corner
+                // radius, arms tracing the photo's own rounded corners.
                 .overlay(
-                    ScanBrackets()
+                    ScanBrackets(cornerRadius: Theme.Radius.control)
                         .stroke(Color.white.opacity(0.95),
-                                style: StrokeStyle(lineWidth: 3, lineCap: .round))
-                        .padding(14)
-                        .shadow(color: .black.opacity(0.35), radius: 3, x: 0, y: 1)
+                                style: StrokeStyle(lineWidth: 3.5, lineCap: .round))
+                        .shadow(color: .black.opacity(0.30), radius: 3, x: 0, y: 1)
                 )
         }
         .padding(.horizontal, 18).padding(.top, 16).padding(.bottom, 26)
@@ -168,28 +169,42 @@ struct OnboardingWelcomeScreen: View {
     }
 }
 
-/// Four viewfinder corners around the product being scanned.
+/// Four viewfinder corners sized to the rect they overlay — each arm runs
+/// along the edge and around the corner with the same radius as the photo,
+/// so brackets and photo read as one frame.
 private struct ScanBrackets: Shape {
+    var cornerRadius: CGFloat = 0
+
     func path(in rect: CGRect) -> Path {
         var p = Path()
-        let arm: CGFloat = 22
-        let r = rect
+        let arm: CGFloat = 26
+        let r = min(cornerRadius, arm - 4)
+        let b = rect
+
         // Top-left
-        p.move(to: CGPoint(x: r.minX, y: r.minY + arm))
-        p.addLine(to: CGPoint(x: r.minX, y: r.minY))
-        p.addLine(to: CGPoint(x: r.minX + arm, y: r.minY))
+        p.move(to: CGPoint(x: b.minX, y: b.minY + arm))
+        p.addLine(to: CGPoint(x: b.minX, y: b.minY + r))
+        p.addArc(center: CGPoint(x: b.minX + r, y: b.minY + r), radius: r,
+                 startAngle: .degrees(180), endAngle: .degrees(270), clockwise: false)
+        p.addLine(to: CGPoint(x: b.minX + arm, y: b.minY))
         // Top-right
-        p.move(to: CGPoint(x: r.maxX - arm, y: r.minY))
-        p.addLine(to: CGPoint(x: r.maxX, y: r.minY))
-        p.addLine(to: CGPoint(x: r.maxX, y: r.minY + arm))
+        p.move(to: CGPoint(x: b.maxX - arm, y: b.minY))
+        p.addLine(to: CGPoint(x: b.maxX - r, y: b.minY))
+        p.addArc(center: CGPoint(x: b.maxX - r, y: b.minY + r), radius: r,
+                 startAngle: .degrees(270), endAngle: .degrees(0), clockwise: false)
+        p.addLine(to: CGPoint(x: b.maxX, y: b.minY + arm))
         // Bottom-right
-        p.move(to: CGPoint(x: r.maxX, y: r.maxY - arm))
-        p.addLine(to: CGPoint(x: r.maxX, y: r.maxY))
-        p.addLine(to: CGPoint(x: r.maxX - arm, y: r.maxY))
+        p.move(to: CGPoint(x: b.maxX, y: b.maxY - arm))
+        p.addLine(to: CGPoint(x: b.maxX, y: b.maxY - r))
+        p.addArc(center: CGPoint(x: b.maxX - r, y: b.maxY - r), radius: r,
+                 startAngle: .degrees(0), endAngle: .degrees(90), clockwise: false)
+        p.addLine(to: CGPoint(x: b.maxX - arm, y: b.maxY))
         // Bottom-left
-        p.move(to: CGPoint(x: r.minX + arm, y: r.maxY))
-        p.addLine(to: CGPoint(x: r.minX, y: r.maxY))
-        p.addLine(to: CGPoint(x: r.minX, y: r.maxY - arm))
+        p.move(to: CGPoint(x: b.minX + arm, y: b.maxY))
+        p.addLine(to: CGPoint(x: b.minX + r, y: b.maxY))
+        p.addArc(center: CGPoint(x: b.minX + r, y: b.maxY - r), radius: r,
+                 startAngle: .degrees(90), endAngle: .degrees(180), clockwise: false)
+        p.addLine(to: CGPoint(x: b.minX, y: b.maxY - arm))
         return p
     }
 }
