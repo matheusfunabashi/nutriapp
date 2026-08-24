@@ -364,10 +364,32 @@ struct ResultView: View {
             .accessibilityLabel(formatted.accessibilityLabel)
 
             if !liveProduct.isUnscored, let score = primaryScore {
-                heroRing(score: score, personalized: liveProduct.yourScore != nil)
+                // Two dials, one hierarchy: Overall as a smaller muted ring
+                // (the onboarding "what everyone sees" gray), Your Score as
+                // the hero — never the old boxed two-panel card.
+                HStack(alignment: .center, spacing: 16) {
+                    if liveProduct.yourScore != nil, let overall = liveProduct.overallScore {
+                        overallRing(score: overall)
+                    }
+                    heroRing(score: score, personalized: liveProduct.yourScore != nil)
+                }
             }
         }
         .padding(.horizontal, 20)
+    }
+
+    private func overallRing(score: Int) -> some View {
+        VStack(spacing: 6) {
+            Text("OVERALL")
+                .font(.sageBold(10)).tracking(1.2)
+                .foregroundColor(Theme.inkSecondary)
+            ScoreRing(score: score, size: 56, stroke: 5, ringColor: Color.neutralMuted)
+            Text(scoreLabel(score))
+                .font(.sageSemiBold(12)).tracking(-0.1)
+                .foregroundColor(Theme.inkSecondary)
+        }
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("Overall \(score), \(scoreLabel(score))")
     }
 
     /// The one ring. "FOR YOU" above it only when the number is the
@@ -396,24 +418,15 @@ struct ResultView: View {
         if let overall = p.overallScore, let your = p.yourScore {
             let delta = your - overall
             HStack(spacing: 8) {
-                HStack(spacing: 4) {
-                    Text("Overall \(overall)")
-                        .font(.sageMedium(14))
+                if delta != 0 {
+                    Text(delta > 0 ? "+\(delta) for you" : "\(delta) for you")
+                        .font(.sageSemiBold(14))
                         .monospacedDigit()
+                        .foregroundColor(delta > 0 ? Color.scoreGood : Color.scoreBad)
+                } else {
+                    Text("Same as overall")
+                        .font(.sageMedium(14))
                         .foregroundColor(Theme.inkSecondary)
-                    if delta != 0 {
-                        Text("·")
-                            .font(.sageMedium(14))
-                            .foregroundColor(Theme.inkSecondary)
-                        Text(delta > 0 ? "+\(delta) for you" : "\(delta) for you")
-                            .font(.sageSemiBold(14))
-                            .monospacedDigit()
-                            .foregroundColor(delta > 0 ? Color.scoreGood : Color.scoreBad)
-                    } else {
-                        Text("· same for you")
-                            .font(.sageMedium(14))
-                            .foregroundColor(Theme.inkSecondary)
-                    }
                 }
                 if let cap = p.bindingCap {
                     Text("Capped: \(cap.shortLabel)")
