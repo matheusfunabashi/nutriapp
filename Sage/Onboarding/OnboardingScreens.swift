@@ -113,13 +113,16 @@ struct OnboardingWelcomeScreen: View {
         }
         .padding(.horizontal, 18).padding(.top, 16).padding(.bottom, 26)
         .frame(maxWidth: .infinity)
+        // Fill AND hairline both live in the background: the chips hang past
+        // the card's edges, and an .overlay stroke would draw its line across
+        // them.
         .background(
             RoundedRectangle(cornerRadius: Theme.Radius.panel, style: .continuous)
                 .fill(Color.white.opacity(0.62))
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: Theme.Radius.panel, style: .continuous)
-                .stroke(Color.white.opacity(0.65), lineWidth: 1)
+                .overlay(
+                    RoundedRectangle(cornerRadius: Theme.Radius.panel, style: .continuous)
+                        .stroke(Color.white.opacity(0.65), lineWidth: 1)
+                )
         )
         .accessibilityElement(children: .ignore)
         .accessibilityLabel("A scanned yogurt: sugar 3.6 grams, good. No additives detected. Your Score 93, Excellent.")
