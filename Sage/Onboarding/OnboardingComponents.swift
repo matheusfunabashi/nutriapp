@@ -294,25 +294,26 @@ struct OnboardingInvertedTitle: View {
 // different app.
 
 enum OnboardingSky {
-    /// Deep brand green at the very top.
-    static let top = Color(hex: "1C7A50")
+    /// Near-background light at the very top (fixed — marketing surface).
+    static let top = Color(hex: "F5F7F2")
+    /// Washed mint under the title.
+    static let horizon = Color(hex: "DCEDE2")
     /// Mid sage behind the card.
     static let mid = Color(hex: "57A87E")
-    /// Washed mint above the fade.
-    static let horizon = Color(hex: "DCEDE2")
-    /// Soft lighter-green glow at the bottom of the scene.
-    static let meadow = Color(hex: "A9CFA0")
-    /// Fixed dark ink for the glass card — the card is always light, so the
-    /// scheme-resolving Theme.ink (white in dark mode) would vanish on it.
+    /// Deep brand green grounding the CTA.
+    static let deep = Color(hex: "1C7A50")
+    /// Fixed dark ink for the light top half and the glass card — the card is
+    /// always light, so the scheme-resolving Theme.ink would vanish on it.
     static let cardInk = Color(hex: "111111")
     static let cardInkSecondary = Color(hex: "111111").opacity(0.55)
 
-    /// Full-bleed sky: gradient, blurred cloud ellipses, a meadow glow, and a
-    /// fade into the app background so the CTA sits on familiar ground.
+    /// Full-bleed scene, light-to-green: white air up top (dark ink, green
+    /// lockup), deep brand green grounding the CTA (white pill, like the
+    /// inverted steps).
     struct Background: View {
         var body: some View {
             ZStack {
-                LinearGradient(colors: [top, mid, horizon],
+                LinearGradient(colors: [top, horizon, mid, deep],
                                startPoint: .top, endPoint: .bottom)
                 clouds
             }
@@ -325,21 +326,10 @@ enum OnboardingSky {
         private var clouds: some View {
             ZStack {
                 Group {
-                    cloud(width: 300, height: 100, opacity: 0.50, x: -120, y: -250)
-                    cloud(width: 240, height: 80, opacity: 0.38, x: 140, y: -160)
-                    cloud(width: 320, height: 110, opacity: 0.45, x: 110, y: 60)
-                    cloud(width: 260, height: 90, opacity: 0.32, x: -150, y: 170)
-                }
-                Ellipse()
-                    .fill(meadow.opacity(0.50))
-                    .frame(width: 700, height: 280)
-                    .blur(radius: 60)
-                    .offset(y: 360)
-                VStack {
-                    Spacer()
-                    LinearGradient(colors: [Theme.background.opacity(0), Theme.background],
-                                   startPoint: .top, endPoint: .bottom)
-                        .frame(height: 240)
+                    cloud(width: 320, height: 110, opacity: 0.40, x: 110, y: 40)
+                    cloud(width: 260, height: 90, opacity: 0.30, x: -150, y: 150)
+                    cloud(width: 300, height: 100, opacity: 0.25, x: -110, y: 330)
+                    cloud(width: 240, height: 80, opacity: 0.18, x: 130, y: 420)
                 }
             }
         }

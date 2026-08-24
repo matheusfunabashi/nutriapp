@@ -14,10 +14,10 @@ struct OnboardingWelcomeScreen: View {
             VStack(spacing: 0) {
                 StaggeredAppear(index: 0) {
                     HStack(spacing: 10) {
-                        SageMark(size: 34, color: .white)
+                        SageMark(size: 34, color: OnboardingBrandGreen)
                         Text("Sage")
                             .font(.sageBold(28)).tracking(-0.6)
-                            .foregroundColor(.white)
+                            .foregroundColor(OnboardingSky.cardInk)
                     }
                     .padding(.top, 12)
                 }
@@ -25,7 +25,7 @@ struct OnboardingWelcomeScreen: View {
                 StaggeredAppear(index: 1) {
                     Text("Know exactly\nwhat's inside")
                         .font(.sageDisplay).tracking(-1)
-                        .foregroundColor(.white)
+                        .foregroundColor(OnboardingSky.cardInk)
                         .multilineTextAlignment(.center)
                         .lineSpacing(2)
                         .padding(.horizontal, 24)
@@ -38,7 +38,7 @@ struct OnboardingWelcomeScreen: View {
                         .font(.sageRegular(15))
                         .lineSpacing(3)
                         .multilineTextAlignment(.center)
-                        .foregroundColor(.white.opacity(0.92))
+                        .foregroundColor(OnboardingSky.cardInk.opacity(0.62))
                         .padding(.horizontal, 40)
                         .padding(.top, 10)
                 }
@@ -52,7 +52,9 @@ struct OnboardingWelcomeScreen: View {
                 Spacer(minLength: 16)
 
                 StaggeredAppear(index: 4) {
-                    OnboardingCTAButton(title: "Get Started", action: onContinue)
+                    // Deep green ground → the inverted white pill, like the
+                    // How-it-works / Pledge steps.
+                    OnboardingCTAButton(title: "Get Started", inverted: true, action: onContinue)
                         .padding(.horizontal, 20)
                         .padding(.bottom, 36)
                 }
