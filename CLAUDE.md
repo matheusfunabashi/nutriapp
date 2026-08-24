@@ -139,6 +139,19 @@ nutrient table, Pantry Score, our palette/typeface, native chrome.
   didn't fit the flattened page → all four are `FlagRow`s (tinted icon, title,
   detail, hairline) grouped directly under the tallies (diet-conflict rows
   moved up from the page bottom).
+- **Welcome screen redesign (2026-08-24, from a designer mock)**: sky-scene
+  hero rebuilt in SwiftUI (`OnboardingSky` palette in OnboardingComponents —
+  gradient + blurred cloud/meadow ellipses + fade into `Theme.background`;
+  rendered via `.background(_:)` on the content so the oversized blurs never
+  drive layout — a ZStack sibling inflated the screen to 700pt wide). White
+  DM Sans title + white SageMark lockup, glass scan card ("Scan any label" /
+  "Sage reads the ingredients, not the marketing") with the bundled Chobani
+  cutout + `ScanBrackets`, annotated with real scan output (Sugar 3.6 g GOOD,
+  "No additives detected", MiniScoreRing 93 · YOUR SCORE · Excellent) instead
+  of the mock's placeholder weight/tracking chips; no Apple/Google sign-in
+  (unsupported), single Get Started; 4.9★/1.2M stats row dropped with the
+  mock. Card ink is fixed dark (`OnboardingSky.cardInk`) — the glass is
+  always light.
 - Not done (follow-ups): onboarding screens still show **screenshots of the
   old product page** (two-dial card) — re-shoot `OnboardingScreens` assets;
   `StarterPickCard` still boxes its thumb (could drop the tile like the

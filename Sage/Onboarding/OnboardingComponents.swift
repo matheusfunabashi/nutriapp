@@ -283,6 +283,74 @@ struct OnboardingInvertedTitle: View {
     }
 }
 
+// MARK: - Welcome sky (marketing surface)
+//
+// The welcome screen is a self-colored illustration — one deliberate look in
+// both schemes, like the inverted green steps. Palette lives here, not in
+// the view (design.md: no raw hex in views).
+
+enum OnboardingSky {
+    /// Deep sky at the very top.
+    static let top = Color(hex: "4C97DC")
+    /// Mid sky behind the card.
+    static let mid = Color(hex: "8AC0EA")
+    /// Washed horizon above the meadow.
+    static let horizon = Color(hex: "DDEEF8")
+    /// Soft grass glow at the bottom of the scene.
+    static let meadow = Color(hex: "8FBF7C")
+    /// Fixed dark ink for the glass card — the card is always light, so the
+    /// scheme-resolving Theme.ink (white in dark mode) would vanish on it.
+    static let cardInk = Color(hex: "111111")
+    static let cardInkSecondary = Color(hex: "111111").opacity(0.55)
+
+    /// Full-bleed sky: gradient, blurred cloud ellipses, a meadow glow, and a
+    /// fade into the app background so the CTA sits on familiar ground.
+    struct Background: View {
+        var body: some View {
+            ZStack {
+                LinearGradient(colors: [top, mid, horizon],
+                               startPoint: .top, endPoint: .bottom)
+                clouds
+            }
+            // Rendered via .background(_:) on the screen content, so the
+            // oversized blurred shapes never participate in layout.
+            .ignoresSafeArea()
+            .accessibilityHidden(true)
+        }
+
+        private var clouds: some View {
+            ZStack {
+                Group {
+                    cloud(width: 300, height: 100, opacity: 0.50, x: -120, y: -250)
+                    cloud(width: 240, height: 80, opacity: 0.38, x: 140, y: -160)
+                    cloud(width: 320, height: 110, opacity: 0.45, x: 110, y: 60)
+                    cloud(width: 260, height: 90, opacity: 0.32, x: -150, y: 170)
+                }
+                Ellipse()
+                    .fill(meadow.opacity(0.50))
+                    .frame(width: 700, height: 280)
+                    .blur(radius: 60)
+                    .offset(y: 360)
+                VStack {
+                    Spacer()
+                    LinearGradient(colors: [Theme.background.opacity(0), Theme.background],
+                                   startPoint: .top, endPoint: .bottom)
+                        .frame(height: 240)
+                }
+            }
+        }
+
+        private func cloud(width: CGFloat, height: CGFloat, opacity: Double,
+                           x: CGFloat, y: CGFloat) -> some View {
+            Ellipse()
+                .fill(Color.white.opacity(opacity))
+                .frame(width: width, height: height)
+                .blur(radius: 36)
+                .offset(x: x, y: y)
+        }
+    }
+}
+
 // MARK: - Bundled onboarding illustrations
 //
 // Drop PNGs into Assets.xcassets. Each imageset name matches the

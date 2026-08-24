@@ -8,88 +8,183 @@ struct OnboardingWelcomeScreen: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            StaggeredAppear(index: 0) {
-                HStack(spacing: 8) {
-                    SageMark(size: 26, color: accent)
-                    Text("Sage")
-                        .font(.sageBold(22)).tracking(-0.6)
-                        .foregroundColor(Theme.ink)
+                StaggeredAppear(index: 0) {
+                    HStack(spacing: 8) {
+                        SageMark(size: 26, color: .white)
+                        Text("Sage")
+                            .font(.sageBold(22)).tracking(-0.6)
+                            .foregroundColor(.white)
+                    }
+                    .padding(.top, 12)
                 }
-                // 12pt above the safe-area inset — see OnboardingHeader.
-                .padding(.top, 12)
-                .padding(.bottom, 8)
-            }
 
-            Spacer().frame(height: 12)
+                StaggeredAppear(index: 1) {
+                    Text("Know exactly\nwhat's inside")
+                        .font(.sageDisplay).tracking(-1)
+                        .foregroundColor(.white)
+                        .multilineTextAlignment(.center)
+                        .lineSpacing(2)
+                        .padding(.horizontal, 24)
+                        .padding(.top, 22)
+                }
 
-            StaggeredAppear(index: 1) {
-                OnboardingHeroImage(
-                    assetName: OnboardingAssets.welcomeHero,
-                    scale: 1.0,
-                    horizontalPadding: 12
-                )
-                .frame(height: 320)
-            }
+                StaggeredAppear(index: 2) {
+                    // The card header carries "Scan any label" — no need to say it twice.
+                    Text("We translate every additive into plain language and score it for **your** body.")
+                        .font(.sageRegular(15))
+                        .lineSpacing(3)
+                        .multilineTextAlignment(.center)
+                        .foregroundColor(.white.opacity(0.92))
+                        .padding(.horizontal, 40)
+                        .padding(.top, 10)
+                }
 
-            Spacer().frame(height: 36)
+                StaggeredAppear(index: 3) {
+                    scanCard
+                        .padding(.horizontal, 44)
+                        .padding(.top, 30)
+                }
 
-            StaggeredAppear(index: 2) {
-                Text("Know exactly\nwhat's inside.")
-                    .font(.sageDisplay).tracking(-1)
-                    .foregroundColor(Theme.ink)
-                    .multilineTextAlignment(.center)
-                    .lineSpacing(2)
-                    .padding(.horizontal, 24)
-                    .padding(.top, 4)
-            }
+                Spacer(minLength: 16)
 
-            StaggeredAppear(index: 3) {
-                // Markdown bolds "your" without needing Text concatenation.
-                Text("Scan any label. We translate every additive into plain language and score it for **your** body.")
-                    .font(.sageRegular(15))
-                    .lineSpacing(3)
-                    .multilineTextAlignment(.center)
-                    .foregroundColor(Theme.inkSecondary)
-                    .padding(.horizontal, 36)
-                    .padding(.top, 10)
-            }
-
-            StaggeredAppear(index: 4) {
-                statsRow.padding(.top, 22)
-            }
-
-            Spacer()
-
-            StaggeredAppear(index: 5) {
-                OnboardingCTAButton(title: "Get Started", action: onContinue)
-                    .padding(.horizontal, 20)
-                    .padding(.bottom, 32)
-            }
+                StaggeredAppear(index: 4) {
+                    OnboardingCTAButton(title: "Get Started", action: onContinue)
+                        .padding(.horizontal, 20)
+                        .padding(.bottom, 32)
+                }
         }
+        .frame(maxWidth: .infinity)
+        .background { OnboardingSky.Background() }
     }
 
-    private var statsRow: some View {
-        HStack(spacing: 0) {
-            Spacer()
-            stat(big: "4.9★", small: "App Store")
-            Spacer()
-            stat(big: "1.2M", small: "products")
-            Spacer()
+    // MARK: Scan illustration
+    //
+    // A glass card mid-scan, annotated with the three things Sage actually
+    // produces from a label — a nutrient verdict, the additive check, and the
+    // personalized score. Values are the real ones for plain Greek yogurt
+    // (the bundled pack shot), not lorem ipsum.
+
+    private var scanCard: some View {
+        VStack(spacing: 14) {
+            VStack(spacing: 2) {
+                Text("Scan any label")
+                    .font(.sageSemiBold(16)).tracking(-0.2)
+                    .foregroundColor(OnboardingSky.cardInk)
+                Text("Sage reads the ingredients, not the marketing")
+                    .font(.sageRegular(12))
+                    .foregroundColor(OnboardingSky.cardInkSecondary)
+            }
+            Image("alt-yogurt")
+                .resizable()
+                .scaledToFit()
+                .frame(height: 185)
+                .padding(10)
+                .overlay(ScanBrackets().stroke(OnboardingSky.cardInk.opacity(0.65),
+                                               style: StrokeStyle(lineWidth: 3, lineCap: .round)))
         }
-        .padding(.horizontal, 36)
+        .padding(.horizontal, 18).padding(.top, 16).padding(.bottom, 26)
+        .frame(maxWidth: .infinity)
+        .background(
+            RoundedRectangle(cornerRadius: Theme.Radius.panel, style: .continuous)
+                .fill(Color.white.opacity(0.62))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: Theme.Radius.panel, style: .continuous)
+                .stroke(Color.white.opacity(0.65), lineWidth: 1)
+        )
+        .overlay(alignment: .topLeading) {
+            sugarChip.offset(x: -28, y: 54)
+        }
+        .overlay(alignment: .bottomTrailing) {
+            scoreChip.offset(x: 30, y: 26)
+        }
+        .overlay(alignment: .bottomLeading) {
+            additivesPill.offset(x: -14, y: -8)
+        }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("A scanned yogurt: sugar 3.6 grams, good. No additives detected. Your Score 93, Excellent.")
     }
 
-    private func stat(big: String, small: String) -> some View {
-        VStack(spacing: 2) {
-            // Stat numbers benefit from tabular figures so the three columns
-            // align even if the strings ever change (e.g. "500K+").
-            Text(big)
-                .font(.sageBold(18)).tracking(-0.4).monospacedDigit()
-                .foregroundColor(Theme.ink)
-            Text(small)
-                .font(.sageRegular(12))
-                .foregroundColor(Theme.inkSecondary)
+    /// Nutrient verdict chip — the per-100 g badge from the product page.
+    private var sugarChip: some View {
+        HStack(spacing: 8) {
+            Text("Sugar")
+                .font(.sageSemiBold(13)).tracking(-0.2)
+                .foregroundColor(OnboardingSky.cardInk)
+            Text("3.6 g")
+                .font(.sageBold(13)).monospacedDigit()
+                .foregroundColor(OnboardingSky.cardInk)
+            Text("GOOD")
+                .font(.sageBold(10)).tracking(0.4)
+                .foregroundColor(Color.scoreGood)
+                .padding(.horizontal, 8).padding(.vertical, 4)
+                .background(Capsule().fill(Color.scoreGood.opacity(0.12)))
         }
+        .padding(.horizontal, 12).padding(.vertical, 10)
+        .background(chipBackground)
+    }
+
+    /// The additive check — Sage's cleanest possible outcome.
+    private var additivesPill: some View {
+        HStack(spacing: 6) {
+            Image(systemName: "checkmark.circle.fill")
+                .font(.sageSemiBold(13))
+                .foregroundColor(Color.scoreGood)
+            Text("No additives detected")
+                .font(.sageSemiBold(13)).tracking(-0.2)
+                .foregroundColor(OnboardingSky.cardInk)
+        }
+        .padding(.horizontal, 14).padding(.vertical, 10)
+        .background(chipBackground)
+    }
+
+    /// The personalized score ring from the product page header.
+    private var scoreChip: some View {
+        HStack(spacing: 8) {
+            MiniScoreRing(score: 93, size: 34, stroke: 3.5)
+            VStack(alignment: .leading, spacing: 1) {
+                Text("YOUR SCORE")
+                    .font(.sageBold(9)).tracking(0.8)
+                    .foregroundColor(OnboardingSky.cardInkSecondary)
+                Text("Excellent")
+                    .font(.sageSemiBold(13)).tracking(-0.2)
+                    .foregroundColor(Color.scoreGood)
+            }
+        }
+        .padding(.horizontal, 12).padding(.vertical, 8)
+        .background(chipBackground)
+    }
+
+    private var chipBackground: some View {
+        RoundedRectangle(cornerRadius: Theme.Radius.control, style: .continuous)
+            .fill(Color.white)
+            .shadow(color: .black.opacity(0.12), radius: 12, x: 0, y: 5)
+    }
+}
+
+/// Four viewfinder corners around the product being scanned.
+private struct ScanBrackets: Shape {
+    func path(in rect: CGRect) -> Path {
+        var p = Path()
+        let arm: CGFloat = 22
+        let r = rect
+        // Top-left
+        p.move(to: CGPoint(x: r.minX, y: r.minY + arm))
+        p.addLine(to: CGPoint(x: r.minX, y: r.minY))
+        p.addLine(to: CGPoint(x: r.minX + arm, y: r.minY))
+        // Top-right
+        p.move(to: CGPoint(x: r.maxX - arm, y: r.minY))
+        p.addLine(to: CGPoint(x: r.maxX, y: r.minY))
+        p.addLine(to: CGPoint(x: r.maxX, y: r.minY + arm))
+        // Bottom-right
+        p.move(to: CGPoint(x: r.maxX, y: r.maxY - arm))
+        p.addLine(to: CGPoint(x: r.maxX, y: r.maxY))
+        p.addLine(to: CGPoint(x: r.maxX - arm, y: r.maxY))
+        // Bottom-left
+        p.move(to: CGPoint(x: r.minX + arm, y: r.maxY))
+        p.addLine(to: CGPoint(x: r.minX, y: r.maxY))
+        p.addLine(to: CGPoint(x: r.minX, y: r.maxY - arm))
+        return p
     }
 }
 
