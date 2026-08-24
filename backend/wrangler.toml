@@ -27,7 +27,7 @@ bucket_name = "sage-product-images"
 preview_bucket_name = "sage-product-images-preview"
 
 [vars]
-EXPLANATION_VERSION = "exp-v8"   # bump: v4 scoring engine live (factors from rule deltas)
+EXPLANATION_VERSION = "exp-v9"   # bump: concise overview prompt (≤55 words, no additive/NOVA enumeration)
 KROGER_BASE_URL = "https://api.kroger.com"  # validated live; override if using api-ce
 
 # Secrets (DO NOT put in this file) — set with:
