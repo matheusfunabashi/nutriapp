@@ -17,17 +17,21 @@ struct ProfileView: View {
             }
 
             Section("Account") {
-                ProfileRow(systemImage: "person.text.rectangle",
-                           label: "Personal Details", action: onOpenPersonal)
-                ProfileRow(systemImage: "target", label: "Objective",
-                           value: store.user.objective.capitalized,
-                           action: onOpenNutritionGoals)
-                ProfileRow(systemImage: "wand.and.stars", label: "Personalize",
-                           action: onOpenDietary)
-                ProfileRow(systemImage: "character.book.closed", label: "Language",
-                           value: "English")
-                ProfileRow(systemImage: "slider.horizontal.3", label: "Preferences",
-                           action: onOpenPreferences)
+                // Objective and Preferences are the primary controls here, so
+                // they get a two-up tile treatment rather than plain rows.
+                HStack(spacing: 12) {
+                    ProfileTile(systemImage: "target", label: "Objective",
+                                value: store.user.objective.capitalized,
+                                action: onOpenNutritionGoals)
+                    ProfileTile(systemImage: "fork.knife", label: "Preferences",
+                                action: onOpenDietary)
+                }
+                // leading/trailing 0 so the two tiles span the section's content
+                // width — their outer edges line up with the Settings rows below,
+                // regardless of the (iOS-version-dependent) inset-grouped margin.
+                .listRowInsets(EdgeInsets(top: 8, leading: 0, bottom: 8, trailing: 0))
+                .listRowBackground(Color.clear)
+                .listRowSeparator(.hidden)
             }
 
             Section("Help") {
@@ -36,6 +40,10 @@ struct ProfileView: View {
                 ProfileRow(systemImage: "shield", label: "Disclaimer",
                            action: onOpenDisclaimer)
                 ProfileRow(systemImage: "lifepreserver", label: "Support")
+                ProfileRow(systemImage: "character.book.closed", label: "Language",
+                           value: "English")
+                ProfileRow(systemImage: "slider.horizontal.3", label: "Settings",
+                           action: onOpenPreferences)
             }
 
             Section {
@@ -141,6 +149,49 @@ struct ProfileRow: View {
             }
         }
         .contentShape(Rectangle())
+    }
+}
+
+/// A prominent, tappable square tile for the top-level Account destinations —
+/// bigger than a list row so Objective / Preferences read as the primary
+/// controls. Uses the same card treatment as `StarterIntroCard`.
+private struct ProfileTile: View {
+    let systemImage: String
+    let label: String
+    var value: String? = nil
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            VStack(alignment: .leading, spacing: 10) {
+                Image(systemName: systemImage)
+                    .font(.sageSemiBold(20))
+                    .foregroundColor(Theme.accent)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(label)
+                        .font(.sageBold(16)).tracking(-0.3)
+                        .foregroundColor(Theme.ink)
+                        .lineLimit(1)
+                    // Reserve the caption line in both tiles so the labels align
+                    // whether or not a value is present.
+                    Text(value ?? " ")
+                        .font(.sageSemiBold(13))
+                        .foregroundColor(Theme.inkSecondary)
+                        .lineLimit(1)
+                        .opacity(value == nil ? 0 : 1)
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(16)
+            .background(
+                RoundedRectangle(cornerRadius: Theme.Radius.card, style: .continuous)
+                    .fill(Theme.card)
+            )
+        }
+        .buttonStyle(.pressable)
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel(value.map { "\(label), \($0)" } ?? label)
+        .accessibilityAddTraits(.isButton)
     }
 }
 

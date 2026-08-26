@@ -87,7 +87,7 @@ struct PreferencesView: View {
             }
         }
         .sageListStyle()
-        .navigationTitle("Preferences")
+        .navigationTitle("Settings")
         .navigationBarTitleDisplayMode(.inline)
     }
 
@@ -244,7 +244,7 @@ struct DietaryView: View {
             allergensSection
         }
         .sageListStyle()
-        .navigationTitle("Personalize")
+        .navigationTitle("Preferences")
         .navigationBarTitleDisplayMode(.inline)
     }
 
