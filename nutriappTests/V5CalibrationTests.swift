@@ -167,7 +167,7 @@ struct V5CalibrationTests {
     // MARK: Structural
 
     @Test func rulesetVersionAndBands() {
-        #expect(rs.version == "2026.08-v5.6.0")
+        #expect(rs.version == "2026.08-v5.7.0")
         #expect(ScoringEngineV4.engineVersion == "v5")
         #expect(rs.bands.excellent == 75)
         #expect(rs.bands.good == 55)

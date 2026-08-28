@@ -138,11 +138,11 @@ struct ScoringV4Tests {
 
     @Test func bundledRulesetLoads() {
         let rs = RulesetV4.bundled
-        #expect(rs.version == "2026.08-v5.6.0")
+        #expect(rs.version == "2026.08-v5.7.0")
         #expect(rs.bands.excellent == 75)
         #expect(rs.bands.good == 55)
         #expect(rs.bands.ok == 35)
-        #expect(rs.profiles.count == 18)
+        #expect(rs.profiles.count == 20)
         #expect(rs.bandLabel(80) == "Excellent")
         #expect(rs.bandLabel(55) == "Good")
         #expect(rs.bandLabel(35) == "OK")
@@ -165,7 +165,7 @@ struct ScoringV4Tests {
         #expect(ScoringEngineV4.route(blackTea) == "tea_coffee")
         #expect(ScoringEngineV4.route(honey) == "unscored_sweetener")
         #expect(ScoringEngineV4.route(whiteBread) == "bread")
-        #expect(ScoringEngineV4.route(bacon) == "meat")
+        #expect(ScoringEngineV4.route(bacon) == "meat_processed")
         #expect(ScoringEngineV4.route(product(categories: ["frozen-desserts", "ice-creams"])) == "ice_cream")
         // Plant "milk-substitutes" beat dairy; bottled iced tea beats dry tea.
         #expect(ScoringEngineV4.route(product(categories: ["milk-substitutes"])) == "plant_milk")
@@ -350,12 +350,14 @@ struct ScoringV4Tests {
     }
 
     @Test func anchorMeatProfile() {
+        // V5.7: bacon is processed meat (cure evidence → Group 1 ceiling),
+        // a plain chicken breast is fresh meat.
         let b = ScoringEngineV4.score(bacon)!
-        #expect(b.profileId == "meat")
-        #expect(b.base <= 45)
+        #expect(b.profileId == "meat_processed")
+        #expect(b.base <= 54)
         let c = ScoringEngineV4.score(meatChicken)!
-        #expect(c.profileId == "meat")
-        #expect(c.base >= 70)
+        #expect(c.profileId == "meat_fresh")
+        #expect(c.base >= 85)
     }
 
     // MARK: Phase D routing (water/alcohol unsupported; categories → general)

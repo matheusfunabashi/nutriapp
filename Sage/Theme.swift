@@ -300,6 +300,7 @@ final class AppStore: ObservableObject {
         invalidateAndRescoreForV540IfNeeded()
         invalidateAndRescoreForV550IfNeeded()
         invalidateAndRescoreForV560IfNeeded()
+        invalidateAndRescoreForV570IfNeeded()
     }
 
     /// Decode a stored snapshot, migrating legacy `deltaReason` → `overview`.
@@ -415,6 +416,18 @@ final class AppStore: ObservableObject {
     /// unsupported, benign additive tiers, S14 dairy whitelist / qualifiers.
     private func invalidateAndRescoreForV560IfNeeded() {
         let key = "rulesetV560Rescored"
+        guard !UserDefaults.standard.bool(forKey: key) else { return }
+        rescoreAll()
+        UserDefaults.standard.set(true, forKey: key)
+        UserDefaults.standard.set(true, forKey: "overviewExpV9Invalidated")
+    }
+
+    /// One-shot V5.7.0 — meat & seafood in three forms (fresh / processed /
+    /// seafood): protein delivery, species reference prior, omega-3, cure
+    /// evidence with celery-powder equivalence, mercury tiers, the sparse
+    /// fresh-record identity gate, processed-meat ceilings, analogue rerouting.
+    private func invalidateAndRescoreForV570IfNeeded() {
+        let key = "rulesetV570Rescored"
         guard !UserDefaults.standard.bool(forKey: key) else { return }
         rescoreAll()
         UserDefaults.standard.set(true, forKey: key)

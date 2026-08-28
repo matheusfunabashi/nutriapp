@@ -45,11 +45,11 @@ struct V507HotfixTests {
     }
 
     @Test func rulesetIsV507() {
-        #expect(rs.version == "2026.08-v5.6.0")
+        #expect(rs.version == "2026.08-v5.7.0")
         #expect(rs.profiles["sweeteners"] == nil)
         // V5.6: yogurt_cheese split into dairy_fermented / dairy_cheese /
         // dairy_cream.
-        #expect(rs.profiles.count == 18)
+        #expect(rs.profiles.count == 20)
         #expect(rs.sweetenerType != nil)
         #expect(rs.authenticityBad != nil)
     }
@@ -235,6 +235,6 @@ struct V507HotfixTests {
         let b = try Data(contentsOf: root.appendingPathComponent("backend/src/ruleset.json"))
         #expect(a == b)
         let version = try JSONDecoder().decode(RulesetV4.self, from: a).version
-        #expect(version == "2026.08-v5.6.0")
+        #expect(version == "2026.08-v5.7.0")
     }
 }
