@@ -1,5 +1,5 @@
 {
-  "version": "2026.08-v5.6.0",
+  "version": "2026.08-v5.7.0",
   "bands": {
     "excellent": 75,
     "good": 55,
@@ -155,6 +155,16 @@
       150,
       500,
       1000
+    ],
+    "meatProcessed": [
+      400,
+      900,
+      1500
+    ],
+    "seafood": [
+      250,
+      700,
+      1400
     ]
   },
   "s5Thresholds": {
@@ -182,6 +192,11 @@
       1.5,
       5,
       10
+    ],
+    "meat": [
+      1.2,
+      4,
+      8
     ]
   },
   "proteinBars": {
@@ -2955,40 +2970,6 @@
         "w": 8
       }
     ],
-    "meat": [
-      {
-        "rule": "S1",
-        "w": 30
-      },
-      {
-        "rule": "S2",
-        "w": 14
-      },
-      {
-        "rule": "S4",
-        "w": 10
-      },
-      {
-        "rule": "S5",
-        "w": 6
-      },
-      {
-        "rule": "S12",
-        "w": 14
-      },
-      {
-        "rule": "S13",
-        "w": 4
-      },
-      {
-        "rule": "S14",
-        "w": 14
-      },
-      {
-        "rule": "S15",
-        "w": 8
-      }
-    ],
     "whole_foods": [
       {
         "rule": "S2",
@@ -3095,6 +3076,139 @@
       {
         "rule": "S15",
         "w": 6
+      }
+    ],
+    "meat_fresh": [
+      {
+        "rule": "S12",
+        "w": 24,
+        "variant": "meatProtein"
+      },
+      {
+        "rule": "S5",
+        "w": 20,
+        "variant": "meat"
+      },
+      {
+        "rule": "S1",
+        "w": 10
+      },
+      {
+        "rule": "S13",
+        "w": 10,
+        "variant": "meat"
+      },
+      {
+        "rule": "meatForm",
+        "w": 10
+      },
+      {
+        "rule": "S4",
+        "w": 8
+      },
+      {
+        "rule": "S14",
+        "w": 8
+      },
+      {
+        "rule": "S2",
+        "w": 6,
+        "variant": "meat"
+      },
+      {
+        "rule": "S15",
+        "w": 4
+      }
+    ],
+    "meat_processed": [
+      {
+        "rule": "meatForm",
+        "w": 18
+      },
+      {
+        "rule": "S4",
+        "w": 18,
+        "variant": "meatProcessed"
+      },
+      {
+        "rule": "S1",
+        "w": 14
+      },
+      {
+        "rule": "S12",
+        "w": 14,
+        "variant": "meatProtein"
+      },
+      {
+        "rule": "S5",
+        "w": 10,
+        "variant": "meat"
+      },
+      {
+        "rule": "S2",
+        "w": 8,
+        "variant": "meat"
+      },
+      {
+        "rule": "S14",
+        "w": 8
+      },
+      {
+        "rule": "S3",
+        "w": 6,
+        "variant": "foods"
+      },
+      {
+        "rule": "S13",
+        "w": 4,
+        "variant": "meat"
+      }
+    ],
+    "seafood": [
+      {
+        "rule": "S12",
+        "w": 18,
+        "variant": "meatProtein"
+      },
+      {
+        "rule": "omega3",
+        "w": 12
+      },
+      {
+        "rule": "S1",
+        "w": 14
+      },
+      {
+        "rule": "S14",
+        "w": 12
+      },
+      {
+        "rule": "S2",
+        "w": 10,
+        "variant": "meat"
+      },
+      {
+        "rule": "S4",
+        "w": 10,
+        "variant": "seafood"
+      },
+      {
+        "rule": "S13",
+        "w": 8,
+        "variant": "meat"
+      },
+      {
+        "rule": "meatForm",
+        "w": 6
+      },
+      {
+        "rule": "S5",
+        "w": 6,
+        "variant": "meat"
+      },
+      {
+        "rule": "S15",
+        "w": 4
       }
     ]
   },
@@ -3972,104 +4086,360 @@
       "profile": "ice_cream"
     },
     {
-      "match": "meats-and-their-products",
-      "profile": "meat"
-    },
-    {
-      "match": "meats",
-      "profile": "meat"
-    },
-    {
-      "match": "prepared-meats",
-      "profile": "meat"
-    },
-    {
-      "match": "poultry",
-      "profile": "meat"
-    },
-    {
-      "match": "poultries",
-      "profile": "meat"
-    },
-    {
-      "match": "beef",
-      "profile": "meat"
-    },
-    {
-      "match": "pork",
-      "profile": "meat"
-    },
-    {
-      "match": "chicken",
-      "profile": "meat"
-    },
-    {
-      "match": "chickens",
-      "profile": "meat"
-    },
-    {
-      "match": "turkeys",
-      "profile": "meat"
-    },
-    {
-      "match": "turkey-breasts",
-      "profile": "meat"
+      "match": "bacons",
+      "profile": "meat_processed"
     },
     {
       "match": "hams",
-      "profile": "meat"
+      "profile": "meat_processed"
     },
     {
       "match": "sausages",
-      "profile": "meat"
+      "profile": "meat_processed"
     },
     {
-      "match": "bacons",
-      "profile": "meat"
+      "match": "hot-dogs",
+      "profile": "meat_processed"
+    },
+    {
+      "match": "frankfurter-sausages",
+      "profile": "meat_processed"
     },
     {
       "match": "salami",
-      "profile": "meat"
+      "profile": "meat_processed"
     },
     {
       "match": "cured-meats",
-      "profile": "meat"
+      "profile": "meat_processed"
+    },
+    {
+      "match": "prepared-meats",
+      "profile": "meat_processed"
+    },
+    {
+      "match": "cold-cuts",
+      "profile": "meat_processed"
+    },
+    {
+      "match": "deli-meats",
+      "profile": "meat_processed"
+    },
+    {
+      "match": "charcuteries",
+      "profile": "meat_processed"
+    },
+    {
+      "match": "dried-meats",
+      "profile": "meat_processed"
+    },
+    {
+      "match": "jerky",
+      "profile": "meat_processed"
+    },
+    {
+      "match": "beef-jerky",
+      "profile": "meat_processed"
+    },
+    {
+      "match": "canned-meats",
+      "profile": "meat_processed"
+    },
+    {
+      "match": "luncheon-meats",
+      "profile": "meat_processed"
+    },
+    {
+      "match": "mortadella",
+      "profile": "meat_processed"
+    },
+    {
+      "match": "pepperoni",
+      "profile": "meat_processed"
+    },
+    {
+      "match": "prosciutto",
+      "profile": "meat_processed"
+    },
+    {
+      "match": "corned-beef",
+      "profile": "meat_processed"
+    },
+    {
+      "match": "pates",
+      "profile": "meat_processed"
+    },
+    {
+      "match": "terrines",
+      "profile": "meat_processed"
+    },
+    {
+      "match": "breakfast-sausages",
+      "profile": "meat_processed"
+    },
+    {
+      "match": "chorizo",
+      "profile": "meat_processed"
+    },
+    {
+      "match": "smoked-fishes",
+      "profile": "seafood"
+    },
+    {
+      "match": "smoked-salmons",
+      "profile": "seafood"
+    },
+    {
+      "match": "canned-fishes",
+      "profile": "seafood"
+    },
+    {
+      "match": "canned-tunas",
+      "profile": "seafood"
+    },
+    {
+      "match": "canned-sardines",
+      "profile": "seafood"
+    },
+    {
+      "match": "canned-mackerels",
+      "profile": "seafood"
     },
     {
       "match": "fishes-and-their-products",
-      "profile": "meat"
+      "profile": "seafood"
     },
     {
       "match": "fishes",
-      "profile": "meat"
+      "profile": "seafood"
     },
     {
       "match": "seafood",
-      "profile": "meat"
+      "profile": "seafood"
     },
     {
       "match": "fatty-fishes",
-      "profile": "meat"
+      "profile": "seafood"
     },
     {
-      "match": "hamburgers",
-      "profile": "meat"
+      "match": "lean-fishes",
+      "profile": "seafood"
     },
     {
-      "match": "frozen-meats",
-      "profile": "meat"
+      "match": "fresh-fishes",
+      "profile": "seafood"
     },
     {
-      "match": "fresh-meats",
-      "profile": "meat"
+      "match": "frozen-fishes",
+      "profile": "seafood"
+    },
+    {
+      "match": "tunas",
+      "profile": "seafood"
+    },
+    {
+      "match": "salmons",
+      "profile": "seafood"
+    },
+    {
+      "match": "sardines",
+      "profile": "seafood"
+    },
+    {
+      "match": "mackerels",
+      "profile": "seafood"
+    },
+    {
+      "match": "anchovies",
+      "profile": "seafood"
+    },
+    {
+      "match": "herrings",
+      "profile": "seafood"
+    },
+    {
+      "match": "trouts",
+      "profile": "seafood"
+    },
+    {
+      "match": "cods",
+      "profile": "seafood"
+    },
+    {
+      "match": "tilapia",
+      "profile": "seafood"
+    },
+    {
+      "match": "shellfish",
+      "profile": "seafood"
+    },
+    {
+      "match": "crustaceans",
+      "profile": "seafood"
+    },
+    {
+      "match": "molluscs",
+      "profile": "seafood"
+    },
+    {
+      "match": "shrimps",
+      "profile": "seafood"
+    },
+    {
+      "match": "prawns",
+      "profile": "seafood"
+    },
+    {
+      "match": "crabs",
+      "profile": "seafood"
+    },
+    {
+      "match": "lobsters",
+      "profile": "seafood"
+    },
+    {
+      "match": "mussels",
+      "profile": "seafood"
+    },
+    {
+      "match": "oysters",
+      "profile": "seafood"
+    },
+    {
+      "match": "squids",
+      "profile": "seafood"
+    },
+    {
+      "match": "octopuses",
+      "profile": "seafood"
+    },
+    {
+      "match": "scallops",
+      "profile": "seafood"
+    },
+    {
+      "match": "surimi",
+      "profile": "seafood"
+    },
+    {
+      "match": "fish-sticks",
+      "profile": "seafood"
+    },
+    {
+      "match": "fish-fingers",
+      "profile": "seafood"
+    },
+    {
+      "match": "breaded-fish",
+      "profile": "seafood"
     },
     {
       "match": "meat-alternatives",
-      "profile": "meat"
+      "profile": "general"
     },
     {
       "match": "meat-analogues",
-      "profile": "meat"
+      "profile": "general"
+    },
+    {
+      "match": "fish-and-meat-analogues",
+      "profile": "general"
+    },
+    {
+      "match": "meats-and-their-products",
+      "profile": "meat_fresh"
+    },
+    {
+      "match": "meats",
+      "profile": "meat_fresh"
+    },
+    {
+      "match": "fresh-meats",
+      "profile": "meat_fresh"
+    },
+    {
+      "match": "frozen-meats",
+      "profile": "meat_fresh"
+    },
+    {
+      "match": "poultry",
+      "profile": "meat_fresh"
+    },
+    {
+      "match": "poultries",
+      "profile": "meat_fresh"
+    },
+    {
+      "match": "chicken",
+      "profile": "meat_fresh"
+    },
+    {
+      "match": "chickens",
+      "profile": "meat_fresh"
+    },
+    {
+      "match": "chicken-breasts",
+      "profile": "meat_fresh"
+    },
+    {
+      "match": "turkeys",
+      "profile": "meat_fresh"
+    },
+    {
+      "match": "turkey-breasts",
+      "profile": "meat_fresh"
+    },
+    {
+      "match": "ducks",
+      "profile": "meat_fresh"
+    },
+    {
+      "match": "beef",
+      "profile": "meat_fresh"
+    },
+    {
+      "match": "ground-beef",
+      "profile": "meat_fresh"
+    },
+    {
+      "match": "steaks",
+      "profile": "meat_fresh"
+    },
+    {
+      "match": "veal",
+      "profile": "meat_fresh"
+    },
+    {
+      "match": "pork",
+      "profile": "meat_fresh"
+    },
+    {
+      "match": "lambs",
+      "profile": "meat_fresh"
+    },
+    {
+      "match": "lamb-meat",
+      "profile": "meat_fresh"
+    },
+    {
+      "match": "rabbits",
+      "profile": "meat_fresh"
+    },
+    {
+      "match": "game-meats",
+      "profile": "meat_fresh"
+    },
+    {
+      "match": "offals",
+      "profile": "meat_fresh"
+    },
+    {
+      "match": "livers",
+      "profile": "meat_fresh"
+    },
+    {
+      "match": "hamburgers",
+      "profile": "meat_fresh"
     },
     {
       "match": "fruits",
@@ -5039,6 +5409,14 @@
     "dairyForm": {
       "displayName": "form and cultures",
       "driverKind": "hygiene"
+    },
+    "meatForm": {
+      "displayName": "form and curing",
+      "driverKind": "hygiene"
+    },
+    "omega3": {
+      "displayName": "omega-3",
+      "driverKind": "merit"
     }
   },
   "contaminantRisk": {
@@ -5724,5 +6102,609 @@
       "thresholdMg": 1200,
       "cap": 54
     }
+  },
+  "meat": {
+    "identityEnvelope": {
+      "fresh": {
+        "kcalMin": 60,
+        "kcalMax": 560,
+        "proteinMin": 9,
+        "proteinMax": 40,
+        "sugarMax": 2,
+        "sodiumMax": 150
+      },
+      "seafood": {
+        "kcalMin": 50,
+        "kcalMax": 300,
+        "proteinMin": 9,
+        "proteinMax": 32,
+        "sugarMax": 2,
+        "sodiumMax": 500
+      }
+    },
+    "identityS1Unknown": 0.85,
+    "identityS2Credit": 0.9,
+    "s2NoListUnknown": 0.4,
+    "s2Clean": {
+      "fresh": 1.0,
+      "processed": 0.8,
+      "seafood": 1.0
+    },
+    "markerFamilies": {
+      "mechanicallySeparated": [
+        "mechanically separated",
+        "carne separada mecanicamente",
+        "carne separata meccanicamente"
+      ],
+      "sweetener": [
+        "corn syrup",
+        "dextrose",
+        "glucose syrup",
+        "maltodextrin",
+        "brown sugar",
+        "cane sugar",
+        "honey powder"
+      ],
+      "flavorEnhancer": [
+        "monosodium glutamate",
+        "msg",
+        "hydrolyzed",
+        "hydrolysed",
+        "autolyzed",
+        "yeast extract",
+        "disodium inosinate",
+        "disodium guanylate",
+        "flavor enhancer"
+      ],
+      "modifiedStarch": [
+        "modified corn starch",
+        "modified food starch",
+        "modified potato starch",
+        "modified tapioca starch",
+        "modified starch"
+      ],
+      "syntheticPreservative": [
+        "bha",
+        "bht",
+        "propyl gallate",
+        "tbhq",
+        "butylated"
+      ],
+      "flavoring": [
+        "artificial flavor",
+        "artificial flavour",
+        "natural flavor",
+        "natural flavour",
+        "flavorings",
+        "flavourings",
+        "smoke flavor",
+        "smoke flavour"
+      ],
+      "isolateBinder": [
+        "soy protein",
+        "milk protein",
+        "sodium caseinate",
+        "textured vegetable protein",
+        "wheat gluten",
+        "carrageenan"
+      ]
+    },
+    "markerCredits": [
+      0.55,
+      0.35,
+      0.2,
+      0.1
+    ],
+    "s12": {
+      "proteinTargetG": 22,
+      "energyShareTarget": 0.55,
+      "absWeight": 0.55,
+      "unknownCredit": 0.45
+    },
+    "s13Prior": {
+      "organ": 0.95,
+      "oilyFish": 0.85,
+      "redMeat": 0.8,
+      "shellfish": 0.8,
+      "pork": 0.75,
+      "leanFish": 0.72,
+      "poultry": 0.7,
+      "unknown": 0.65
+    },
+    "s13ProcessedFactor": 0.8,
+    "s13Lifts": {
+      "iron_mg": {
+        "threshold": 3,
+        "lift": 0.05
+      },
+      "potassium_mg": {
+        "threshold": 300,
+        "lift": 0.05
+      },
+      "vitaminD_ug": {
+        "threshold": 3,
+        "lift": 0.05
+      },
+      "vitaminB12_ug": {
+        "threshold": 1.5,
+        "lift": 0.05
+      }
+    },
+    "s13MaxLift": 0.1,
+    "speciesWords": {
+      "organ": [
+        "liver",
+        "livers",
+        "offal",
+        "kidney",
+        "kidneys",
+        "heart",
+        "hearts",
+        "giblets",
+        "tripe",
+        "sweetbread",
+        "figado",
+        "fegato"
+      ],
+      "oilyFish": [
+        "salmon",
+        "sockeye",
+        "sardine",
+        "sardines",
+        "mackerel",
+        "herring",
+        "herrings",
+        "anchovy",
+        "anchovies",
+        "trout",
+        "arctic char",
+        "kipper",
+        "smelt",
+        "eel",
+        "salmone",
+        "salmao",
+        "sardinha"
+      ],
+      "leanFish": [
+        "tuna",
+        "albacore",
+        "cod",
+        "tilapia",
+        "pollock",
+        "haddock",
+        "halibut",
+        "catfish",
+        "flounder",
+        "sole",
+        "snapper",
+        "sea bass",
+        "swai",
+        "basa",
+        "mahi",
+        "perch",
+        "walleye",
+        "whiting",
+        "hake",
+        "grouper",
+        "swordfish",
+        "orange roughy",
+        "tilefish",
+        "marlin",
+        "shark",
+        "fish",
+        "atum",
+        "tonno",
+        "bacalhau"
+      ],
+      "shellfish": [
+        "shrimp",
+        "shrimps",
+        "prawn",
+        "prawns",
+        "crab",
+        "lobster",
+        "scallop",
+        "scallops",
+        "clam",
+        "clams",
+        "mussel",
+        "mussels",
+        "oyster",
+        "oysters",
+        "squid",
+        "octopus",
+        "calamari",
+        "crawfish",
+        "camarao"
+      ],
+      "redMeat": [
+        "beef",
+        "steak",
+        "veal",
+        "lamb",
+        "mutton",
+        "goat",
+        "bison",
+        "venison",
+        "elk",
+        "carne bovina",
+        "manzo",
+        "boeuf"
+      ],
+      "pork": [
+        "pork",
+        "porco",
+        "maiale",
+        "porc"
+      ],
+      "poultry": [
+        "chicken",
+        "turkey",
+        "hen",
+        "duck",
+        "quail",
+        "poultry",
+        "frango",
+        "pollo",
+        "peru",
+        "tacchino"
+      ]
+    },
+    "speciesTags": {
+      "organ": [
+        "offals",
+        "livers",
+        "beef-livers",
+        "chicken-livers"
+      ],
+      "oilyFish": [
+        "salmons",
+        "sardines",
+        "mackerels",
+        "herrings",
+        "anchovies",
+        "trouts",
+        "smoked-salmons"
+      ],
+      "leanFish": [
+        "tunas",
+        "canned-tunas",
+        "cods",
+        "tilapia",
+        "lean-fishes",
+        "fishes"
+      ],
+      "shellfish": [
+        "shrimps",
+        "prawns",
+        "crabs",
+        "lobsters",
+        "mussels",
+        "oysters",
+        "squids",
+        "octopuses",
+        "scallops",
+        "shellfish",
+        "crustaceans",
+        "molluscs"
+      ],
+      "redMeat": [
+        "beef",
+        "ground-beef",
+        "steaks",
+        "veal",
+        "lambs",
+        "lamb-meat",
+        "game-meats"
+      ],
+      "pork": [
+        "pork"
+      ],
+      "poultry": [
+        "poultry",
+        "poultries",
+        "chicken",
+        "chickens",
+        "chicken-breasts",
+        "turkeys",
+        "turkey-breasts",
+        "ducks"
+      ]
+    },
+    "omega3": {
+      "declaredThresholds": [
+        1.0,
+        0.4,
+        0.1
+      ],
+      "declaredCredits": [
+        1.0,
+        0.8,
+        0.55
+      ],
+      "declaredFloor": 0.45,
+      "classCredits": {
+        "oilyFish": 0.9,
+        "leanFish": 0.5,
+        "shellfish": 0.55
+      },
+      "unknownCredit": 0.5
+    },
+    "formCredits": {
+      "freshPoultry": 1.0,
+      "freshPork": 0.8,
+      "freshRedMeat": 0.75,
+      "freshOrgan": 0.5,
+      "freshUnknown": 0.85,
+      "processedCured": 0.15,
+      "processedSmoked": 0.35,
+      "processedDried": 0.35,
+      "processedEmulsified": 0.1,
+      "processedCooked": 0.6,
+      "processedUnknown": 0.4,
+      "seafoodPlain": 1.0,
+      "seafoodSmoked": 0.45,
+      "seafoodCured": 0.6,
+      "seafoodBreaded": 0.5,
+      "seafoodSurimi": 0.2
+    },
+    "cureAdditives": [
+      "e249",
+      "e250",
+      "e251",
+      "e252"
+    ],
+    "cureTextMarkers": [
+      "sodium nitrite",
+      "potassium nitrite",
+      "sodium nitrate",
+      "potassium nitrate",
+      "nitrito",
+      "nitrato",
+      "curing salt",
+      "prague powder",
+      "cure no. 1",
+      "cure #1",
+      "celery powder",
+      "celery juice",
+      "cultured celery",
+      "cured",
+      "uncured",
+      "curado",
+      "curada",
+      "salumi",
+      "prosciutto",
+      "pancetta",
+      "guanciale",
+      "speck",
+      "coppa",
+      "capicola",
+      "capocollo",
+      "soppressata",
+      "chorizo",
+      "pepperoni",
+      "salami",
+      "pastrami",
+      "corned beef",
+      "bresaola",
+      "serrano ham",
+      "iberico ham",
+      "country ham",
+      "lardo"
+    ],
+    "smokeMarkers": [
+      "smoked",
+      "smokehouse",
+      "defumado",
+      "defumada",
+      "affumicato",
+      "affumicata",
+      "fume"
+    ],
+    "dryMarkers": [
+      "jerky",
+      "biltong",
+      "dry-cured",
+      "dry cured",
+      "carne seca",
+      "dried beef",
+      "dried meat"
+    ],
+    "emulsifiedMarkers": [
+      "mechanically separated",
+      "hot dog",
+      "hot dogs",
+      "frankfurter",
+      "frank",
+      "franks",
+      "wiener",
+      "wieners",
+      "bologna",
+      "mortadella",
+      "vienna sausage",
+      "luncheon meat",
+      "salchicha"
+    ],
+    "surimiMarkers": [
+      "surimi",
+      "imitation crab",
+      "imitation seafood",
+      "imitation lobster",
+      "krab"
+    ],
+    "breadedMarkers": [
+      "breaded",
+      "battered",
+      "tempura",
+      "fish stick",
+      "fish sticks",
+      "fish finger",
+      "fish fingers",
+      "nugget",
+      "nuggets",
+      "popcorn shrimp",
+      "popcorn fish",
+      "fried",
+      "popcorn chicken"
+    ],
+    "caps": {
+      "cured": 54,
+      "processedOther": 58,
+      "mercury": 54,
+      "seafoodSodiumMg": 2000,
+      "seafoodSodium": 64,
+      "smokedFish": 68,
+      "mercuryModerate": 84
+    },
+    "mercuryAvoidWords": [
+      "king mackerel",
+      "swordfish",
+      "shark",
+      "tilefish",
+      "marlin",
+      "orange roughy",
+      "bigeye tuna"
+    ],
+    "mercuryAvoidTags": [
+      "swordfishes",
+      "swordfish",
+      "sharks",
+      "marlins",
+      "king-mackerels",
+      "tilefishes",
+      "orange-roughies"
+    ],
+    "routingGuard": {
+      "minProteinG": 7,
+      "maxKcal": 700,
+      "maxSugarG": 25
+    },
+    "plantEvidence": {
+      "labels": [
+        "vegan",
+        "vegetarian",
+        "plant-based"
+      ],
+      "nameWords": [
+        "plant-based",
+        "plant based",
+        "meatless",
+        "meat-free",
+        "meat free",
+        "vegan",
+        "veggie",
+        "vegetarian",
+        "tofu",
+        "tempeh",
+        "seitan",
+        "jackfruit",
+        "beyond",
+        "impossible"
+      ],
+      "firstIngredients": [
+        "soy",
+        "pea protein",
+        "textured pea",
+        "tofu",
+        "tempeh",
+        "seitan",
+        "vital wheat gluten",
+        "wheat gluten",
+        "textured vegetable",
+        "textured soy",
+        "jackfruit",
+        "mushroom",
+        "black bean",
+        "chickpea",
+        "lentil",
+        "quinoa",
+        "cauliflower",
+        "pea",
+        "mung bean"
+      ]
+    },
+    "processedNameWords": [
+      "frank",
+      "franks",
+      "frankfurter",
+      "hot dog",
+      "hot dogs",
+      "wiener",
+      "wieners",
+      "sausage",
+      "sausages",
+      "bacon",
+      "salami",
+      "pepperoni",
+      "bologna",
+      "mortadella",
+      "ham",
+      "jerky",
+      "kielbasa",
+      "chorizo",
+      "bratwurst",
+      "prosciutto",
+      "pastrami",
+      "corned beef",
+      "deli",
+      "cold cuts",
+      "luncheon",
+      "spam",
+      "vienna"
+    ],
+    "neutralTokens": [
+      "salt",
+      "sea salt",
+      "water",
+      "spices",
+      "spice",
+      "seasoning",
+      "seasonings",
+      "broth",
+      "vegetable broth",
+      "chicken broth",
+      "beef broth",
+      "spring water",
+      "black pepper",
+      "pepper",
+      "garlic powder",
+      "onion powder",
+      "paprika",
+      "smoked paprika",
+      "herbs",
+      "vinegar",
+      "olive oil"
+    ],
+    "group1Tags": [
+      "cured-meats",
+      "salami",
+      "prosciutto",
+      "dried-meats",
+      "jerky",
+      "beef-jerky",
+      "hot-dogs",
+      "frankfurter-sausages",
+      "mortadella",
+      "pepperoni",
+      "bacons",
+      "corned-beef",
+      "chorizo"
+    ],
+    "mercuryModerateWords": [
+      "albacore",
+      "yellowfin",
+      "ahi tuna",
+      "bluefin",
+      "halibut",
+      "spanish mackerel",
+      "white tuna",
+      "chilean sea bass",
+      "monkfish",
+      "rockfish",
+      "sablefish",
+      "mahi mahi",
+      "snapper",
+      "grouper"
+    ]
   }
 }

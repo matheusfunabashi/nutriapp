@@ -1,5 +1,70 @@
 **Follow [design.md](design.md) for all UI work** — typography scale, color tokens, radii, spacing grid, and interaction rules. No raw hex values, off-scale font sizes, or ad-hoc radii in views.
 
+# Session Changelog — 2026-08-28 — Meat & seafood in three forms (v5.7.0)
+
+Audit of meat/seafood scoring against the live engine (rebuilt CLI harness:
+49 archetype fixtures + 52 hydrated top-scanned US OFF records; OFF main
+search was down — search-a-licious + per-product v2 endpoint) and Oasis'
+meat & seafood page (contaminants/lab/packaging/certs/welfare — 0%
+nutrition), then the full V5.7.0 respec. Findings: one `meat` profile for
+everything (weights were a leftover generic allocation, no doc section);
+purity rules = 66 pts so every whole cut maxed out (ribeye 84 > sockeye 83,
+pork belly 79 Excellent); generic S12 60% dead (fiber/FVN); no-list chuck
+roast 41 vs listed ground beef 82; celery-powder loophole (cured bacon 28
+vs "uncured" 55); omega3_g decoded since v5.3 but only read for eggs; no
+mercury concept (swordfish 82); deli turkey 26 < Spam 34 on additive count;
+`en:undefined` franks fell to `general`; meat-analogues routed INTO meat.
+Audit artifact: "Sage Meat & Seafood Audit". Ruleset `2026.08-v5.7.0`;
+rationale SCORING_V5.md §"V5.7.0 Meat & seafood"; tests
+`MeatSeafoodScoringV57Tests`; shapes in `MeatScoring.swift` + ruleset
+`meat` block.
+
+- **Three forms**: `meat_fresh` (cuts/ground/organ; S12 `meatProtein` =
+  0.55·abs(22 g) + 0.45·energy-share(55%), S5 meat [1.2,4,8] w20, S13
+  species prior, meatForm species ladder poultry 1.0 / pork 0.8 / red 0.75 /
+  organ 0.5), `meat_processed` (meatForm 18 + S4 18 dominant; cure additives
+  e249–252 S1-exempt — the ceiling owns curing), `seafood` (omega3 12 —
+  declared else species prior, lean fish never penalized; S4 brine-tolerant).
+  Analogues → `general`.
+- **Caps**: Group 1 (cure/smoke/dry/restructure evidence, incl. celery
+  powder/juice + named products prosciutto/salami/pastrami + group-1 tags)
+  → 54; cooked-salted deli → 58; mercury avoid species → 54 + chip,
+  moderate (albacore/yellowfin/halibut) → 84; smoked fish → 68; seafood
+  sodium ≥2000 mg → 64 (anchovies).
+- **Identity gate** for sparse fresh records (species + envelope + no
+  additives → S1 0.85 / S2 0.90; chuck roast 41 → 77 ≈ listed 82). Zero-kcal
+  zero-protein panels = undeclared, not evidence (S12 unknown, guard passes).
+- **Routing**: processed tags before fresh; composition guard (protein ≥7
+  declared, ≤700 kcal, ≤25 g sugar, baby-tagged never meat); plant evidence
+  (labels/name/first-ingredient — NOT OFF vegan analysis flags, label bugs
+  read as vegan); cure/smoke/dry/breaded promotes fresh→processed; name
+  rerails for junk-tag franks + untagged plain cuts. Smoke evidence =
+  name/labels/tags only ("mesquite smoke flavor" in a salmon burger flipped
+  profiles on a spelling change).
+- **Generic fixes**: E301→exempt (vitamin C salt), E316/E325/E326/E327/E262
+  → soft (detector definitions; deli turkey 54 > Spam 46); S14 species+cut
+  whitelist (~90 entries) + qualifiers (wild-caught/atlantic/boneless/
+  ground/lean — NOT "roasted": mid-token stripping turned "dry roasted
+  peanuts" into "dry peanuts", −7 on nut butters, caught in drift); meat
+  neutral tokens (salt/water/broth/seasonings).
+- **Calibration**: breast 97, loin 93, lean beef 90, thighs 81, ribeye 75,
+  80/20 74, belly 58, liver 94 · sockeye 99, sardines 96, farmed salmon 94,
+  cod 90, canned tuna 85–90 (same-food spread 31→7 pts), albacore 84,
+  swordfish 54, smoked salmon 68, fish sticks 55 · clean deli 58, deli
+  turkey 54, jerky 53, "uncured" bacon 50, salami 47, Spam 46, bacon 44,
+  dogs 42. Cross-shelf drift ≤ ±0.1 mean (movers: baby purées + seaweed
+  correctly off meat).
+- Migration `rulesetV570Rescored`; `backend/src/ruleset.json` copied —
+  **needs a Worker deploy**. Legacy tests: version bumps ×6, bacon →
+  `meat_processed` ≤54, chicken → `meat_fresh` ≥85.
+- Not done (follow-ups): no Top Rated shelves for canned fish / deli /
+  bacon / dogs / jerky (M11) — also no Better Options for meat; plant
+  protein profile (analogues sit on `general`, tofu 66 vs tempeh 76);
+  baby-food router entries still rely on the meat guard, not order; pt-BR
+  for new cap chips; jerky/anchovy per-100g portion realism noted in doc.
+
+---
+
 # Session Changelog — 2026-08-23 — Dairy in four forms (v5.6.0)
 
 Audit of the dairy scoring against the live engine (CLI harness: 77 archetype

@@ -153,6 +153,22 @@ enum IngredientIntegrity {
         "part skim", "partly skimmed", "ultra-pasteurized", "ultra pasteurized",
         "ultra-pasteurised", "ultra pasteurised", "vitamin d", "rbst-free", "rbst free",
         "non-homogenized", "non-homogenised", "cream-top", "cream top",
+        // V5.7 meat & seafood qualifiers — catch, origin, cut and trim words
+        // that leave the animal itself unchanged ("wild-caught sockeye salmon"
+        // is salmon; "boneless skinless chicken breast" is chicken breast).
+        // "smoked" and "cured" are deliberately not strippable — those change
+        // the food and are judged by the form rule.
+        // "roasted" / "grilled" / "ground" are deliberately absent: stripping
+        // is global, and "dry roasted peanuts" → "dry peanuts" un-matches the
+        // nut whitelist while "ground flax seeds" → "flax seeds" moves
+        // non-meat scores. Ground/cooked meat forms get explicit whitelist
+        // entries instead.
+        "wild-caught", "wild caught", "wild", "farm-raised", "farm raised",
+        "farmed", "atlantic", "pacific", "alaskan", "alaska", "norwegian",
+        "boneless", "skinless", "bone-in", "skin-on", "lean",
+        "extra lean", "angus", "usda choice", "usda prime", "grass-finished",
+        "all natural", "chunk light", "solid white", "sockeye", "coho",
+        "chinook", "skipjack", "yellowfin", "albacore",
     ]
 
     /// V5.6: starter and probiotic cultures are the live part of a fermented

@@ -65,7 +65,9 @@ of \(\sum w\). Confidence haircuts apply for missing nutrition inputs (floor 60%
 | `general` | S1 20, S2 22, S3 8, S4 8, S5 4, S12 11, S13 5, S14 14, S15 8 |
 | `bread` | S1 16, S2 14 (`bread`), wholeGrain 16 (`bread`), S12 14 (`grain`), S3 10 (`bread`), S4 12 (`bread`), S5 6, S14 8, S15 4 — **no S13** |
 | `grains` (formerly `breads`: cereals, pasta, rice, oats, flours) | S1 18, wholeGrain 12, S3 8, S4 8, S2 16, S12 12, S13 4, S14 14, S15 8 |
-| `meat` | S1 30, S2 14, S4 10, S5 6, S12 14, S13 4, S14 14, S15 8 |
+| `meat_fresh` | S12 24 (`meatProtein`), S5 20 (`meat` 1.2/4/8), S1 10, S13 10 (`meat` prior), meatForm 10, S4 8, S14 8, S2 6 (`meat` markers), S15 4 |
+| `meat_processed` | meatForm 18, S4 18 (`meatProcessed` 400/900/1500), S1 14 (cure additives exempt — the form rule owns curing), S12 14 (`meatProtein`), S5 10 (`meat`), S2 8 (`meat`), S14 8, S3 6 (`foods`), S13 4 (`meat` prior ×0.8) |
+| `seafood` | S12 18 (`meatProtein`), omega3 12, S1 14, S14 12, S2 10 (`meat`), S4 10 (`seafood` 250/700/1400), S13 8 (`meat` prior), meatForm 6, S5 6 (`meat`), S15 4 |
 | `dairy_milk` | S12 22 (`dairy`), S1 18, S14 14, S2 12 (`dairy` markers), dairyProcessing 10, S3 10 (free sugar), S13 8 (`dairy` prior), S5 6 — **no S15** |
 | `dairy_fermented` | S3 26 (`dairy` free sugar), S12 18 (`dairyDense`), S1 14, S14 12, S6 8 (`dairy`), dairyForm 6, S13 6 (`dairy` prior), S5 6, S4 4 (`fermented` prior 0.9) — **no S15** |
 | `dairy_cheese` | S4 24 (`cheese` 150/500/1000), S12 18 (`dairyCheese`), S5 14 (`cheese` 6/14/22), S1 12, S14 12, dairyForm 10, S13 6 (`dairy` prior), S3 4 — **no S15** |
@@ -75,6 +77,109 @@ of \(\sum w\). Confidence haircuts apply for missing nutrition inputs (floor 60%
 | `drinks` | S1 23, S3 43 (`drinksServing`), S8 15 (caffeine), S6 13 (tiered sweeteners), S4 6 — **no S2, no S7** |
 | `juice_100` | same weights as `drinks`; dose-aware S3 + juice sugar cap + flat +3 micronutrient boost |
 | `protein_bars` | S12 26 (`proteinBar`), S3 16 (`proteinBar`), S6 10 (`proteinBar`), S2 10 (`proteinBar`), S1 8, S14 10 (`proteinBar`), S15 8, S5 8, S4 2 (`proteinBar`), S13 2 |
+
+## V5.7.0 Meat & seafood (three forms)
+
+Audit of the meat scoring against the live engine (49 archetype fixtures,
+52 hydrated top-scanned US OFF records) and Oasis' meat & seafood methodology
+(contaminants 60 / lab-indexed 15 / packaging 10 / certs 5 / welfare 10 —
+nutrition 0%). Findings: one `meat` profile served everything from chicken
+breast to salami to swordfish to Beyond burgers; purity rules carried 66/100
+points and every clean whole cut maxed them (ribeye 84 > sockeye 83, pork
+belly 79 "Excellent"); the generic S12 (fiber + FVN = 60% of the rule) was
+structurally dead for animal products; a no-list chuck roast scored 41 vs 82
+for identical listed ground beef; cured bacon 28 vs celery-powder "uncured"
+bacon 55 (same nitrite chemistry); no omega-3 use (decoded since V5.3, only
+ever read for eggs); no mercury concept (swordfish 82, unflagged); deli
+turkey 26 < Spam 34 on raw additive count; real franks with `en:undefined`
+categories fell to `general`; meat-analogues routed INTO `meat`.
+
+**Stance** (the egg/dairy line): health only. Welfare, feed, wild-vs-farmed
+sustainability, certifications, packaging and lab-report transparency never
+score (chips at most). From Oasis we keep only the *severity-tier idea* and
+species mercury — the one contaminant that is species-deterministic, where
+the name on the pack is the evidence. Cure chemistry is judged by what it
+is: celery powder / celery juice / cultured celery is a nitrate cure, and
+"uncured" is a labeling word, not a food.
+
+- **Three forms** — `meat_fresh` (whole cuts, ground, organ; rotisserie
+  stays here — S1 prices its additives), `meat_processed` (cured / smoked /
+  dried / fermented / restructured / breaded), `seafood` (all fish and
+  shellfish, every pack form). Meat-analogues route to `general`.
+- **S12 `meatProtein`** — 0.55 × absolute protein (22 g full) + 0.45 ×
+  protein share of energy (55% full). The share axis is what separates a
+  lean cut from a fatty one. Protein declared 0 = empty OFF panel → unknown.
+- **meatForm** — fresh: poultry 1.0 / pork 0.8 / red meat 0.75 (IARC 2A +
+  fish-and-poultry-first guidance; a step, not a demonization) / organ 0.5
+  (vitamin A / purine portion caution). Processed: emulsified 0.10 / cured
+  0.15 / smoked, dried 0.35 / cooked-salted 0.6; worst match binds. Seafood:
+  plain (fresh / frozen / **canned**) 1.0 / smoked, cured 0.45–0.6 /
+  breaded 0.5 / surimi 0.2.
+- **Processed ceiling** — cure, smoke, dry or restructure evidence (text,
+  additives e249–e252, group-1 tags like `cured-meats` / `jerky`, or named
+  cured products: prosciutto, salami, pepperoni, pastrami…) → Overall cap
+  54; cooked-and-salted only → 58. Cure additives are exempt from S1 on
+  this profile — the ceiling and form rule own curing, so a celery-powder
+  label can't buy back 27 points (calibration: cured 44 vs "uncured" 50).
+- **S13 `meat` prior** (egg pattern) — organ 0.95, oily fish 0.85, red meat
+  0.80, shellfish 0.80, pork 0.75, lean fish 0.72, poultry 0.70; ×0.8 on
+  processed; lifts for declared iron / potassium / vitamin D / B12 (cap
+  +0.10). Red meat's higher prior is honest (heme iron, B12, zinc) — the
+  red-meat health step lives in meatForm, not here.
+- **omega3** (seafood) — declared `omega3_g` first (≥1.0 → 1.0, ≥0.4 → 0.8,
+  ≥0.1 → 0.55, else 0.45), species-class prior otherwise (oily 0.9,
+  shellfish 0.55, lean 0.5). Lean fish earns partial credit, never a
+  penalty — cod is not worse food for being lean.
+- **Mercury** — FDA/EPA "avoid" species (king mackerel, swordfish, shark,
+  tilefish, marlin, orange roughy, bigeye tuna) → cap 54 + chip; "good
+  choice" species (albacore, yellowfin, halibut…) → cap 84. Smoked fish →
+  cap 68; sodium ≥ 2 000 mg (anchovies, lox) → cap 64.
+- **Identity gate** — no list + no additives + species named + panel inside
+  the form envelope (fresh: 60–560 kcal, 9–40 g protein, ≤2 g sugar,
+  ≤150 mg Na; seafood: ≤300 kcal, ≤500 mg Na) → S1 unknown 0.85, S2 prior
+  0.90. Most fresh-meat UPCs print no list (USDA-path scans); the packaged-
+  food 0.20 unknown was punitive there (chuck roast 41 → 77, within 5 of
+  the listed cut). Zero-filled panels (kcal 0 + protein 0) read as
+  undeclared, not as food with no energy.
+- **S2 `meat`** — marker families off the list (mechanically separated,
+  added sugars, flavor enhancers, modified starch, BHA/BHT, flavorings,
+  isolate binders). Canning, cooking and salt are NOT ultra-processing:
+  "sardines, olive oil, salt" is clean whatever NOVA tag the can carries.
+  Processed clean ceiling 0.8 (charcuterie is never "unprocessed").
+- **Routing** — processed tags before fresh (order matters); composition
+  guard (protein ≥7 when declared, ≤700 kcal, ≤25 g sugar; baby-tagged
+  never meat); plant evidence → `general` (labels / name words / first
+  ingredient — deliberately NOT OFF's vegan analysis flags: a bacon whose
+  printed list forgets the pork reads vegan there); cure/smoke/dry/breaded
+  evidence promotes fresh tags to processed; junk-tag name rerail (franks /
+  sausage / deli words + species + composition) and fresh-evidence rerail
+  (species in name + first ingredient + envelope) rescue `en:undefined`
+  records. Smoke evidence is the product's NAME / labels / tags — a dash of
+  "smoke flavor" in a salmon burger is seasoning (S2 flavoring family), and
+  matching it flipped the same product across profiles on a spelling change.
+- **Generic fixes** — cure-system auxiliaries tiered honestly (E301 sodium
+  ascorbate = vitamin C → exempt; E316 erythorbate, E325/E326/E327
+  lactates, E262 diacetate → soft): deli turkey 54 > Spam 46, restoring
+  sanity. S14: species + cut whitelist (~90 entries: sockeye salmon, chicken
+  thighs, ground beef, albacore…), catch/origin/trim qualifiers
+  (wild-caught / atlantic / boneless / skinless / ground / lean —
+  "roasted"/"grilled" deliberately excluded: mid-token stripping would turn
+  "dry roasted peanuts" into "dry peanuts" and unmatch the nut whitelist);
+  salt / water / broth / dry seasonings neutral in meat lists.
+- **Calibration** (fixtures + real records): chicken breast 97 (listed or
+  not), pork loin 93, lean ground beef 90, thighs 81, 80/20 74, ribeye 75,
+  lamb 69, pork belly 58, liver 94 · sockeye 99, sardines 96, mackerel 93,
+  farmed salmon 94, cod/tilapia/shrimp 90–92, canned tuna 85–90 (same-food
+  record spread narrowed from 31 to ~7 pts), albacore 84 (Hg), swordfish 54
+  (Hg), smoked salmon 68, fish sticks 55, anchovies 64, imitation crab 43 ·
+  clean deli turkey 58, conventional deli 54, uncured dog 54, jerky 53,
+  breakfast sausage 51, "uncured" bacon 50, salami 47, Spam 46, bacon 44,
+  hot dogs 42, turkey pepperoni 40. Cross-shelf drift ≤ ±0.1 mean; only
+  intended movers (baby purées off meat, seaweed off meat).
+- Deliberately unscored: welfare / housing / feed, wild-vs-farmed
+  sustainability, MSC / ASC / BAP, packaging, lab-report transparency,
+  antibiotic / hormone claims, grilling HCAs (preparation, not product).
+  Grass-fed's omega shift is real but unverifiable per pack.
 
 ## V5.6.0 Dairy (four forms, one family)
 

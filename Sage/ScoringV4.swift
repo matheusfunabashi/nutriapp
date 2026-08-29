@@ -172,6 +172,12 @@ struct RulesetV4: Codable {
     /// prior, identity gate, routing evidence. See DairyScoring.swift.
     var dairy: DairyScoring.Config? = nil
 
+    /// V5.7 meat & seafood — three forms (fresh / processed / seafood),
+    /// protein delivery, species reference prior, omega-3, cure evidence with
+    /// celery-powder equivalence, mercury tiers, identity gate, routing
+    /// evidence. See MeatScoring.swift.
+    var meat: MeatScoring.Config? = nil
+
     // V5.4 bread — optional so older rulesets (and frozen v5.0.9) keep their
     // behavior when the config is absent. Shapes live in BreadScoring.swift.
     struct BreadConfig: Codable {
@@ -1283,6 +1289,17 @@ enum ScoringEngineV4 {
             }
         }
 
+        // V5.7 meat caps — cured meat takes the IARC Group 1 ceiling (a celery
+        // cure is the same chemistry), other processed meat a lighter one;
+        // FDA/EPA "avoid" mercury species and condiment-pattern salt fish top
+        // out below Excellent.
+        if let cfg = rs.meat, let form = MeatScoring.form(route(p, ruleset: rs)) {
+            for hit in MeatScoring.caps(p, form: form, cfg: cfg) {
+                fired.append(ScoreCap(id: hit.id, value: hit.value, shortLabel: hit.shortLabel,
+                                      kind: hit.kind, intensity: "full", detail: hit.detail))
+            }
+        }
+
         if let gate = rs.hardGates?.nnsCeiling,
            route(p, ruleset: rs) == "unscored_sweetener",
            (p.nutrients.sugar_g ?? 0) < 10,
@@ -1321,8 +1338,9 @@ enum ScoringEngineV4 {
         }
         guard let tf = p.nutrients.transFat_g, p.novaGroup == 4 else { return false }
         let profileId = route(p, ruleset: rs)
-        let ruminant = ["dairy_milk", "yogurt_cheese", "meat"].contains(profileId)
+        let ruminant = ["dairy_milk", "yogurt_cheese"].contains(profileId)
             || DairyScoring.isDairy(profileId)
+            || MeatScoring.isMeat(profileId)
         let threshold = ruminant ? 2.0 : gate.threshold
         return tf > threshold
     }
@@ -1499,6 +1517,25 @@ enum ScoringEngineV4 {
                !DairyScoring.looksLikeInfantFormula(p) {
                 continue
             }
+            // V5.7 meat gates — meat tags ride on soups, pies and ready meals
+            // (composition guard), plant analogues carry meat tags (vegan
+            // evidence → general), and fresh-tagged products with cure / smoke
+            // / restructure evidence are processed meat.
+            if MeatScoring.isMeat(entry.profile), let cfg = rs.meat {
+                if !MeatScoring.passesGuard(p, cfg: cfg) {
+                    continue
+                }
+                if MeatScoring.isPlantBased(p, cfg: cfg) {
+                    logEvidenceRerail(p, attempted: entry.profile, used: "general",
+                                      gate: "meatPlantEvidence")
+                    return applyRoutingPlausibility(p, attempted: "general", rs: rs)
+                }
+                if entry.profile == "meat_fresh", MeatScoring.promotesToProcessed(p, cfg: cfg) {
+                    logEvidenceRerail(p, attempted: "meat_fresh", used: "meat_processed",
+                                      gate: "meatCureEvidence")
+                    return "meat_processed"
+                }
+            }
             var profile = entry.profile
             // V5.6 dairy evidence gates — plant-based "milk" / "yogurt" /
             // "cheese" riding dairy tags leave the dairy family (milk-tagged →
@@ -1553,6 +1590,22 @@ enum ScoringEngineV4 {
            ProteinBarScoring.hasProteinBarEvidence(p, rs: rs) {
             logEvidenceRerail(p, attempted: "general", used: "protein_bars", gate: "proteinBarEvidence")
             return "protein_bars"
+        }
+        // V5.7 — junk-tagged processed meat (real franks and deli meats carry
+        // `en:undefined` categories on OFF): a processed-meat word in the name
+        // plus a meat species and meat composition is a processed meat.
+        if let cfg = rs.meat, MeatScoring.hasProcessedMeatNameEvidence(p, cfg: cfg) {
+            logEvidenceRerail(p, attempted: "general", used: "meat_processed", gate: "meatNameEvidence")
+            return "meat_processed"
+        }
+        // V5.7 — untagged plain cuts: species in the name AND leading the
+        // list, inside the fresh envelope.
+        if let cfg = rs.meat, MeatScoring.hasFreshMeatEvidence(p, cfg: cfg) {
+            let cls = MeatScoring.speciesClass(p, cfg: cfg)
+            let used = (cls.map { ["oilyFish", "leanFish", "shellfish"].contains($0) } ?? false)
+                ? "seafood" : "meat_fresh"
+            logEvidenceRerail(p, attempted: "general", used: used, gate: "meatFreshEvidence")
+            return used
         }
         return applyRoutingPlausibility(p, attempted: "general", rs: rs)
     }
@@ -1784,6 +1837,7 @@ enum ScoringEngineV4 {
         let s12IsDairy: Bool = {
             let note = results.first { $0.rule == "S12" }?.note ?? ""
             return note.hasPrefix("dairy") || note.hasPrefix("egg") || note.hasPrefix("grain")
+                || note.hasPrefix("meat")
         }()
         if n.sugar_g == nil, let w = byRule["S3"] { haircutPP += w / 2 }
         if n.satFat_g == nil, let w = byRule["S5"] { haircutPP += w / 2 }
@@ -1819,6 +1873,8 @@ enum ScoringEngineV4 {
                                  profileId: String = "general") -> (Double, Bool, String?) {
         let dairyForm = DairyScoring.form(profileId)
         let dairyCfg = rs.dairy
+        let meatForm = MeatScoring.form(profileId)
+        let meatCfg = rs.meat
         switch rule {
         case "S1":
             // V5.5: on protein bars the isolate text signals are the protein
@@ -1831,13 +1887,30 @@ enum ScoringEngineV4 {
             if let form = dairyForm, let cfg = dairyCfg, !p.hasIngredientData {
                 unknown = DairyScoring.s1UnknownCredit(p, form: form, cfg: cfg)
             }
-            let r = s1(p, rs: rs, exemptSignals: exempt, unknownCredit: unknown)
-            return (r.0, r.1, r.1 ? nil : (unknown > 0.20 ? "S1 dairy: no list → identity prior" : nil))
+            // V5.7: same identity gate for sparse fresh meat / seafood — most
+            // fresh UPCs print no list, and 0.20 there is punitive, not honest.
+            if let form = meatForm, let cfg = meatCfg, !p.hasIngredientData {
+                unknown = MeatScoring.s1UnknownCredit(p, form: form, cfg: cfg)
+            }
+            // V5.7: on processed meat the cure additives are judged by the
+            // form rule and the processed ceiling — counting nitrite in S1 too
+            // made the penalty track label wording (a celery cure reads clean)
+            // instead of the food.
+            let exemptCodes: Set<String> = meatForm == .processed
+                ? Set(meatCfg?.cureAdditives ?? []) : []
+            let r = s1(p, rs: rs, exemptSignals: exempt, unknownCredit: unknown,
+                       exemptCodes: exemptCodes)
+            return (r.0, r.1, r.1 ? nil : (unknown > 0.20 ? "S1: no list → identity prior" : nil))
         case "S2":
             // V5.6: dairy processing is read off the list as marker families;
             // a pure dairy list is NOVA 1 whatever OFF says.
             if variant == "dairy", let form = dairyForm, let cfg = dairyCfg {
                 return DairyScoring.s2Credit(p, form: form, cfg: cfg)
+            }
+            // V5.7: meat processing is marker families off the list — canning
+            // and salt are not ultra-processing, cure is the form rule's job.
+            if variant == "meat", let form = meatForm, let cfg = meatCfg {
+                return MeatScoring.s2Credit(p, form: form, cfg: cfg)
             }
             // V5.4: bread processing is read off the ingredient list (marker
             // families), not OFF's NOVA tag — see BreadScoring.s2Credit.
@@ -1940,6 +2013,13 @@ enum ScoringEngineV4 {
                 let r = s12EggCredit(p, cfg: rs.eggs)
                 return (r.0, r.1, "egg: protein basis")
             }
+            // V5.7: meat / seafood have no fiber or fruit/veg axis either —
+            // protein per 100 g blended with protein's share of energy, so a
+            // lean cut separates from a fatty one.
+            if variant == "meatProtein", let cfg = meatCfg {
+                let r = MeatScoring.s12Credit(p, cfg: cfg)
+                return (r.0, r.1, r.2)
+            }
             // V5.4: bread has no fruit/veg axis and a flat ~250 kcal, so the
             // grain variant scores fiber per 100 g + protein.
             if variant == "grain", let cfg = rs.bread {
@@ -1960,11 +2040,24 @@ enum ScoringEngineV4 {
             if variant == "dairy", let form = dairyForm, let cfg = dairyCfg {
                 return DairyScoring.s13Credit(p, form: form, cfg: cfg)
             }
+            // V5.7: species reference prior (heme iron / B12 / zinc; D,
+            // selenium and iodine for fish) + declared lifts — US meat panels
+            // never print micros, so the %DV rule was structurally 0.35.
+            if variant == "meat", let form = meatForm, let cfg = meatCfg {
+                return MeatScoring.s13Credit(p, form: form, cfg: cfg)
+            }
             let r = s13(p, rs: rs); return (r.0, r.1, nil)
         case "S14":
             // V5.6: salt, cultures, enzymes, rennet, lactase and vitamins are
             // neutral in a dairy list — neither whole food nor a dock.
             if dairyForm != nil, let cfg = dairyCfg {
+                let b = IngredientIntegrity.evaluate(ingredientsText: p.ingredientsText,
+                                                     neutralTokenKw: cfg.neutralTokens)
+                return (b.fraction, b.hadData, nil)
+            }
+            // V5.7: salt, water, broth and dry seasonings are neutral in a
+            // meat list — neither whole food nor a dock.
+            if meatForm != nil, let cfg = meatCfg {
                 let b = IngredientIntegrity.evaluate(ingredientsText: p.ingredientsText,
                                                      neutralTokenKw: cfg.neutralTokens)
                 return (b.fraction, b.hadData, nil)
@@ -1987,6 +2080,12 @@ enum ScoringEngineV4 {
         case "dairyForm":
             guard let form = dairyForm, let cfg = dairyCfg else { return (0.85, false, nil) }
             return DairyScoring.formCredit(p, form: form, cfg: cfg)
+        case "meatForm":
+            guard let form = meatForm, let cfg = meatCfg else { return (0.85, false, nil) }
+            return MeatScoring.formCredit(p, form: form, cfg: cfg)
+        case "omega3":
+            guard let cfg = meatCfg else { return (0.5, false, nil) }
+            return MeatScoring.omega3Credit(p, cfg: cfg)
         case "brewMaterial":
             let r = brewMaterial(p, rs: rs); return (r.0, r.1, nil)
         case "sweetenerType":
@@ -2169,7 +2268,8 @@ enum ScoringEngineV4 {
 
     private static func s1(_ p: Product, rs: RulesetV4,
                            exemptSignals: Set<String> = [],
-                           unknownCredit: Double = 0.20) -> (Double, Bool) {
+                           unknownCredit: Double = 0.20,
+                           exemptCodes: Set<String> = []) -> (Double, Bool) {
         // Whole-food bypass: NOVA 1–2 + no additives + no textSignals → clean,
         // even when ingredients_text is missing (single-ingredient produce).
         let additivesEmpty = p.additives.isEmpty
@@ -2189,6 +2289,7 @@ enum ScoringEngineV4 {
         var gumsCounted = 0
         for additive in p.additives {
             guard let code = additive.code else { continue }
+            guard !exemptCodes.contains(code) else { continue }
             guard let fraction = s1Fraction(for: additive, code: code, rs: rs) else { continue }
             if rs.gumCodes.contains(code) {
                 guard gumsCounted < 2 else { continue }   // gum cap
