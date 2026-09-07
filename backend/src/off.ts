@@ -70,6 +70,9 @@ const SEARCH_FIELDS = [
   "image_front_small_url", "image_front_url",
   "countries_tags", "nutriments", "nova_group",
   "additives_tags", "categories_tags",
+  // Ranking signals: data-richness tiebreak reads ingredients_text; the
+  // fine-grained tiebreak reads OFF's own completeness score (0–1).
+  "ingredients_text", "completeness",
 ].join(",");
 const SEARCH_UA = { "User-Agent": "Sage/1.0 (backend proxy; contact@sage.app)" };
 // Sage targets English-speaking markets; search is filtered to these three.
@@ -92,13 +95,19 @@ const CORE_NUTRIMENT_KEYS = [
 ] as const;
 
 export async function searchOFF(query: string, pageSize = 12): Promise<SearchHit[]> {
-  // Over-fetch: US + scorability filters drop a chunk of OFF hits.
+  // Over-fetch: US + scorability filters drop a chunk of OFF hits, and we
+  // re-rank across the whole survivor set (below) rather than taking OFF's
+  // order, so a wide pool matters more than it used to.
   const fetchSize = Math.min(Math.max(pageSize * 4, 40), 60);
   const raw = (await searchModern(query, fetchSize).catch(() => null))
            ?? (await searchLegacy(query, fetchSize));
 
+  // Collect every survivor (deduped) with its ranking signals, THEN sort —
+  // we can't truncate mid-iteration anymore or the richest matches past the
+  // cutoff would be lost. Dedup still keeps the first (highest upstream)
+  // occurrence of a brand|name pair.
   const seen = new Set<string>();
-  const out: SearchHit[] = [];
+  const ranked: RankedHit[] = [];
   for (const p of raw) {
     if (!isAllowedMarket(p)) continue;
     if (isUnsupportedCategory(p)) continue;
@@ -108,10 +117,103 @@ export async function searchOFF(query: string, pageSize = 12): Promise<SearchHit
     const key = `${hit.brand.toLowerCase()}|${hit.name.toLowerCase()}`;
     if (seen.has(key)) continue;
     seen.add(key);
-    out.push(hit);
-    if (out.length >= pageSize) break;
+    ranked.push({
+      hit,
+      relevance: nameRelevance(query, hit.name, hit.brand),
+      richness: dataRichness(p),
+      completeness: offCompleteness(p),
+    });
   }
-  return out;
+
+  return rankHits(ranked).slice(0, pageSize);
+}
+
+interface RankedHit {
+  hit: SearchHit;
+  /** Name/brand match strength for the query (higher = tighter match). */
+  relevance: number;
+  /** Count of populated data fields, 0–5 (how much the app can show/score). */
+  richness: number;
+  /** OFF's own completeness score, 0–1. */
+  completeness: number;
+}
+
+/**
+ * Orders results the way the user asked for: name relevance is the primary
+ * key (a product actually named like the query always wins), and "how much
+ * information is available" only breaks ties — first the count of populated
+ * data fields, then OFF's finer-grained completeness score. Array.sort is
+ * stable, so equal-ranked hits keep their upstream (OFF relevance) order.
+ */
+export function rankHits(ranked: RankedHit[]): SearchHit[] {
+  return [...ranked]
+    .sort((a, b) =>
+      b.relevance - a.relevance ||
+      b.richness - a.richness ||
+      b.completeness - a.completeness)
+    .map((r) => r.hit);
+}
+
+function escapeRegExp(s: string): string {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+/**
+ * Relevance of a hit's name (and brand) to the typed query. Tiered so an
+ * exact / prefix name match always outranks an incidental substring, and a
+ * product whose *brand* is the query (name carries only the variant, e.g.
+ * brand "Cheetos" / name "Crunchy") still scores well. OFF has already
+ * full-text matched, so 0 is rare (query matched some other field).
+ */
+export function nameRelevance(query: string, name: string, brand: string): number {
+  const q = query.trim().toLowerCase();
+  if (!q) return 0;
+  const n = name.toLowerCase();
+  const b = brand.toLowerCase();
+  const hay = `${b} ${n}`.trim();
+  const wordRe = new RegExp(`(^|[^a-z0-9])${escapeRegExp(q)}([^a-z0-9]|$)`);
+
+  if (n === q || b === q) return 100;              // exact name or brand
+  if (n.startsWith(q)) return 90;                  // "cheetos crunchy"
+  if (b.startsWith(q)) return 80;                  // brand "Cheetos", name "Crunchy"
+  if (wordRe.test(n)) return 70;                   // "flamin hot cheetos"
+  if (wordRe.test(hay)) return 60;                 // whole word across brand+name
+  if (n.includes(q)) return 50;                    // substring in name
+  if (hay.includes(q)) return 40;                  // substring in brand+name
+  const tokens = q.split(/\s+/).filter(Boolean);   // multi-word: all tokens present
+  if (tokens.length > 1 && tokens.every((t) => hay.includes(t))) return 20;
+  return 0;
+}
+
+/**
+ * "Number of informations available" as a 0–5 count of the data the app can
+ * actually show and score: a nutrition panel (≥3 core nutriments), an
+ * ingredients list, additive tags, a known NOVA group, and a front image.
+ */
+export function dataRichness(p: Record<string, unknown>): number {
+  let score = 0;
+  const nut = (p["nutriments"] && typeof p["nutriments"] === "object")
+    ? (p["nutriments"] as Record<string, unknown>)
+    : {};
+  let core = 0;
+  for (const key of CORE_NUTRIMENT_KEYS) {
+    const v = nut[key];
+    if (typeof v === "number" && Number.isFinite(v)) core += 1;
+  }
+  if (core >= 3) score += 1;
+  const ing = p["ingredients_text"];
+  if (typeof ing === "string" && ing.trim().length > 0) score += 1;
+  if (tagList(p["additives_tags"]).length > 0) score += 1;
+  const nova = Number(p["nova_group"]);
+  if (Number.isFinite(nova) && nova >= 1 && nova <= 4) score += 1;
+  if (p["image_front_small_url"] || p["image_front_url"] || p["image_url"]) score += 1;
+  return score;
+}
+
+/** OFF's own 0–1 completeness score; 0 when absent or malformed. */
+export function offCompleteness(p: Record<string, unknown>): number {
+  const c = Number(p["completeness"]);
+  return Number.isFinite(c) ? c : 0;
 }
 
 async function searchModern(query: string, pageSize: number): Promise<Record<string, unknown>[]> {

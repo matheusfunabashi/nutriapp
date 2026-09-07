@@ -36,9 +36,10 @@ export interface SearchHit {
 }
 
 export function searchKey(query: string): string {
-  // v5: market widened from US-only to US/UK/CA — new prefix so stale v4
-  // (US-only) entries aren't served during the TTL window.
-  return `search:v5:${query}`;
+  // v6: results are now ranked by name relevance + data richness (was
+  // unsorted OFF order) — new prefix so stale v5 (unordered) entries aren't
+  // served during the TTL window. (v5 widened the market to US/UK/CA.)
+  return `search:v6:${query}`;
 }
 
 export async function getSearch(kv: KVNamespace, query: string): Promise<SearchHit[] | null> {
