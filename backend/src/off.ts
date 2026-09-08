@@ -70,9 +70,11 @@ const SEARCH_FIELDS = [
   "image_front_small_url", "image_front_url",
   "countries_tags", "nutriments", "nova_group",
   "additives_tags", "categories_tags",
-  // Ranking signals: data-richness tiebreak reads ingredients_text; the
-  // fine-grained tiebreak reads OFF's own completeness score (0–1).
-  "ingredients_text", "completeness",
+  // Ranking tiebreak reads OFF's own completeness score (0–1). NOTE: the
+  // search index does NOT return ingredients_text / additives_tags (only the
+  // per-product lookup does), so richness can't count those at search time —
+  // completeness stands in for ingredient/label fill.
+  "completeness",
 ].join(",");
 const SEARCH_UA = { "User-Agent": "Sage/1.0 (backend proxy; contact@sage.app)" };
 // Sage targets English-speaking markets; search is filtered to these three.
@@ -132,7 +134,7 @@ interface RankedHit {
   hit: SearchHit;
   /** Name/brand match strength for the query (higher = tighter match). */
   relevance: number;
-  /** Count of populated data fields, 0–5 (how much the app can show/score). */
+  /** Count of populated data fields, 0–3 (how much the app can show/score). */
   richness: number;
   /** OFF's own completeness score, 0–1. */
   completeness: number;
@@ -186,9 +188,13 @@ export function nameRelevance(query: string, name: string, brand: string): numbe
 }
 
 /**
- * "Number of informations available" as a 0–5 count of the data the app can
- * actually show and score: a nutrition panel (≥3 core nutriments), an
- * ingredients list, additive tags, a known NOVA group, and a front image.
+ * "Number of informations available" as a 0–3 count of the structural data
+ * the OFF *search* index actually returns per hit: a nutrition panel (≥3 core
+ * nutriments), a known NOVA group, and a front image. Ingredients and additive
+ * lists are deliberately NOT counted — the search index omits them (they
+ * arrive only on the per-product lookup), so they would be a constant 0 at
+ * ranking time. `offCompleteness` is the finer tiebreak and does reflect
+ * ingredient/label fill via OFF's own aggregate score.
  */
 export function dataRichness(p: Record<string, unknown>): number {
   let score = 0;
@@ -201,9 +207,6 @@ export function dataRichness(p: Record<string, unknown>): number {
     if (typeof v === "number" && Number.isFinite(v)) core += 1;
   }
   if (core >= 3) score += 1;
-  const ing = p["ingredients_text"];
-  if (typeof ing === "string" && ing.trim().length > 0) score += 1;
-  if (tagList(p["additives_tags"]).length > 0) score += 1;
   const nova = Number(p["nova_group"]);
   if (Number.isFinite(nova) && nova >= 1 && nova <= 4) score += 1;
   if (p["image_front_small_url"] || p["image_front_url"] || p["image_url"]) score += 1;

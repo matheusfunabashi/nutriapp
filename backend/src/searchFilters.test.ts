@@ -78,23 +78,29 @@ describe("name relevance", () => {
 });
 
 describe("data richness", () => {
-  it("counts populated data fields 0–5", () => {
+  it("counts the structural search-index fields 0–3", () => {
     assert.equal(dataRichness({}), 0);
     assert.equal(dataRichness({
       nutriments: {
         "energy-kcal_100g": 100, "sugars_100g": 5, "proteins_100g": 3,
       },
-      ingredients_text: "corn, oil, salt",
-      additives_tags: ["en:e330"],
       nova_group: 4,
       image_front_url: "https://x/y.jpg",
-    }), 5);
+    }), 3);
   });
 
-  it("ignores an empty ingredients string and thin nutrition", () => {
+  it("does not count ingredients/additives (the search index omits them)", () => {
+    // Even when present on a record, they no longer contribute — at search
+    // time OFF never returns them, so counting them would be misleading.
+    assert.equal(dataRichness({
+      ingredients_text: "corn, oil, salt",
+      additives_tags: ["en:e330"],
+    }), 0);
+  });
+
+  it("ignores thin nutrition (<3 core nutriments)", () => {
     assert.equal(dataRichness({
       nutriments: { "energy-kcal_100g": 100, "sugars_100g": 5 },
-      ingredients_text: "   ",
     }), 0);
   });
 });
